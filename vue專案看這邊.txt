@@ -1,0 +1,19 @@
+my-vue-app/
+├── public/                # 靜態資源（不經打包）
+│   └── favicon.ico
+├── src/                   # 核心開發目錄
+│   ├── assets/            # 圖片、CSS 等資源
+│   ├── components/        # 可重用元件 (例如 Header, Footer)
+│   ├── pages/             # 頁面元件（與路由對應）
+│   ├── views/             # （可選）可與 pages 合併使用
+│   ├── router/            # Vue Router 設定檔
+│   ├── store/             # Pinia/Vuex 狀態管理
+│   ├── composables/       # 自訂的 Composition API 函式
+│   ├── services/          # 與 API 溝通的封裝方法（axios）
+│   ├── App.vue            # Root 元件
+│   └── main.js / main.ts  # 入口點
+├── .env                   # 環境變數
+├── index.html             # 主 HTML 檔案
+├── vite.config.js         # Vite 設定檔
+├── package.json           # 專案依賴與腳本
+└── tsconfig.json          # TypeScript 設定（如果是 TS 專案）
