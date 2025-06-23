@@ -10,6 +10,7 @@ const routes = [
         component: PromotionList
     },
     // 其他路由...
+
 ]
 
 const router = createRouter({
