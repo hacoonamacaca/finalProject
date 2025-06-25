@@ -256,7 +256,7 @@ const formatTaiwanAddress = (addressData) => {
     padding: 15px 20px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: center;   
 }
 
 .navbar .logo {

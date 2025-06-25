@@ -2,7 +2,14 @@
     <!-- 導航欄 -->
     <header class="navbar">
         <div class="logo">金碗GoldenBowl Foolog</div>
-        <div>
+        <!-- 行動版專用的 location-btn -->
+        <div class="location-btn-container mobile-only">
+            <button class="location-btn" @click="showPopout = true">
+                目前位置為： {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button style="background: transparent; border: none; color: white;">📍</button></a>
+            </button>
+        </div>
+        <!-- 桌機版專用的 location-btn -->
+        <div class="location-btn-container desktop-only">
             <button class="location-btn" @click="showPopout = true">
                 目前位置為： {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button style="background: transparent; border: none; color: white;">📍</button></a>
             </button>
@@ -577,7 +584,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative;
+    /* position: relative; */
+    position: sticky; /* 改為 sticky */
+    top: 0; /* 黏住視窗頂部 */
+    z-index: 3000;
 }
 
 .navbar .logo {
@@ -1099,22 +1109,27 @@ body {
     }
 
     .nav-links {
-        position: fixed;
-        top: 0;
+        position: absolute;
+        border-radius: 10px;
+        top: 100%; /* 位於導航欄下方 */
         right: 0;
-        height: 100%;
-        width: 250px;
+        height: 300px;
+        width: 150px;
         background-color: #d70f64;
         flex-direction: column;
         align-items: flex-start;
-        padding: 60px 20px;
-        transform: translateX(100%);
-        transition: transform 0.3s ease-in-out;
+        padding: 20px;
+        opacity: 0; /* 預設透明 */
+        visibility: hidden; /* 預設不可見 */
+        display: none; /* 預設完全隱藏 */
         z-index: 2000;
+        /* transition: transform 0.3s ease-in-out; 恢復平滑過渡效果 */
     }
 
     .nav-links.active {
-        transform: translateX(0);
+        opacity: 1; /* 完全可見 */
+        visibility: visible; /* 可見 */
+        display: flex; /* 顯示選單 */
     }
 
     .nav-links .auth-section {
@@ -1124,7 +1139,7 @@ body {
         border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         padding-bottom: 10px;
         margin-bottom: 10px;
-        order: -1; /* 確保置頂 */
+        order: -1;  /*確保置頂 */
     }
 
     .nav-links .nav-items {
@@ -1170,5 +1185,55 @@ body {
         gap: 20px;
     }
 }
+/*定位RWD */
+/* 桌機版顯示，行動版隱藏 */
+.desktop-only {
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+}
+
+/* 行動版顯示，桌機版隱藏 */
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: flex;
+        width: 100%;
+        margin-top: 10px;
+        justify-content: flex-start;
+    }
+
+    .location-btn-container.mobile-only .location-btn {
+        width: 100%;
+        text-align: left;
+        justify-content: space-between; /*保持文字在左 📍在右*/ 
+    }
+
+    .navbar {
+        flex-direction: column; /* 行動版時改為垂直排列 */
+        align-items: flex-start; /* 靠左對齊 */
+        padding: 15px;
+    }
+
+    .navbar .logo {
+        width: 100%; /* 確保 logo 佔滿寬度 */
+        margin-bottom: 10px; /* 與下方的 location-btn 分隔 */
+    }
+
+    .hamburger {
+        position: absolute;
+        top: 15px;
+        right: 15px; /* 漢堡選單放在右上角 */
+    }
+}
+/*定位RWD */
 
 </style>
