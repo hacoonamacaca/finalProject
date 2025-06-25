@@ -132,3 +132,9 @@ h4 {
     min-width: 90px;
     display: inline-block;
 }
+
+.btn-login {
+    background: #e62271 !important;
+    color: #fff !important;
+    border: none !important;
+}

@@ -1,5 +1,5 @@
 {
-  "name": "vue-admin",
+  "name": "labvue-front",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -9,11 +9,17 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.5.13"
+    "axios": "^1.10.0",
+    "bootstrap": "^5.3.7",
+    "bulid": "^1.0.0",
+    "pinia": "^3.0.3",
+    "sweetalert2": "^11.22.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.1"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
-    "vite": "^6.2.1",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "vite": "^6.2.4",
     "vite-plugin-vue-devtools": "^7.7.2"
   }
 }

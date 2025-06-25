@@ -1,180 +1,64 @@
-<script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import axios from 'axios'
-
-const route = useRoute()
-const router = useRouter()
-const subscriptions = ref([])
-
-const fetchSubscriptions = async () => {
-    try {
-        const res = await axios.get('http://localhost:8080/api/subscriptions')
-        subscriptions.value = res.data
-    } catch (err) {
-        subscriptions.value = []
-    }
-}
-
-const selectAll = ref(false)
-const selected = ref([])
-
-const currentFilter = ref(route.query.filter || 'all')
-
-// ----------- 分頁相關 -----------
-const page = ref(1)
-const pageSize = ref(10)
-const pageSizes = [10, 20, 30]
-
-const filteredSubscriptions = computed(() => {
-    let result = subscriptions.value
-    if (currentFilter.value === 'pending') {
-        result = result.filter(r => r.status.includes('待'))
-    } else if (currentFilter.value === 'approved') {
-        result = result.filter(r => r.status.includes('已'))
-    }
-    return result
-})
-
-// 分頁後的資料
-const pagedSubscriptions = computed(() => {
-    const start = (page.value - 1) * pageSize.value
-    const end = start + pageSize.value
-    return filteredSubscriptions.value.slice(start, end)
-})
-
-const totalPages = computed(() =>
-    Math.max(1, Math.ceil(filteredSubscriptions.value.length / pageSize.value))
-)
-
-watch(() => route.query.filter, (val) => {
-    if (val === 'pending' || val === 'approved' || val === 'all') {
-        currentFilter.value = val
-    } else {
-        currentFilter.value = 'all'
-    }
-    page.value = 1 // 切換 filter 時回到第1頁
-})
-
-onMounted(() => {
-    fetchSubscriptions()
-    if (!route.query.filter) {
-        router.replace({ query: { filter: 'all' } })
-        currentFilter.value = 'all'
-    }
-})
-
-const setFilter = (filter) => {
-    if (route.query.filter === filter) return
-    router.replace({ query: { filter } })
-    selected.value = []
-    page.value = 1
-}
-
-const toggleAll = () => {
-    if (isAllSelected.value) {
-        selected.value = []
-    } else {
-        selected.value = pagedSubscriptions.value.map(subscription => subscription.id)
-    }
-}
-const isAllSelected = computed(() =>
-    selected.value.length === pagedSubscriptions.value.length && pagedSubscriptions.value.length !== 0
-)
-
-const batchApprove = () => {
-    alert('批次通過: ' + selected.value.join(', '))
-    selected.value = []
-}
-const batchReject = () => {
-    alert('批次駁回: ' + selected.value.join(', '))
-    selected.value = []
-}
-
-const countAll = computed(() => subscriptions.value.length)
-const countPending = computed(() => subscriptions.value.filter(s => s.status.includes('待')).length)
-const countApproved = computed(() => subscriptions.value.filter(s => s.status.includes('已')).length)
-
-watch(selected, () => {
-    selectAll.value = selected.value.length === pagedSubscriptions.value.length && pagedSubscriptions.value.length !== 0
-})
-watch([page, pageSize], () => {
-    // 換頁或換每頁數時要自動清空全選與選取
-    selected.value = []
-    selectAll.value = false
-})
-
-// 換每頁數量時，頁碼也回到第1頁
-watch(pageSize, () => {
-    page.value = 1
-})
-
-</script>
-
 <template>
     <div class="container mt-4">
-        <h2>訂閱方案</h2>
-        <!-- 狀態選單 -->
-        <div class="d-flex mb-3 border-bottom pb-2">
-            <button class="btn btn-link"
-                :class="{ 'tab-active': currentFilter === 'all' }"
-                @click="setFilter('all')"
-            >全部 ({{ countAll }})</button>
-            <button class="btn btn-link"
-                :class="{ 'tab-active': currentFilter === 'pending' }"
-                @click="setFilter('pending')"
-            >待審核 ({{ countPending }})</button>
-            <button class="btn btn-link"
-                :class="{ 'tab-active': currentFilter === 'approved' }"
-                @click="setFilter('approved')"
-            >已審核 ({{ countApproved }})</button>
-        </div>
-
-        <div class="mb-2">
-            <input type="checkbox" :checked="isAllSelected" @change="toggleAll"> 全部勾選
-            <button class="btn btn-primary me-2" @click="batchApprove">批次通過</button>
-            <button class="btn btn-danger" @click="batchReject">批次駁回</button>
+        <h2>訂閱紀錄</h2>
+        <!-- 搜尋與下拉 -->
+        <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+            <label class="form-label mb-0">搜尋：</label>
+            <input type="text" class="form-control" style="width:200px"
+                v-model="search" placeholder="搜尋用戶名稱...">
+            <label class="form-label mb-0 ms-2">訂閱方案：</label>
+            <select class="form-select" style="width:150px" v-model="planName">
+                <option value="">全部</option>
+                <option v-for="name in uniquePlanNames" :key="name" :value="name">
+                    {{ name }}
+                </option>
+            </select>
+            <button class="btn btn-primary ms-2" @click="clearFilter">清除篩選</button>
         </div>
 
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th></th>
+                    <th>用戶名稱</th>
                     <th>訂閱方案</th>
-                    <th>訂閱期限</th>
+                    <th>起訖</th>
                     <th>費用</th>
-                    <th>操作</th>
+                    <th>到期時間</th>
+                    <th>狀態</th>
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="subscription in pagedSubscriptions" :key="subscription.id">
-                    <td><input type="checkbox" v-model="selected" :value="subscription.id"></td>
-                    <td>{{ subscription.plan }}</td>
-                    <td>{{ subscription.deadline }}</td>
-                    <td>{{ subscription.price }}</td>
-                    <td><br v-if="subscription.detail">
-                        <small v-if="subscription.detail">{{ subscription.detail }}</small>
-                    </td>
-                    <td>
-                        <a href="#">編輯</a> |
-                        <a href="#">查看</a>
-                    </td>
+                <tr v-for="record in pagedSubscriptionRecords" :key="record.id">
+                    <td>{{ record.userName }}</td>
+                    <td>{{ record.subscriptionName }}</td>
+                    <td>{{ record.dateStart }} ~ {{ record.dateEnd }}</td>
+                    <td>{{ record.price }}</td>
+                    <td>{{ record.dateEnd }}</td>
+                    <td>{{ record.status }}</td>
+                </tr>
+                <tr v-if="pagedSubscriptionRecords.length === 0">
+                    <td colspan="6" class="text-center">查無資料</td>
                 </tr>
             </tbody>
         </table>
+
         <!-- 分頁控制 -->
         <div class="d-flex justify-content-end align-items-center pagebar-wrap">
+            <button class="btn btn-outline-secondary me-2"
+                    :disabled="page === 1"
+                    @click="page > 1 && (page--)"
+            >&lt; 上一頁</button>
             <nav>
                 <ul class="pagination mb-0">
-                    <li class="page-item" :class="{ disabled: page === 1 }">
-                        <button class="page-link" @click="page > 1 && (page--)" :disabled="page === 1">‹</button>
-                    </li>
-                    <li class="page-item disabled"><span class="page-link">{{ page }}</span></li>
-                    <li class="page-item" :class="{ disabled: page === totalPages }">
-                        <button class="page-link" @click="page < totalPages && (page++)" :disabled="page === totalPages">›</button>
+                    <li class="page-item disabled">
+                        <span class="page-link">頁數：{{ page }} / {{ totalPages }}</span>
                     </li>
                 </ul>
             </nav>
+            <button class="btn btn-outline-secondary ms-2"
+                    :disabled="page === totalPages"
+                    @click="page < totalPages && (page++)"
+            >下一頁 &gt;</button>
             <div class="ms-3">
                 <select class="form-select" v-model.number="pageSize">
                     <option v-for="s in pageSizes" :key="s" :value="s">{{ s }}/每頁</option>
@@ -183,3 +67,77 @@ watch(pageSize, () => {
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref, computed, onMounted, watch } from 'vue'
+import axios from 'axios'
+
+// 狀態
+const subscriptionRecords = ref([])
+const search = ref('')
+const planName = ref('')
+
+// const subscriptionRecords = ref([
+//     { id: 1, userName: 'Alice', subscriptionName: '月租', dateStart: '2024-07-01', dateEnd: '2024-07-31', price: 199, status: '啟用' },
+//     { id: 2, userName: 'Bob', subscriptionName: '季租', dateStart: '2024-04-01', dateEnd: '2024-06-30', price: 550, status: '停用' },
+//     { id: 3, userName: 'Cathy', subscriptionName: '年租', dateStart: '2024-01-01', dateEnd: '2024-12-31', price: 1800, status: '啟用' },
+//     { id: 4, userName: 'David', subscriptionName: '月租', dateStart: '2024-06-01', dateEnd: '2024-06-30', price: 199, status: '啟用' },
+//     { id: 5, userName: 'Eva', subscriptionName: '季租', dateStart: '2024-05-01', dateEnd: '2024-07-31', price: 550, status: '啟用' },
+//     { id: 6, userName: 'Frank', subscriptionName: '年租', dateStart: '2024-02-15', dateEnd: '2025-02-14', price: 1800, status: '啟用' },
+//     { id: 7, userName: 'Grace', subscriptionName: '月租', dateStart: '2024-05-15', dateEnd: '2024-06-14', price: 199, status: '停用' },
+//     { id: 8, userName: 'Henry', subscriptionName: '季租', dateStart: '2024-03-10', dateEnd: '2024-06-09', price: 550, status: '啟用' },
+//     { id: 9, userName: 'Ivy', subscriptionName: '年租', dateStart: '2023-09-01', dateEnd: '2024-08-31', price: 1800, status: '停用' },
+//     { id: 10, userName: 'Jack', subscriptionName: '月租', dateStart: '2024-04-20', dateEnd: '2024-05-19', price: 199, status: '啟用' },
+//     { id: 11, userName: 'Kate', subscriptionName: '月租', dateStart: '2024-03-01', dateEnd: '2024-03-31', price: 199, status: '啟用' },
+//     { id: 12, userName: 'Leo', subscriptionName: '季租', dateStart: '2024-06-01', dateEnd: '2024-08-31', price: 550, status: '啟用' },
+// ])
+
+
+
+// 取得訂閱紀錄
+const fetchRecords = async () => {
+    try {
+        // 假設後端API: /api/subscription/record
+        // 後端回傳格式必須包含: id, userName, subscriptionName, price, status
+        const res = await axios.get('http://localhost:8080/api/subscription/record')
+        subscriptionRecords.value = res.data
+    } catch (e) {
+        subscriptionRecords.value = []
+    }
+}
+onMounted(fetchRecords)
+
+// 過濾條件
+function clearFilter() {
+    search.value = ''
+    planName.value = ''
+}
+
+// 訂閱方案名稱下拉選單自動帶出全部唯一值
+const uniquePlanNames = computed(() => {
+    return [...new Set(subscriptionRecords.value.map(rec => rec.subscriptionName))]
+        .filter(Boolean)
+})
+
+// 分頁
+const page = ref(1)
+const pageSize = ref(10)
+const pageSizes = [10, 20, 30]
+watch(pageSize, () => { page.value = 1 })
+
+// 前端過濾
+const filteredSubscriptionRecords = computed(() => {
+    return subscriptionRecords.value.filter(rec =>
+        (search.value === '' || (rec.userName ?? '').includes(search.value)) &&
+        (planName.value === '' || rec.subscriptionName === planName.value)
+    )
+})
+const pagedSubscriptionRecords = computed(() => {
+    const start = (page.value - 1) * pageSize.value
+    const end = start + pageSize.value
+    return filteredSubscriptionRecords.value.slice(start, end)
+})
+const totalPages = computed(() =>
+    Math.max(1, Math.ceil(filteredSubscriptionRecords.value.length / pageSize.value))
+)
+</script>

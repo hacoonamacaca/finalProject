@@ -1,11 +1,15 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
 import axios from 'axios'
 
-const route = useRoute()
-const router = useRouter()
 const discounts = ref([])
+const search = ref('')
+const type = ref('')
+
+function clearFilter() {
+    search.value = ''
+    type.value = ''
+}
 
 const fetchDiscounts = async () => {
     try {
@@ -16,27 +20,20 @@ const fetchDiscounts = async () => {
     }
 }
 
-const selectAll = ref(false)
-const selected = ref([])
-
-const currentFilter = ref(route.query.filter || 'all')
-
-// ----------- 分頁相關 -----------
+// 分頁
 const page = ref(1)
 const pageSize = ref(10)
 const pageSizes = [10, 20, 30]
 
+// 搜尋與折扣類型過濾
 const filteredDiscounts = computed(() => {
-    let result = discounts.value
-    if (currentFilter.value === 'pending') {
-        result = result.filter(d => d.status.includes('待'))
-    } else if (currentFilter.value === 'approved') {
-        result = result.filter(d => d.status.includes('已'))
-    }
-    return result
+    return discounts.value.filter(d =>
+        (search.value === '' || d.title?.includes(search.value)) &&
+        (type.value === '' || d.type === type.value)
+    )
 })
 
-// 分頁後的資料
+// 分頁後資料
 const pagedDiscounts = computed(() => {
     const start = (page.value - 1) * pageSize.value
     const end = start + pageSize.value
@@ -47,139 +44,101 @@ const totalPages = computed(() =>
     Math.max(1, Math.ceil(filteredDiscounts.value.length / pageSize.value))
 )
 
-watch(() => route.query.filter, (val) => {
-    if (val === 'pending' || val === 'approved' || val === 'all') {
-        currentFilter.value = val
-    } else {
-        currentFilter.value = 'all'
-    }
-    page.value = 1 // 切換 filter 時回到第1頁
-})
+onMounted(fetchDiscounts)
 
-onMounted(() => {
-    fetchDiscounts()
-    if (!route.query.filter) {
-        router.replace({ query: { filter: 'all' } })
-        currentFilter.value = 'all'
-    }
-})
-
-const setFilter = (filter) => {
-    if (route.query.filter === filter) return
-    router.replace({ query: { filter } })
-    selected.value = []
-    page.value = 1
-}
-
-const toggleAll = () => {
-    if (isAllSelected.value) {
-        selected.value = []
-    } else {
-        selected.value = pagedDiscounts.value.map(discount => discount.id)
-    }
-}
-const isAllSelected = computed(() =>
-    selected.value.length === pagedDiscounts.value.length && pagedDiscounts.value.length !== 0
-)
-
-const batchApprove = () => {
-    alert('批次通過: ' + selected.value.join(', '))
-    selected.value = []
-}
-const batchReject = () => {
-    alert('批次駁回: ' + selected.value.join(', '))
-    selected.value = []
-}
-
-const countAll = computed(() => discounts.value.length)
-const countPending = computed(() => discounts.value.filter(d => d.status.includes('待')).length)
-const countApproved = computed(() => discounts.value.filter(d => d.status.includes('已')).length)
-
-watch(selected, () => {
-    selectAll.value = selected.value.length === pagedDiscounts.value.length && pagedDiscounts.value.length !== 0
-})
 watch([page, pageSize], () => {
-    // 換頁或換每頁數時要自動清空全選與選取
-    selected.value = []
-    selectAll.value = false
+    // 換頁或換每頁數時不保留勾選
+    // 無勾選欄位可省略
 })
 
-// 換每頁數量時，頁碼也回到第1頁
 watch(pageSize, () => {
     page.value = 1
 })
-
 </script>
 
 <template>
     <div class="container mt-4">
         <h2>優惠活動</h2>
-        <!-- 狀態選單 -->
-        <div class="d-flex mb-3 border-bottom pb-2">
-            <button class="btn btn-link"
-                :class="{ 'tab-active': currentFilter === 'all' }"
-                @click="setFilter('all')"
-            >全部 ({{ countAll }})</button>
-            <button class="btn btn-link"
-                :class="{ 'tab-active': currentFilter === 'pending' }"
-                @click="setFilter('pending')"
-            >待審核 ({{ countPending }})</button>
-            <button class="btn btn-link"
-                :class="{ 'tab-active': currentFilter === 'approved' }"
-                @click="setFilter('approved')"
-            >已審核 ({{ countApproved }})</button>
+        <!-- 搜尋+下拉 -->
+        <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+            <label class="form-label mb-0">搜尋：</label>
+            <input
+                type="text"
+                class="form-control"
+                style="width:200px"
+                v-model="search"
+                placeholder="搜尋活動標題..."
+            >
+            <label class="form-label mb-0 ms-2">折扣類型：</label>
+            <select class="form-select" style="width:150px" v-model="type">
+            <option value="">全部</option>
+            <option v-for="dis in Array.from(new Set(discounts.map(rec => dis.discountType)))"
+                    :key="dis"
+                    :value="dis">
+                {{ dis }}
+            </option>
+            </select>
+            <button class="btn btn-primary ms-2" @click="clearFilter">清除篩選</button>
         </div>
-
-        <div class="mb-2">
-            <input type="checkbox" :checked="isAllSelected" @change="toggleAll"> 全部勾選
-            <button class="btn btn-primary me-2" @click="batchApprove">批次通過</button>
-            <button class="btn btn-danger" @click="batchReject">批次駁回</button>
-        </div>
-
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th></th>
-                    <th>優惠項目</th>
-                    <th>優惠折扣</th>
-                    <th>優惠期限</th>
-                    <th>使用限制</th>
-                    <th>優惠狀態</th>
+                    <th>活動標題</th>
+                    <th>優惠內容</th>
+                    <th>起訖</th>
+                    <th>折扣類型</th>
+                    <th>門檻</th>
+                    <th>優惠碼</th>
+                    <th>使用上限</th>
+                    <th>每人上限</th>
+                    <th>餐廳條件</th>
+                    <th>食物條件</th>
+                    <th>會員條件</th>
                     <th>操作</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-for="discount in pagedDiscounts" :key="discount.id">
-                    <td><input type="checkbox" v-model="selected" :value="discount.id"></td>
-                    <td>{{ discount.items }}</td>
-                    <td>{{ discount.discounts }}</td>
-                    <td>{{ discount.deadline }}</td>
-                    <td>{{ discount.restriction }}</td>
-                    <td :class="{ 'text-warning': discount.status === '需修改', 'text-success': discount.status === '已通過' }">
-                        {{ discount.status }}
-                        <br v-if="discount.detail">
-                        <small v-if="discount.detail">{{ discount.detail }}</small>
-                    </td>
+                    <td>{{ discount.title }}</td>
+                    <td>{{ discount.detail }}</td>
+                    <td>{{ discount.dateStart }} ~ {{ discount.dateEnd }}</td>
+                    <td>{{ discount.type }}</td>
+                    <td>{{ discount.threshold }}</td>
+                    <td>{{ discount.code }}</td>
+                    <td>{{ discount.limit }}</td>
+                    <td>{{ discount.limitPerUser }}</td>
+                    <td>{{ discount.restaurantCondition }}</td>
+                    <td>{{ discount.foodCondition }}</td>
+                    <td>{{ discount.memberCondition }}</td>
+                    <td>{{ discount.operation }}</td>
                     <td>
                         <a href="#">編輯</a> |
                         <a href="#">查看</a>
                     </td>
                 </tr>
+                <tr v-if="pagedDiscounts.length === 0">
+                    <td colspan="12" class="text-center">查無資料</td>
+                </tr>
             </tbody>
         </table>
         <!-- 分頁控制 -->
         <div class="d-flex justify-content-end align-items-center pagebar-wrap">
+            <button class="btn btn-outline-secondary me-2"
+                :disabled="page === 1"
+                @click="page > 1 && (page--)"
+            >&lt; 上一頁</button>
+
             <nav>
                 <ul class="pagination mb-0">
-                    <li class="page-item" :class="{ disabled: page === 1 }">
-                        <button class="page-link" @click="page > 1 && (page--)" :disabled="page === 1">‹</button>
-                    </li>
-                    <li class="page-item disabled"><span class="page-link">{{ page }}</span></li>
-                    <li class="page-item" :class="{ disabled: page === totalPages }">
-                        <button class="page-link" @click="page < totalPages && (page++)" :disabled="page === totalPages">›</button>
-                    </li>
+                    <li class="page-item disabled"><span class="page-link">頁數：{{ page }} / {{ totalPages }}</span></li>
                 </ul>
             </nav>
+
+            <button class="btn btn-outline-secondary ms-2"
+                :disabled="page === totalPages"
+                @click="page < totalPages && (page++)"
+            >下一頁 &gt;</button>
+
             <div class="ms-3">
                 <select class="form-select" v-model.number="pageSize">
                     <option v-for="s in pageSizes" :key="s" :value="s">{{ s }}/每頁</option>

@@ -5,7 +5,13 @@ import Account from '@/views/Account.vue'
 import Restaurant from '@/views/Restaurant.vue'
 import Review from '@/views/Review.vue'
 import Discount from '@/views/Discount.vue'
-import Subscription from '@/views/Subscription.vue'
+import SubscriptionPlan from '@/views/SubscriptionPlan.vue'
+import SubscriptionRecord from '@/views/SubscriptionRecord.vue'
+import RestaurantTag from '@/views/RestaurantTag.vue'
+import FoodTag from '@/views/FoodTag.vue'
+import Recommendation from '@/views/Recommendation.vue'
+import Login from '@/views/Login.vue'
+// ...其餘頁面
 
 const routes = [
     {
@@ -17,10 +23,16 @@ const routes = [
             { path: 'restaurant', component: Restaurant },
             { path: 'review', component: Review },
             { path: 'discount', component: Discount },
-            { path: 'subscription', component: Subscription },
+            { path: 'subscription/plan', component: SubscriptionPlan },
+            { path: 'subscription/record', component: SubscriptionRecord },
+            { path: 'restaurantTag', component: RestaurantTag },
+            { path: 'foodTag', component: FoodTag },
+            { path: 'recommendation', component: Recommendation },
+            { path: 'login', component: Login },
         ]
     }
 ]
+
 const router = createRouter({
     history: createWebHistory(),
     routes

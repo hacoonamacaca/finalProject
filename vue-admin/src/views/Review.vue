@@ -170,6 +170,9 @@ watch(pageSize, () => {
                         <a href="#">查看</a>
                     </td>
                 </tr>
+                <tr v-if="pagedReviews.length === 0">
+                    <td colspan="6" class="text-center">查無資料</td>
+                </tr>
             </tbody>
         </table>
         <!-- 分頁控制 -->
