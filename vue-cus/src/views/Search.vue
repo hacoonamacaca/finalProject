@@ -4,15 +4,26 @@
         <div class="logo">金碗GoldenBowl Foolog</div>
         <div>
             <button class="location-btn" @click="showPopout = true">
-                目前位置為: {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button style="background: transparent; border: none; color: white;">📍</button></a>
+                目前位置為： {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button style="background: transparent; border: none; color: white;">📍</button></a>
             </button>
         </div>
-        <div class="nav-links">
-            <a href="#" @click.prevent="toggleRestaurantMenu">{{ isRestaurant ? '餐廳' : '餐點' }}</a>
-            <a href="#">優惠通知</a>
-            <a href="#">購物車</a>
-            <a href="#" @click="getLogin" v-if="!isLoggedIn">登入</a>
-            <UserDropdown v-if="isLoggedIn" />     
+        <button class="hamburger" @click="toggleMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="nav-links" :class="{ active: isMenuOpen }">
+            <!-- auth-section 在行動版置頂 -->
+            <div class="auth-section">
+                <a href="#" @click="getLogin" v-if="!isLoggedIn">登入</a>
+                <UserDropdown v-if="isLoggedIn" />
+            </div>
+            <!-- 其他導航項 -->
+            <div class="nav-items">
+                <a href="#" @click.prevent="toggleRestaurantMenu">{{ isRestaurant ? '餐廳' : '餐點' }}</a>
+                <a href="#">優惠通知</a>
+                <a href="#">購物車</a>
+            </div>
         </div>
     </header>
     <section class="popout" v-if="showPopout">
@@ -43,9 +54,9 @@
 
     <!-- 搜尋與位置區域 -->
     <section class="hero-section">
-        <h1>探索附近美食</h1>
+        <!-- <h1>探索附近美食</h1> -->
         <div class="search-container">
-            <input type="text" placeholder="輸入您的查詢內容" v-model="searched" @focus="showDropdown = true"
+            <input type="text" placeholder="金碗 您 想來點甚麼呢?" v-model="searched" @focus="showDropdown = true"
                 @blur="hideDropdownWithDelay" @input="filterSuggestions" @keydown.enter="handleSearch" />
             <button @click="handleSearch">搜尋</button>
             <div class="search-dropdown" v-show="showDropdown">
@@ -132,13 +143,17 @@ import SidebarFilters from '@/components/SidebarFilters.vue';
 import UserDropdown from '@/components/UserDropdown.vue';
 
 
-
-
 const isSidebarActive = ref(false);
 const toggleSidebar = () => {
   isSidebarActive.value = !isSidebarActive.value;
 };
 
+
+// 控制漢堡選單的顯示
+const isMenuOpen = ref(false);
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value;
+};
 
 // 控制彈出視窗的顯示
 const showPopout = ref(false);
@@ -542,7 +557,7 @@ onMounted(() => {
 });
 </script>
 
-<style>
+<style scoped>
 * {
     margin: 0;
     padding: 0;
@@ -562,6 +577,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    position: relative;
 }
 
 .navbar .logo {
@@ -1029,4 +1045,130 @@ body {
     display: block;
   }
 }
+
+/* 漢堡選單按鈕 */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 25px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 3000;
+}
+
+.hamburger span {
+    width: 100%;
+    height: 3px;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+/* 導航連結 */
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-links .nav-items {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-links .auth-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nav-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .nav-links {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 250px;
+        background-color: #d70f64;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 60px 20px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-in-out;
+        z-index: 2000;
+    }
+
+    .nav-links.active {
+        transform: translateX(0);
+    }
+
+    .nav-links .auth-section {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+        order: -1; /* 確保置頂 */
+    }
+
+    .nav-links .nav-items {
+        flex-direction: column;
+        align-items: flex-start;
+        width: 100%;
+    }
+
+    .nav-links a,
+    .nav-links .auth-section a {
+        font-size: 18px;
+        margin: 10px 0;
+        width: 100%;
+        text-align: left;
+    }
+
+    .nav-links .auth-section .user-dropdown {
+        width: 100%;
+        text-align: left;
+    }
+}
+
+/* 桌機版樣式 */
+@media (min-width: 769px) {
+    .nav-links {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end; /* 確保右對齊 */
+        gap: 20px;
+    }
+
+    .nav-links .auth-section {
+        order: 1; /* 置右 */
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .nav-links .nav-items {
+        order: 0; /* 置左 */
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+}
+
 </style>
