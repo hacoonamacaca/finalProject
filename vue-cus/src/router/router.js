@@ -3,10 +3,11 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from "@/views/Home.vue"
 import NotFound from "@/views/NotFound.vue"
 import Forbidden from "@/views/Forbidden.vue"
+
 import Search from "@/views/Search.vue" 
 import OrderList from "@/views/OrderList.vue"
+import VoucherWallet from "@/views/VoucherWallet.vue"
 
-import Login from '@/views/Login.vue'
 
 
 const routes = [
@@ -24,12 +25,7 @@ const routes = [
         path: "/403",
         component: Forbidden,
         name: "403-link"
-    },
-    {
-        path: "/secure/login",
-        component: Login,
-        name: "secure-login-link"
-    },
+    },   
     {
         path: "/search",
         component: Search,
@@ -39,6 +35,11 @@ const routes = [
         path: "/OrderList",
         component: OrderList,
         name: "OrderList-link"
+    },
+    {
+        path: "/VoucherWallet",
+        component: VoucherWallet,
+        name: "VoucherWallet-link"
     },
 ];
 

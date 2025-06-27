@@ -6,7 +6,7 @@
     <div class="dropdown-menu" v-if="showDropdown">
       <ul>
         <li @click="navigateTo('profile')">個人資料</li>
-        <li @click="navigateTo('coupons')">優惠券</li>
+        <li @click="navigateTo('VoucherWallet')">優惠券</li>
         <li @click="navigateTo('subscription')">訂閱</li>
         <li @click="navigateTo('favorites')">收藏管理</li>
         <li @click="navigateTo('orderList')">歷史訂單</li>
