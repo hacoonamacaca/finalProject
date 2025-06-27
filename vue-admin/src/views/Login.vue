@@ -3,8 +3,8 @@
         <div class="modal-dialog-custom">
             <button class="modal-close" @click="$emit('close')">×</button>
             <div class="p-4 text-center">
-            <h3 class="fw-bold mb-2">歡迎！</h3>
-            <div class="mb-3 text-muted">註冊或登入</div>
+            <h3 class="fw-bold mb-2">歡迎！管理者</h3>
+            <div class="mb-3 text-muted">請登入</div>
             <input class="form-control mb-2" placeholder="請輸入帳號" v-model="inputUser" />
             <input class="form-control mb-2" placeholder="請輸入密碼" type="password" v-model="inputPwd" />
             <button class="btn btn-login w-100" @click="login">登入</button>
