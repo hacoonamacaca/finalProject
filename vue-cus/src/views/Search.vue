@@ -5,13 +5,15 @@
         <!-- 行動版專用的 location-btn -->
         <div class="location-btn-container mobile-only">
             <button class="location-btn" @click="showPopout = true">
-                目前位置為： {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button style="background: transparent; border: none; color: white;">📍</button></a>
+                目前位置為： {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button
+                        style="background: transparent; border: none; color: white;">📍</button></a>
             </button>
         </div>
         <!-- 桌機版專用的 location-btn -->
         <div class="location-btn-container desktop-only">
             <button class="location-btn" @click="showPopout = true">
-                目前位置為： {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button style="background: transparent; border: none; color: white;">📍</button></a>
+                目前位置為： {{ address }}<a @click.stop="getCurrentLocationAndNavigate"><button
+                        style="background: transparent; border: none; color: white;">📍</button></a>
             </button>
         </div>
         <button class="hamburger" @click="toggleMenu">
@@ -35,14 +37,14 @@
     </header>
     <section class="popout" v-if="showPopout">
         <div class="popout-content">
-            <button class="close-btn" @click="showPopout = false">✕</button>         
+            <button class="close-btn" @click="showPopout = false">✕</button>
             <input type="text" placeholder="輸入您的地址" @focus="address = ''" v-model="address" />
             <button class="search-btn" @click="searchAddress">搜尋</button>
         </div>
     </section>
 
     <!-- 附近熱門美食 -->
-    <section class="popular-section" v-if="address !=''">
+    <section class="popular-section" v-if="address != ''">
         <h2>附近熱門美食</h2>
         <div class="restaurant-scroll">
             <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
@@ -71,7 +73,8 @@
                 <div class="search-section" v-if="searchHistory.length > 0">
                     <h4>最近搜尋</h4>
                     <ul>
-                        <li v-for="(item, index) in filteredHistory" :key="item" @click="selectSuggestion(item)" class="search-item">
+                        <li v-for="(item, index) in filteredHistory" :key="item" @click="selectSuggestion(item)"
+                            class="search-item">
                             {{ item }}
                             <button class="clear-history" @click.stop.prevent="removeHistoryItem(item)">✕</button>
                         </li>
@@ -81,27 +84,28 @@
                 <div class="search-section">
                     <h4>熱門搜尋</h4>
                     <ul>
-                        <li v-for="(item, index) in filteredHotSearches" :key="index" @click="selectSuggestion(item)" class="search-item">
+                        <li v-for="(item, index) in filteredHotSearches" :key="index" @click="selectSuggestion(item)"
+                            class="search-item">
                             {{ item }}
                         </li>
                     </ul>
                 </div>
             </div>
-        </div>    
-    </section>          
+        </div>
+    </section>
 
-        <!-- 篩選與排序（頂部） -->
-        <div class="filter-toggle" @click="toggleSidebar">篩選條件</div>
-        <section class="filters">
-            <TopFilterButtons :filters="filters" @update:filters="filters = $event" />
-            <div class="sort">
-                <select v-model="sortOption" @change="sortRestaurants">          
-                    <option value="評分最高">評分最高</option>
-                    <option value="距離最近">距離最近</option>
-                    <option value="最快送達">最快送達</option>
-                </select>
-            </div>
-        </section>    
+    <!-- 篩選與排序（頂部） -->
+    <div class="filter-toggle" @click="toggleSidebar">篩選條件</div>
+    <section class="filters">
+        <TopFilterButtons :filters="filters" @update:filters="filters = $event" />
+        <div class="sort">
+            <select v-model="sortOption" @change="sortRestaurants">
+                <option value="評分最高">評分最高</option>
+                <option value="距離最近">距離最近</option>
+                <option value="最快送達">最快送達</option>
+            </select>
+        </div>
+    </section>
 
     <!-- 內容容器 -->
     <div class="content-container">
@@ -109,7 +113,7 @@
         <aside class="sidebar" :class="{ active: isSidebarActive }">
             <SidebarFilters :filters="filters" @update:filters="filters = $event" @update-rating="updateRating" />
         </aside>
-        
+
 
         <!-- 餐廳列表 -->
         <section class="restaurant-list">
@@ -118,7 +122,9 @@
                 <div class="info">
                     <h3>{{ restaurant.name }}</h3>
                     <p>{{ restaurant.cuisine }} • {{ restaurant.deliveryTime }} 分鐘 • {{ restaurant.promo || '' }}</p>
-                    <p>{{ restaurant.rating }} ({{ restaurant.reviews }}+ 評價)</p>
+                    <p>{{ restaurant.rating }}
+                        <Comment v-if="restaurant.comment" :comments="restaurant.comment" />
+                    </p>
                     <div class="tags">
                         <span v-for="tag in restaurant.tags" :key="tag">{{ tag }}</span>
                     </div>
@@ -148,18 +154,19 @@ import { useRoute } from 'vue-router';
 import TopFilterButtons from '@/components/TopFilterButtons.vue';
 import SidebarFilters from '@/components/SidebarFilters.vue';
 import UserDropdown from '@/components/UserDropdown.vue';
+import Comment from "@/components/Comment.vue"
 
 
 const isSidebarActive = ref(false);
 const toggleSidebar = () => {
-  isSidebarActive.value = !isSidebarActive.value;
+    isSidebarActive.value = !isSidebarActive.value;
 };
 
 
 // 控制漢堡選單的顯示
 const isMenuOpen = ref(false);
 const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value;
+    isMenuOpen.value = !isMenuOpen.value;
 };
 
 // 控制彈出視窗的顯示
@@ -167,8 +174,8 @@ const showPopout = ref(false);
 
 // 搜尋地址（假設已存在，僅確保關閉彈窗）
 const searchAddress = () => {
-  getCoordinates(); // 調用已有的地址查詢函數
-  showPopout.value = false; // 搜尋後關閉彈窗
+    getCoordinates(); // 調用已有的地址查詢函數
+    showPopout.value = false; // 搜尋後關閉彈窗
 };
 
 
@@ -321,8 +328,8 @@ const getCurrentLocationAndNavigate = async () => {
     const success = await getCurrentLocation();
     if (success) {
         router.push({
-        path: '/search',
-        query: { address: address.value }
+            path: '/search',
+            query: { address: address.value }
         });
     }
 };
@@ -348,7 +355,7 @@ const formatTaiwanAddress = (addressData) => {
 
     // 組合地址，忽略空值
     const parts = [
-        country,       
+        country,
         city,
         district,
         village,
@@ -362,45 +369,45 @@ const formatTaiwanAddress = (addressData) => {
 
 // 獲取當前位置
 const getCurrentLocation = async () => {
-  if (!navigator.geolocation) {
-    alert('您的瀏覽器不支援定位功能');
-    return false;
-  }
-
-  try {
-    const position = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
-    });
-
-    const { latitude, longitude } = position.coords;
-
-    const response = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`
-    );
-    const data = await response.json();
-
-    if (data && data.display_name) {
-      address.value = formatTaiwanAddress(data.address);      
-      return true; // 表示成功
-    } else {
-      alert('無法解析地址，請稍後再試');
-      return false;
+    if (!navigator.geolocation) {
+        alert('您的瀏覽器不支援定位功能');
+        return false;
     }
-  } catch (error) {
-    console.error('定位失敗:', error);
-    alert('無法獲取位置，請檢查權限或稍後再試');
-    return false;
-  }
+
+    try {
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+
+        const { latitude, longitude } = position.coords;
+
+        const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&addressdetails=1`
+        );
+        const data = await response.json();
+
+        if (data && data.display_name) {
+            address.value = formatTaiwanAddress(data.address);
+            return true; // 表示成功
+        } else {
+            alert('無法解析地址，請稍後再試');
+            return false;
+        }
+    } catch (error) {
+        console.error('定位失敗:', error);
+        alert('無法獲取位置，請檢查權限或稍後再試');
+        return false;
+    }
 };
 
 onMounted(() => {
-  console.log('初始路由地址:', route.query.address); // 確認查詢參數
-  address.value = route.query.address || '';
+    console.log('初始路由地址:', route.query.address); // 確認查詢參數
+    address.value = route.query.address || '';
 });
 
 // 監聽路由變化，動態更新地址
 watch(() => route.query.address, (newAddress) => {
-  address.value = newAddress || '';
+    address.value = newAddress || '';
 });
 
 
@@ -424,6 +431,51 @@ const restaurants = ref([
         image: '/image/giachi.jpg',
         promo: '免運費',
         popularityScore: 70,
+        comment: [
+            {
+                id: 1,
+                order_id: 1,
+                user_id: "Jimmy1",
+                content: "comment 01 der la",
+                score: 4,
+                create_time: "2023-10-01 10:00:00",
+                reply: "reply 01 der la",
+                reply_update_time: "2023-10-02 10:00:00",
+                is_hidden: false,
+                comment_img: [{
+                    img: "/image/kiva.jpg"
+                }, {
+                    img: "/image/kaimu.jpg"
+                }, {
+                    img: "/image/kuga.jpg"
+                }]
+            }, {
+                id: 2,
+                order_id: 3,
+                user_id: "Jimmy3",
+                content: "comment 02 der la",
+                score: 5,
+                create_time: "2023-10-02 10:00:00",
+                is_hidden: false,
+                comment_img: [{
+                    img: "/image/zero1.jpg"
+                }, {
+                    img: "/image/build.jpg"
+                }]
+
+            }, {
+                id: 3,
+                order_id: 2,
+                user_id: "Tom",
+                content: "comment 03 der la",
+                score: 3,
+                create_time: "2023-10-02 10:00:00",
+                is_hidden: false,
+                comment_img: [{
+                    img: "/image/pizza.jpg"
+                }]
+
+            }]
     },
     {
         id: 2,
@@ -436,6 +488,35 @@ const restaurants = ref([
         image: '/image/sooshi.jpg',
         promo: '',
         popularityScore: 80,
+        comment: [
+            {
+                id: 4,
+                order_id: 1,
+                user_id: "Jimmy1",
+                content: "comment 04 der la",
+                score: 1,
+                create_time: "2023-10-01 10:00:00",
+                reply: "reply 02 der la",
+                reply_update_time: "2023-10-02 10:00:00",
+                is_hidden: false,
+                comment_img: [{
+                    img: "/image/kaimu.jpg"
+                }, {
+                    img: "/image/kuga.jpg"
+                }]
+            }, {
+                id: 5,
+                order_id: 4,
+                user_id: "Bob",
+                content: "comment 05 der la",
+                score: 5,
+                create_time: "2023-10-02 10:00:00",
+                is_hidden: false,
+                comment_img: [{
+                    img: "/image/build.jpg"
+                }]
+
+            }]
     },
     {
         id: 3,
@@ -530,27 +611,27 @@ const popularRestaurants = computed(() => {
 
 // 計算屬性：篩選後的餐廳列表
 const filteredRestaurants = computed(() => {
-  let filtered = [...restaurants.value];
+    let filtered = [...restaurants.value];
 
-  if (filters.value.cuisine.length > 0) {
-    filtered = filtered.filter(restaurant => filters.value.cuisine.includes(restaurant.cuisine));
-  }
+    if (filters.value.cuisine.length > 0) {
+        filtered = filtered.filter(restaurant => filters.value.cuisine.includes(restaurant.cuisine));
+    }
 
-  filtered = filtered.filter(restaurant => restaurant.rating >= filters.value.minRating);
+    filtered = filtered.filter(restaurant => restaurant.rating >= filters.value.minRating);
 
-  if (filters.value.promo.length > 0) {
-    filtered = filtered.filter(restaurant =>
-      filters.value.promo.some(promo => restaurant.promo.includes(promo))
-    );
-  }
+    if (filters.value.promo.length > 0) {
+        filtered = filtered.filter(restaurant =>
+            filters.value.promo.some(promo => restaurant.promo.includes(promo))
+        );
+    }
 
-  if (sortOption.value === '評分最高') {
-    filtered = filtered.sort((a, b) => b.rating - a.rating);
-  } else if (sortOption.value === '距離最近' || sortOption.value === '最快送達') {
-    filtered = filtered.sort((a, b) => a.deliveryTime - b.deliveryTime);
-  }
+    if (sortOption.value === '評分最高') {
+        filtered = filtered.sort((a, b) => b.rating - a.rating);
+    } else if (sortOption.value === '距離最近' || sortOption.value === '最快送達') {
+        filtered = filtered.sort((a, b) => a.deliveryTime - b.deliveryTime);
+    }
 
-  return filtered;
+    return filtered;
 });
 
 // 更新配送時間
@@ -585,8 +666,10 @@ body {
     justify-content: space-between;
     align-items: center;
     /* position: relative; */
-    position: sticky; /* 改為 sticky */
-    top: 0; /* 黏住視窗頂部 */
+    position: sticky;
+    /* 改為 sticky */
+    top: 0;
+    /* 黏住視窗頂部 */
     z-index: 3000;
 }
 
@@ -774,9 +857,10 @@ body {
     transition: transform 0.2s;
 }
 
+/* 會造成評論視窗閃爍
 .restaurant-card:hover {
     transform: scale(1.02);
-}
+} */
 
 .restaurant-card img {
     width: 100%;
@@ -1048,12 +1132,13 @@ body {
 }
 
 @media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
-  .sidebar.active {
-    display: block;
-  }
+    .sidebar {
+        display: none;
+    }
+
+    .sidebar.active {
+        display: block;
+    }
 }
 
 /* 漢堡選單按鈕 */
@@ -1111,7 +1196,8 @@ body {
     .nav-links {
         position: absolute;
         border-radius: 10px;
-        top: 100%; /* 位於導航欄下方 */
+        top: 100%;
+        /* 位於導航欄下方 */
         right: 0;
         height: 300px;
         width: 150px;
@@ -1119,17 +1205,23 @@ body {
         flex-direction: column;
         align-items: flex-start;
         padding: 20px;
-        opacity: 0; /* 預設透明 */
-        visibility: hidden; /* 預設不可見 */
-        display: none; /* 預設完全隱藏 */
+        opacity: 0;
+        /* 預設透明 */
+        visibility: hidden;
+        /* 預設不可見 */
+        display: none;
+        /* 預設完全隱藏 */
         z-index: 2000;
         /* transition: transform 0.3s ease-in-out; 恢復平滑過渡效果 */
     }
 
     .nav-links.active {
-        opacity: 1; /* 完全可見 */
-        visibility: visible; /* 可見 */
-        display: flex; /* 顯示選單 */
+        opacity: 1;
+        /* 完全可見 */
+        visibility: visible;
+        /* 可見 */
+        display: flex;
+        /* 顯示選單 */
     }
 
     .nav-links .auth-section {
@@ -1139,7 +1231,8 @@ body {
         border-bottom: 1px solid rgba(255, 255, 255, 0.3);
         padding-bottom: 10px;
         margin-bottom: 10px;
-        order: -1;  /*確保置頂 */
+        order: -1;
+        /*確保置頂 */
     }
 
     .nav-links .nav-items {
@@ -1167,24 +1260,28 @@ body {
     .nav-links {
         display: flex;
         align-items: center;
-        justify-content: flex-end; /* 確保右對齊 */
+        justify-content: flex-end;
+        /* 確保右對齊 */
         gap: 20px;
     }
 
     .nav-links .auth-section {
-        order: 1; /* 置右 */
+        order: 1;
+        /* 置右 */
         display: flex;
         align-items: center;
         gap: 20px;
     }
 
     .nav-links .nav-items {
-        order: 0; /* 置左 */
+        order: 0;
+        /* 置左 */
         display: flex;
         align-items: center;
         gap: 20px;
     }
 }
+
 /*定位RWD */
 /* 桌機版顯示，行動版隱藏 */
 .desktop-only {
@@ -1214,26 +1311,32 @@ body {
     .location-btn-container.mobile-only .location-btn {
         width: 100%;
         text-align: left;
-        justify-content: space-between; /*保持文字在左 📍在右*/ 
+        justify-content: space-between;
+        /*保持文字在左 📍在右*/
     }
 
     .navbar {
-        flex-direction: column; /* 行動版時改為垂直排列 */
-        align-items: flex-start; /* 靠左對齊 */
+        flex-direction: column;
+        /* 行動版時改為垂直排列 */
+        align-items: flex-start;
+        /* 靠左對齊 */
         padding: 15px;
     }
 
     .navbar .logo {
-        width: 100%; /* 確保 logo 佔滿寬度 */
-        margin-bottom: 10px; /* 與下方的 location-btn 分隔 */
+        width: 100%;
+        /* 確保 logo 佔滿寬度 */
+        margin-bottom: 10px;
+        /* 與下方的 location-btn 分隔 */
     }
 
     .hamburger {
         position: absolute;
         top: 15px;
-        right: 15px; /* 漢堡選單放在右上角 */
+        right: 15px;
+        /* 漢堡選單放在右上角 */
     }
 }
-/*定位RWD */
 
+/*定位RWD */
 </style>

@@ -103,8 +103,7 @@ const getCoordinates = async () => {
       coordinates.value = {
         lat: data[0].lat,
         lon: data[0].lon
-      };
-      console.log('搜尋地址:', address.value); // 確認地址
+      };      
       return true; // 表示成功
     } else {
       error.value = '無法找到該地址的座標';
@@ -139,8 +138,7 @@ const getCurrentLocation = async () => {
     const data = await response.json();
 
     if (data && data.display_name) {
-      address.value = formatTaiwanAddress(data.address);
-      console.log('當前位置地址:', address.value); // 確認地址
+      address.value = formatTaiwanAddress(data.address);      
       return true; // 表示成功
     } else {
       alert('無法解析地址，請稍後再試');

@@ -4,10 +4,10 @@ import Home from "@/views/Home.vue"
 import NotFound from "@/views/NotFound.vue"
 import Forbidden from "@/views/Forbidden.vue"
 import Search from "@/views/Search.vue" 
+import OrderList from "@/views/OrderList.vue"
+
 import Login from '@/views/Login.vue'
 
-// import Chat from "@/views/Chat.vue"
-// import Product from '@/views/pages/Product.vue'
 
 const routes = [
     {
@@ -26,24 +26,19 @@ const routes = [
         name: "403-link"
     },
     {
-        path: "/login",
+        path: "/secure/login",
         component: Login,
         name: "secure-login-link"
     },
-    // {
-    //     path: "/pages/product",
-    //     component: Product,
-    //     name: "page-product-link"
-    // },
-    // {
-    //     path: "/chat",
-    //     component: Chat,
-    //     name: "chat-link"
-    // },
     {
         path: "/search",
         component: Search,
         name: "search-link"
+    },
+    {
+        path: "/OrderList",
+        component: OrderList,
+        name: "OrderList-link"
     },
 ];
 

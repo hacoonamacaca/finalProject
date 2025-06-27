@@ -9,7 +9,7 @@
         <li @click="navigateTo('coupons')">優惠券</li>
         <li @click="navigateTo('subscription')">訂閱</li>
         <li @click="navigateTo('favorites')">收藏管理</li>
-        <li @click="navigateTo('orders')">歷史訂單</li>
+        <li @click="navigateTo('orderList')">歷史訂單</li>
         <li @click="navigateTo('/')">回首頁*</li>
         <li @click="navigateTo('secure/login')">test-login</li>
         <li @click="logout">登出</li>
