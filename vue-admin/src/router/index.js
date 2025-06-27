@@ -2,19 +2,25 @@
 
 import { createRouter, createWebHistory } from 'vue-router'
 import PromotionList from '@/pages/PromotionList.vue'
-import UserCouponList from '@/pages/UserCouponList.vue'
+// import CheckoutCoupon from '@/pages/CheckoutCoupon.vue'
+// import VoucherWallet from '../../../vue-cus/src/pages/VoucherWallet.vue'
+
 const routes = [
     {
         path: '/promotion',
         name: 'PromotionList',
         component: PromotionList
     },
-    // 其他路由...
-    {
-        path: '/Coupon',
-        name: 'UserCouponList',
-        component: UserCouponList
-    },
+    // {
+    //     path: '/Checkout',
+    //     name: 'CheckoutCoupon',
+    //     component: CheckoutCoupon
+    // },
+    // {
+    //     path: '/voucher-wallet',
+    //     name: 'VoucherWallet',
+    //     component: VoucherWallet
+    // }
 ]
 
 const router = createRouter({
