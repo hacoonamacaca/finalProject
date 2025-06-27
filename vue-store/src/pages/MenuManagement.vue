@@ -1,10 +1,99 @@
+<template>
+    <div class="page-wrapper">
+        <!-- Header: 在 Flex 容器中，它是一個獨立的區塊 -->
+        <header class="bg-warning p-3 d-flex justify-content-between align-items-center shadow-sm flex-shrink-0">
+            <!-- 左側的 Logo 和標題 -->
+            <div class="d-flex align-items-center">
+                <!-- 使用 <img> 標籤，並將 src 動態綁定到我們導入的 logoUrl 變數 -->
+                <img :src="logoUrl" alt="Logo" style="height: 70px; margin-right: 12px;">
+                <h1 class="h5 m-0">商家管理中心</h1>
+            </div>
+            <div>
+                <span>Kinan, 您好！</span>
+                <img :src="avataUrl" alt="Avata" style="height: 70px; margin-right: 12px;">
+                <!-- <img src="https://via.placeholder.com/40" class="rounded-circle ms-2" alt="Avatar"> -->
+            </div>
+        </header>
+
+        <div class="main-container">
+            <!-- Sidebar: 現在是 main-container 的一個 flex item -->
+            <nav class="sidebar bg-light p-3">
+                <!-- ... 側邊欄內容不變 ... -->
+                <div class="sidebar-sticky">
+                    <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">管理你的商家資訊</h6>
+                    <ul class="nav flex-column">
+                        <li class="nav-item"><a class="nav-link" href="#">👨‍🍳商家資料</a></li>
+                        <li class="nav-item"><a class="nav-link active" href="#">🍳菜單管理</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">🍽️店鋪管理</a></li>
+                    </ul>
+                    <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">主要功能設定</h6>
+                    <ul class="nav flex-column mb-2">
+                        <li class="nav-item"><a class="nav-link" href="#">📃訂單管理</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">🪑訂位管理</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">🕒營業時間</a></li>
+                        <li class="nav-item"><a class="nav-link" href="#">📰評論回覆</a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content: 也是 main-container 的一個 flex item -->
+            <main class="main-content p-4">
+                <div
+                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h2 class="h3">菜單管理</h2>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <select class="form-select" v-model="selectedStore">
+                            <option v-for="store in stores" :key="store.id" :value="store.id">
+                                {{ store.name }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <ul class="nav nav-tabs">
+                    <li class="nav-item">
+                        <a class="nav-link" :class="{ active: activeTab === 'overview' }" href="#"
+                            @click.prevent="selectTab('overview')">菜單總覽</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" :class="{ active: activeTab === 'specs' }" href="#"
+                            @click.prevent="selectTab('specs')">客製化規格</a>
+                    </li>
+                </ul>
+                <div class="mt-4">
+                    <MenuOverview v-if="activeTab === 'overview'" 
+                    :items="items" 
+                    @add-new-item="openItemModal(null)"
+                    @edit-item="openItemModal" />
+                    
+                    <CustomizationSpecs v-if="activeTab === 'specs'"
+                    :specs="specs"
+                    @add-new-spec="() => alert('準備新增規格！')"
+                    @edit-spec="(spec) => alert(`準備編輯規格: ${spec.name}`)"
+                    />
+                </div>
+            </main>
+        </div>
+
+        <!-- Footer -->
+        <footer class="bg-warning text-white text-center p-3 flex-shrink-0">
+            Footer
+        </footer>
+
+
+        <!-- Modals (不受佈局影響) -->
+        <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" @close="closeItemModal" @save="handleSaveItem"
+            @delete="handleDeleteItem" />
+    </div>
+</template>
+
 <script setup>
-// ... 您的 script 內容保持不變 ...
 import { ref, reactive, computed } from 'vue';
 import MenuOverview from './MenuOverview.vue';
-// import CustomizationSpecs from './CustomizationSpecs.vue';
+import CustomizationSpecs from './CustomizationSpecs.vue';
 import EditItemModal from '../components/EditItemModal.vue';
 // import EditSpecModal from '../components/EditSpecModal.vue';
+import logoUrl from '../assets/logo.png'; // 引入 logo 圖片
+import avataUrl from '../assets/avata.png'; // 引入 avata 圖片
 
 // --- 響應式狀態 (State) ---
 
@@ -23,10 +112,19 @@ const selectedStore = ref('d-aan-store');
 
 // 模擬的菜單品項資料
 const items = reactive([
-    { id: 1, name: '經典拿鐵', price: 70, status: '供應中', stock: 50, img: '' },
-    { id: 2, name: '西西里咖啡', price: 85, status: '供應中', stock: 30, img: '' },
-    { id: 3, name: '黑糖拿鐵', price: 70, status: '暫停供應', stock: 0, img: '' },
-    { id: 4, name: '煙燻鮭魚帕尼尼', price: 150, status: '供應中', stock: 20, img: '' },
+    { id: 1, name: '經典拿鐵', price: 70, status: '供應中', stock: 50, img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 2, name: '西西里咖啡', price: 85, status: '供應中', stock: 30, img: 'https://images.pexels.com/photos/1449386/pexels-photo-1449386.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 3, name: '黑糖拿鐵', price: 70, status: '暫停供應', stock: 0, img: 'https://images.pexels.com/photos/3806690/pexels-photo-3806690.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    { id: 4, name: '煙燻鮭魚帕尼尼', price: 150, status: '供應中', stock: 20, img: 'https://images.pexels.com/photos/1399920/pexels-photo-1399920.jpeg?auto=compress&cs=tinysrgb&w=600' },
+    {
+        id: 5,
+        name: '草莓蛋糕',
+        price: 120,
+        status: '供應中',
+        stock: 15,
+        // 蛋糕圖片
+        img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=600'
+    },
 ]);
 
 // 控制編輯品項 Modal 的開關
@@ -98,7 +196,12 @@ const handleDeleteItem = (itemId) => {
         }
     }
 }
-
+// 3. 為未來的 EditSpecModal 準備方法
+// const openSpecModal = (spec) => {
+//   console.log('準備打開規格 Modal，編輯的資料是:', spec);
+//   // currentEditingSpec.value = spec ? { ...spec } : null;
+//   // isSpecModalOpen.value = true;
+// };
 
 // --- 規格 Modal 相關方法 (此處為簡化版，您可以比照品項邏輯擴充) ---
 const openSpecModal = (spec) => {
@@ -124,82 +227,6 @@ const handleDeleteSpec = (specId) => {
 }
 
 </script>
-
-<template>
-    <div class="page-wrapper">
-        <!-- Header: 在 Flex 容器中，它是一個獨立的區塊 -->
-        <header class="bg-warning p-3 d-flex justify-content-between align-items-center shadow-sm flex-shrink-0">
-            <h1 class="h4 m-0">Logo | 商家管理平台</h1>
-            <div>
-                <span>Kinan, 您好！</span>
-                <img src="https://via.placeholder.com/40" class="rounded-circle ms-2" alt="Avatar">
-            </div>
-        </header>
-
-        <div class="main-container">
-            <!-- Sidebar: 現在是 main-container 的一個 flex item -->
-            <nav class="sidebar bg-light p-3">
-                <!-- ... 側邊欄內容不變 ... -->
-                <div class="sidebar-sticky">
-                    <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">管理你的商家資訊</h6>
-                    <ul class="nav flex-column">
-                        <li class="nav-item"><a class="nav-link" href="#">商家資料</a></li>
-                        <li class="nav-item"><a class="nav-link active" href="#">菜單管理</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">店鋪管理</a></li>
-                    </ul>
-                    <h6 class="sidebar-heading px-3 mt-4 mb-1 text-muted">主要功能設定</h6>
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item"><a class="nav-link" href="#">訂單管理</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">訂位管理</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">營業時間</a></li>
-                        <li class="nav-item"><a class="nav-link" href="#">評論回覆</a></li>
-                    </ul>
-                </div>
-            </nav>
-
-            <!-- Main Content: 也是 main-container 的一個 flex item -->
-            <main class="main-content p-4">
-                <!-- ... 主內容不變 ... -->
-                <div
-                    class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h2 class="h3">菜單管理</h2>
-                    <div class="btn-toolbar mb-2 mb-md-0">
-                        <select class="form-select" v-model="selectedStore">
-                            <option v-for="store in stores" :key="store.id" :value="store.id">
-                                {{ store.name }}
-                            </option>
-                        </select>
-                    </div>
-                </div>
-                <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link" :class="{ active: activeTab === 'overview' }" href="#"
-                            @click.prevent="selectTab('overview')">菜單總覽</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" :class="{ active: activeTab === 'specs' }" href="#"
-                            @click.prevent="selectTab('specs')">客製化規格</a>
-                    </li>
-                </ul>
-                <div class="mt-4">
-                    <MenuOverview v-if="activeTab === 'overview'" :items="items" @add-new-item="openItemModal(null)"
-                        @edit-item="openItemModal" />
-                    <div v-if="activeTab === 'specs'">客製化規格內容...</div>
-                </div>
-            </main>
-        </div>
-
-        <!-- Footer -->
-        <footer class="bg-warning text-white text-center p-3 flex-shrink-0">
-            Footer
-        </footer>
-
-
-        <!-- Modals (不受佈局影響) -->
-        <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" @close="closeItemModal" @save="handleSaveItem"
-            @delete="handleDeleteItem" />
-    </div>
-</template>
 
 <style scoped>
 .page-wrapper {
