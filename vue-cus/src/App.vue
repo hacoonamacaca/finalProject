@@ -3,7 +3,7 @@
 </script>
 
 <template>
-    <h2>test</h2>
+    <h2></h2>
     <router-view></router-view>
 </template>
 <!-- 在 index.html 加 -->
