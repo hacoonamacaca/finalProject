@@ -1,8 +1,5 @@
-<script setup>
-
-</script>
-
 <template>
+<<<<<<< HEAD
     <router-view></router-view>
 
 </template>
@@ -10,3 +7,7 @@
 
 
 <style scoped></style>
+=======
+    <router-view />
+</template>
+>>>>>>> ivy
