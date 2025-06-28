@@ -1,28 +1,3 @@
-<<<<<<< HEAD
-// src/router/index.js
-
-import { createRouter, createWebHistory } from 'vue-router'
-import PromotionList from '@/pages/PromotionList.vue'
-// import CheckoutCoupon from '@/pages/CheckoutCoupon.vue'
-// import VoucherWallet from '../../../vue-cus/src/pages/VoucherWallet.vue'
-
-const routes = [
-    {
-        path: '/promotion',
-        name: 'PromotionList',
-        component: PromotionList
-    },
-    // {
-    //     path: '/Checkout',
-    //     name: 'CheckoutCoupon',
-    //     component: CheckoutCoupon
-    // },
-    // {
-    //     path: '/voucher-wallet',
-    //     name: 'VoucherWallet',
-    //     component: VoucherWallet
-    // }
-=======
 import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from '@/layouts/MainLayout.vue'
 import Home from '@/views/Home.vue'
@@ -56,16 +31,10 @@ const routes = [
             { path: 'login', component: Login },
         ]
     }
->>>>>>> ivy
 ]
 
 const router = createRouter({
     history: createWebHistory(),
     routes
 })
-<<<<<<< HEAD
-
 export default router
-=======
-export default router
->>>>>>> ivy
