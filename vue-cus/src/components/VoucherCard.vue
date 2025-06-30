@@ -24,7 +24,7 @@
           :disabled="promotion.min_spend > cartAmount || promotion.used"
           @click="$emit('use', promotion)"
         >
-          使用1
+          使用
         </button>
       </div>
 
@@ -73,7 +73,7 @@ const emit = defineEmits(['use'])
 /* 左側圖片區域 */
 .voucher-label {
   width: 150px;
-  background: #ffc94d;
+  background: #ffba20;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -103,7 +103,7 @@ const emit = defineEmits(['use'])
 
 /* 使用按鈕樣式 */
 .btn-use {
-  background-color: #ffc94d;
+  background-color: #ffba20;
   border: none;
   padding: 8px 18px;
   font-size: 0.95rem;

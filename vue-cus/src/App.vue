@@ -1,12 +1,14 @@
-<script setup>
+<template>
+  <Navigation></Navigation>
+  <div>
+    <RouterView></RouterView>
+  </div>
+</template>
 
+<script setup>
+import { RouterView } from 'vue-router';
+import Home from "@/views/Home.vue"
+// import Navigation from "@/views/Navigation.vue"
 </script>
 
-<template>
-    <h2></h2>
-    <router-view></router-view>
-</template>
-<!-- 在 index.html 加 -->
-
-
-<style scoped></style>
+<style></style>
