@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import Home from "@/views/Home.vue"
+import Home from "@/views/Jimmy/Home.vue"
+import Search from '@/views/Jimmy/Search.vue'
+
 import NotFound from "@/views/NotFound.vue"
 import Forbidden from "@/views/Forbidden.vue"
-
-import Search from "@/views/Search.vue"
 import OrderList from "@/views/OrderList.vue"
 import VoucherWallet from "@/views/VoucherWallet.vue"
 

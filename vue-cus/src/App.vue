@@ -1,5 +1,5 @@
 <template>
-  <Navigation></Navigation>
+  <Navigation v-if="$route.path !== '/'" />
 
   <div>
     <RouterView></RouterView>
@@ -9,7 +9,8 @@
 
 <script setup>
 import { RouterView } from 'vue-router';
-import Home from "@/views/Home.vue"
+import Home from "@/views/Jimmy/Home.vue"
+import Navigation from '@/components/Navigation.vue';
 // import Navigation from "@/views/Navigation.vue"
 </script>
 
