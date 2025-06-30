@@ -25,7 +25,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import HomeLogin from '@/components/HomeLogin.vue';
+import HomeLogin from '@/components/Jimmy/HomeLogin.vue';
 
 const isLoggedIn = ref(false);
 

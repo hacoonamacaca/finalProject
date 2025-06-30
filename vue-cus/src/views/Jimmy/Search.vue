@@ -109,9 +109,9 @@
   
   <script setup>
   import { ref, computed, onMounted } from 'vue';
-  import TopFilterButtons from '@/components/TopFilterButtons.vue';
-  import SidebarFilters from '@/components/SidebarFilters.vue';
-  import Comment from '@/components/Comment.vue';
+  import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
+  import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
+  import Comment from '@/components/Jimmy/Comment.vue';
   
   const isSidebarActive = ref(false);
   const toggleSidebar = () => {

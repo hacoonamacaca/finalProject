@@ -3,15 +3,15 @@
     <h3>篩選條件</h3>
     <div class="filter-group">
       <h4>美食類型</h4>
-      <label><input type="checkbox" v-model="localFilters.cuisine" value="中式"> 中式</label>
-      <label><input type="checkbox" v-model="localFilters.cuisine" value="日式"> 日式</label>
-      <label><input type="checkbox" v-model="localFilters.cuisine" value="西式"> 西式</label>
-      <label><input type="checkbox" v-model="localFilters.cuisine" value="韓式"> 韓式</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="中式"> 中式</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="日式"> 日式</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="西式"> 西式</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="韓式"> 韓式</label>
     </div>
     <div class="filter-group">
       <h4>最低星數</h4>
-      <input type="range" min="0" max="5" step="0.5" v-model.number="localFilters.minRating" @input="emitUpdateRating" />
-      <div class="range-value">{{ localFilters.minRating }} 星</div>
+      <input type="range" min="0" max="5" step="0.5" v-model.number="localFilters.minscore" @input="emitUpdatescore" />
+      <div class="range-value">{{ localFilters.minscore }} 星</div>
     </div>
     <div class="filter-group">
       <h4>優惠活動</h4>
@@ -28,7 +28,7 @@ const props = defineProps({
   filters: Object
 });
 
-const emit = defineEmits(['update:filters', 'update-rating']);
+const emit = defineEmits(['update:filters', 'update-score']);
 
 const localFilters = ref({ ...props.filters });
 
@@ -40,8 +40,8 @@ watch(localFilters, (newFilters) => {
   emit('update:filters', { ...newFilters });
 }, { deep: true });
 
-const emitUpdateRating = () => {
-  emit('update-rating');
+const emitUpdatescore = () => {
+  emit('update-score');
 };
 </script>
 
