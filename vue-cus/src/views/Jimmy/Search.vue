@@ -151,10 +151,10 @@ const isLoggedIn = ref(true)
 
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import TopFilterButtons from '@/components/TopFilterButtons.vue';
-import SidebarFilters from '@/components/SidebarFilters.vue';
-import UserDropdown from '@/components/UserDropdown.vue';
-import Comment from "@/components/Comment.vue"
+import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
+import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
+import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
+import Comment from "@/components/Jimmy/Comment.vue"
 
 
 const isSidebarActive = ref(false);

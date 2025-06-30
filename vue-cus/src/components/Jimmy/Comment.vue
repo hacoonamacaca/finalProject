@@ -33,7 +33,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import Report from '@/components/Report.vue';
+import Report from '@/components/Jimmy/Report.vue';
 
 defineProps({
     comments: {
