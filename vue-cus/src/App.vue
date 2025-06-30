@@ -5,6 +5,7 @@
     <RouterView></RouterView>
   </div>
 </template>
+<!-- 在 index.html 加 -->
 
 <script setup>
 import { RouterView } from 'vue-router';
