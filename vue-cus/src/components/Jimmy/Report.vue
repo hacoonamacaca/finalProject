@@ -66,11 +66,7 @@ const hideTooltip = () => {
 }
 
 .report-btn:hover {
-<<<<<<< HEAD:vue-cus/src/components/Report.vue
-    color: #ffba20; 
-=======
     color: #ffba20;
->>>>>>> tokin:vue-cus/src/components/Jimmy/Report.vue
 }
 
 .report-dropdown {
