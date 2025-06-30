@@ -240,7 +240,7 @@ const formatTaiwanAddress = (addressData) => {
 
 .hero-section button {
   padding: 10px 20px;
-  background-color: #d70f64;
+  background-color: #ffba20;
   color: white;
   border: none;
   border-radius: 4px;
@@ -250,7 +250,7 @@ const formatTaiwanAddress = (addressData) => {
 
 /* 導航欄 */
 .navbar {
-  background-color: #d70f64;
+  background-color: #ffba20;
   color: white;
   padding: 15px 20px;
   display: flex;

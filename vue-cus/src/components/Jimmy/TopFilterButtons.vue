@@ -1,10 +1,10 @@
 <template>
   <div class="filter-buttons">
-    <button :class="{ active: filters.cuisine.length === 0 && filters.promo.length === 0 }" @click="applyFilter('全部')">全部</button>
-    <button :class="{ active: filters.cuisine.includes('中式') }" @click="applyFilter('中式')">中式</button>
-    <button :class="{ active: filters.cuisine.includes('日式') }" @click="applyFilter('日式')">日式</button>
-    <button :class="{ active: filters.cuisine.includes('西式') }" @click="applyFilter('西式')">西式</button>
-    <button :class="{ active: filters.cuisine.includes('韓式') }" @click="applyFilter('韓式')">韓式</button>
+    <button :class="{ active: filters.category.length === 0 && filters.promo.length === 0 }" @click="applyFilter('全部')">全部</button>
+    <button :class="{ active: filters.category.includes('中式') }" @click="applyFilter('中式')">中式</button>
+    <button :class="{ active: filters.category.includes('日式') }" @click="applyFilter('日式')">日式</button>
+    <button :class="{ active: filters.category.includes('西式') }" @click="applyFilter('西式')">西式</button>
+    <button :class="{ active: filters.category.includes('韓式') }" @click="applyFilter('韓式')">韓式</button>
     <button :class="{ active: filters.promo.includes('免運費') }" @click="applyFilter('免運費')">免運費</button>
   </div>
 </template>
@@ -28,14 +28,14 @@ const applyFilter = (filterType) => {
   const newFilters = { ...localFilters.value };
 
   if (filterType === '全部') {
-    newFilters.cuisine = [];
+    newFilters.category = [];
     newFilters.promo = [];
-    newFilters.minRating = 0;
+    newFilters.minscore = 0;
   } else if (['中式', '日式', '西式', '韓式'].includes(filterType)) {
-    if (newFilters.cuisine.includes(filterType)) {
-      newFilters.cuisine = newFilters.cuisine.filter(c => c !== filterType);
+    if (newFilters.category.includes(filterType)) {
+      newFilters.category = newFilters.category.filter(c => c !== filterType);
     } else {
-      newFilters.cuisine.push(filterType);
+      newFilters.category.push(filterType);
     }
   } else if (filterType === '免運費') {
     if (newFilters.promo.includes('免運費')) {
@@ -62,7 +62,7 @@ const applyFilter = (filterType) => {
 
 .filter-buttons button:hover,
 .filter-buttons button.active {
-  background-color: #d70f64;
+  background-color: #ffba20;
   color: white;
 }
 </style>

@@ -6,6 +6,9 @@ import Forbidden from "@/views/Forbidden.vue"
 import Search from "@/views/Jimmy/Search.vue" 
 import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
+import Register from '@/components/Ivy/RegisterModal.vue'
+import VerifyPending from '@/views/Ivy/VerifyPending.vue'
+import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
 
 
 const routes = [
@@ -38,6 +41,16 @@ const routes = [
         path: "/VoucherWallet",
         component: VoucherWallet,
         name: "VoucherWallet-link"
+    },
+    { path: '/', component: Home },
+    { path: '/register', component: Register },
+    { path: '/verify-pending', component: VerifyPending },
+    { path: '/register-profile', component: RegisterProfile },
+    {
+        path: '/resetPasswordEmail',
+        name: 'ResetPasswordEmail',
+        component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
+        props: router => ({ email: router.query.email })
     },
 ];
 

@@ -76,7 +76,7 @@ const formatDate = (dateString) => {
 }
 
 .comment-btn {
-    background-color: #d70f64;
+    background-color: #ffba20;
     color: white;
     border: none;
     padding: 5px 10px;
@@ -127,7 +127,7 @@ const formatDate = (dateString) => {
 }
 
 .close-btn:hover {
-    color: #d70f64;
+    color: #ffba20;
 }
 
 .comment-list {
@@ -152,7 +152,7 @@ const formatDate = (dateString) => {
 }
 
 .comment-score {
-    color: #d70f64;
+    color: #ffba20;
 }
 
 .comment-time,
