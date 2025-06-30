@@ -6,11 +6,7 @@
     <!-- 📌 Tabs 切換分類 -->
     <ul class="nav nav-tabs justify-content-center mb-4">
       <li class="nav-item" v-for="tab in tabs" :key="tab.value">
-        <button
-          class="nav-link"
-          :class="{ active: activeTab === tab.value }"
-          @click="activeTab = tab.value"
-        >
+        <button class="nav-link" :class="{ active: activeTab === tab.value }" @click="activeTab = tab.value">
           {{ tab.icon }} {{ tab.label }}
         </button>
       </li>
@@ -18,13 +14,8 @@
 
     <!-- 📌 優惠券清單 -->
     <div v-if="filteredPromotions.length > 0" class="d-flex flex-column gap-3">
-      <VoucherCard
-        v-for="promotion in filteredPromotions"
-        :key="promotion.id"
-        :promotion="promotion"
-        :cartAmount="cartAmount"
-        @use="handleUse"
-      />
+      <VoucherCard v-for="promotion in filteredPromotions" :key="promotion.id" :promotion="promotion"
+        :cartAmount="cartAmount" @use="handleUse" />
     </div>
     <div v-else class="text-muted text-center mt-4">
       此分類目前沒有可用優惠券
@@ -34,7 +25,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import VoucherCard from '../components/VoucherCard.vue'
+import VoucherCard from '@/components/Yifan/VoucherCard.vue'
 import globalImg from '@/assets/vouchers/global.png'
 import restaurantImg from '@/assets/vouchers/restaurant.png'
 import foodImg from '@/assets/vouchers/food.png'
