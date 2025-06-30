@@ -7,7 +7,6 @@ import Forbidden from "@/views/Forbidden.vue"
 import Search from "@/views/Search.vue"
 import OrderList from "@/views/OrderList.vue"
 import VoucherWallet from "@/views/VoucherWallet.vue"
-import UserCouponList from '@/pages/UserCouponList.vue'
 
 
 
@@ -41,16 +40,6 @@ const routes = [
         path: "/VoucherWallet",
         component: VoucherWallet,
         name: "VoucherWallet-link"
-    },
-    // {
-    //     path: "/Checkout",
-    //     component: VoucherCard,
-    //     name: "VoucherCard-link"
-    // }
-    {
-        path: "/Checkout",
-        component: UserCouponList,
-        name: "UserCouponList-link"
     },
 ];
 
