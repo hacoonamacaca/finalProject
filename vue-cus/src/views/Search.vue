@@ -43,12 +43,13 @@
         </div>
     </section>
 
-    <!-- 附近熱門美食 -->
+    <!-- 附近熱門美食 ------------------------------------------------------------------------------------------------------------>
     <section class="popular-section" v-if="address != ''">
         <h2>附近熱門美食</h2>
         <div class="restaurant-scroll">
             <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
-                <img :src="restaurant.image" :alt="restaurant.name" />
+                <img :src="restaurant.image" :alt="restaurant.name" @click="goToRestaurant(restaurant.id)"
+                    style="cursor: pointer;" />
                 <div class="info">
                     <h3>{{ restaurant.name }}</h3>
                     <p>{{ restaurant.cuisine }} • {{ restaurant.deliveryTime }} 分鐘</p>
@@ -115,10 +116,11 @@
         </aside>
 
 
-        <!-- 餐廳列表 -->
+        <!-- 餐廳列表 ------------------------------------------------------------------------------------------------------------->
         <section class="restaurant-list">
             <div class="restaurant-card" v-for="restaurant in filteredRestaurants" :key="restaurant.id">
-                <img :src="restaurant.image" :alt="restaurant.name" />
+                <img :src="restaurant.image" :alt="restaurant.name" @click="goToRestaurant(restaurant.id)"
+                    style="cursor: pointer;" />
                 <div class="info">
                     <h3>{{ restaurant.name }}</h3>
                     <p>{{ restaurant.cuisine }} • {{ restaurant.deliveryTime }} 分鐘 • {{ restaurant.promo || '' }}</p>
@@ -150,7 +152,7 @@ const isLoggedIn = ref(true)
 
 
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import TopFilterButtons from '@/components/TopFilterButtons.vue';
 import SidebarFilters from '@/components/SidebarFilters.vue';
 import UserDropdown from '@/components/UserDropdown.vue';
@@ -247,8 +249,16 @@ onMounted(() => {
 });
 
 
-// 地址查詢用
+// 路由相關
 const route = useRoute();
+const router = useRouter();
+
+// 餐廳頁面跳轉
+const goToRestaurant = (restaurantId) => {
+    router.push(`/restaurant/${restaurantId}`);
+};
+
+// 地址查詢用
 const address = ref(route.query.address || ''); // 從查詢參數初始化
 const coordinates = ref(null); // 儲存查詢到的座標
 const loading = ref(false); // 控制載入狀態
