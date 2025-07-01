@@ -1,37 +1,37 @@
 <template>
   <div class="user-dropdown-container">
-  <a href="#" class="user-link" @click.prevent="toggleDropdown">
-    <i class="bi bi-person-circle me-1"></i> 使用者*
-  </a>
-  <div class="dropdown-menu" v-if="showDropdown">
-    <ul class="list-unstyled mb-0">
-      <li @click="navigateTo('profile')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-person"></i> 個人資料
-      </li>
-      <li @click="navigateTo('VoucherWallet')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-ticket-perforated"></i> 優惠券
-      </li>
-      <li @click="navigateTo('subscription')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-box-seam"></i> 訂閱
-      </li>
-      <li @click="navigateTo('favorites')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-heart"></i> 收藏管理
-      </li>
-      <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-journal-text"></i> 歷史訂單
-      </li>
-      <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-house-door"></i> 回首頁*
-      </li>
-      <li @click="navigateTo('secure/login')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-box-arrow-in-right"></i> 測試登入
-      </li>
-      <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-box-arrow-right"></i> 登出
-      </li>
-    </ul>
+    <a href="#" class="user-link" @click.prevent="toggleDropdown">
+      <i class="bi bi-person-circle me-1"></i> 使用者*
+    </a>
+    <div class="dropdown-menu" v-if="showDropdown">
+      <ul class="list-unstyled mb-0">
+        <li @click="navigateTo('profile')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-person"></i> 個人資料
+        </li>
+        <li @click="navigateTo('VoucherWallet')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-ticket-perforated"></i> 優惠券
+        </li>
+        <li @click="navigateTo('subscription')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-box-seam"></i> 訂閱
+        </li>
+        <li @click="navigateTo('favorites')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-heart"></i> 收藏管理
+        </li>
+        <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-journal-text"></i> 歷史訂單
+        </li>
+        <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-house-door"></i> 回首頁*
+        </li>
+        <li @click="navigateTo('secure/login')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-box-arrow-in-right"></i> 測試登入
+        </li>
+        <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-box-arrow-right"></i> 登出
+        </li>
+      </ul>
+    </div>
   </div>
-</div>
 
 </template>
 
