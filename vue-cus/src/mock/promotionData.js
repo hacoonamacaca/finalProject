@@ -1,14 +1,14 @@
-// src/mock/promotionData.js
+// src/mock/PromotionData.js
 
-import globalImg from '@/assets/vouchers/global.png'
-import restaurantImg from '@/assets/vouchers/restaurant.png'
-import foodImg from '@/assets/vouchers/food.png'
-import memberImg from '@/assets/vouchers/member.png'
+import globalImg from '@/assets/Yifan/vouchers/global.png'
+import restaurantImg from '@/assets/Yifan/vouchers/restaurant.png'
+import foodImg from '@/assets/Yifan/vouchers/food.png'
+import memberImg from '@/assets/Yifan/vouchers/member.png'
 
 export const promotionList = [
     {
         id: 1,
-        title: '全平台券 - 滿 500 折 50',
+        title: '🌐 全平台券 - 滿 500 折 50',
         imageUrl: globalImg,
         restaurant_id: null,
         food_category_id: null,
@@ -17,12 +17,12 @@ export const promotionList = [
         discount_value: 50,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '全站皆可使用',
+        description: '全站皆可使用 🚀｜單筆消費滿 NT$500 可折抵 NT$50，適用所有商品與店家。',
         used: false,
     },
     {
         id: 2,
-        title: '全平台券 - 滿 1000 折 100',
+        title: '🌐 全平台券 - 滿 1000 折 100',
         imageUrl: globalImg,
         restaurant_id: null,
         food_category_id: null,
@@ -31,12 +31,12 @@ export const promotionList = [
         discount_value: 100,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '消費滿千現折百',
+        description: '💰 消費滿千現折百｜一次性優惠限時開放，僅限全站商品使用。',
         used: true,
     },
     {
         id: 3,
-        title: '餐廳限定券 - 麥當勞限定折 80',
+        title: '🍔 餐廳券 - 麥當勞折 80',
         imageUrl: restaurantImg,
         restaurant_id: 1,
         food_category_id: null,
@@ -45,12 +45,12 @@ export const promotionList = [
         discount_value: 80,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '限麥當勞餐廳使用',
+        description: '限麥當勞使用 🍟｜單筆消費滿 NT$400 可享 NT$80 折扣，經典套餐最優惠。',
         used: false,
     },
     {
         id: 4,
-        title: '餐廳限定券 - 85度C折 60',
+        title: '☕ 餐廳券 - 85度C折 60',
         imageUrl: restaurantImg,
         restaurant_id: 3,
         food_category_id: null,
@@ -59,12 +59,12 @@ export const promotionList = [
         discount_value: 60,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '限指定咖啡廳',
+        description: '限指定咖啡廳 🧋｜購買任意飲品與甜點滿 NT$300 折 NT$60，悠閒午後首選。',
         used: true,
     },
     {
         id: 5,
-        title: '餐點限定券 - 炸雞折 30',
+        title: '🍗 餐點券 - 炸雞折 30',
         imageUrl: foodImg,
         restaurant_id: null,
         food_category_id: 5,
@@ -73,12 +73,12 @@ export const promotionList = [
         discount_value: 30,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '限炸雞類商品',
+        description: '限炸雞商品 🍖｜炸雞控看過來！滿 NT$200 折 NT$30，限指定炸雞品項。',
         used: false,
     },
     {
         id: 6,
-        title: '餐點限定券 - 壽司類折 50',
+        title: '🍣 餐點券 - 壽司類折 50',
         imageUrl: foodImg,
         restaurant_id: null,
         food_category_id: 6,
@@ -87,12 +87,12 @@ export const promotionList = [
         discount_value: 50,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '限壽司品項',
+        description: '限壽司品項 🍱｜嚐鮮壽司限時折扣，滿 NT$600 折 NT$50，輕鬆享受高級食材。',
         used: true,
     },
     {
         id: 7,
-        title: '會員限定券 - VIP 專屬 9 折',
+        title: '👑 VIP會員券 - 9 折',
         imageUrl: memberImg,
         restaurant_id: null,
         food_category_id: null,
@@ -101,12 +101,12 @@ export const promotionList = [
         discount_value: 10,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: 'VIP 會員專屬優惠',
+        description: 'VIP 專屬優惠 ✨｜不限金額全面 9 折，加入會員立即享優惠。',
         used: false,
     },
     {
         id: 8,
-        title: '會員限定券 - 金卡會員 85 折',
+        title: '💳 金卡會員券 - 85 折',
         imageUrl: memberImg,
         restaurant_id: null,
         food_category_id: null,
@@ -115,12 +115,12 @@ export const promotionList = [
         discount_value: 15,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '金卡專屬',
+        description: '金卡會員專屬 🎖️｜單筆滿 NT$200 享 85 折，越用越省，限金卡會員。',
         used: true,
     },
     {
         id: 9,
-        title: '新用戶限定 - 首購折 100',
+        title: '🆕 首購限定券 - 折 100',
         imageUrl: globalImg,
         restaurant_id: null,
         food_category_id: null,
@@ -129,12 +129,12 @@ export const promotionList = [
         discount_value: 100,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '新客戶限定優惠',
+        description: '新用戶限定 🎉｜首次下單滿 NT$300 折 NT$100，歡迎新朋友！',
         used: false,
     },
     {
         id: 10,
-        title: '限時閃購券 - 滿 200 折 60',
+        title: '⚡ 限時閃購券 - 滿 200 折 60',
         imageUrl: globalImg,
         restaurant_id: null,
         food_category_id: null,
@@ -143,7 +143,7 @@ export const promotionList = [
         discount_value: 60,
         start_time: '2025-06-01',
         end_time: '2025-06-30',
-        description: '快閃活動限時使用',
+        description: '快閃活動專用 ⏰｜短時間內有效，限時限量，滿 NT$200 即可折抵。',
         used: true,
     },
 ]

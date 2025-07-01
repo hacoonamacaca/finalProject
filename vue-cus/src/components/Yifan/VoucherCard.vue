@@ -51,11 +51,12 @@ const emit = defineEmits(['use'])
 /* 卡片區塊 */
 .voucher-card {
   background: white;
-  border-radius: 16px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
   overflow: hidden;
   display: flex;
   margin-bottom: 20px;
-  border-left: 10px solid #e8b212; /* 左側強調色條 */
+  border-left: 10px solid #8f530f; /* 左側強調色條 */
   transition: box-shadow 0.3s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -113,8 +114,8 @@ const emit = defineEmits(['use'])
   transition: all 0.3s ease;
 }
 .btn-use:hover:enabled {
-  background-color: #f5c147;
-  box-shadow: 0 0 0 3px #e8b418;
+  background-color: #eca300;
+  box-shadow: 0 0 0 3px #8f530f;
 }
 .btn-use:disabled {
   background-color: #e0e0e0;
@@ -122,4 +123,5 @@ const emit = defineEmits(['use'])
   cursor: not-allowed;
   box-shadow: none;
 }
+
 </style>

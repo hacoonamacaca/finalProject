@@ -1,3 +1,35 @@
+<template>
+    <div class="comment-wrapper">
+        <button class="comment-btn" @click="showCommentPopout = true">
+            查看評論
+        </button>
+        <div class="comment-popout" v-if="showCommentPopout">
+            <div class="comment-popout-content">
+                <button class="close-btn" @click="showCommentPopout = false">✕</button>
+                <h3>餐廳評論</h3>
+                <div class="comment-list">
+                    <div class="comment-item" v-for="comment in comments" :key="comment.id" v-show="!comment.is_hidden">
+                        <div class="comment-header">
+                            <span class="user-id">{{ comment.user_id }}</span>
+                            <span class="comment-score">評分: {{ comment.score }} ★</span>
+                            <span class="comment-time">{{ formatDate(comment.create_time) }}</span>
+                            <Report :report="report" />
+                        </div>
+                        <p class="comment-content">{{ comment.content }}</p>
+                        <div class="comment-images" v-if="comment.comment_img && comment.comment_img.length > 0">
+                            <img v-for="(img, index) in comment.comment_img" :key="index" :src="img.img"
+                                :alt="'評論圖片 ' + (index + 1)" class="comment-img" />
+                        </div>
+                        <div class="comment-reply" v-if="comment.reply">
+                            <p><strong>店家回覆:</strong> {{ comment.reply }}</p>
+                            <span class="reply-time">{{ formatDate(comment.reply_update_time) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
 
 <script setup>
 import { ref } from 'vue';
@@ -55,7 +87,7 @@ const formatDate = (dateString) => {
 }
 
 .comment-btn:hover {
-    background-color: #b00c50;
+    background-color: #eca300;
 }
 
 .comment-popout {
@@ -180,35 +212,3 @@ const formatDate = (dateString) => {
     }
 }
 </style>
-<template>
-    <div class="comment-wrapper">
-        <button class="comment-btn" @click="showCommentPopout = true">
-            查看評論
-        </button>
-        <div class="comment-popout" v-if="showCommentPopout">
-            <div class="comment-popout-content">
-                <button class="close-btn" @click="showCommentPopout = false">✕</button>
-                <h3>餐廳評論</h3>
-                <div class="comment-list">
-                    <div class="comment-item" v-for="comment in comments" :key="comment.id" v-show="!comment.is_hidden">
-                        <div class="comment-header">
-                            <span class="user-id">{{ comment.user_id }}</span>
-                            <span class="comment-score">評分: {{ comment.score }} ★</span>
-                            <span class="comment-time">{{ formatDate(comment.create_time) }}</span>
-                            <Report :report="report" />
-                        </div>
-                        <p class="comment-content">{{ comment.content }}</p>
-                        <div class="comment-images" v-if="comment.comment_img && comment.comment_img.length > 0">
-                            <img v-for="(img, index) in comment.comment_img" :key="index" :src="img.img"
-                                :alt="'評論圖片 ' + (index + 1)" class="comment-img" />
-                        </div>
-                        <div class="comment-reply" v-if="comment.reply">
-                            <p><strong>店家回覆:</strong> {{ comment.reply }}</p>
-                            <span class="reply-time">{{ formatDate(comment.reply_update_time) }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>

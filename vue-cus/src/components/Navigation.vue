@@ -1,24 +1,27 @@
 <template>
   <header class="navbar">
-    <div class="logo" @click="$router.push(`/search`)" style="cursor: pointer;">金碗GoldenBowl Foolog</div>
-    <!-- 行動版專用的 location-btn -->
-    <div class="location-btn-container mobile-only">
-      <button class="location-btn" @click="showPopout = true">
-        目前位置為： {{ address }}
-        <a @click.stop="getCurrentLocationAndNavigate">
-          <button style="background: transparent; border: none; color: white;">📍</button>
-        </a>
-      </button>
-    </div>
-    <!-- 桌機版專用的 location-btn -->
-    <div class="location-btn-container desktop-only">
-      <button class="location-btn" @click="showPopout = true">
-        目前位置為： {{ address }}
-        <a @click.stop="getCurrentLocationAndNavigate">
-          <button style="background: transparent; border: none; color: white;">📍</button>
-        </a>
-      </button>
-    </div>
+    <a class="navbar-brand d-flex align-items-center gap-3" style="cursor: pointer" @click="$router.push('/search')">
+  <img src="@/assets/logo.png" alt="Logo" height="80" />
+  <span class="brand-title">金碗GoldenBowl Foolog</span>
+</a>
+
+
+  <!-- 行動版專用 -->
+  <div class="location-btn-container mobile-only">
+    <button class="location-btn" @click="showPopout = true">
+      目前位置為：{{ address }}
+      <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
+    </button>
+  </div>
+
+  <!-- 桌機版專用 -->
+  <div class="location-btn-container desktop-only">
+    <button class="location-btn" @click="showPopout = true">
+      目前位置為：{{ address }}
+      <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
+    </button>
+  </div>
+
     <button class="hamburger" @click="toggleMenu">
       <span></span>
       <span></span>
@@ -32,9 +35,54 @@
       </div>
       <!-- 其他導航項 -->
       <div class="nav-items">
-        <a href="#" @click.prevent="toggleRestaurantMenu">{{ isRestaurant ? '餐廳' : '餐點' }}</a>
-        <a href="#">優惠通知</a>
-        <a href="#">購物車</a>
+
+        <!-- 餐廳/餐點按鈕 -->
+        <a
+          href="#"
+          @click.prevent="toggleRestaurantMenu"
+          :title="isRestaurant ? '餐廳' : '餐點'"
+          class="text-white d-flex align-items-center gap-2 fs-5"
+        >
+          <i :class="isRestaurant ? 'fas fa-store' : 'fas fa-utensils'"></i>
+        </a>
+
+<!-- 優惠通知鈴鐺 -->
+        <div style="position: relative;">
+          <button
+            class="btn position-relative"
+            style="background: transparent; border: none;"
+            @click="toggleNotification"
+            title="優惠通知"
+          >
+            <i class="bi bi-bell-fill text-white fs-5"></i>
+            <span v-if="unreadCount > 0"
+              class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+              {{ unreadCount }}
+            </span>
+          </button>
+
+          <!-- ✅ 通知清單元件 -->
+          <NotificationList
+            :visible="isNotificationOpen"
+            :notifications="notifications"
+            @mark-as-read="markAsRead"
+          />
+        </div>
+
+        <!-- 購物車按鈕 -->
+        <button
+          class="btn position-relative"
+          style="background: transparent; border: none;"
+          @click="goToCart"
+          title="購物車"
+        >
+          <i class="bi bi-cart4 text-white fs-5"></i>
+          <span v-if="cartCount > 0"
+                class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+            {{ cartCount }}
+          </span>
+        </button>
+      
       </div>
     </div>
   </header>
@@ -48,9 +96,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
+import NotificationList from '@/components/Yifan/NotificationList.vue'
 
 const isLoggedIn = ref(true); // 根據實際登入狀態設定
 const isMenuOpen = ref(false);
@@ -73,6 +122,18 @@ const toggleRestaurantMenu = () => {
   isRestaurant.value = !isRestaurant.value;
   console.log("目前頁面餐廳為是/餐點為否:" + isRestaurant.value);
 };
+// 優惠通知邏輯
+const isNotificationOpen = ref(false)
+const toggleNotification = () => isNotificationOpen.value = !isNotificationOpen.value
+
+const notifications = ref([
+  { id: 1, title: '🎁 全站85折限時優惠', date: '2025-06-30', is_read: false },
+  { id: 2, title: '🍔 餐點類優惠券即將到期', date: '2025-06-29', is_read: false },
+  { id: 3, title: '🎉 註冊送折扣券', date: '2025-06-28', is_read: true }
+])
+
+const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
+const markAsRead = (item) => { item.is_read = true }
 
 // 搜尋地址
 const searchAddress = async () => {
@@ -206,6 +267,20 @@ const getLogin = () => {
 </script>
 
 <style scoped>
+.brand-title {
+  color: #5c3203;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.notification-panel {
+  top: 60px; /* 根據你的 navbar 高度調整 */
+  right: 0px; /* 讓箭頭正對鈴鐺 */
+}
+.arrow-up {
+  right: 25px; /* 根據鈴鐺位置微調 */
+}
+
 .navbar {
   background-color: #ffba20;
   color: white;

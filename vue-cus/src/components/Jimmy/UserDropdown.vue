@@ -1,21 +1,38 @@
 <template>
   <div class="user-dropdown-container">
-    <a href="#" class="user-link" @click.prevent="toggleDropdown">
-      使用者*
-    </a>
-    <div class="dropdown-menu" v-if="showDropdown">
-      <ul>
-        <li @click="navigateTo('profile')">個人資料</li>
-        <li @click="navigateTo('VoucherWallet')">優惠券</li>
-        <li @click="navigateTo('subscription')">訂閱</li>
-        <li @click="navigateTo('favorites')">收藏管理</li>
-        <li @click="navigateTo('orderList')">歷史訂單</li>
-        <li @click="navigateTo('')">回首頁*</li>
-        <li @click="navigateTo('secure/login')">test-login</li>
-        <li @click="logout">登出</li>
-      </ul>
-    </div>
+  <a href="#" class="user-link" @click.prevent="toggleDropdown">
+    <i class="bi bi-person-circle me-1"></i> 使用者*
+  </a>
+  <div class="dropdown-menu" v-if="showDropdown">
+    <ul class="list-unstyled mb-0">
+      <li @click="navigateTo('profile')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-person"></i> 個人資料
+      </li>
+      <li @click="navigateTo('VoucherWallet')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-ticket-perforated"></i> 優惠券
+      </li>
+      <li @click="navigateTo('subscription')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-box-seam"></i> 訂閱
+      </li>
+      <li @click="navigateTo('favorites')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-heart"></i> 收藏管理
+      </li>
+      <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-journal-text"></i> 歷史訂單
+      </li>
+      <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-house-door"></i> 回首頁*
+      </li>
+      <li @click="navigateTo('secure/login')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-box-arrow-in-right"></i> 測試登入
+      </li>
+      <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
+        <i class="bi bi-box-arrow-right"></i> 登出
+      </li>
+    </ul>
   </div>
+</div>
+
 </template>
 
 <script setup>
@@ -59,6 +76,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+
 .user-dropdown-container {
   position: relative;
   display: inline-block;
@@ -99,20 +117,37 @@ onUnmounted(() => {
   margin: 0;
 }
 
+/* 游標滑到使用者按鈕會變色 */
 .dropdown-menu li {
   padding: 12px 16px;
   font-size: 14px;
   color: #333;
   cursor: pointer;
+  border-radius: 4px;
   transition: background-color 0.2s;
 }
 
+/* 游標滑到下拉式選單會變底色 */
 .dropdown-menu li:hover {
-  background-color: #f5f5f5;
+  background-color: #fff3cd;
 }
 
+/* 游標滑到下拉式選單圖示會變色 */
+.dropdown-menu li:hover i {
+  color: #ffba20;
+}
+
+/* 預設為黃色文字 */
 .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
   color: #ffba20;
+  font-weight: 500;
 }
+
+/* 滑鼠移上去時反轉背景與文字顏色 */
+.dropdown-menu li:last-child:hover {
+  color: #5c3202;
+}
+
+
 </style>

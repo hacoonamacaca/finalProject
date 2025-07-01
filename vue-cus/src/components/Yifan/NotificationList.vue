@@ -12,9 +12,15 @@
         v-for="item in notifications"
         :key="item.id"
         :class="{ unread: !item.is_read }"
+        class="notification-item d-flex justify-content-between align-items-start"
       >
-        <div class="title">{{ item.title }}</div>
-        <div class="date">{{ item.date }}</div>
+        <!-- 左側通知內容 -->
+        <div class="left-content">
+          <div class="title">{{ item.title }}</div>
+          <div class="date">{{ item.date }}</div>
+        </div>
+
+        <!-- 右側按鈕 -->
         <button class="view-btn" @click="markAsRead(item)">瀏覽</button>
       </li>
     </ul>
@@ -43,12 +49,13 @@ const markAsRead = (item) => {
   position: fixed;
   top: 70px; /* 根據 bell icon 高度微調 */
   right: 20px;
-  width: 300px;
+  width: 320px;
   background: white;
   border: 1px solid #ccc;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 999;
+  overflow: hidden;
   font-size: 14px;
 }
 
@@ -68,8 +75,9 @@ const markAsRead = (item) => {
 .notification-header {
   background: white;
   color: #ffc94d; /* 主色 */
-  padding: 10px;
+  padding: 12px 16px;
   font-weight: bold;
+  font-size: 16px;
   border-top-left-radius: 12px;
   border-top-right-radius: 12px;
   border-bottom: 1px solid #eee;
@@ -77,12 +85,13 @@ const markAsRead = (item) => {
 
 /* 通知內容 */
 .notification-list {
-  list-style: none;
+  max-height: 280px;
+  overflow-y: auto;
   margin: 0;
   padding: 0;
-  max-height: 240px;
-  overflow-y: auto;
+  list-style: none;
 }
+
 
 .notification-list li {
   padding: 10px;
@@ -104,15 +113,53 @@ const markAsRead = (item) => {
   margin-bottom: 4px;
 }
 
+/* 每則通知 */
+.notification-item {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+}
+
+.notification-item.unread {
+  background-color: #fff9e6;
+  font-weight: bold;
+}
+
+.notification-item:hover {
+  background-color: #fef7dc;
+}
+
+.left-content {
+  flex: 1;
+  padding-right: 12px;
+}
+
+.title {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 4px;
+  word-break: break-word;
+}
+
+.date {
+  font-size: 12px;
+  color: #888;
+}
+
 /* 查看按鈕 */
 .view-btn {
   background-color: #ffc94d;
   color: white;
   border: none;
-  padding: 5px 10px;
-  border-radius: 6px;
+  padding: 6px 12px;
   font-size: 12px;
+  border-radius: 6px;
   cursor: pointer;
+  white-space: nowrap;
+  margin-left: 12px;
+}
+
+.view-btn:hover {
+  background-color: #e5b53f;
 }
 
 /* 查看全部連結 */

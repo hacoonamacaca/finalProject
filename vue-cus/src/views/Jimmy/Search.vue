@@ -112,7 +112,7 @@
   import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
   import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
   import Comment from '@/components/Jimmy/Comment.vue';
-  
+
   const isSidebarActive = ref(false);
   const toggleSidebar = () => {
     isSidebarActive.value = !isSidebarActive.value;

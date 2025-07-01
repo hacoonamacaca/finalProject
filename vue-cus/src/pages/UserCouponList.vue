@@ -17,7 +17,7 @@ import { ref } from 'vue'
 import PromotionSelectorModal from '../components/CouponSelectorModal.vue'
 
 // ✅ 匯入統一的假資料
-import { promotionList } from '@/mock/promotionData.js'
+import { promotionList } from '@/mock/PromotionData.js'
 
 const show = ref(false)
 const selected = ref(null)
