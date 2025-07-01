@@ -40,29 +40,24 @@ document.addEventListener('click', (e) => {
             </div>
             <button class="btn btn-warning" @click="handleAddNew">+ 新增規格</button>
         </div>
-    
+
         <!-- Specs List -->
         <div class="list-group">
-            <div 
-                v-for="spec in specs" 
-                :key="spec.id" 
-                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-            >
+            <div v-for="spec in specs" :key="spec.id"
+                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
                 <!-- 左側：規格名稱和選項預覽 -->
                 <!-- 點擊這個區域觸發編輯 -->
                 <div @click="handleEdit(spec)" class="flex-grow-1 me-3" style="cursor: pointer;">
                     <p class="fw-bold mb-0">{{ spec.name }}</p>
-                    <small class="text-muted text-truncate d-block" style="max-width: 400px;">{{ spec.options }}</small>
+                    <small class="text-muted text-truncate d-block" style="max-width: 400px;">{{spec.options.map(o =>
+                        o.name).join('、') }}</small>
                 </div>
 
                 <!-- 右側：狀態控制 -->
                 <div class="position-relative dropdown-container flex-shrink-0">
-                    <button 
-                        class="btn btn-sm dropdown-toggle"
-                        :class="spec.status === '供應中' ? 'btn-outline-success' : 'btn-outline-secondary'"
-                        type="button" 
-                        @click.stop="toggleDropdown(spec.id)"
-                    >
+                    <button class="btn btn-sm dropdown-toggle"
+                        :class="spec.status === '供應中' ? 'btn-outline-success' : 'btn-outline-secondary'" type="button"
+                        @click.stop="toggleDropdown(spec.id)">
                         {{ spec.status }}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end" :class="{ show: activeDropdown === spec.id }">

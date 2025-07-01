@@ -1,49 +1,45 @@
 <template>
-    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h2 class="h3">菜單管理</h2>
-        <div class="btn-toolbar mb-2 mb-md-0">
-            <select class="form-select" v-model="selectedStore">
-                <option v-for="store in stores" :key="store.id" :value="store.id">
-                    {{ store.name }}
-                </option>
-            </select>
+    <div>
+        <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 class="h3">菜單管理</h2>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <select class="form-select" v-model="selectedStore">
+                    <option v-for="store in stores" :key="store.id" :value="store.id">
+                        {{ store.name }}
+                    </option>
+                </select>
+            </div>
         </div>
-    </div>
+
         <ul class="nav nav-tabs">
             <li class="nav-item">
-                <a class="nav-link" 
-                :class="{ active: activeTab === 'overview' }" href="#"
-                @click.prevent="selectTab('overview')">菜單總覽</a>
+                <a class="nav-link" :class="{ active: activeTab === 'overview' }" href="#"
+                    @click.prevent="selectTab('overview')">菜單總覽</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" :class="{ active: activeTab === 'specs' }" href="#"
-                @click.prevent="selectTab('specs')">客製化規格</a>
+                    @click.prevent="selectTab('specs')">客製化規格</a>
             </li>
         </ul>
-        <div class="mt-4">
-            <MenuOverview v-if="activeTab === 'overview'" 
-                :items="items"
-                :categories="categories" 
-                @add-new-item="openItemModal(null)"
-                @edit-item="openItemModal" 
-                />
-                    
-            <CustomizationSpecs v-if="activeTab === 'specs'"
-                :specs="specs"
-                @add-new-spec="() => alert('準備新增規格！')"
-                @edit-spec="(spec) => alert(`準備編輯規格: ${spec.name}`)"
-                />
-        </div>
-        
-        <!-- Modals (不受佈局影響) -->
-        <EditItemModal v-if="isItemModalOpen" 
-        :item="currentEditingItem" 
-        :categories="categories"
-        @close="closeItemModal" 
-        @save="handleSaveItem"
-        @delete="handleDeleteItem" 
-        />
 
+        <div class="mt-4">
+            <MenuOverview v-if="activeTab === 'overview'" :items="items" :categories="categories"
+                @add-new-item="openItemModal(null)" @edit-item="openItemModal" />
+
+            <CustomizationSpecs v-if="activeTab === 'specs'" :specs="specs" @add-new-spec="openSpecModal(null)"
+                @edit-spec="openSpecModal" />
+            <!-- @add-new-spec="() => alert('準備新增規格！')" 過渡時期的程式碼可刪除 -->
+            <!-- @edit-spec="(spec) => alert(`準備編輯規格: ${spec.name}`)" /> 過渡時期的程式碼可刪除 -->
+        </div>
+
+        <!-- Modals (不受佈局影響) -->
+        <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" :categories="categories"
+            @close="closeItemModal" @save="handleSaveItem" @delete="handleDeleteItem" />
+
+        <EditSpecModal v-if="isSpecModalOpen" :spec="currentEditingSpec" @close="closeSpecModal" @save="handleSaveSpec"
+            @delete="handleDeleteSpec" />
+    </div>
 </template>
 
 <script setup>
@@ -51,7 +47,7 @@ import { ref, reactive } from 'vue';
 import MenuOverview from './MenuOverview.vue';
 import CustomizationSpecs from './CustomizationSpecs.vue';
 import EditItemModal from '../components/EditItemModal.vue';
-// import EditSpecModal from '../components/EditSpecModal.vue';
+import EditSpecModal from '../components/EditSpecModal.vue';
 
 // --- 響應式狀態 (State) ---
 
@@ -94,9 +90,41 @@ const items = reactive([
 
 // 模擬的客製化規格資料
 const specs = reactive([
-    { id: 'spec1', name: '附餐選擇', options: '六塊雞、中薯、洋蔥圈...', status: '供應中' },
-    { id: 'spec2', name: '冰熱選擇', options: '正常冰、少冰、去冰...', status: '供應中' },
-    { id: 'spec3', name: '甜度選擇', options: '全糖、七分糖、五分糖...', status: '暫停供應' },
+    {
+        id: 'spec1',
+        name: '附餐選擇',
+        minSelection: 1, // 加上 min/max
+        maxSelection: 1,
+        // 將 options 改為物件陣列
+        options: [
+            { id: 'opt-a1', name: '六塊雞', price: 20, status: '供應中' },
+            { id: 'opt-a2', name: '中薯', price: 10, status: '供應中' },
+            { id: 'opt-a3', name: '洋蔥圈', price: 15, status: '暫停供應' },
+        ]
+    },
+    {
+        id: 'spec2',
+        name: '甜度選擇',
+        minSelection: 1,
+        maxSelection: 1,
+        options: [
+            { id: 'opt-b1', name: '全糖', price: 0, status: '供應中' },
+            { id: 'opt-b2', name: '少糖', price: 0, status: '供應中' },
+            { id: 'opt-b3', name: '半糖', price: 0, status: '供應中' },
+            { id: 'opt-b4', name: '無糖', price: 0, status: '供應中' },
+        ]
+    },
+    {
+        id: 'spec3',
+        name: '冰量選擇',
+        minSelection: 0, // 假設冰量可以不選
+        maxSelection: 1,
+        options: [
+            { id: 'opt-c1', name: '正常冰', price: 0, status: '供應中' },
+            { id: 'opt-c2', name: '少冰', price: 0, status: '供應中' },
+            { id: 'opt-c3', name: '去冰', price: 0, status: '供應中' },
+        ]
+    },
 ]);
 
 // =================================================================
@@ -109,44 +137,38 @@ const isItemModalOpen = ref(false);
 // 正在編輯的品項，null 代表是新增
 const currentEditingItem = ref(null);
 
+// =================================================================
+// 4. 規格管理相關 (Specification Management)
+// =================================================================
+
 // 控制編輯規格 Modal 的開關
 const isSpecModalOpen = ref(false);
 
 // 正在編輯的規格，null 代表是新增
 const currentEditingSpec = ref(null);
 
-// =================================================================
-// 4. 規格管理相關 (Specification Management)
-// =================================================================
-// 為未來的 EditSpecModal 準備方法
+const openSpecModal = (spec) => {
+    console.log('打開規格 Modal，編輯的資料是:', spec);
+    currentEditingSpec.value = spec ? { ...spec } : null;
+    isSpecModalOpen.value = true;
+};
 
-// openSpecModal = (spec) => {
-// console.log('準備打開規格 Modal，編輯的資料是:', spec);
-// currentEditingSpec.value = spec ? { ...spec } : null;
-// isSpecModalOpen.value = true;
-// };
+const closeSpecModal = () => {
+    isSpecModalOpen.value = false;
+}
 
-// const openSpecModal = (spec) => {
-//     currentEditingSpec.value = spec ? { ...spec } : null;
-//     isSpecModalOpen.value = true;
-// };
+const handleSaveSpec = (specData) => {
+    console.log('儲存規格:', specData);
+    alert('規格已儲存！');
+    closeSpecModal();
+}
 
-// const closeSpecModal = () => {
-//     isSpecModalOpen.value = false;
-// }
-
-// const handleSaveSpec = (specData) => {
-//     console.log('儲存規格:', specData);
-//     alert('規格已儲存！');
-//     closeSpecModal();
-// }
-
-// const handleDeleteSpec = (specId) => {
-//     if (confirm('確定要刪除此規格嗎？')) {
-//         alert('規格已刪除！');
-//         closeSpecModal();
-//     }
-// }
+const handleDeleteSpec = (specId) => {
+    if (confirm('確定要刪除此規格嗎？')) {
+        alert('規格已刪除！');
+        closeSpecModal();
+    }
+}
 
 // =================================================================
 // 5. 通用方法 (General Methods)

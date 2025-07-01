@@ -1,5 +1,5 @@
 <script setup>
-import { defineProps, defineEmits, computed, watch, nextTick } from 'vue';
+import { computed, watch, nextTick } from 'vue';
 import { Collapse } from 'bootstrap'; // 導入 Bootstrap 的 Collapse 模組
 
 const props = defineProps({
@@ -62,13 +62,11 @@ watch(() => props.order, (newOrder) => {
 
 <template>
   <div v-if="order" class="h-100 d-flex flex-column p-4">
-    <!-- 頂部固定區域：客戶名稱和關閉按鈕 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h4 class="mb-0">{{ order.customerName }}</h4>
       <button class="btn-close" @click="closeDetail"></button>
     </div>
 
-    <!-- 可滾動內容區域 -->
     <div class="flex-grow-1 overflow-auto pe-2">
       <div class="d-flex align-items-center mb-4">
         <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
@@ -83,50 +81,34 @@ watch(() => props.order, (newOrder) => {
       <hr>
 
       <h5 class="mb-3">訂單 {{ order.id }}</h5>
-      <p class="text-muted small mb-4">{{ order.date }}, {{ order.time }}</p>
+      <p class="text-muted small mb-4">取餐時間：{{ order.date }}, {{ order.time }}</p>
 
-      <div class="accordion accordion-flush mb-4" id="orderDetailAccordion">
-        <div class="accordion-item rounded-3 overflow-hidden">
-          <h2 class="accordion-header" id="flush-headingOne">
-            <button class="accordion-button collapsed fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-              訂單詳細資訊
-            </button>
-          </h2>
-          <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne" data-bs-parent="#orderDetailAccordion">
-            <div class="accordion-body">
-              <ul class="list-unstyled timeline-list">
-                <li v-for="(event, index) in order.timeline" :key="index" :class="{ 'active': index === order.timeline.length - 1 }">
-                  <span class="timeline-time">{{ event.time }}</span>
-                  <span class="timeline-description">{{ event.description }}</span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 訂單項目列表 -->
       <div v-for="item in order.items" :key="item.name" class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
         <div class="d-flex align-items-baseline">
           <span class="badge bg-secondary rounded-pill me-2">{{ item.quantity }}</span>
           <div>
             <p class="mb-0 fw-bold">{{ item.name }}</p>
-            <p v-if="item.note" class="mb-0 text-muted small">備註: {{ item.note }}</p>
+            <p v-if="item.note" class="mb-0 text-muted small">規格: {{ item.note }}</p>
           </div>
         </div>
         <p class="mb-0 fw-bold text-end">NT$ {{ item.price.toFixed(2) }}</p>
       </div>
+      <!-- v-if="order.note" -->
+      <div  class="mt-auto pt-3 border-top mb-3 p-3 bg-light rounded">
+        <h6 class="mb-2 fw-bold">備註:</h6>
+        <p class="mb-0 text-muted small">麻煩多給我一副餐具{{ order.note }}</p>
+      </div>
+
     </div>
 
-    <!-- 底部固定區域：總計和按鈕 -->
     <div class="mt-auto pt-3 border-top">
       <div class="d-flex justify-content-between mb-2">
         <span class="fw-bold">總計 ({{ orderTotalQuantity }} 項)</span>
         <span class="fw-bold">NT$ {{ orderTotalAmount.toFixed(2) }}</span>
       </div>
-      <div class="d-flex gap-2"> <!-- 使用 d-flex 和 gap-2 使按鈕並排且有間距 -->
-        <button class="btn btn-outline-danger w-100 py-3 rounded-pill fw-bold" @click="cancelOrder">取消訂單</button>
-        <button class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold">發送收據</button>
+      <div class="d-flex gap-2"> <button class="btn btn-outline-danger w-100 py-3 rounded-pill fw-bold" @click="cancelOrder">取消訂單</button>
+        <button class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold">確認訂單
+        </button>
       </div>
     </div>
   </div>
@@ -145,6 +127,9 @@ watch(() => props.order, (newOrder) => {
   font-size: 1.25rem;
 }
 
+
+
+/* 時間線段 satart */
 .timeline-list {
   position: relative;
   padding-left: 20px; /* 為垂直線和點留出空間 */
@@ -171,7 +156,7 @@ watch(() => props.order, (newOrder) => {
   border-radius: 50%;
   z-index: 1;
 }
-
+/* 如果是最後一個li項目 */
 .timeline-list li.active::before {
   background-color: #28a745; /* 活動點的顏色 */
   box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3); /* 活動點光暈 */
@@ -204,6 +189,9 @@ watch(() => props.order, (newOrder) => {
   font-weight: 500;
   color: #343a40;
 }
+
+/* 時間線end */
+
 
 /* 訂單項目列表滾動條美化 */
 /* 這裡的樣式現在將應用於整個可滾動區域 */
