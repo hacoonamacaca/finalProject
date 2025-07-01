@@ -1,34 +1,34 @@
 <template>
-    <div class="comment-wrapper">
-        <button class="comment-btn" @click="showCommentPopout = true">
-            查看評論
-        </button>
-        <div class="comment-popout" v-if="showCommentPopout">
-            <div class="comment-popout-content">
-                <button class="close-btn" @click="showCommentPopout = false">✕</button>
-                <h3>餐廳評論</h3>
-                <div class="comment-list">
-                    <div class="comment-item" v-for="comment in comments" :key="comment.id" v-show="!comment.is_hidden">
-                        <div class="comment-header">
-                            <span class="user-id">{{ comment.user_id }}</span>
-                            <span class="comment-score">評分: {{ comment.score }} ★</span>
-                            <span class="comment-time">{{ formatDate(comment.create_time) }}</span>
-                            <Report :report="report" />
-                        </div>
-                        <p class="comment-content">{{ comment.content }}</p>
-                        <div class="comment-images" v-if="comment.comment_img && comment.comment_img.length > 0">
-                            <img v-for="(img, index) in comment.comment_img" :key="index" :src="img.img"
-                                :alt="'評論圖片 ' + (index + 1)" class="comment-img" />
-                        </div>
-                        <div class="comment-reply" v-if="comment.reply">
-                            <p><strong>店家回覆:</strong> {{ comment.reply }}</p>
-                            <span class="reply-time">{{ formatDate(comment.reply_update_time) }}</span>
-                        </div>
-                    </div>
-                </div>
+<div class="comment-wrapper">
+    <button class="comment-btn" @click="showCommentPopout = true">
+    查看評論({{ commentCount }}) <!-- 修改為 commentCount -->
+    </button>
+    <div class="comment-popout" v-if="showCommentPopout">
+    <div class="comment-popout-content">
+        <button class="close-btn" @click="showCommentPopout = false">✕</button>
+        <h3>餐廳評論</h3>
+        <div class="comment-list">
+        <div class="comment-item" v-for="comment in comments" :key="comment.id" v-show="!comment.is_hidden">
+            <div class="comment-header">
+            <span class="user-id">{{ comment.user_id }}</span>
+            <span class="comment-score">評分: {{ comment.score }} ★</span>
+            <span class="comment-time">{{ formatDate(comment.create_time) }}</span>
+            <Report :report="report" />
+            </div>
+            <p class="comment-content">{{ comment.content }}</p>
+            <div class="comment-images" v-if="comment.comment_img && comment.comment_img.length > 0">
+            <img v-for="(img, index) in comment.comment_img" :key="index" :src="img.img"
+                :alt="'評論圖片 ' + (index + 1)" class="comment-img" />
+            </div>
+            <div class="comment-reply" v-if="comment.reply">
+            <p><strong>店家回覆:</strong> {{ comment.reply }}</p>
+            <span class="reply-time">{{ formatDate(comment.reply_update_time) }}</span>
             </div>
         </div>
+        </div>
     </div>
+    </div>
+</div>
 </template>
 
 <script setup>
@@ -36,37 +36,37 @@ import { ref } from 'vue';
 import Report from '@/components/Jimmy/Report.vue';
 
 defineProps({
-    comments: {
-        type: Array,
-        required: true,
-    },
+comments: {
+    type: Array,
+    required: true
+},
+commentCount: { // 新增 commentCount prop
+    type: Number,
+    required: true
+}
 });
 
 const showCommentPopout = ref(false);
 
 const report = ref([
-    { header: "偏離主題", content: "評論內容與商家無關" },
-    { header: "垃圾內容", content: "評論出自機器人或包含廣告與宣傳內容" },
-    { header: "利益衝突", content: "評論出自競爭商家或相關人士" },
-    { header: "不雅用語", content: "評論內容包含不雅字眼" },
-    { header: "歧視或仇恨", content: "評論內容包含與個人或團體身分認同相關的有害言語" },
-    { header: "個人資訊", content: "評論內含地址或電話號碼等個人資訊" },
-])
-
-
-
-
+{ header: "偏離主題", content: "評論內容與商家無關" },
+{ header: "垃圾內容", content: "評論出自機器人或包含廣告與宣傳內容" },
+{ header: "利益衝突", content: "評論出自競爭商家或相關人士" },
+{ header: "不雅用語", content: "評論內容包含不雅字眼" },
+{ header: "歧視或仇恨", content: "評論內容包含與個人或團體身分認同相關的有害言語" },
+{ header: "個人資訊", content: "評論內含地址或電話號碼等個人資訊" }
+]);
 
 // 格式化日期
 const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-    });
+const date = new Date(dateString);
+return date.toLocaleString('zh-TW', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+});
 };
 </script>
 

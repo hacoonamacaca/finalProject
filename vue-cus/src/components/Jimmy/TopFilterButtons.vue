@@ -1,11 +1,12 @@
 <template>
   <div class="filter-buttons">
-    <button :class="{ active: filters.category.length === 0 && filters.promo.length === 0 }" @click="applyFilter('全部')">全部</button>
-    <button :class="{ active: filters.category.includes('中式') }" @click="applyFilter('中式')">中式</button>
-    <button :class="{ active: filters.category.includes('日式') }" @click="applyFilter('日式')">日式</button>
-    <button :class="{ active: filters.category.includes('西式') }" @click="applyFilter('西式')">西式</button>
-    <button :class="{ active: filters.category.includes('韓式') }" @click="applyFilter('韓式')">韓式</button>
-    <button :class="{ active: filters.promo.includes('免運費') }" @click="applyFilter('免運費')">免運費</button>
+    <!-- <button :class="{ active: filters.category.length === 0 && filters.promo.length === 0 }" @click="applyFilter('全部')">該訂便當了吧</button> -->
+    <button :class="{ active: filters.category.includes('全部') }" @click="applyFilter('全部')">該訂便當了吧</button>
+    <button :class="{ active: filters.category.includes('中式') }" @click="applyFilter('中式')">夏日炎炎 來點清涼的吧!~</button>
+    <button :class="{ active: filters.category.includes('日式') }" @click="applyFilter('日式')">小孩放電好去處</button>
+    <button :class="{ active: filters.category.includes('西式') }" @click="applyFilter('西式')">燒烤! 啤酒! 嚕串!</button>
+    <button :class="{ active: filters.category.includes('韓式') }" @click="applyFilter('韓式')">想跟大夥一起看球賽嗎?</button>
+    <button :class="{ active: filters.promo.includes('免運費') }" @click="applyFilter('免運費')">猜你喜歡</button>
   </div>
 </template>
 

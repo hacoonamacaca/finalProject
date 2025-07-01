@@ -20,7 +20,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import CouponSelectorModal from '../components/CouponSelectorModal.vue'
+import CouponSelectorModal from '@/components/Yifan/CouponSelectorModal.vue'
 import globalImg from '@/assets/vouchers/global.png'
 import restaurantImg from '@/assets/vouchers/restaurant.png'
 import foodImg from '@/assets/vouchers/food.png'

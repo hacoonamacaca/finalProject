@@ -1,34 +1,22 @@
-<template>
-    <section class="popout" v-if="showPopout">
-      <div class="popout-content">
-        <button class="close-btn" @click="showPopout = false">✕</button>
-        <input type="text" placeholder="輸入您的地址" @focus="address = ''" v-model="address" />
-        <button class="search-btn" @click="searchAddress">搜尋</button>
-      </div>
-    </section>
-  
+<template>  
     <!-- 附近熱門美食 -->
-    <section class="popular-section" v-if="address != ''">
+    <section class="popular-section" v-if="address != ''">      
       <h2>附近熱門美食</h2>
       <div class="restaurant-scroll">
         <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
-          <img :src="restaurant.image" :alt="restaurant.name" />
+          <img :src="restaurant.image" :alt="restaurant.name" @click="$router.push(`/restaurant/${restaurant.id}`)" style="cursor: pointer;" />
           <div class="info">
-            <h3>{{ restaurant.name }}</h3>
-            <p>{{ restaurant.category }} • {{ restaurant.deliveryTime }} 分鐘</p>
-            <p>{{ restaurant.score }} <Comment v-if="restaurant.comment.length > 0" :comments="restaurant.comment" /></p>
-            <div class="tags">
-              <span v-for="tag in restaurant.tags" :key="tag">{{ tag }}</span>
-            </div>
+            <h3>{{ restaurant.name }} {{ restaurant.score }}★<Comment v-if="restaurant.comments?.length > 0" :comments="restaurant.comments" :comment-count="restaurant.comments.length" /></h3>
+            
           </div>
         </div>
       </div>
     </section>
-  
+
     <!-- 搜尋與位置區域 -->
     <section class="hero-section">
       <div class="search-container">
-        <input type="text" placeholder="金碗 您 想來點甚麼呢?" v-model="searched" @focus="showDropdown = true"
+        <input type="text" placeholder="金碗 您 想來點甚麼呢?" v-model="searched" @focus="handleFocus"
           @blur="hideDropdownWithDelay" @input="filterSuggestions" @keydown.enter="handleSearch" />
         <button @click="handleSearch">搜尋</button>
         <div class="search-dropdown" v-show="showDropdown">
@@ -80,12 +68,12 @@
       <!-- 餐廳列表 -->
       <section class="restaurant-list">
         <div class="restaurant-card" v-for="restaurant in filteredRestaurants" :key="restaurant.id">
-          <img :src="restaurant.image" :alt="restaurant.name" @click="$router.push(`/`)" style="cursor: pointer;" />
+          <img :src="restaurant.image" :alt="restaurant.name" @click="$router.push(`/restaurant/${restaurant.id}`)" style="cursor: pointer;" />
           <div class="info">
             <h3>{{ restaurant.name }}</h3>
             <p>{{ restaurant.category }} • {{ restaurant.deliveryTime }} 分鐘 • {{ restaurant.promo || '' }}</p>
-            <p>{{ restaurant.score }}
-              <Comment v-if="restaurant.comment.length > 0" :comments="restaurant.comment" />
+            <p>{{ restaurant.score }}★
+              <Comment v-if="restaurant.comments?.length > 0" :comments="restaurant.comments" :comment-count="restaurant.comments.length" />
             </p>
             <div class="tags">
               <span v-for="tag in restaurant.tags" :key="tag">{{ tag }}</span>
@@ -108,11 +96,37 @@
   </template>
   
   <script setup>
-  import { ref, computed, onMounted } from 'vue';
+  import { ref, computed, onMounted, watch } from 'vue';
   import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
   import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
   import Comment from '@/components/Jimmy/Comment.vue';
+  import { useRoute } from 'vue-router';
   
+  const route = useRoute();
+  const address = ref(''); 
+
+  // 從路由查詢參數獲取地址並設定給本地的 address
+  onMounted(() => {
+    filterSuggestions();
+    if (route.query.address) {
+      address.value = route.query.address;
+    }
+  });
+
+  // 監聽路由查詢參數的變化
+  watch(
+    () => route.query.address,
+    (newAddress) => {
+      if (newAddress) {
+        address.value = newAddress;
+      } else {
+        address.value = ''; // 如果沒有 address 參數，清空
+      }
+    },
+    { immediate: true } // 立即執行一次，確保在組件初始化時檢查
+  );
+
+
   const isSidebarActive = ref(false);
   const toggleSidebar = () => {
     isSidebarActive.value = !isSidebarActive.value;
@@ -126,6 +140,15 @@
   const filteredHistory = ref([]);
   const filteredHotSearches = ref([...hotSearches.value]);
   
+
+  // 處理焦點事件：清空輸入框並顯示下拉選單
+  const handleFocus = () => {
+    searched.value = ''; // 清空輸入框
+    showDropdown.value = true; // 顯示下拉選單
+    filterSuggestions(); // 更新建議列表
+  };
+
+
   const saveSearchHistory = () => {
     localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value));
   };
@@ -179,176 +202,174 @@
   });
   
   // 餐廳數據
-  const restaurants = ref([
-    {
-      id: 1,
-      name: '美味餐廳',
-      category: '中式',
-      deliveryTime: 25,
-      score: 4,
-      comment: 120,
-      tags: ['滷肉飯', '便當'],
-      image: '/image/giachi.jpg',
-      promo: '免運費',
-      popularityScore: 70,
-      comment: [
-        {
-          id: 1,
-          order_id: 1,
-          user_id: "Jimmy1",
-          content: "comment 01 der la",
-          score: 4,
-          create_time: "2023-10-01 10:00:00",
-          reply: "reply 01 der la",
-          reply_update_time: "2023-10-02 10:00:00",
-          is_hidden: false,
-          comment_img: [
-            { img: "/image/kiva.jpg" },
-            { img: "/image/kaimu.jpg" },
-            { img: "/image/kuga.jpg" }
-          ]
-        },
-        {
-          id: 2,
-          order_id: 3,
-          user_id: "Jimmy3",
-          content: "comment 02 der la",
-          score: 5,
-          create_time: "2023-10-02 10:00:00",
-          is_hidden: false,
-          comment_img: [
-            { img: "/image/zero1.jpg" },
-            { img: "/image/build.jpg" }
-          ]
-        },
-        {
-          id: 3,
-          order_id: 2,
-          user_id: "Tom",
-          content: "comment 03 der la",
-          score: 3,
-            create_time: "2023-10-02 10:00:00",
-            is_hidden: false,
-            comment_img: [
-              { img: "/image/pizza.jpg" }
-            ]
-          }
+const restaurants = ref([
+  {
+    id: 1,
+    name: '美味餐廳',
+    category: '中式',
+    deliveryTime: 25,
+    score: 4,
+    comments: [ // 將 comment 改為 comments
+      {
+        id: 1,
+        order_id: 1,
+        user_id: "Jimmy1",
+        content: "comment 01 der la",
+        score: 4,
+        create_time: "2023-10-01 10:00:00",
+        reply: "reply 01 der la",
+        reply_update_time: "2023-10-02 10:00:00",
+        is_hidden: false,
+        comment_img: [
+          { img: "/image/kiva.jpg" },
+          { img: "/image/kaimu.jpg" },
+          { img: "/image/kuga.jpg" }
         ]
       },
       {
         id: 2,
-        name: '壽司之家',
-        category: '日式',
-        deliveryTime: 10,
+        order_id: 3,
+        user_id: "Jimmy3",
+        content: "comment 02 der la",
         score: 5,
-        comment: 200,
-        tags: ['壽司', '生魚片'],
-        image: '/image/sooshi.jpg',
-        promo: '',
-        popularityScore: 80,
-        comment: [
-          {
-            id: 4,
-            order_id: 1,
-            user_id: "Jimmy1",
-            content: "comment 04 der la",
-            score: 1,
-            create_time: "2023-10-01 10:00:00",
-            reply: "reply 02 der la",
-            reply_update_time: "2023-10-02 10:00:00",
-            is_hidden: false,
-            comment_img: [
-              { img: "/image/kaimu.jpg" },
-              { img: "/image/kuga.jpg" }
-            ]
-          },
-          {
-            id: 5,
-            order_id: 4,
-            user_id: "Bob",
-            content: "comment 05 der la",
-            score: 5,
-            create_time: "2023-10-02 10:00:00",
-            is_hidden: false,
-            comment_img: [
-              { img: "/image/build.jpg" }
-            ]
-          }
+        create_time: "2023-10-02 10:00:00",
+        is_hidden: false,
+        comment_img: [
+          { img: "/image/zero1.jpg" },
+          { img: "/image/build.jpg" }
         ]
       },
       {
         id: 3,
-        name: '披薩樂園',
-        category: '西式',
-        deliveryTime: 30,
-        score: 4.5,
-        comment: 150,
-        tags: ['披薩', '義大利麵'],
-        image: '/image/pizza.jpg',
-        promo: '滿 $200 免運',
-        popularityScore: 85,
-      },
+        order_id: 2,
+        user_id: "Tom",
+        content: "comment 03 der la",
+        score: 3,
+        create_time: "2023-10-02 10:00:00",
+        is_hidden: false,
+        comment_img: [
+          { img: "/image/pizza.jpg" }
+        ]
+      }
+    ],
+    tags: ['滷肉飯', '便當'],
+    image: '/image/giachi.jpg',
+    promo: '免運費',
+    popularityScore: 70
+  },
+  {
+    id: 2,
+    name: '壽司之家',
+    category: '日式',
+    deliveryTime: 10,
+    score: 5,
+    comments: [ // 將 comment 改為 comments
       {
         id: 4,
-        name: '韓式炸雞',
-        category: '韓式',
-        deliveryTime: 8,
-        score: 2,
-        comment: 80,
-        tags: ['炸雞', '泡菜'],
-        image: '/image/fryC.jpg',
-        promo: '折扣',
-        popularityScore: 65,
+        order_id: 1,
+        user_id: "Jimmy1",
+        content: "comment 04 der la",
+        score: 1,
+        create_time: "2023-10-01 10:00:00",
+        reply: "reply 02 der la",
+        reply_update_time: "2023-10-02 10:00:00",
+        is_hidden: false,
+        comment_img: [
+          { img: "/image/kaimu.jpg" },
+          { img: "/image/kuga.jpg" }
+        ]
       },
       {
         id: 5,
-        name: 'haha餐廳',
-        category: '中式',
-        deliveryTime: 25,
-        score: 3,
-        comment: 120,
-        tags: ['滷肉飯', '便當'],
-        image: '/image/giachi2.jpg',
-        promo: '免運費',
-        popularityScore: 67,
-      },
-      {
-        id: 6,
-        name: 'lala之家',
-        category: '日式',
-        deliveryTime: 10,
-        score: 3.5,
-        comment: 200,
-        tags: ['壽司', '生魚片'],
-        image: '/image/sooshi2.jpg',
-        promo: '',
-        popularityScore: 75,
-      },
-      {
-        id: 7,
-        name: 'wola樂園',
-        category: '西式',
-        deliveryTime: 30,
+        order_id: 4,
+        user_id: "Bob",
+        content: "comment 05 der la",
         score: 5,
-        comment: 150,
-        tags: ['披薩', '義大利麵'],
-        image: '/image/pizza2.jpg',
-        promo: '滿 $200 免運',
-        popularityScore: 90,
-      },
-      {
-        id: 8,
-        name: 'GG炸雞',
-        category: '韓式',
-        deliveryTime: 8,
-        score: 4.5,
-        comment: 80,
-        tags: ['炸雞', '泡菜'],
-        image: '/image/fryC2.jpg',
-        promo: '折扣',
-        popularityScore: 70,
-      },
-    ]);
+        create_time: "2023-10-02 10:00:00",
+        is_hidden: false,
+        comment_img: [
+          { img: "/image/build.jpg" }
+        ]
+      }
+    ],
+    tags: ['壽司', '生魚片'],
+    image: '/image/sooshi.jpg',
+    promo: '',
+    popularityScore: 80
+  },
+  {
+    id: 3,
+    name: '披薩樂園',
+    category: '西式',
+    deliveryTime: 30,
+    score: 4.5,
+    comments: [], // 補充空的 comments 數組
+    tags: ['披薩', '義大利麵'],
+    image: '/image/pizza.jpg',
+    promo: '滿 $200 免運',
+    popularityScore: 85
+  },
+  {
+    id: 4,
+    name: '韓式炸雞',
+    category: '韓式',
+    deliveryTime: 8,
+    score: 2,
+    comments: [], // 補充空的 comments 數組
+    tags: ['炸雞', '泡菜'],
+    image: '/image/fryC.jpg',
+    promo: '折扣',
+    popularityScore: 65
+  },
+  {
+    id: 5,
+    name: 'haha餐廳',
+    category: '中式',
+    deliveryTime: 25,
+    score: 3,
+    comments: [], // 補充空的 comments 數組
+    tags: ['滷肉飯', '便當'],
+    image: '/image/giachi2.jpg',
+    promo: '免運費',
+    popularityScore: 67
+  },
+  {
+    id: 6,
+    name: 'lala之家',
+    category: '日式',
+    deliveryTime: 10,
+    score: 3.5,
+    comments: [], // 補充空的 comments 數組
+    tags: ['壽司', '生魚片'],
+    image: '/image/sooshi2.jpg',
+    promo: '',
+    popularityScore: 75
+  },
+  {
+    id: 7,
+    name: 'wola樂園',
+    category: '西式',
+    deliveryTime: 30,
+    score: 5,
+    comments: [], // 補充空的 comments 數組
+    tags: ['披薩', '義大利麵'],
+    image: '/image/pizza2.jpg',
+    promo: '滿 $200 免運',
+    popularityScore: 90
+  },
+  {
+    id: 8,
+    name: 'GG炸雞',
+    category: '韓式',
+    deliveryTime: 8,
+    score: 4.5,
+    comments: [], // 將 comment: 80 改為 comments: []
+    tags: ['炸雞', '泡菜'],
+    image: '/image/fryC2.jpg',
+    promo: '折扣',
+    popularityScore: 70
+  }
+]);
   
     // 篩選條件
     const filters = ref({
@@ -397,7 +418,7 @@
       // 觸發篩選更新
     };
   
-    onMounted(() => {
+    onMounted(() => {      
       filterSuggestions();
     });
   </script>
@@ -462,11 +483,11 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
-  .popular-section h2 {
+  /* .popular-section h2 {
     font-size: 12px;
     margin-bottom: 7.5px;
     color: #333;
-  }
+  } */
   
   .restaurant-scroll {
     display: flex;
@@ -486,8 +507,8 @@
   }
   
   .restaurant-scroll .restaurant-card {
-    flex: 0 0 140px;
-    width: 140px;
+    flex: 0 0 200px;
+    width: 200px;
   }
   
   .restaurant-card img {
