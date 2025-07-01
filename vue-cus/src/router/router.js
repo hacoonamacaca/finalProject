@@ -3,24 +3,36 @@ import {
     createWebHistory
 } from 'vue-router'
 
-import Home from "@/views/Home.vue"
+import Home from "@/views/Jimmy/Home.vue"
 import NotFound from "@/views/NotFound.vue"
 import Forbidden from "@/views/Forbidden.vue"
 
-import Search from "@/views/Search.vue"
-import OrderList from "@/views/OrderList.vue"
-import VoucherWallet from "@/views/VoucherWallet.vue"
-import CheckoutCoupon from '@/pages/CheckoutCoupon.vue'
+import Search from "@/views/Jimmy/Search.vue"
+import OrderList from "@/views/Ted/OrderList.vue"
+import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
+import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
+import Register from '@/components/Ivy/RegisterModal.vue'
+import VerifyPending from '@/views/Ivy/VerifyPending.vue'
+import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
 import {
     getRestaurantById
 } from "@/restaurant-module"
-
 
 
 const routes = [{
         path: "/",
         component: Home,
         name: "home-link"
+    },
+    {
+        path: "/:pathMatch(.*)*",
+        component: NotFound,
+        name: "404-link"
+    },
+    {
+        path: "/403",
+        component: Forbidden,
+        name: "403-link"
     },
     {
         path: "/search",
@@ -43,24 +55,38 @@ const routes = [{
         component: CheckoutCoupon
     },
     {
+        path: '/',
+        component: Home
+    },
+    {
+        path: '/register',
+        component: Register
+    },
+    {
+        path: '/verify-pending',
+        component: VerifyPending
+    },
+    {
+        path: '/register-profile',
+        component: RegisterProfile
+    },
+    {
+        path: '/resetPasswordEmail',
+        name: 'ResetPasswordEmail',
+        component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
+        props: router => ({
+            email: router.query.email
+        })
+    },
+    {
         // 餐廳頁面路由
         path: "/restaurant/:id",
         name: "Restaurant",
-        component: () => import("@/views/RestaurantPage.vue"),
+        component: () => import("@/views/KTlu/RestaurantPage.vue"),
         props: (route) => ({
             restaurant: getRestaurantById(parseInt(route.params.id)),
         }),
     },
-    {
-        path: "/403",
-        component: Forbidden,
-        name: "403-link"
-    },
-    {
-        path: "/:pathMatch(.*)*",
-        component: NotFound,
-        name: "404-link"
-    }
 ];
 
 const router = createRouter({

@@ -66,7 +66,7 @@ const hideTooltip = () => {
 }
 
 .report-btn:hover {
-    color: #d70f64;
+    color: #ffba20;
 }
 
 .report-dropdown {
