@@ -67,7 +67,7 @@
         text-align: center;
     }
     .main-email {
-        color: #ec1d6f; 
+        color: #f1cd78; 
         font-weight: bold; 
         font-size: 1.07em;
     }
@@ -91,10 +91,10 @@
         margin-bottom: 22px; outline: none;
     }
     .input:focus {
-        border-color: #ec1d6f;
+        border-color: #f1cd78;
     }
     .btn-submit {
-        background: #ec1d6f; 
+        background: #f1cd78; 
         color: #fff; 
         border: none; 
         border-radius: 8px; 

@@ -6,93 +6,93 @@
             </h4>
             <form @submit.prevent="onSubmit">
                 <!-- 餐廳名稱 -->
+                <!-- required  放在v-model後-->
                 <div class="mb-3 position-relative">
                     <input
                         type="text"
                         class="form-control form-input"
                         v-model="storeName"
-                        required
                         placeholder="餐廳或商店名稱 *"
                     />
                 </div>
                 <!-- 負責人名字 -->
+                <!-- required  放在v-model後-->
                 <div class="mb-3 position-relative">
                     <input
                         type="text"
                         class="form-control form-input"
                         v-model="managerFirstName"
-                        required
                         placeholder="負責人名字(不包含姓氏) *"
                     />
                 </div>
                 <!-- 負責人姓氏 -->
+                <!-- required  放在v-model後-->
                 <div class="mb-3 position-relative">
                     <input
                         type="text"
                         class="form-control form-input"
                         v-model="managerLastName"
-                        required
                         placeholder="負責人姓氏 *"
                     />
                 </div>
                 <!-- 電子郵件 -->
+                <!-- required  放在v-model後-->
                 <div class="mb-3">
                     <input
                         type="email"
                         class="form-control form-input"
                         v-model="email"
-                        required
                         placeholder="電子郵件 *"
                     />
                 </div>
                 <!-- 設定密碼 -->
+                <!-- required  放在v-model後-->
                 <div class="mb-3 position-relative">
                     <input
                         :type="showPwd1 ? 'text' : 'password'"
                         class="form-control form-input"
                         v-model="password"
-                        required
                         placeholder="請設定密碼 *"
                     />
                     <button type="button" class="eye-btn" @click="showPwd1 = !showPwd1" tabindex="-1">
                     <!-- 眼睛 icon 開關 -->
                     <svg v-if="!showPwd1" width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#EC1D6F" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#f1cd78" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#EC1D6F" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#f1cd78" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     </button>
                 </div>
                 <!-- 再次確認密碼 -->
+                <!-- required  放在v-model後-->
                 <div class="mb-3 position-relative">
                     <input
                         :type="showPwd2 ? 'text' : 'password'"
                         class="form-control form-input"
                         v-model="passwordConfirm"
-                        required
                         placeholder="請再次確認密碼 *"
                     />
                     <button type="button" class="eye-btn" @click="showPwd2 = !showPwd2" tabindex="-1">
                         <svg v-if="!showPwd2" width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#EC1D6F" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#f1cd78" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#EC1D6F" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#f1cd78" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     </button>
                     <div v-if="error" class="text-danger small mt-1">{{ error }}</div>
                 </div>
                 <!-- 商家種類 -->
+                <!-- required  放在v-model後-->
                 <div class="mb-3">
                     <select
                         class="form-select form-input"
                         v-model="storeType"
-                        required
                     >
                         <option value="" disabled>商家種類 *</option>
                         <option value="餐廳店家">餐廳店家</option>
@@ -109,12 +109,12 @@
                         />
                         <span class="ms-1">+886</span>
                     </div>
+                    <!-- required  放在pattern後-->
                     <input
                         type="tel"
                         class="form-control form-input"
                         v-model="phone"
                         pattern="[0-9]{9,10}"
-                        required
                         placeholder="聯絡電話 *"
                         style="flex:1"
                     />
@@ -213,7 +213,7 @@ const router = useRouter()
 }
 
 .btn-main {
-    background: #EC1D6F;
+    background: #f1cd78;
     color: #fff;
     font-weight: bold;
     font-size: 20px;
@@ -222,16 +222,16 @@ const router = useRouter()
     border: none;
     letter-spacing: 2px;
     transition: filter 0.15s;
-    box-shadow: 0 2px 8px 1px #ec1d6f0f;
+    box-shadow: 0 2px 8px 1px #f1cd780f;
 }
 
 .btn-main:hover {
     filter: brightness(1.08);
-    background: #e0126c;
+    background: #ffc94d;
 }
 
 .text-danger {
-    color: #e0126c;
+    color: #ffc94d;
 }
 
 .small {

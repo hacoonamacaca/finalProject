@@ -10,16 +10,18 @@
             </div>
             <form @submit.prevent="onSubmit">
                 <!-- 餐廳名稱 -->
+                <!--required放在v-model --> 
                 <div class="mb-3 position-relative">
-                    <input type="text" class="form-control" v-model="storeName" required placeholder="餐廳或商店名稱 *" />
+                    <input type="text" class="form-control" v-model="storeName" placeholder="餐廳或商店名稱 *" />
                     <span class="qmark" tabindex="0" title="請填寫完整店名">
                         <svg width="19" height="19" fill="none" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="#EC1D6F" stroke-width="2" />
-                            <text x="7" y="16" font-size="13" fill="#EC1D6F">?</text>
+                            <circle cx="12" cy="12" r="10" stroke="#f1cd78" stroke-width="2" />
+                            <text x="7" y="16" font-size="13" fill="#f1cd78">?</text>
                         </svg>
                     </span>
                 </div>
                 <!-- 英文名 -->
+                <!--required放在v-model --> 
                 <div class="mb-3">
                     <input type="text" class="form-control" v-model="storeNameEn" placeholder="餐廳或商店英譯名稱 *" />
                 </div>
@@ -30,30 +32,33 @@
                         style="text-decoration: underline;">crptransfer.moe.gov.tw
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 16 16"
                             style="margin-left:2px;margin-bottom:2px;">
-                            <path d="M6 2h7v7M13 3L6 10" stroke="#EC1D6F" stroke-width="1.5" stroke-linecap="round"
+                            <path d="M6 2h7v7M13 3L6 10" stroke="#f1cd78" stroke-width="1.5" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
                     </a>
                 </div>
                 <!-- 商家類型 -->
+                <!--required放在v-model -->
                 <div class="mb-3">
-                    <select class="form-select" v-model="storeType" required>
+                    <select class="form-select" v-model="storeType">
                         <option value="" disabled>商家種類 *</option>
                         <option value="餐廳店家">餐廳店家</option>
                         <option value="生鮮雜貨店家">生鮮雜貨店家</option>
                     </select>
                 </div>
                 <!-- 商家類型 -->
+                <!--required放在v-model --> 
                 <div class="mb-3">
-                    <select class="form-select" v-model="storeCategory" required>
+                    <select class="form-select" v-model="storeCategory">
                         <option value="" disabled>商家類型 *</option>
                         <option value="實體餐廳">實體餐廳</option>
                         <option value="雲端廚房/自宅出餐">雲端廚房/自宅出餐</option>
                     </select>
                 </div>
                 <!-- 選擇商家類型後才顯示 餐點類型 -->
+                <!--required放在v-model --> 
                 <div class="mb-3" v-if="storeCategory">
-                    <select class="form-select" v-model="mealType" required>
+                    <select class="form-select" v-model="mealType">
                         <option value="" disabled>餐點類型 *</option>
                         <option value="中式料理">中式料理</option>
                         <option value="健康食品">健康食品</option>
@@ -74,12 +79,13 @@
                     </select>
                 </div>
                 <!-- 電話 -->
+                <!--required放在v-model --> 
                 <div class="mb-3 d-flex align-items-center">
                     <div class="flag-box d-flex align-items-center px-2 me-2">
                         <img src="https://flagcdn.com/h20/tw.png" alt="台灣" style="width:22px; height:16px" />
                         <span class="ms-1">+886</span>
                     </div>
-                    <input type="tel" class="form-control" v-model="phone" pattern="[0-9]{9,10}" required
+                    <input type="tel" class="form-control" v-model="phone" pattern="[0-9]{9,10}"
                         placeholder="行動電話 *" style="flex:1" />
                 </div>
                 <!-- 電話checkbox -->
@@ -96,13 +102,13 @@
                     </label>
                     <div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" v-model="isCitizen" value="是" id="isCitizenY"
-                                required>
+                            <!--required放在input id="isCitizenY" --> 
+                            <input class="form-check-input" type="radio" v-model="isCitizen" value="是" id="isCitizenY">
                             <label class="form-check-label" for="isCitizenY">是</label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" v-model="isCitizen" value="否" id="isCitizenN"
-                                required>
+                            <!--required放在input id="isCitizenN" --> 
+                            <input class="form-check-input" type="radio" v-model="isCitizen" value="否" id="isCitizenN">
                             <label class="form-check-label" for="isCitizenN">否</label>
                         </div>
                     </div>
@@ -174,22 +180,22 @@ function onSubmit() {
 }
 
 .btn-main {
-    background: #EC1D6F;
+    background: #f1cd78;
     color: #fff;
     font-weight: bold;
     font-size: 20px;
     border-radius: 10px;
     border: none;
     transition: filter 0.15s;
-    box-shadow: 0 2px 8px 1px #ec1d6f0f;
+    box-shadow: 0 2px 8px 1px #f1cd780f;
 }
 
 .btn-main:hover {
     filter: brightness(1.08);
-    background: #e0126c;
+    background: #ffc94d;
 }
 
 .text-pink {
-    color: #EC1D6F;
+    color: #f1cd78;
 }
 </style>

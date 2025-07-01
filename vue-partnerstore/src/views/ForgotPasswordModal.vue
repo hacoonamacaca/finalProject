@@ -132,11 +132,11 @@
         box-shadow: none;
     }
     .custom-input:focus {
-        border-color: #ec1d6f;
-        box-shadow: 0 0 0 1px #ec1d6f21;
+        border-color: #f1cd78;
+        box-shadow: 0 0 0 1px #f1cd7821;
     }
     .btn-main {
-        background: #EC1D6F;
+        background: #f1cd78;
         color: #fff;
         font-weight: bold;
         font-size: 20px;
@@ -145,14 +145,14 @@
         border: none;
         letter-spacing: 2px;
         transition: filter 0.15s;
-        box-shadow: 0 2px 8px 1px #ec1d6f0f;
+        box-shadow: 0 2px 8px 1px #f1cd780f;
     }
     .btn-main:hover {
         filter: brightness(1.08);
-        background: #e0126c;
+        background: #ffc94d;
     }
     .btn-link {
-        color: #EC1D6F;
+        color: #f1cd78;
         background: none;
         border: none;
         font-weight: bold;

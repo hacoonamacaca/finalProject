@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
             <div class="modal-header border-0 pb-0 justify-content-between">
-                <button class="btn nav-btn" @click="emit('register')">
+                <button class="btn nav-btn" @click="emit('back')">
                 <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                     <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -29,7 +29,7 @@
     <script setup>
     import { ref } from 'vue'
     const props = defineProps({ show: Boolean })
-    const emit = defineEmits(['close', 'submit', 'register'])
+    const emit = defineEmits(['close', 'submit', 'register', 'back'])
     const email = ref('')
     function onSubmit() {
         emit('submit', email.value)
@@ -126,11 +126,11 @@
         box-shadow: none;
     }
     .custom-input:focus {
-        border-color: #ec1d6f;
-        box-shadow: 0 0 0 1px #ec1d6f21;
+        border-color: #f1cd78;
+        box-shadow: 0 0 0 1px #f1cd7821;
     }
     .btn-main {
-        background: #EC1D6F;
+        background: #f1cd78;
         color: #fff;
         font-weight: bold;
         font-size: 20px;
@@ -140,11 +140,11 @@
         margin-top: 18px;
         letter-spacing: 2px;
         transition: filter 0.15s;
-        box-shadow: 0 2px 8px 1px #ec1d6f0f;
+        box-shadow: 0 2px 8px 1px #f1cd780f;
     }
     .btn-main:hover {
         filter: brightness(1.08);
-        background: #e0126c;
+        background: #ffc94d;
     }
     </style>
     

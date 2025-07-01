@@ -262,22 +262,22 @@
     box-shadow: 0 2px 18px 4px rgba(0,0,0,0.08); 
     padding: 38px 24px 28px 24px; }
 .btn-main { 
-    background: #EC1D6F; 
+    background: #f1cd78; 
     color: #fff; 
     font-weight: bold; 
     font-size: 20px; 
     border-radius: 10px; 
     border: none; 
     transition: filter 0.15s; 
-    box-shadow: 0 2px 8px 1px #ec1d6f0f; 
+    box-shadow: 0 2px 8px 1px #f1cd780f; 
     height: 48px; 
 }
 .btn-main:hover { 
     filter: brightness(1.08); 
-    background: #e0126c; 
+    background: #ffc94d; 
 }
 .text-pink { 
-    color: #EC1D6F; 
+    color: #f1cd78; 
     font-weight: 600; 
 }
 .custom-suggest-list { 

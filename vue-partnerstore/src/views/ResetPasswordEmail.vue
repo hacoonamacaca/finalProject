@@ -14,7 +14,7 @@
         </button>
         <div class="mt-5 text-end w-100" style="max-width: 350px;">
             謝謝，<br>
-            <span style="color: #EC1D6F; font-weight: bold;">您的 foodpanda 團隊</span>
+            <span style="color: #f1cd78; font-weight: bold;">您的 foodpanda 團隊</span>
         </div>
         <!--當showReset為true時顯示重設密碼對話框-->
         <ResetPasswordDialog
@@ -57,7 +57,7 @@
     
     <style scoped>
     .btn-main {
-        background: #EC1D6F;
+        background: #f1cd78;
         color: #fff;
         font-weight: bold;
         font-size: 20px;
@@ -66,11 +66,11 @@
         border: none;
         letter-spacing: 2px;
         transition: filter 0.15s;
-        box-shadow: 0 2px 8px 1px #ec1d6f0f;
+        box-shadow: 0 2px 8px 1px #f1cd780f;
     }
     .btn-main:hover {
         filter: brightness(1.08);
-        background: #e0126c;
+        background: #ffc94d;
     }
     </style>
     

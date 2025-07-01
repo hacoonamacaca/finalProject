@@ -5,13 +5,13 @@
             嗨，感謝您的註冊待審核後通知
         </div>
         <hr class="w-100" />
-        <!-- <button class="btn btn-main my-4 px-5" @click="handleVerify">
-            驗證電子郵件地址
-        </button> -->
-        <div class="mt-5 text-end w-100" style="max-width: 350px;">
+        <button class="btn btn-main my-4 px-5" @click="handleVerify">
+            返回首頁
+        </button>
+        <!-- <div class="mt-5 text-end w-100" style="max-width: 350px;">
             謝謝，<br>
-            <span style="color: #EC1D6F; font-weight: bold;">您的 foodpanda 團隊</span>
-        </div>
+            <span style="color: #f1cd78; font-weight: bold;">您的 foodpanda 團隊</span>
+        </div> -->
         </div>
     </template>
     
@@ -26,7 +26,7 @@ const email = route.query.email || ''
 function handleVerify() {
     // 這裡可以呼叫 API 查驗證狀態，成功就導頁
     router.push({
-        path: '/register-profile',
+        path: '/',
         query: { email }
     })
 }
@@ -34,7 +34,7 @@ function handleVerify() {
     
     <style scoped>
     .btn-main {
-        background: #EC1D6F;
+        background: #f1cd78;
         color: #fff;
         font-weight: bold;
         font-size: 20px;
@@ -43,11 +43,11 @@ function handleVerify() {
         border: none;
         letter-spacing: 2px;
         transition: filter 0.15s;
-        box-shadow: 0 2px 8px 1px #ec1d6f0f;
+        box-shadow: 0 2px 8px 1px #f1cd780f;
     }
     .btn-main:hover {
         filter: brightness(1.08);
-        background: #e0126c;
+        background: #ffc94d;
     }
     </style>
     

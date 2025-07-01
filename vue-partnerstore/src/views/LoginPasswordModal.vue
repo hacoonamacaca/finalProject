@@ -27,17 +27,17 @@
                     <button type="button" class="eye-btn" @click="showPassword = !showPassword" tabindex="-1">
                     <!-- 眼睛 icon 開關 -->
                     <svg v-if="!showPassword" width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#EC1D6F" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#f1cd78" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#EC1D6F" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#f1cd78" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     </button>
                 </div>
                 <div class="mb-3 text-start">
-                    <a href="#" style="color: #EC1D6F;font-weight:600;text-decoration: underline" @click.prevent="emit('forgot')">
+                    <a href="#" style="color: #f1cd78;font-weight:600;text-decoration: underline" @click.prevent="emit('forgot')">
                     忘記密碼？
                     </a>
                 </div>
@@ -131,7 +131,7 @@
         margin-bottom: 0;
     }
     .btn-main {
-        background: #EC1D6F;
+        background: #f1cd78;
         color: #fff;
         font-weight: bold;
         font-size: 20px;
@@ -140,7 +140,7 @@
         border: none;
         letter-spacing: 2px;
         transition: filter 0.15s;
-        box-shadow: 0 2px 8px 1px #ec1d6f0f;
+        box-shadow: 0 2px 8px 1px #f1cd780f;
     }
     .btn-main:disabled {
         background: #d5d5d5;
@@ -148,7 +148,7 @@
     }
     .btn-main:hover:enabled {
         filter: brightness(1.08);
-        background: #e0126c;
+        background: #ffc94d;
     }
     .eye-btn {
         position: absolute;

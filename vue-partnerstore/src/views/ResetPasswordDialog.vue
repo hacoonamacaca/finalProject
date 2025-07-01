@@ -10,12 +10,12 @@
                     <button class="eye-btn" @click="showPwd1 = !showPwd1" type="button" tabindex="-1">
                     <!-- 眼睛 icon 開關 -->
                     <svg v-if="!showPwd1" width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#EC1D6F" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#f1cd78" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#EC1D6F" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#f1cd78" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     </button>
                 </div>
@@ -26,17 +26,17 @@
                     <input :type="showPwd2 ? 'text' : 'password'" v-model="password2" class="input" placeholder="再次輸入新密碼" />
                     <button class="eye-btn" @click="showPwd2 = !showPwd2" type="button" tabindex="-1">
                         <svg v-if="!showPwd2" width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#EC1D6F" stroke-width="2"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#f1cd78" stroke-width="2"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
-                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#EC1D6F" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2"/>
+                        <path d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22" stroke="#f1cd78" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2"/>
                     </svg>
                     </button>
                 </div>
             </div>
-            <div v-if="error" class="error mb-2" style="color:#e0126c">{{ error }}</div>
+            <div v-if="error" class="error mb-2" style="color:#ffc94d">{{ error }}</div>
             <button class="btn-main w-100 mt-2" @click="submit">送出</button>
         </div>
     </div>
@@ -136,7 +136,7 @@ function submit() {
     padding: 0 6px;
 }
 .btn-main {
-    background: #EC1D6F;
+    background: #f1cd78;
     color: #fff;
     font-weight: bold;
     font-size: 18px;
@@ -144,12 +144,12 @@ function submit() {
     border: none;
     height: 46px;
     transition: filter 0.15s;
-    box-shadow: 0 2px 8px 1px #ec1d6f0f;
+    box-shadow: 0 2px 8px 1px #f1cd780f;
     margin-top: 10px;
 }
 .btn-main:hover {
     filter: brightness(1.08);
-    background: #e0126c;
+    background: #ffc94d;
 }
 .label {
     font-size: 15px;
@@ -157,7 +157,7 @@ function submit() {
     color: #222;
 }
 .error {
-    color: #e0126c;
+    color: #ffc94d;
     font-size: 15px;
     margin-bottom: 5px;
 }
