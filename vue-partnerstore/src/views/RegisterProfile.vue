@@ -22,14 +22,14 @@
                         class="form-control custom-input" placeholder="密碼" required autocomplete="new-password" />
                     <button type="button" class="eye-btn" @click="togglePassword" tabindex="-1">
                         <svg v-if="!showPassword" width="22" height="22" fill="none" viewBox="0 0 24 24">
-                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#f1cd78" stroke-width="2" />
-                            <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2" />
+                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ffba20" stroke-width="2" />
+                            <circle cx="12" cy="12" r="3" stroke="#ffba20" stroke-width="2" />
                         </svg>
                         <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
                             <path
                                 d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22"
-                                stroke="#f1cd78" stroke-width="2" stroke-linecap="round" />
-                            <circle cx="12" cy="12" r="3" stroke="#f1cd78" stroke-width="2" />
+                                stroke="#ffba20" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="12" cy="12" r="3" stroke="#ffba20" stroke-width="2" />
                         </svg>
                     </button>
                 </div>
@@ -204,7 +204,7 @@ function onSubmit() {
 }
 
 .btn-main {
-    background: #f1cd78;
+    background: #ffba20;
     color: #fff;
     font-weight: bold;
     font-size: 20px;
@@ -213,7 +213,7 @@ function onSubmit() {
     border: none;
     letter-spacing: 2px;
     transition: filter 0.15s;
-    box-shadow: 0 2px 8px 1px #f1cd780f;
+    box-shadow: 0 2px 8px 1px #ffba200f;
 }
 
 .btn-main:disabled {
@@ -223,7 +223,7 @@ function onSubmit() {
 
 .btn-main:hover:enabled {
     filter: brightness(1.08);
-    background: #ffc94d;
+    background: #ffba20;
 }
 
 .eye-btn {

@@ -54,20 +54,10 @@ import ResetPasswordDialog from '@/views/Ivy/ResetPasswordDialog.vue'
 const step = ref('')            // 控制哪個modal開
 const userEmail = ref('')       // 存email
 const userFullName = ref('')   // 登入後要顯示的名字
-const showMenu = ref(false)     // 顯示下拉選單
 const showReset = ref(false)    // 顯示重設密碼 dialog
 onMounted(() => {
     userFullName.value = localStorage.getItem('userFullName') || ''
 })
-
-function toggleMenu() {
-    showMenu.value = !showMenu.value
-}
-
-function goProfile() {
-    showMenu.value = false
-    router.push('/profile')
-}
 
 function logout() {
     localStorage.removeItem('userFullName')
@@ -126,19 +116,6 @@ function handleForgotSubmit(email) {
     })
 }
 
-function handleCompleteRegistration(firstName) {
-    localStorage.setItem('userFullName', fullName)
-    router.push('/')
-    userFullName.value = firstName
-}
-
-function onResetPassword(newPwd) {
-    showReset.value = false
-    // 假設 API call 完成後
-    router.replace({ path: '/', })
-    // 再重新讀一次名字（通常你會從後端拿回名字再存）
-    userFullName.value = localStorage.getItem('userFullName') || ''
-}
 //------------------------------
 const isLoggedIn = ref(true);
 const cUser = ref(isLoggedIn.value ? "目前使用者*" : "請選擇登入身分"); // 修改初始值

@@ -6,36 +6,19 @@
                 <button class="btn btn-outline-secondary btn-sm" @click="onSaveDraft">儲存並離開</button>
             </div>
             <div class="mb-3 text-secondary" style="font-size:15px;">
-                此訊息將顯示在 foodpanda 平台上，以便消費者有任何問題時可以搜尋並與您聯繫。
+                此訊息將顯示在 金碗 平台上，以便消費者有任何問題時可以搜尋並與您聯繫。
             </div>
             <form @submit.prevent="onSubmit">
                 <!-- 餐廳名稱 -->
-                <!--required放在v-model --> 
-                <div class="mb-3 position-relative">
+                <!--required放在v-model -->
+                <div class="mb-3">
                     <input type="text" class="form-control" v-model="storeName" placeholder="餐廳或商店名稱 *" />
                     <span class="qmark" tabindex="0" title="請填寫完整店名">
                         <svg width="19" height="19" fill="none" viewBox="0 0 24 24">
-                            <circle cx="12" cy="12" r="10" stroke="#f1cd78" stroke-width="2" />
-                            <text x="7" y="16" font-size="13" fill="#f1cd78">?</text>
+                            <circle cx="12" cy="12" r="10" stroke="#ffba20" stroke-width="2" />
+                            <text x="7" y="16" font-size="13" fill="#ffba20">?</text>
                         </svg>
                     </span>
-                </div>
-                <!-- 英文名 -->
-                <!--required放在v-model --> 
-                <div class="mb-3">
-                    <input type="text" class="form-control" v-model="storeNameEn" placeholder="餐廳或商店英譯名稱 *" />
-                </div>
-                <!-- 小幫手 -->
-                <div class="mb-3 small text-secondary">
-                    小幫手：您可以使用此網站協助翻譯您的公司抬頭
-                    <a href="https://crptransfer.moe.gov.tw" target="_blank" class="text-pink fw-bold ms-1"
-                        style="text-decoration: underline;">crptransfer.moe.gov.tw
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" viewBox="0 0 16 16"
-                            style="margin-left:2px;margin-bottom:2px;">
-                            <path d="M6 2h7v7M13 3L6 10" stroke="#f1cd78" stroke-width="1.5" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
-                    </a>
                 </div>
                 <!-- 商家類型 -->
                 <!--required放在v-model -->
@@ -47,7 +30,7 @@
                     </select>
                 </div>
                 <!-- 商家類型 -->
-                <!--required放在v-model --> 
+                <!--required放在v-model -->
                 <div class="mb-3">
                     <select class="form-select" v-model="storeCategory">
                         <option value="" disabled>商家類型 *</option>
@@ -56,7 +39,7 @@
                     </select>
                 </div>
                 <!-- 選擇商家類型後才顯示 餐點類型 -->
-                <!--required放在v-model --> 
+                <!--required放在v-model -->
                 <div class="mb-3" v-if="storeCategory">
                     <select class="form-select" v-model="mealType">
                         <option value="" disabled>餐點類型 *</option>
@@ -79,39 +62,23 @@
                     </select>
                 </div>
                 <!-- 電話 -->
-                <!--required放在v-model --> 
+                <!--required放在v-model -->
                 <div class="mb-3 d-flex align-items-center">
                     <div class="flag-box d-flex align-items-center px-2 me-2">
                         <img src="https://flagcdn.com/h20/tw.png" alt="台灣" style="width:22px; height:16px" />
                         <span class="ms-1">+886</span>
                     </div>
-                    <input type="tel" class="form-control" v-model="phone" pattern="[0-9]{9,10}"
-                        placeholder="行動電話 *" style="flex:1" />
+                    <input type="tel" class="form-control" v-model="phone" pattern="[0-9]{9,10}" placeholder="行動電話 *"
+                    style="flex:1" />
                 </div>
-                <!-- 電話checkbox -->
-                <div class="mb-3 form-check">
-                    <input class="form-check-input" type="checkbox" v-model="samePhone" id="samePhone">
-                    <label class="form-check-label" for="samePhone" style="font-weight:500;">
-                        餐廳電話與我的手機號碼相同
-                    </label>
-                </div>
-                <!-- 國籍 -->
+                <!-- 餐廳介紹 -->
                 <div class="mb-3">
-                    <label class="form-label fw-bold" style="color:#444;">
-                        請問您是否為中華民國國民（具中華民國國民身分證）？ <span class="text-danger">*</span>
-                    </label>
-                    <div>
-                        <div class="form-check form-check-inline">
-                            <!--required放在input id="isCitizenY" --> 
-                            <input class="form-check-input" type="radio" v-model="isCitizen" value="是" id="isCitizenY">
-                            <label class="form-check-label" for="isCitizenY">是</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <!--required放在input id="isCitizenN" --> 
-                            <input class="form-check-input" type="radio" v-model="isCitizen" value="否" id="isCitizenN">
-                            <label class="form-check-label" for="isCitizenN">否</label>
-                        </div>
-                    </div>
+                    <textarea v-model="storeIntro" class="form-control"  placeholder="餐廳介紹" rows="4" style="resize: vertical; min-height: 90px;">
+                    </textarea>
+                </div>
+                <!-- 餐廳照片 -->
+                <div class="mb-3">
+                    <input type="file" class="form-control" multiple @change="onFileChange" />
                 </div>
                 <!-- 下一步 -->
                 <div class="d-flex justify-content-end">
@@ -131,19 +98,22 @@ const route = useRoute()
 const router = useRouter()
 
 const storeName = ref(route.query.storeName || '')
-const storeNameEn = ref('')
 const storeType = ref(route.query.storeType || '')
 const storeCategory = ref('')
 const mealType = ref('')
-const samePhone = ref(true)
-const isCitizen = ref('')
-const email = ref(route.query.email || '')
 const phone = ref(route.query.phone || '')
+const storeIntro = ref(route.query.storeIntro || '')
+const files = ref(null);
 
 function onSaveDraft() {
     alert('已儲存草稿，返回主頁')
     router.push('/') // 或其他頁面
 }
+
+function onFileChange(event) {
+    files.value = event.target.files;
+}
+
 function onSubmit() {
     // 送出後自動跳轉到下一步
     router.push('/verifyAddress') // 請改成你要的下一步頁面
@@ -180,22 +150,22 @@ function onSubmit() {
 }
 
 .btn-main {
-    background: #f1cd78;
+    background: #ffba20;
     color: #fff;
     font-weight: bold;
     font-size: 20px;
     border-radius: 10px;
     border: none;
     transition: filter 0.15s;
-    box-shadow: 0 2px 8px 1px #f1cd780f;
+    box-shadow: 0 2px 8px 1px #ffba200f;
 }
 
 .btn-main:hover {
     filter: brightness(1.08);
-    background: #ffc94d;
+    background: #ffba20;
 }
 
 .text-pink {
-    color: #f1cd78;
+    color: #ffba20;
 }
 </style>
