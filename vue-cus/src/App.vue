@@ -14,4 +14,9 @@ import Navigation from '@/components/Navigation.vue';
 // import Navigation from "@/views/Navigation.vue"
 </script>
 
-<style></style>
+<style>
+/* 整個專案前台背景色，到時候看要不要拉一個全站的頁首頁尾的css*/
+html, body {
+  background-color: #fff9f0;
+}
+</style>

@@ -37,7 +37,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import VoucherCard from '@/components/Yifan/VoucherCard.vue'
-import { promotionList as rawPromotions } from '@/mock/promotionData'
+import { promotionList as rawPromotions } from '@/mock/PromotionData.js'
 
 const cartAmount = ref(500)
 const activeTab = ref('all')

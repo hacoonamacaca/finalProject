@@ -124,4 +124,23 @@ const emit = defineEmits(['use'])
   box-shadow: none;
 }
 
+.nav-link {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+    color: #6c757d;
+    background-color: transparent;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    transform: translateX(0); 
+}
+
+.nav-link:hover {
+    background-color: #fcebc1;
+    color: #eca300;
+    transform: translateX(4px);
+}
+
 </style>
