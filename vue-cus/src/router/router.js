@@ -4,7 +4,7 @@ import Home from "@/views/Jimmy/Home.vue"
 import NotFound from "@/views/NotFound.vue"
 import Forbidden from "@/views/Forbidden.vue"
 
-import Search from "@/views/Jimmy/Search.vue" 
+import Search from "@/views/Jimmy/Search.vue"
 import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
 import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
@@ -14,6 +14,7 @@ import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
 import {
     getRestaurantById
 } from "@/restaurant-module"
+import EditUser from '@/views/Ivy/EditUser.vue'
 
 
 const routes = [
@@ -31,7 +32,7 @@ const routes = [
         path: "/403",
         component: Forbidden,
         name: "403-link"
-    },    
+    },
     {
         path: "/search",
         component: Search,
@@ -70,6 +71,11 @@ const routes = [
         props: (route) => ({
             restaurant: getRestaurantById(parseInt(route.params.id)),
         }),
+    },
+    {
+        path: '/profile',
+        name: 'EditUser',
+        component: EditUser
     },
 ];
 

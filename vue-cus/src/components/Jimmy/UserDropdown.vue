@@ -1,7 +1,9 @@
 <template>
   <div class="user-dropdown-container">
     <a href="#" class="user-link" @click.prevent="toggleDropdown">
-      <i class="bi bi-person-circle me-1"></i> 使用者*
+      <i class="bi bi-person-circle me-1"></i>
+      <span v-if="!userFullName">使用者*</span>
+      <span v-else>{{ userFullName }}</span>
     </a>
     <div class="dropdown-menu" v-if="showDropdown">
       <ul class="list-unstyled mb-0">
@@ -36,11 +38,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user.js';
 
 const showDropdown = ref(false);
 const router = useRouter();
+
+const userFullName = ref('');
+const userEmail = ref('');
+
+const userStore = useUserStore();
+const cUser = computed(() => userStore.FullName);
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
@@ -68,6 +77,8 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  userFullName.value = localStorage.getItem('userFullName') || ''
+  userEmail.value = localStorage.getItem('userEmail') || ''
 });
 
 onUnmounted(() => {
@@ -76,7 +87,6 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-
 .user-dropdown-container {
   position: relative;
   display: inline-block;
@@ -148,6 +158,4 @@ onUnmounted(() => {
 .dropdown-menu li:last-child:hover {
   color: #5c3202;
 }
-
-
 </style>
