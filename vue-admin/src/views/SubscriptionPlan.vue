@@ -1,8 +1,9 @@
 <template>
-    <div class="container mt-4">
-        <h2>訂閱方案</h2>
+    <h2>訂閱方案</h2>
+    <br>
+    <div class="subscription-plan-wrapper">
         <!-- 搜尋與下拉 -->
-        <div class="d-flex align-items-center mb-3 gap-2 flex-wrap">
+        <div class="filter-bar d-flex align-items-center mb-3 gap-2 flex-wrap">
             <label class="form-label mb-0">搜尋：</label>
             <input
                 type="text"
@@ -21,87 +22,94 @@
             <button class="btn btn-primary ms-2" @click="clearFilter">清除篩選</button>
         </div>
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>訂閱方案</th>
-                    <th>訂閱期限</th>
-                    <th>類型</th>
-                    <th>費用</th>
-                    <th>狀態</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- 資料列 -->
-                <tr v-for="plan in pagedSubscriptionPlans" :key="plan.id">
-                    <template v-if="editingId === plan.id">
-                        <td><input class="form-control" v-model="editRow.subscriptionName"></td>
-                        <td><input class="form-control" v-model="editRow.deadline"></td>
+        <div class="table-card mb-4">
+            <table class="table table-striped table-hover border rounded">
+                <thead>
+                    <tr>
+                        <th>訂閱方案</th>
+                        <th>訂閱期限</th>
+                        <th>類型</th>
+                        <th>費用</th>
+                        <th>狀態</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 資料列 -->
+                    <tr v-for="plan in pagedSubscriptionPlans" :key="plan.id">
+                        <template v-if="editingId === plan.id">
+                            <td><input class="form-control" v-model="editRow.subscriptionName"></td>
+                            <td><input class="form-control" v-model="editRow.deadline"></td>
+                            <td>
+                                <select class="form-select" v-model="editRow.type">
+                                    <option value="月租">月租</option>
+                                    <option value="季租">季租</option>
+                                    <option value="年租">年租</option>
+                                </select>
+                            </td>
+                            <td><input class="form-control" v-model="editRow.price"></td>
+                            <td>
+                                <select class="form-select" v-model="editRow.status">
+                                    <option value="啟用">啟用</option>
+                                    <option value="停用">停用</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-success btn-sm me-2" @click="saveEdit(plan.id)">儲存</button>
+                                <button class="btn btn-secondary btn-sm" @click="cancelEdit">取消</button>
+                            </td>
+                        </template>
+                        <template v-else>
+                            <td>{{ plan.subscriptionName }}</td>
+                            <td>{{ plan.deadline }}</td>
+                            <td>{{ plan.type }}</td>
+                            <td>{{ plan.price }}</td>
+                            <td>
+                                <span :class="{
+                                'badge bg-success': plan.status === '啟用',
+                                'badge bg-secondary': plan.status === '停用'
+                                }">{{ plan.status }}</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-edit me-2" @click="editPlan(plan)">修改</button>
+                                <button class="btn btn-sm btn-delete" @click="deletePlan(plan)">刪除</button>
+                            </td>
+                        </template>
+                    </tr>
+                    <!-- 新增行 -->
+                    <tr>
+                        <td><input type="text" class="form-control" v-model="newRow.subscriptionName" placeholder="請輸入訂閱方案"></td>
+                        <td><input type="text" class="form-control" v-model="newRow.deadline" placeholder="請輸入訂閱期限"></td>
                         <td>
-                            <select class="form-select" v-model="editRow.type">
+                            <select class="form-select" v-model="newRow.type">
+                                <option value="">請選擇類型</option>
                                 <option value="月租">月租</option>
                                 <option value="季租">季租</option>
                                 <option value="年租">年租</option>
                             </select>
                         </td>
-                        <td><input class="form-control" v-model="editRow.price"></td>
+                        <td><input type="number" min="0" class="form-control" v-model="newRow.price" placeholder="請輸入費用"></td>
                         <td>
-                            <select class="form-select" v-model="editRow.status">
+                            <select class="form-select" v-model="newRow.status">
+                                <option value="">請選擇狀態</option>
                                 <option value="啟用">啟用</option>
                                 <option value="停用">停用</option>
                             </select>
                         </td>
                         <td>
-                            <button class="btn btn-success btn-sm me-2" @click="saveEdit(plan.id)">儲存</button>
-                            <button class="btn btn-secondary btn-sm" @click="cancelEdit">取消</button>
+                            <button class="btn btn-add btn-sm me-2" @click="addPlan">➕ 新增</button>
+                            <button class="btn btn-cancel btn-sm" @click="clearNewRow">✖️ 取消</button>
                         </td>
-                    </template>
-                    <template v-else>
-                        <td>{{ plan.subscriptionName }}</td>
-                        <td>{{ plan.deadline }}</td>
-                        <td>{{ plan.type }}</td>
-                        <td>{{ plan.price }}</td>
-                        <td>{{ plan.status }}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary me-2" @click="editPlan(plan)">修改</button>
-                            <button class="btn btn-sm btn-danger" @click="deletePlan(plan)">刪除</button>
-                        </td>
-                    </template>
-                </tr>
-                <!-- 新增行 -->
-                <tr>
-                    <td><input type="text" class="form-control" v-model="newRow.subscriptionName" placeholder="請輸入訂閱方案"></td>
-                    <td><input type="text" class="form-control" v-model="newRow.deadline" placeholder="請輸入訂閱期限"></td>
-                    <td>
-                        <select class="form-select" v-model="newRow.type">
-                            <option value="">請選擇類型</option>
-                            <option value="月租">月租</option>
-                            <option value="季租">季租</option>
-                            <option value="年租">年租</option>
-                        </select>
-                    </td>
-                    <td><input type="number" min="0" class="form-control" v-model="newRow.price" placeholder="請輸入費用"></td>
-                    <td>
-                        <select class="form-select" v-model="newRow.status">
-                            <option value="">請選擇狀態</option>
-                            <option value="訂閱">訂閱</option>
-                            <option value="取消訂閱">取消訂閱</option>
-                        </select>
-                    </td>
-                    <td>
-                        <button class="btn btn-success btn-sm me-2" @click="addPlan">新增</button>
-                        <button class="btn btn-secondary btn-sm" @click="clearNewRow">取消</button>
-                    </td>
-                </tr>
-                <!-- 查無資料 -->
-                <tr v-if="pagedSubscriptionPlans.length === 0">
-                    <td colspan="6" class="text-center">查無資料</td>
-                </tr>
-            </tbody>
-        </table>
+                    </tr>
+                    <!-- 查無資料 -->
+                    <tr v-if="pagedSubscriptionPlans.length === 0">
+                        <td colspan="6" class="text-center">查無資料</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
         <!-- 分頁控制 -->
-        <div class="d-flex justify-content-end align-items-center pagebar-wrap">
+        <div class="pagination d-flex justify-content-end align-items-center pagebar-wrap">
             <button class="btn btn-outline-secondary me-2"
                 :disabled="page === 1"
                 @click="page > 1 && (page--)"
@@ -116,7 +124,7 @@
                 @click="page < totalPages && (page++)"
             >下一頁 &gt;</button>
             <div class="ms-3">
-                <select class="form-select" v-model.number="pageSize">
+                <select class="form-select" v-model.number="pageSize" style="width:120px; min-width: 90px;">
                     <option v-for="s in pageSizes" :key="s" :value="s">{{ s }}/每頁</option>
                 </select>
             </div>
@@ -188,10 +196,9 @@ function deletePlan(plan) {
 
 // 分頁
 const page = ref(1)
-const pageSize = ref(10)
-const pageSizes = [10, 20, 30]
+const pageSize = ref(5)
+const pageSizes = [5, 10, 20]
 
-// 過濾
 const filteredSubscriptionPlans = computed(() => {
     return subscriptionPlans.value.filter(p =>
         (search.value === '' || p.subscriptionName?.includes(search.value)) &&
@@ -210,7 +217,7 @@ const totalPages = computed(() =>
 onMounted(async () => {
     try {
         const res = await axios.get('http://localhost:8080/api/subscription/plan')
-        subscriptionPlans.value = res.data // 注意：這裡要寫 res.data
+        subscriptionPlans.value = res.data
     } catch (err) {
         subscriptionPlans.value = []
     }

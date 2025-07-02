@@ -1,46 +1,53 @@
 <template>
   <div class="user-dropdown-container">
-  <a href="#" class="user-link" @click.prevent="toggleDropdown">
-    <i class="bi bi-person-circle me-1"></i> 使用者*
-  </a>
-  <div class="dropdown-menu" v-if="showDropdown">
-    <ul class="list-unstyled mb-0">
-      <li @click="navigateTo('profile')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-person"></i> 個人資料
-      </li>
-      <li @click="navigateTo('VoucherWallet')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-ticket-perforated"></i> 優惠券
-      </li>
-      <li @click="navigateTo('subscription')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-box-seam"></i> 訂閱
-      </li>
-      <li @click="navigateTo('favorites')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-heart"></i> 收藏管理
-      </li>
-      <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-journal-text"></i> 歷史訂單
-      </li>
-      <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-house-door"></i> 回首頁*
-      </li>
-      <li @click="navigateTo('secure/login')" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-box-arrow-in-right"></i> 測試登入
-      </li>
-      <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
-        <i class="bi bi-box-arrow-right"></i> 登出
-      </li>
-    </ul>
+    <a href="#" class="user-link" @click.prevent="toggleDropdown">
+      <i class="bi bi-person-circle me-1"></i>
+      <span v-if="!userFullName">使用者*</span>
+      <span v-else>{{ userFullName }}</span>
+    </a>
+    <div class="dropdown-menu" v-if="showDropdown">
+      <ul class="list-unstyled mb-0">
+        <li @click="navigateTo('profile')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-person"></i> 個人資料
+        </li>
+        <li @click="navigateTo('VoucherWallet')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-ticket-perforated"></i> 優惠券
+        </li>
+        <li @click="navigateTo('subscription')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-box-seam"></i> 訂閱
+        </li>
+        <li @click="navigateTo('favorites')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-heart"></i> 收藏管理
+        </li>
+        <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-journal-text"></i> 歷史訂單
+        </li>
+        <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-house-door"></i> 回首頁*
+        </li>
+
+        <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-box-arrow-right"></i> 登出
+        </li>
+      </ul>
+    </div>
   </div>
-</div>
 
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '@/stores/user.js';
 
 const showDropdown = ref(false);
 const router = useRouter();
+
+const userFullName = ref('');
+const userEmail = ref('');
+
+const userStore = useUserStore();
+const cUser = computed(() => userStore.FullName);
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
@@ -68,6 +75,8 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  userFullName.value = localStorage.getItem('userFullName') || ''
+  userEmail.value = localStorage.getItem('userEmail') || ''
 });
 
 onUnmounted(() => {
@@ -134,20 +143,38 @@ onUnmounted(() => {
 
 /* 游標滑到下拉式選單圖示會變色 */
 .dropdown-menu li:hover i {
+<<<<<<< HEAD
+=======
   color: #ffba20;
 }
 
 /* 預設為黃色文字 */
 .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
+>>>>>>> yifan
   color: #ffba20;
   font-weight: 500;
 }
 
+<<<<<<< HEAD
+/* 預設為黃色文字 */
+.dropdown-menu li:last-child {
+  border-top: 1px solid #ddd;
+  background-color: #ffba20;
+  color: #ffba20;
+  /* 疑問 */
+  font-weight: 500;
+}
+
+=======
+>>>>>>> yifan
 /* 滑鼠移上去時反轉背景與文字顏色 */
 .dropdown-menu li:last-child:hover {
   color: #5c3202;
 }
+<<<<<<< HEAD
+=======
 
 
+>>>>>>> yifan
 </style>

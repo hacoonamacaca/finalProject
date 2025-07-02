@@ -1,27 +1,23 @@
 <template>
   <header class="navbar">
     <a class="navbar-brand d-flex align-items-center gap-3" style="cursor: pointer" @click="$router.push('/search')">
-  <img src="@/assets/logo.png" alt="Logo" height="80" />
-  <span class="brand-title">金碗GoldenBowl Foolog</span>
-</a>
-
-
-  <!-- 行動版專用 -->
-  <div class="location-btn-container mobile-only">
-    <button class="location-btn" @click="showPopout = true">
-      目前位置為：{{ address }}
-      <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
-    </button>
-  </div>
-
-  <!-- 桌機版專用 -->
-  <div class="location-btn-container desktop-only">
-    <button class="location-btn" @click="showPopout = true">
-      目前位置為：{{ address }}
-      <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
-    </button>
-  </div>
-
+      <img src="@/assets/logo.png" alt="Logo" height="80" />
+      <span class="brand-title">金碗GoldenBowl</span>
+    </a>
+    <!-- 行動版專用的 location-btn -->
+    <div class="location-btn-container mobile-only">
+      <button class="location-btn" @click="showPopout = true">
+        目前位置為： {{ address }}
+        <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
+      </button>
+    </div>
+    <!-- 桌機版專用的 location-btn -->
+    <div class="location-btn-container desktop-only">
+      <button class="location-btn" @click="showPopout = true">
+        目前位置為： {{ address }}
+        <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
+      </button>
+    </div>
     <button class="hamburger" @click="toggleMenu">
       <span></span>
       <span></span>
@@ -35,38 +31,36 @@
       </div>
       <!-- 其他導航項 -->
       <div class="nav-items">
-
         <!-- 餐廳/餐點按鈕 -->
-        <a
-          href="#"
-          @click.prevent="toggleRestaurantMenu"
-          :title="isRestaurant ? '餐廳' : '餐點'"
-          class="text-white d-flex align-items-center gap-2 fs-5"
-        >
+        <a href="#" @click.prevent="toggleRestaurantMenu" :title="isRestaurant ? '餐廳' : '餐點'"
+          class="nav-item d-flex align-items-center gap-2">
           <i :class="isRestaurant ? 'fas fa-store' : 'fas fa-utensils'"></i>
+          <span>{{ isRestaurant ? '餐廳' : '餐點' }}</span>
         </a>
 
-<!-- 優惠通知鈴鐺 -->
-        <div style="position: relative;">
-          <button
-            class="btn position-relative"
-            style="background: transparent; border: none;"
-            @click="toggleNotification"
-            title="優惠通知"
-          >
-            <i class="bi bi-bell-fill text-white fs-5"></i>
+        <!-- 優惠通知鈴鐺 -->
+        <div class="nav-item" style="position: relative;">
+          <button class="btn position-relative" style="background: transparent; border: none;"
+            @click="toggleNotification" title="優惠通知">
+            <i class="bi bi-bell-fill text-white"></i>
             <span v-if="unreadCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
               {{ unreadCount }}
             </span>
           </button>
+          <NotificationList :visible="isNotificationOpen" :notifications="notifications" @mark-as-read="markAsRead" />
+        </div>
 
-          <!-- ✅ 通知清單元件 -->
-          <NotificationList
-            :visible="isNotificationOpen"
-            :notifications="notifications"
-            @mark-as-read="markAsRead"
-          />
+        <!-- 購物車按鈕 -->
+        <div class="nav-item">
+          <button class="btn position-relative" style="background: transparent; border: none;" @click="goToCart"
+            title="購物車">
+            <i class="bi bi-cart4 text-white"></i>
+            <span v-if="cartCount > 0"
+              class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+              {{ cartCount }}
+            </span>
+          </button>
         </div>
 
         <!-- 購物車按鈕 -->
@@ -90,13 +84,13 @@
     <div class="popout-content">
       <button class="close-btn" @click="showPopout = false">✕</button>
       <input type="text" placeholder="輸入您的地址" @focus="address = ''" v-model="address" />
-      <button class="search-btn" @click="searchAddress">搜尋</button>
+      <button class="search-btn" @click="address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
 import NotificationList from '@/components/Yifan/NotificationList.vue'
@@ -135,6 +129,8 @@ const notifications = ref([
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
 const markAsRead = (item) => { item.is_read = true }
 
+
+
 // 搜尋地址
 const searchAddress = async () => {
   const success = await getCoordinates();
@@ -151,6 +147,7 @@ const searchAddress = async () => {
 const getCurrentLocationAndNavigate = async () => {
   const success = await getCurrentLocation();
   if (success) {
+    showPopout.value = false;
     router.push({
       path: '/search',
       query: { address: address.value }

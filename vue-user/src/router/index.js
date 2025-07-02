@@ -3,6 +3,7 @@ import Home from '@/views/Home.vue'
 import Register from '@/components/RegisterModal.vue'
 import VerifyPending from '@/views/VerifyPending.vue'
 import RegisterProfile from '@/views/RegisterProfile.vue'
+import Edituser from '@/views/Edituser.vue'
 
 const routes = [
 
@@ -15,6 +16,11 @@ const routes = [
         name: 'ResetPasswordEmail',
         component: () => import('@/views/ResetPasswordEmail.vue'),
         props: router => ({ email: router.query.email })
+    },
+    {
+        path: '/profile',
+        name: 'Edituser',
+        component: Edituser
     }
 ]
 
