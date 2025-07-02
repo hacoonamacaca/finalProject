@@ -1,49 +1,6 @@
-<template>
-    <div>
-        <div
-            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 class="h3">菜單管理</h2>
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <select class="form-select" v-model="selectedStore">
-                    <option v-for="store in stores" :key="store.id" :value="store.id">
-                        {{ store.name }}
-                    </option>
-                </select>
-            </div>
-        </div>
-
-        <ul class="nav nav-tabs">
-            <li class="nav-item">
-                <a class="nav-link" :class="{ active: activeTab === 'overview' }" href="#"
-                    @click.prevent="selectTab('overview')">菜單總覽</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" :class="{ active: activeTab === 'specs' }" href="#"
-                    @click.prevent="selectTab('specs')">客製化規格</a>
-            </li>
-        </ul>
-
-        <div class="mt-4">
-            <MenuOverview v-if="activeTab === 'overview'" :items="items" :categories="categories"
-                @add-new-item="openItemModal(null)" @edit-item="openItemModal" />
-
-            <CustomizationSpecs v-if="activeTab === 'specs'" :specs="specs" @add-new-spec="openSpecModal(null)"
-                @edit-spec="openSpecModal" />
-            <!-- @add-new-spec="() => alert('準備新增規格！')" 過渡時期的程式碼可刪除 -->
-            <!-- @edit-spec="(spec) => alert(`準備編輯規格: ${spec.name}`)" /> 過渡時期的程式碼可刪除 -->
-        </div>
-
-        <!-- Modals (不受佈局影響) -->
-        <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" :categories="categories"
-            @close="closeItemModal" @save="handleSaveItem" @delete="handleDeleteItem" />
-
-        <EditSpecModal v-if="isSpecModalOpen" :spec="currentEditingSpec" @close="closeSpecModal" @save="handleSaveSpec"
-            @delete="handleDeleteSpec" />
-    </div>
-</template>
-
 <script setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue'; // 導入 onMounted 函數
+import { apiService } from '../services/apiService.js'; // 導入 API 服務
 import MenuOverview from './MenuOverview.vue';
 import CustomizationSpecs from './CustomizationSpecs.vue';
 import EditItemModal from '../components/EditItemModal.vue';
@@ -72,74 +29,80 @@ const selectedStore = ref('d-aan-store');
 
 // 新增 categories 陣列
 const categories = reactive([
-    { id: 'cat-1', name: '招牌飲品', order: 1 },
-    { id: 'cat-2', name: '義式咖啡', order: 2 },
-    { id: 'cat-3', name: '炭烤三明治', order: 3 },
-    { id: 'cat-4', name: '帕尼尼', order: 4 },
+    // 模擬 categories 陣列
+    // { id: 'cat-1', name: '招牌飲品', order: 1 },
+    // { id: 'cat-2', name: '義式咖啡', order: 2 },
+    // { id: 'cat-3', name: '炭烤三明治', order: 3 },
+    // { id: 'cat-4', name: '帕尼尼', order: 4 },
 ]);
 
-// 模擬的菜單品項資料
+
 const items = reactive([
-    { id: 1, name: '經典拿鐵', price: 70, status: '供應中', stock: 50, img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600', categoryId: 'cat-1' },
-    { id: 2, name: '西西里咖啡', price: 85, status: '供應中', stock: 30, img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600', categoryId: 'cat-1' },
-    { id: 3, name: '經典義式咖啡', price: 60, status: '供應中', stock: 100, img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600', categoryId: 'cat-2' },
-    { id: 4, name: '煙燻雞肉三明治', price: 90, status: '供應中', stock: 20, img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=600', categoryId: 'cat-3' },
-    { id: 5, name: '花生醬培根三明治', price: 95, status: '暫停供應', stock: 0, img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=600', categoryId: 'cat-3' },
-    { id: 6, name: '費城牛肉帕尼尼', price: 150, status: '供應中', stock: 15, img: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?q=80&w=600', categoryId: 'cat-4' },
+    // 模擬的菜單品項資料
+    // { id: 1, name: '經典拿鐵', price: 70, status: '供應中', stock: 50, img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600', categoryId: 'cat-1' },
 ]);
 
-// 模擬的客製化規格資料
+
 const specs = reactive([
-    {
-        id: 'spec1',
-        name: '附餐選擇',
-        minSelection: 1, // 加上 min/max
-        maxSelection: 1,
-        // 將 options 改為物件陣列
-        options: [
-            { id: 'opt-a1', name: '六塊雞', price: 20, status: '供應中' },
-            { id: 'opt-a2', name: '中薯', price: 10, status: '供應中' },
-            { id: 'opt-a3', name: '洋蔥圈', price: 15, status: '供應中' },
-            { id: 'opt-a4', name: '蘋果派', price: 15, status: '暫停供應' },
-        ]
-    },
-    {
-        id: 'spec2',
-        name: '甜度選擇',
-        minSelection: 1,
-        maxSelection: 1,
-        options: [
-            { id: 'opt-b1', name: '全糖', price: 0, status: '供應中' },
-            { id: 'opt-b2', name: '少糖', price: 0, status: '供應中' },
-            { id: 'opt-b3', name: '半糖', price: 0, status: '供應中' },
-            { id: 'opt-b4', name: '無糖', price: 0, status: '供應中' },
-        ]
-    },
-    {
-        id: 'spec3',
-        name: '冰量選擇',
-        minSelection: 0, // 假設冰量可以不選
-        maxSelection: 1,
-        options: [
-            { id: 'opt-c1', name: '正常冰', price: 0, status: '供應中' },
-            { id: 'opt-c2', name: '少冰', price: 0, status: '供應中' },
-            { id: 'opt-c3', name: '去冰', price: 0, status: '供應中' },
-        ]
-    },
+    // 模擬的客製化規格資料
+    // {
+    //     id: 'spec1',
+    //     name: '附餐選擇',
+    //     minSelection: 1, // 加上 min/max
+    //     maxSelection: 1,
+    //     // 將 options 改為物件陣列
+    //     options: [
+    //         { id: 'opt-a1', name: '六塊雞', price: 20, status: '供應中' },
+    //         { id: 'opt-a2', name: '中薯', price: 10, status: '供應中' },
+    //         { id: 'opt-a3', name: '洋蔥圈', price: 15, status: '供應中' },
+    //         { id: 'opt-a4', name: '蘋果派', price: 15, status: '暫停供應' },
+    //     ]
+    // },
 ]);
 
-// =================================================================
-// 3. 品項管理相關 (Item Management)
-// =================================================================
+const isLoading = ref(true); // 新增一個加載狀態，用於顯示讀取中的提示
 
-// 控制編輯品項 Modal 的開關
-const isItemModalOpen = ref(false);
-
-// 正在編輯的品項，null 代表是新增
-const currentEditingItem = ref(null);
+const error = ref(null); // 新增一個錯誤狀態
 
 // =================================================================
-// 4. 規格管理相關 (Specification Management)
+// 3. 在組件掛載時獲取所有資料 (onMounted)
+// =================================================================
+onMounted(async () => {
+    try {
+        isLoading.value = true;
+        error.value = null;
+
+        // 使用 Promise.all 來並行發送所有請求，效率更高
+        const [categoriesData, itemsData, specsData] = await Promise.all([
+            apiService.getCategories(),
+            apiService.getItems(),
+            apiService.getSpecs(),
+        ]);
+
+        // 將獲取到的資料賦值給我們的響應式變數
+        // 使用 Object.assign 或 .splice(0) 來更新 reactive 陣列
+        Object.assign(categories, categoriesData);
+        Object.assign(items, itemsData);
+        Object.assign(specs, specsData);
+
+    } catch (e) {
+        console.error('Failed to fetch initial data:', e);
+        error.value = '無法載入資料，請稍後再試。';
+    } finally {
+        isLoading.value = false; // 無論成功或失敗，都結束加載狀態
+    }
+});
+
+// =================================================================
+// 4. 品項管理相關 (Item Management)
+// =================================================================
+
+const isItemModalOpen = ref(false); // 控制編輯品項 Modal 的開關
+
+const currentEditingItem = ref(null); // 正在編輯的品項，null 代表是新增
+
+// =================================================================
+// 5. 規格管理相關 (Specification Management)
 // =================================================================
 
 // 控制編輯規格 Modal 的開關
@@ -172,7 +135,7 @@ const handleDeleteSpec = (specId) => {
 }
 
 // =================================================================
-// 5. 通用方法 (General Methods)
+// 6. 通用方法 (General Methods)
 // =================================================================
 
 // 切換 Tab
@@ -222,8 +185,61 @@ const handleDeleteItem = (itemId) => {
         }
     }
 }
-
 </script>
+
+<template>
+    <div>
+        <div
+            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h2 class="h3">菜單管理</h2>
+            <div class="btn-toolbar mb-2 mb-md-0">
+                <select class="form-select" v-model="selectedStore">
+                    <option v-for="store in stores" :key="store.id" :value="store.id">
+                        {{ store.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <!-- 在列表區域的外面，加上 loading 和 error 的判斷 -->
+        <div v-if="isLoading" class="text-center p-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">資料載入中...</p>
+        </div>
+
+        <div v-else-if="error" class="alert alert-danger">
+            {{ error }}
+        </div>
+
+        <div v-else>
+            <ul class="nav nav-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'overview' }" href="#"
+                        @click.prevent="selectTab('overview')">菜單總覽</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'specs' }" href="#"
+                        @click.prevent="selectTab('specs')">客製化規格</a>
+                </li>
+            </ul>
+
+            <div class="mt-4">
+                <MenuOverview v-if="activeTab === 'overview'" :items="items" :categories="categories"
+                    @add-new-item="openItemModal(null)" @edit-item="openItemModal" />
+
+                <CustomizationSpecs v-if="activeTab === 'specs'" :specs="specs" @add-new-spec="openSpecModal(null)"
+                    @edit-spec="openSpecModal" />
+            </div>
+        </div>
+        <!-- Modals (不受佈局影響) -->
+        <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" :categories="categories"
+            @close="closeItemModal" @save="handleSaveItem" @delete="handleDeleteItem" />
+
+        <EditSpecModal v-if="isSpecModalOpen" :spec="currentEditingSpec" @close="closeSpecModal" @save="handleSaveSpec"
+            @delete="handleDeleteSpec" />
+    </div>
+</template>
 
 <style scoped>
 /* 已搬到共用樣式 SellerLayout.vue */
