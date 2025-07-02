@@ -55,18 +55,12 @@
 			<artifactId>json</artifactId>
 			<version>20250107</version>
 		</dependency>
-<<<<<<< HEAD
 
-=======
->>>>>>> yifan
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
-<<<<<<< HEAD
 
-=======
->>>>>>> yifan
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -78,44 +72,29 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
-<<<<<<< HEAD
 
-=======
->>>>>>> yifan
 		<dependency>
 			<groupId>com.microsoft.sqlserver</groupId>
 			<artifactId>mssql-jdbc</artifactId>
 			<scope>runtime</scope>
 		</dependency>
-<<<<<<< HEAD
 
-=======
->>>>>>> yifan
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
 		</dependency>
-<<<<<<< HEAD
 
-=======
->>>>>>> yifan
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-<<<<<<< HEAD
 
 	</dependencies>
 
 	<build>
 		<finalName>${project.name}</finalName>
-=======
-	</dependencies>
-
-	<build>
->>>>>>> yifan
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

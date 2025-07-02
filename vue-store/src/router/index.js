@@ -2,14 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 // 為了讓路由設定更乾淨，我們在這裡導入頁面組件
 import SellerLayout from '../layouts/SellerLayout.vue';
-<<<<<<< HEAD
 import MenuManagement from '../pages/MenuManagement.vue';
 import OrderManagement from '../pages/OrderManager.vue';
 import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
-=======
-import MenuManagement from '../pages/MenuOverview.vue';
-// import OrderManagement from '../pages/OrderManager.vue';
->>>>>>> yifan
 
 const routes = [
     {
