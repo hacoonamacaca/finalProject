@@ -69,7 +69,7 @@ defineProps({
 })
 
 // Tab狀態管理
-const activeTab = ref('order') // 預設顯示線上訂餐以展示MenuNavigation
+const activeTab = ref('order') // 預設顯示線上訂餐以展示Hero風格菜單導航
 
 // 處理結帳
 const handleCheckout = (orderData) => {

@@ -13,8 +13,8 @@ export async function fetchRestaurantTimeSlots(restaurantId) {
         // const response = await fetch(`/api/restaurants/${restaurantId}/time-slots`)
         // return await response.json()
 
-        // 開發環境使用本地 JSON 文件
-        const response = await fetch('/public/ReservationTimeSlot/timeslots_30d.json')
+        // 開發環境使用本地 JSON 文件 - 修正路徑
+        const response = await fetch('/ReservationTimeSlot/timeslots_30d.json')
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`)
         }

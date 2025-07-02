@@ -1,37 +1,53 @@
 <template>
     <div class="restaurant-menu restaurant-theme">
-        <!-- 菜單分類導航組件 -->
-        <MenuNavigation :categories="categories" :restaurant="restaurant" v-model:activeCategory="activeCategory"
-            @categoryClick="handleCategoryClick" ref="menuNavigation" />
-
-        <div class="menu-container">
-            <h3 class="menu-title">{{ restaurant.menuTitle || '餐廳菜單' }}</h3>
-
-            <!-- 分類按鈕區域 -->
-            <div class="category-buttons-section">
-                <div class="category-buttons-container">
-                    <button v-for="category in categories" :key="category.id"
-                        :class="['category-button', { 'active': activeCategory === category.name }]"
-                        @click="selectCategory(category.name)">
-                        <span class="category-name">{{ category.name }}</span>
-                        <span class="category-count">({{ category.count }})</span>
-                    </button>
-                    <button :class="['category-button', { 'active': activeCategory === '' }]"
-                        @click="selectCategory('')">
-                        <span class="category-name">全部</span>
-                        <span class="category-count">({{ allItemsCount }})</span>
-                    </button>
+        <!-- Hero Banner區域 - 先凸顯主題 -->
+        <section class="menu-hero-banner">
+            <div class="hero-content">
+                <h1 class="hero-title">{{ restaurant?.name || '美味餐廳' }}</h1>
+                <p class="hero-description">探索我們精心調製的美食世界</p>
+                <div class="hero-stats">
+                    <span class="stat-item">
+                        <i class="pi pi-shopping-cart"></i>
+                        {{ categories.length }} 個分類
+                    </span>
+                    <span class="stat-item">
+                        <i class="pi pi-heart"></i>
+                        {{ allItemsCount }} 道精選料理
+                    </span>
                 </div>
             </div>
+            <div class="hero-decoration"></div>
+        </section>
 
-            <!-- 菜品內容區域 -->
+        <!-- 黏性導航區域 - 滾動時才固定 -->
+        <nav class="sticky-nav" ref="stickyNav">
+            <div class="sticky-nav-container" ref="tabsContainer">
+                <div class="nav-tabs">
+                    <a v-for="category in categories" :key="category.id"
+                        :class="['nav-tab', { 'active': activeCategory === category.name }]"
+                        :href="`#category-${category.id}`" @click="onTabClick($event, category)">
+                        {{ category.name }}
+                        <span class="tab-count">({{ category.count }})</span>
+                    </a>
+                    <a :class="['nav-tab', { 'active': activeCategory === '' }]" href="#all-categories"
+                        @click="onTabClick($event, { name: '', id: 'all' })">
+                        全部
+                        <span class="tab-count">({{ allItemsCount }})</span>
+                    </a>
+                </div>
+                <div class="nav-slider" ref="tabSlider"></div>
+            </div>
+        </nav>
+
+        <!-- 菜品內容區域 -->
+        <div class="menu-container">
             <main class="menu-main">
                 <div v-if="hasMenuItems">
                     <!-- 依分類顯示菜品 -->
                     <section v-for="category in categories" :key="category.id" :id="`category-${category.id}`"
                         class="menu-slide category-section"
                         v-show="activeCategory === '' || activeCategory === category.name">
-                        <h2 v-show="filteredItemsByCategory(category.name).length > 0" class="slide-category-title">
+                        <h2 v-show="filteredItemsByCategory(category.name).length > 0" class="category-title">
                             {{ category.name }}
                         </h2>
                         <div class="menu-grid" v-if="filteredItemsByCategory(category.name).length > 0">
@@ -88,10 +104,9 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import ItemDetailModal from './ItemDetailModal.vue'
 import CartModal from './CartModal.vue'
-import MenuNavigation from './MenuNavigation.vue'
 import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
@@ -113,7 +128,17 @@ const isCartVisible = ref(false)
 const activeCategory = ref('')
 
 // Refs
-const menuNavigation = ref(null)
+const tabsContainer = ref(null)
+const tabSlider = ref(null)
+const stickyNav = ref(null)
+
+// Sticky navigation constants
+const STICKY_OFFSET = 80 // 固定時的偏移量
+
+// State for sticky navigation
+let currentId = null
+let currentTab = null
+let isSticky = false
 
 // 預設分類和商品資料
 const categories = ref([
@@ -280,172 +305,460 @@ const handleCategoryClick = (category) => {
 // 處理分類按鈕點擊
 const selectCategory = (categoryName) => {
     activeCategory.value = categoryName
-    // 同步更新MenuNavigation組件
-    emit('categoryClick', { name: categoryName })
+}
+
+// Hero導航相關方法
+const onTabClick = (event, category) => {
+    event.preventDefault()
+
+    // 更新活動分類
+    activeCategory.value = category.name
+
+    // 如果點擊的是分類（不是"全部"），滾動到對應分類
+    if (category.name && category.id !== 'all') {
+        const target = document.getElementById(`category-${category.id}`)
+        if (target) {
+            const scrollTop = target.offsetTop - STICKY_OFFSET
+            window.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
+            })
+        }
+    } else {
+        // 點擊"全部"時滾動到菜單開始位置
+        const menuContainer = document.querySelector('.menu-container')
+        if (menuContainer) {
+            const scrollTop = menuContainer.offsetTop - STICKY_OFFSET
+            window.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
+            })
+        }
+    }
+}
+
+const checkStickyNavPosition = () => {
+    if (!stickyNav.value) return
+
+    const heroBanner = document.querySelector('.menu-hero-banner')
+    if (heroBanner) {
+        const heroBottom = heroBanner.offsetTop + heroBanner.offsetHeight
+        const currentScrollY = window.scrollY
+
+        if (currentScrollY >= heroBottom - 20) { // 20px緩衝區
+            if (!isSticky) {
+                isSticky = true
+                stickyNav.value.classList.add('sticky-nav--fixed')
+                // 為body添加padding避免內容跳動
+                document.body.style.paddingTop = `${STICKY_OFFSET}px`
+                setTimeout(() => {
+                    setSliderCss()
+                }, 100)
+            }
+        } else {
+            if (isSticky) {
+                isSticky = false
+                stickyNav.value.classList.remove('sticky-nav--fixed')
+                document.body.style.paddingTop = '0'
+                setTimeout(() => {
+                    setSliderCss()
+                }, 100)
+            }
+        }
+    }
+}
+
+const findCurrentTabSelector = () => {
+    let newCurrentId = null
+    let newCurrentTab = null
+
+    const tabs = tabsContainer.value?.querySelectorAll('.nav-tab')
+    if (!tabs) return
+
+    tabs.forEach(tab => {
+        const id = tab.getAttribute('href')
+        if (id && id !== '#all-categories') {
+            const element = document.querySelector(id)
+            if (element) {
+                const offsetTop = element.offsetTop - STICKY_OFFSET
+                const offsetBottom = element.offsetTop + element.offsetHeight - STICKY_OFFSET
+                const currentScrollY = window.scrollY
+
+                if (currentScrollY >= offsetTop && currentScrollY < offsetBottom) {
+                    newCurrentId = id
+                    newCurrentTab = tab
+                }
+            }
+        }
+    })
+
+    if (currentId !== newCurrentId) {
+        currentId = newCurrentId
+        currentTab = newCurrentTab
+
+        // 更新活動分類
+        if (newCurrentTab) {
+            const categoryName = newCurrentTab.textContent.replace(/\(\d+\)/, '').trim()
+            if (activeCategory.value !== categoryName && categoryName !== '全部') {
+                activeCategory.value = categoryName
+            }
+        }
+
+        setSliderCss()
+    }
+}
+
+const setSliderCss = () => {
+    if (!tabSlider.value || !tabsContainer.value) return
+
+    let width = 0
+    let left = 0
+
+    // 找到當前活動的tab
+    const activeTab = tabsContainer.value.querySelector('.nav-tab.active')
+    if (activeTab) {
+        const rect = activeTab.getBoundingClientRect()
+        const containerRect = tabsContainer.value.getBoundingClientRect()
+
+        width = rect.width
+        left = rect.left - containerRect.left
+    }
+
+    tabSlider.value.style.width = `${width}px`
+    tabSlider.value.style.left = `${left}px`
+    tabSlider.value.style.opacity = width > 0 ? '1' : '0'
+}
+
+const onScroll = () => {
+    checkStickyNavPosition()
+    if (isSticky) {
+        findCurrentTabSelector()
+    }
+}
+
+const onResize = () => {
+    if (activeCategory.value !== null) {
+        setSliderCss()
+    }
 }
 
 // 生命周期
 onMounted(() => {
-    // 初始化為顯示全部商品
-    activeCategory.value = ''
+    // 設置預設分類
+    if (props.restaurant?.categories?.length > 0) {
+        activeCategory.value = '' // 預設顯示所有分類
+    }
+
+    // 初始化黏性導航
+    nextTick(() => {
+        setSliderCss()
+
+        // 添加事件監聽器
+        window.addEventListener('scroll', onScroll, { passive: true })
+        window.addEventListener('resize', onResize, { passive: true })
+    })
 })
 
 onUnmounted(() => {
-    // 清理資源
+    // 清理事件監聽器
+    window.removeEventListener('scroll', onScroll)
+    window.removeEventListener('resize', onResize)
+
+    // 清理body padding
+    document.body.style.paddingTop = '0'
+})
+
+// 監聽活動分類變化
+watch(activeCategory, () => {
+    nextTick(() => {
+        setSliderCss()
+    })
 })
 </script>
 
 <style scoped>
-.restaurant-menu {
-    margin: 2rem 0;
-    padding: 0 1rem;
+/* Hero Banner區域 - 先凸顯主題 */
+.menu-hero-banner {
     position: relative;
-    background: var(--restaurant-bg-primary);
-}
-
-.menu-container {
-    width: 100%;
-    margin: 0 auto;
-    max-width: 1200px;
-}
-
-.menu-title {
-    font-size: 2rem;
-    font-weight: 600;
-    color: var(--restaurant-text-primary);
-    margin-bottom: 2rem;
-    text-align: center;
-    text-shadow: 0 1px 2px var(--restaurant-shadow-light);
-}
-
-/* 分類按鈕區域 */
-.category-buttons-section {
-    margin-bottom: 2rem;
-    padding: 0 1rem;
-}
-
-.category-buttons-container {
+    background: linear-gradient(135deg,
+            var(--restaurant-primary-color, #ff6b35) 0%,
+            var(--restaurant-secondary-color, #f7931e) 100%);
+    min-height: 70vh;
+    padding: 80px 20px 60px;
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: center;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.category-button {
-    display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.75rem 1rem;
-    background: var(--restaurant-bg-card, #ffffff);
-    border: 2px solid var(--restaurant-border-light, #eee);
-    border-radius: 12px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    min-width: 120px;
-    box-shadow: 0 2px 8px var(--restaurant-shadow-light, rgba(0, 0, 0, 0.05));
-}
-
-.category-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px var(--restaurant-shadow-medium, rgba(0, 0, 0, 0.1));
-    border-color: var(--restaurant-primary, #ffba20);
-}
-
-.category-button.active {
-    background: var(--restaurant-primary, #ffba20);
-    border-color: var(--restaurant-primary, #ffba20);
+    justify-content: center;
     color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px var(--restaurant-shadow-medium, rgba(255, 186, 32, 0.3));
+    overflow: hidden;
 }
 
-.category-name {
-    font-size: 0.9rem;
-    font-weight: 600;
+.hero-content {
     text-align: center;
+    z-index: 2;
+    position: relative;
+    max-width: 800px;
 }
 
-.category-count {
-    font-size: 0.75rem;
-    opacity: 0.8;
+.hero-title {
+    font-size: 4rem;
+    font-weight: 800;
+    margin-bottom: 24px;
+    text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
+    letter-spacing: 2px;
+    line-height: 1.1;
+}
+
+.hero-description {
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-bottom: 40px;
+    opacity: 0.95;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+}
+
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
     font-weight: 500;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 12px 24px;
+    border-radius: 30px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.category-button.active .category-count {
+.stat-item i {
+    font-size: 1.3rem;
+}
+
+.hero-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(255,255,255,.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><circle cx="20" cy="10" r="8" fill="url(%23a)"/><circle cx="80" cy="10" r="6" fill="url(%23a)"/></svg>');
+    opacity: 0.5;
+    animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* 黏性導航區域 - 符合文章理念 */
+.sticky-nav {
+    background: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    position: relative;
+}
+
+.sticky-nav--fixed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+    border-bottom: 1px solid var(--restaurant-primary-color, #ff6b35);
+    animation: slideDownSticky 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideDownSticky {
+    from {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.sticky-nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    padding: 0 20px;
+}
+
+.nav-tabs {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 16px 0;
+    flex-wrap: wrap;
+}
+
+.nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 24px;
+    color: var(--restaurant-primary-color, #ff6b35);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    border-radius: 25px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    position: relative;
+    z-index: 2;
+    background: transparent;
+    border: 2px solid transparent;
+}
+
+.nav-tab:hover {
+    background: rgba(255, 107, 53, 0.1);
+    border-color: rgba(255, 107, 53, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+}
+
+.nav-tab.active {
+    background: var(--restaurant-primary-color, #ff6b35);
+    color: white;
+    border-color: var(--restaurant-primary-color, #ff6b35);
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+}
+
+.tab-count {
+    font-size: 0.85rem;
+    opacity: 0.8;
+    font-weight: 400;
+}
+
+.nav-tab.active .tab-count {
     opacity: 1;
 }
 
-/* 菜品內容區域 */
-.menu-main {
-    min-height: 100vh;
+/* 滑塊效果 */
+.nav-slider {
+    position: absolute;
+    bottom: 8px;
+    height: 3px;
+    background: var(--restaurant-primary-color, #ff6b35);
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    z-index: 1;
 }
 
-.menu-slide {
-    padding: 2rem 0;
-    margin-bottom: 2rem;
-    scroll-margin-top: 90px;
-    /* 為sticky navigation預留空間 */
+.sticky-nav--fixed .nav-slider {
+    bottom: 6px;
+    height: 4px;
+    background: linear-gradient(90deg,
+            var(--restaurant-primary-color, #ff6b35),
+            var(--restaurant-secondary-color, #f7931e));
 }
 
-.slide-category-title {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: var(--restaurant-text-primary);
-    margin-bottom: 2rem;
-    text-align: center;
-    padding: 1rem;
-    background: var(--restaurant-bg-accent);
-    border-radius: 12px;
-    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
-    border-left: 4px solid var(--restaurant-primary);
+/* 菜單容器 */
+.menu-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 20px;
 }
 
+/* 分類區域 */
 .category-section {
-    scroll-margin-top: 90px;
-    /* 確保sticky navigation不會遮蓋內容 */
+    margin-bottom: 80px;
+    scroll-margin-top: 100px;
+    /* 為sticky導航預留空間 */
 }
 
-/* 當sticky navigation激活時增加body的頂部間距 */
-.menu-hero-tabs-container--top~.menu-main {
-    padding-top: 2rem;
+.category-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--restaurant-primary-color, #ff6b35);
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 3px solid rgba(255, 107, 53, 0.2);
+    position: relative;
 }
 
+.category-title::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 60px;
+    height: 3px;
+    background: var(--restaurant-primary-color, #ff6b35);
+    border-radius: 2px;
+}
+
+/* 菜品網格 */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 1.5rem;
-    padding: 1rem 0;
-    justify-content: center;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
 }
 
 .menu-item {
-    position: relative;
-    background: var(--restaurant-bg-card);
-    border: 1px solid var(--restaurant-border-light);
-    border-radius: 12px;
+    background: white;
+    border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
-    transition: all 0.3s ease;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    max-width: 320px;
-    height: 420px;
-    display: flex;
-    flex-direction: column;
-    margin: 0 auto;
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .menu-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 6px 20px var(--restaurant-shadow-medium);
-    border-color: var(--restaurant-primary);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    border-color: var(--restaurant-primary-color, #ff6b35);
+}
+
+.item-tags {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 3;
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.item-tag {
+    background: var(--restaurant-primary-color, #ff6b35);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
 .item-image {
-    width: 100%;
-    height: 180px;
+    position: relative;
+    height: 220px;
     overflow: hidden;
 }
 
@@ -453,253 +766,261 @@ onUnmounted(() => {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.menu-item:hover .item-image img {
+    transform: scale(1.05);
 }
 
 .item-content {
+    padding: 25px;
     display: flex;
     justify-content: space-between;
-    align-items: stretch;
-    padding: 1.2rem;
-    flex: 1;
+    align-items: flex-start;
+    gap: 15px;
 }
 
 .item-info {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.item-actions {
-    display: flex;
-    align-items: flex-end;
-    margin-left: 1rem;
 }
 
 .item-name {
-    font-size: 1.1rem;
+    font-size: 1.3rem;
     font-weight: 600;
-    color: var(--restaurant-text-primary);
-    margin: 0 0 0.5rem 0;
+    color: #333;
+    margin-bottom: 8px;
+    line-height: 1.3;
 }
 
 .item-desc {
-    font-size: 0.9rem;
-    color: var(--restaurant-text-secondary);
-    margin: 0 0 1rem 0;
-    line-height: 1.4;
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 15px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .price-section {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 12px;
 }
 
 .original-price {
+    color: #999;
     font-size: 0.9rem;
-    color: var(--restaurant-text-muted);
     text-decoration: line-through;
 }
 
 .current-price {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--restaurant-primary);
+    color: var(--restaurant-primary-color, #ff6b35);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
 }
 
 .add-to-cart-btn {
-    width: 3rem;
-    height: 3rem;
-    background: var(--restaurant-primary);
-    color: var(--restaurant-text-primary);
-    border: none;
+    background: var(--restaurant-primary-color, #ff6b35);
+    color: white;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-size: 1.2rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
 }
 
 .add-to-cart-btn:hover {
-    background: var(--restaurant-primary-hover);
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 16px var(--restaurant-shadow-medium);
+    background: var(--restaurant-secondary-color, #f7931e);
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
 }
 
+/* 購物車浮動按鈕 */
 .cart-float-btn {
     position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    background: var(--restaurant-primary);
-    color: var(--restaurant-text-primary);
-    border-radius: 50px;
-    padding: 1rem 1.5rem;
+    bottom: 30px;
+    right: 30px;
+    background: var(--restaurant-primary-color, #ff6b35);
+    color: white;
+    border-radius: 30px;
+    padding: 15px 25px;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 15px;
     cursor: pointer;
-    box-shadow: 0 6px 20px var(--restaurant-shadow-medium);
+    box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
     transition: all 0.3s ease;
     z-index: 1000;
 }
 
 .cart-float-btn:hover {
-    background: var(--restaurant-primary-hover);
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 8px 24px var(--restaurant-shadow-dark);
+    background: var(--restaurant-secondary-color, #f7931e);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(255, 107, 53, 0.5);
 }
 
 .cart-icon {
     position: relative;
-    font-size: 1.5rem;
 }
 
 .cart-badge {
     position: absolute;
     top: -8px;
     right: -8px;
-    background: var(--restaurant-gradient-primary);
-    color: var(--restaurant-text-primary);
+    background: #e74c3c;
+    color: white;
     border-radius: 50%;
-    width: 1.2rem;
-    height: 1.2rem;
+    width: 22px;
+    height: 22px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
-    font-weight: bold;
-    box-shadow: 0 1px 4px var(--restaurant-shadow-light);
+    font-size: 0.8rem;
+    font-weight: 600;
 }
 
 .cart-total {
     font-weight: 600;
-    font-size: 1rem;
-    color: var(--restaurant-text-primary);
+    font-size: 1.1rem;
 }
 
 .no-menu {
     text-align: center;
-    color: var(--restaurant-text-secondary);
-    padding: 3rem 0;
-    font-size: 1.1rem;
-    background: var(--restaurant-bg-light);
-    border-radius: 12px;
-    margin: 1rem 0;
-}
-
-/* 商品標籤 */
-.item-tags {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    z-index: 10;
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.item-tag {
-    padding: 0.25rem 0.75rem;
-    background: var(--restaurant-primary);
-    color: var(--restaurant-text-primary);
-    font-size: 0.75rem;
-    font-weight: 600;
-    border-radius: 12px;
-    box-shadow: 0 1px 4px var(--restaurant-shadow-light);
+    color: #999;
+    font-size: 1.2rem;
+    margin: 60px 0;
 }
 
 /* 響應式設計 */
 @media (max-width: 768px) {
-    .restaurant-menu {
-        padding: 1rem;
+    .menu-hero-banner {
+        min-height: 60vh;
+        padding: 60px 15px 40px;
     }
 
-    .menu-title {
-        font-size: 1.8rem;
-        margin-bottom: 1.5rem;
+    .hero-title {
+        font-size: 2.8rem;
+        margin-bottom: 20px;
     }
 
-    .category-buttons-container {
-        gap: 0.5rem;
-        max-width: 100%;
+    .hero-description {
+        font-size: 1.2rem;
+        margin-bottom: 30px;
     }
 
-    .category-button {
-        min-width: 100px;
-        padding: 0.5rem 0.75rem;
+    .hero-stats {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
     }
 
-    .category-name {
-        font-size: 0.8rem;
+    .sticky-nav-container {
+        padding: 0 15px;
     }
 
-    .category-count {
-        font-size: 0.7rem;
+    .nav-tabs {
+        padding: 12px 0;
+        gap: 6px;
+    }
+
+    .nav-tab {
+        padding: 10px 16px;
+        font-size: 0.9rem;
+    }
+
+    .menu-container {
+        padding: 40px 15px;
+    }
+
+    .category-title {
+        font-size: 2rem;
+        margin-bottom: 30px;
     }
 
     .menu-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
-    }
-
-    .item-name {
-        font-size: 1rem;
-    }
-
-    .item-desc {
-        font-size: 0.8rem;
+        gap: 20px;
     }
 
     .cart-float-btn {
-        bottom: 1rem;
-        right: 1rem;
-        padding: 0.75rem 1rem;
+        bottom: 20px;
+        right: 15px;
+        padding: 12px 20px;
+        gap: 12px;
     }
 }
 
 @media (max-width: 480px) {
-    .restaurant-menu {
-        padding: 0.5rem;
+    .menu-hero-banner {
+        min-height: 50vh;
+        padding: 40px 10px 30px;
     }
 
-    .menu-title {
-        font-size: 1.5rem;
+    .hero-title {
+        font-size: 2.2rem;
+        letter-spacing: 1px;
     }
 
-    .category-buttons-container {
-        gap: 0.5rem;
-        padding: 0 0.5rem;
+    .hero-description {
+        font-size: 1rem;
+        margin-bottom: 25px;
     }
 
-    .category-button {
-        min-width: 80px;
-        padding: 0.5rem;
+    .nav-tabs {
+        gap: 4px;
+        padding: 10px 0;
     }
 
-    .category-name {
+    .nav-tab {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+
+    .tab-count {
         font-size: 0.75rem;
     }
 
-    .category-count {
-        font-size: 0.65rem;
+    .menu-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .menu-item {
+        border-radius: 15px;
+    }
+
+    .item-content {
+        padding: 20px;
     }
 
     .item-name {
-        font-size: 0.9rem;
+        font-size: 1.2rem;
     }
 
-    .current-price,
-    .original-price {
-        font-size: 0.9rem;
+    .category-title {
+        font-size: 1.8rem;
     }
+}
 
-    .cart-float-btn {
-        padding: 0.5rem 0.75rem;
-    }
+/* CSS變數定義 */
+:root {
+    --restaurant-primary-color: #ff6b35;
+    --restaurant-secondary-color: #f7931e;
+    --restaurant-primary-rgb: 255, 107, 53;
 }
 </style>
