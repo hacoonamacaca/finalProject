@@ -28,7 +28,7 @@ const routes = [
             { path: 'restaurantTag', component: RestaurantTag },
             { path: 'foodTag', component: FoodTag },
             { path: 'recommendation', component: Recommendation },
-            { path: 'login', component: Login },
+            { path: 'login', component: Login }
         ]
     }
 ]

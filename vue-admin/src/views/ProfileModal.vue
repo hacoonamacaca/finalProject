@@ -10,7 +10,7 @@
                 :src="previewUrl || avatarUrl"
                 alt="預覽"
                 class="rounded-circle mb-3"
-                style="width: 96px; height: 96px; object-fit: cover; border: 2px solid #e62271"
+                style="width: 96px; height: 96px; object-fit: cover; border: 2px solid #ffba20"
                 />
             </div>
             <input type="file" accept="image/*" @change="onFileChange" class="form-control mb-3" />

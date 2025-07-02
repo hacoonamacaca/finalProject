@@ -64,15 +64,12 @@ watch(() => route.query.filter, (val) => {
 //     }
 // })
 
-    onMounted(() => {
+onMounted(() => {
     accounts.value = [
-        { id:1, identity:'商家', name:'張三餐飲有限公司', status:'待審核', detail:'' },
-        { id:2, identity:'商家', name:'李四小吃店',     status:'已通過',   detail:'2025-06-01 14:23' },
-        { id:3, identity:'合作夥伴', name:'王五食品行', status:'需修改',   detail:'請補充營業執照影本' },
-        { id:4, identity:'商家', name:'趙六飲料吧',     status:'已通過',   detail:'2025-05-28 09:11' },
-        { id:5, identity:'合作夥伴', name:'周七雜貨店', status:'待審核',   detail:'' }
+        { id:1, identity:'商家', name:'張三餐飲有限公司',content:'被舉報餐廳環境髒亂' ,status:'待審核', detail:'待商家進一步提出處理方案' },
+        { id:2, identity:'使用者', name:'李四', content:'多次不拿餐點' ,  status:'已停權', detail:'2025-06-01 14:23' }
     ]
-    })
+})
 
 const setFilter = (filter) => {
     if (route.query.filter === filter) return
@@ -164,6 +161,7 @@ const rejectAccount = async (id) => {
                     <th></th>
                     <th>帳號身分</th>
                     <th>帳號名稱</th>
+                    <th>審核內容</th>
                     <th>審核狀態</th>
                     <th>操作</th>
                 </tr>
@@ -173,6 +171,7 @@ const rejectAccount = async (id) => {
                     <td><input type="checkbox" v-model="selected" :value="account.id"></td>
                     <td>{{ account.identity }}</td>
                     <td>{{ account.name }}</td>
+                    <td>{{ account.content }}</td>
                     <td :class="{ 'text-warning': account.status === '需修改', 'text-success': account.status === '已通過' }">
                         {{ account.status }}
                         <br v-if="account.detail">

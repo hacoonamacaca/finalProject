@@ -113,7 +113,7 @@ watch(pageSize, () => {
 
 <template>
     <div class="container mt-4">
-        <h2>餐廳審核</h2>
+        <h2>審核餐廳</h2>
         <!-- 狀態選單 -->
         <div class="d-flex mb-3 border-bottom pb-2">
             <button class="btn btn-link"
