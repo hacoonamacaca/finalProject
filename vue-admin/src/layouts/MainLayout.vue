@@ -13,84 +13,58 @@
         <div class="main-container">
             <!-- Sidebar -->
             <nav class="sidebar">
-                <div class="sidebar-sticky">
-                    <div class="sidebar-section">
-                        <ul class="list-group list-group-flush">
-                            <!-- 帳號管理 -->
-                            <li>
-                                <a class="list-group-item parent" :class="{ active: isAccountActive }" @click="toggle('account')">
-                                    <i class="bi bi-person-gear me-2"></i> 帳號管理
-                                </a>
-                                <router-link v-if="open.account" to="/account" class="list-group-item child"
-                                    :class="{ active: isAccountActive }">
-                                    <i class="bi bi-person-check me-2"></i> 帳號相關審核
-                                </router-link>
-                            </li>
-                            <!-- 餐廳管理 -->
-                            <li>
-                                <a class="list-group-item parent" :class="{ active: isRestaurantActive }" @click="toggle('restaurant')">
-                                    <i class="bi bi-shop-window me-2"></i> 餐廳管理
-                                </a>
-                                <router-link v-if="open.restaurant" to="/restaurant" class="list-group-item child"
-                                    :class="{ active: isRestaurantActive }">
-                                    <i class="bi bi-ui-checks-grid me-2"></i> 餐廳審核
-                                </router-link>
-                            </li>
-                            <!-- 評價管理 -->
-                            <li>
-                                <router-link to="/review" class="list-group-item parent" :class="{ active: isReviewActive }">
-                                    <i class="bi bi-star-half me-2"></i> 評價管理
-                                </router-link>
-                            </li>
-                            <!-- 優惠活動 -->
-                            <li>
-                                <router-link to="/discount" class="list-group-item parent" :class="{ active: isDiscountActive }">
-                                    <i class="bi bi-ticket-detailed me-2"></i> 優惠活動
-                                </router-link>
-                            </li>
-                            <!-- 訂閱管理 -->
-                            <li>
-                                <a class="list-group-item parent"
-                                    :class="{ active: isSubscriptionPlanActive || isSubscriptionRecordActive }"
-                                    @click="toggle('subscription')">
-                                    <i class="bi bi-envelope-paper me-2"></i> 訂閱管理
-                                </a>
-                                <router-link v-if="open.subscription" to="/subscription/plan" class="list-group-item child"
-                                    :class="{ active: isSubscriptionPlanActive }">
-                                    <i class="bi bi-archive me-2"></i> 訂閱方案
-                                </router-link>
-                                <router-link v-if="open.subscription" to="/subscription/record" class="list-group-item child"
-                                    :class="{ active: isSubscriptionRecordActive }">
-                                    <i class="bi bi-journal-bookmark-fill me-2"></i> 訂閱紀錄
-                                </router-link>
-                            </li>
-                            <!-- 餐廳標籤 -->
-                            <li>
-                                <router-link to="/restaurantTag" class="list-group-item parent" :class="{ active: isRestaurantTagActive }">
-                                    <i class="bi bi-tags me-2"></i> 餐廳標籤
-                                </router-link>
-                            </li>
-                            <!-- 食物標籤 -->
-                            <li>
-                                <router-link to="/foodTag" class="list-group-item parent" :class="{ active: isFoodTagActive }">
-                                    <i class="bi bi-egg-fried me-2"></i> 食物標籤
-                                </router-link>
-                            </li>
-                            <!-- 網站推薦 -->
-                            <li>
-                                <router-link to="/recommendation" class="list-group-item parent" :class="{ active: isRecommendationActive }">
-                                    <i class="bi bi-bookmark-heart me-2"></i> 網站推薦
-                                </router-link>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </nav>
-
-            <!-- 主內容區域 -->
-            <main class="main-content p-4">
-                <router-view />
-            </main>
+    <div class="sidebar-sticky">
+        <div class="sidebar-section">
+            <ul class="list-group list-group-flush">
+                <li>
+                    <router-link to="/account" class="list-group-item parent" :class="{ active: isAccountActive }">
+                        <i class="bi bi-person-gear me-2"></i> 管理帳號
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/restaurant-audit" class="list-group-item parent" :class="{ active: isRestaurantAuditActive }">
+                        <i class="bi bi-clipboard-check me-2"></i> 審核餐廳
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/review" class="list-group-item parent" :class="{ active: isReviewActive }">
+                        <i class="bi bi-chat-left-dots me-2"></i> 評價管理
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/discount" class="list-group-item parent" :class="{ active: isDiscountActive }">
+                        <i class="bi bi-gift me-2"></i> 優惠活動
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/subscription/plan" class="list-group-item parent" :class="{ active: isSubscriptionPlanActive }">
+                        <i class="bi bi-bag-check me-2"></i> 訂閱方案
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/subscription/record" class="list-group-item parent" :class="{ active: isSubscriptionRecordActive }">
+                        <i class="bi bi-clock-history me-2"></i> 訂閱紀錄
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/restaurantTag" class="list-group-item parent" :class="{ active: isRestaurantTagActive }">
+                        <i class="bi bi-tags me-2"></i> 餐廳標籤
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/foodTag" class="list-group-item parent" :class="{ active: isFoodTagActive }">
+                        <i class="bi bi-egg-fried me-2"></i> 食物標籤
+                    </router-link>
+                </li>
+                <li>
+                    <router-link to="/recommendation" class="list-group-item parent" :class="{ active: isRecommendationActive }">
+                        <i class="bi bi-star me-2"></i> 網站推薦
+                    </router-link>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
         </div>
 
         <!-- Footer -->
@@ -133,7 +107,7 @@ watch(
 
 // 判斷 active 狀態
 const isAccountActive            = computed(() => route.path.startsWith('/account'))
-const isRestaurantActive         = computed(() => route.path.startsWith('/restaurant'))
+const isRestaurantAuditActive    = computed(() => route.path.startsWith('/restaurant-audit'))  // 新增這個判斷
 const isReviewActive             = computed(() => route.path.startsWith('/review'))
 const isDiscountActive           = computed(() => route.path.startsWith('/discount'))
 const isSubscriptionPlanActive   = computed(() => route.path === '/subscription/plan')
@@ -141,6 +115,7 @@ const isSubscriptionRecordActive = computed(() => route.path === '/subscription/
 const isRestaurantTagActive      = computed(() => route.path.startsWith('/restaurantTag'))
 const isFoodTagActive            = computed(() => route.path.startsWith('/foodTag'))
 const isRecommendationActive     = computed(() => route.path.startsWith('/recommendation'))
+
 </script>
 
 
