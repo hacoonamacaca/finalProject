@@ -176,8 +176,8 @@ watch(pageSize, () => {
                 </ul>
             </nav>
             <div class="ms-3">
-                <select class="form-select" v-model.number="pageSize">
-                    <option v-for="s in pageSizes" :key="s" :value="s">{{ s }}/每頁</option>
+                <select class="form-select" v-model.number="itemsPerPage" style="width:120px; min-width: 90px;">
+                    <option v-for="s in [5, 10, 20]" :key="s" :value="s">{{ s }}/每頁</option>
                 </select>
             </div>
         </div>
