@@ -99,7 +99,8 @@ const specs = reactive([
         options: [
             { id: 'opt-a1', name: '六塊雞', price: 20, status: '供應中' },
             { id: 'opt-a2', name: '中薯', price: 10, status: '供應中' },
-            { id: 'opt-a3', name: '洋蔥圈', price: 15, status: '暫停供應' },
+            { id: 'opt-a3', name: '洋蔥圈', price: 15, status: '供應中' },
+            { id: 'opt-a4', name: '蘋果派', price: 15, status: '暫停供應' },
         ]
     },
     {
