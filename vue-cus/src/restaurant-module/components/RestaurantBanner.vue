@@ -1,10 +1,12 @@
 <template>
-    <div class="restaurant-banner">
+    <div class="restaurant-banner restaurant-theme">
         <img :src="restaurant.image" :alt="restaurant.name + '店面圖片'" class="banner-image" />
     </div>
 </template>
 
 <script setup>
+import '@/assets/css/restaurant-theme.css'
+
 defineProps({
     restaurant: {
         type: Object,
@@ -20,6 +22,8 @@ defineProps({
     height: 400px;
     margin: 0 0 0 0;
     overflow: hidden;
+    border-bottom: 3px solid var(--restaurant-primary);
+    box-shadow: 0 4px 12px var(--restaurant-shadow-light);
 }
 
 .banner-image {
@@ -27,6 +31,11 @@ defineProps({
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform 0.3s ease;
+}
+
+.banner-image:hover {
+    transform: scale(1.02);
 }
 
 /* 響應式設計 */

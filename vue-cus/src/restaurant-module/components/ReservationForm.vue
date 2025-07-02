@@ -1,5 +1,5 @@
 <template>
-    <div class="reservation-form-container">
+    <div class="reservation-form-container restaurant-theme">
         <div class="guest-date-section">
             <div class="guest-selection">
                 <label class="form-label">用餐人數</label>
@@ -75,6 +75,7 @@ import Button from 'primevue/button'
 import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
 import TimePickerSectioned from './TimePickerSectioned.vue'
+import '@/assets/css/restaurant-theme.css'
 import {
     getTimeSlotsForDate,
     groupTimeSlotsByPeriod,
@@ -309,17 +310,19 @@ watch(() => props.restaurantId, () => {
 }
 
 .guest-selection {
-    background: #f8f9fa;
+    background: var(--restaurant-bg-light);
+    border: 1px solid var(--restaurant-border-light);
     padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: 12px;
     margin-bottom: 1rem;
+    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
 }
 
 .form-label {
     display: block;
     margin-bottom: 0.5rem;
     font-weight: 600;
-    color: #333;
+    color: var(--restaurant-text-primary);
 }
 
 .select-group {
@@ -346,23 +349,29 @@ watch(() => props.restaurantId, () => {
 }
 
 .hint-text {
-    color: #666;
+    color: var(--restaurant-text-secondary);
     font-size: 0.9rem;
     line-height: 1.4;
+    padding: 0.75rem;
+    background: var(--restaurant-bg-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .phone-link {
-    color: #ff6c00;
+    color: var(--restaurant-primary);
     text-decoration: none;
+    font-weight: 500;
 }
 
 .phone-link:hover {
     text-decoration: underline;
+    color: var(--restaurant-primary-hover);
 }
 
 .divider {
     border: none;
-    border-top: 1px solid #eee;
+    border-top: 2px solid var(--restaurant-border-light);
     margin: 2rem 0;
 }
 
@@ -371,17 +380,21 @@ watch(() => props.restaurantId, () => {
 }
 
 .section-title {
-    color: #ff6c00;
+    color: var(--restaurant-primary);
     margin-bottom: 1rem;
     font-size: 1.25rem;
     font-weight: 600;
+    text-shadow: 0 1px 2px var(--restaurant-shadow-light);
 }
 
 .loading-state,
 .empty-state {
     text-align: center;
     padding: 1.5rem;
-    color: #666;
+    color: var(--restaurant-text-secondary);
+    background: var(--restaurant-bg-light);
+    border-radius: 8px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .form-group {
@@ -391,30 +404,38 @@ watch(() => props.restaurantId, () => {
 .form-input {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: 1px solid var(--restaurant-border-medium);
+    background: var(--restaurant-bg-primary);
+    border-radius: 8px;
     font-size: 1rem;
+    color: var(--restaurant-text-primary);
+    transition: all 0.2s ease;
 }
 
 .form-input:focus {
     outline: none;
-    border-color: #ff6c00;
-    box-shadow: 0 0 0 2px rgba(255, 108, 0, 0.1);
+    border-color: var(--restaurant-primary);
+    box-shadow: 0 0 0 2px var(--restaurant-shadow-light);
 }
 
 .submit-btn {
-    background-color: #ff6c00 !important;
-    border-color: #ff6c00 !important;
+    background: var(--restaurant-gradient-primary) !important;
+    border: 1px solid var(--restaurant-primary-light) !important;
     padding: 0.75rem 2rem;
     font-size: 1rem;
     font-weight: 600;
-    border-radius: 6px;
+    border-radius: 8px;
     width: 100%;
+    color: var(--restaurant-text-primary) !important;
+    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
+    transition: all 0.3s ease !important;
 }
 
 .submit-btn:hover {
-    background-color: #e55a00 !important;
-    border-color: #e55a00 !important;
+    background: var(--restaurant-primary-hover) !important;
+    border-color: var(--restaurant-primary) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--restaurant-shadow-medium) !important;
 }
 
 /* 響應式設計 */

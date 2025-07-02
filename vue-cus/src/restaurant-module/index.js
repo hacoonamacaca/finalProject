@@ -23,6 +23,10 @@ export {
 }
 from './components/RestaurantMenu.vue'
 export {
+    default as MenuNavigation
+}
+from './components/MenuNavigation.vue'
+export {
     default as RestaurantMap
 }
 from './components/RestaurantMap.vue'
@@ -50,6 +54,17 @@ export {
 from './services/timeSlotService.js'
 export * from './utils/timeSlotUtils.js'
 
+// 為install函數導入組件
+import RestaurantTemplate from './components/RestaurantTemplate.vue'
+import ReservationForm from './components/ReservationForm.vue'
+import RestaurantBanner from './components/RestaurantBanner.vue'
+import RestaurantInfo from './components/RestaurantInfo.vue'
+import RestaurantMenu from './components/RestaurantMenu.vue'
+import MenuNavigation from './components/MenuNavigation.vue'
+import RestaurantMap from './components/RestaurantMap.vue'
+import RestaurantFooter from './components/RestaurantFooter.vue'
+import TimePickerSectioned from './components/TimePickerSectioned.vue'
+
 // CSS 變數（供主專案使用）
 export const restaurantTheme = {
     primaryColor: '#ff6c00',
@@ -68,6 +83,7 @@ export default {
         app.component('RestaurantBanner', RestaurantBanner)
         app.component('RestaurantInfo', RestaurantInfo)
         app.component('RestaurantMenu', RestaurantMenu)
+        app.component('MenuNavigation', MenuNavigation)
         app.component('RestaurantMap', RestaurantMap)
         app.component('RestaurantFooter', RestaurantFooter)
         app.component('TimePickerSectioned', TimePickerSectioned)

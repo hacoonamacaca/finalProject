@@ -1,5 +1,5 @@
 <template>
-    <div v-if="show" class="modal-overlay" @click="closeModal">
+    <div v-if="show" class="modal-overlay restaurant-theme" @click="closeModal">
         <div class="modal-content" @click.stop>
             <div class="modal-header">
                 <h4 class="modal-title">商品詳情</h4>
@@ -73,6 +73,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
+import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
     item: {
@@ -192,13 +193,14 @@ watch(() => props.show, (newVal) => {
 }
 
 .modal-content {
-    background: #fff;
+    background: var(--restaurant-bg-primary);
+    border: 1px solid var(--restaurant-border-light);
     border-radius: 12px;
     width: 100%;
     max-width: 500px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 40px var(--restaurant-shadow-dark);
 }
 
 .modal-header {
@@ -206,13 +208,14 @@ watch(() => props.show, (newVal) => {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--restaurant-border-light);
+    background: var(--restaurant-gradient-light);
 }
 
 .modal-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-text-primary);
     margin: 0;
 }
 
@@ -220,7 +223,7 @@ watch(() => props.show, (newVal) => {
     background: none;
     border: none;
     font-size: 2rem;
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
     cursor: pointer;
     padding: 0;
     width: 2rem;
@@ -228,10 +231,13 @@ watch(() => props.show, (newVal) => {
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-    color: var(--text-primary, #333);
+    color: var(--restaurant-primary);
+    background: var(--restaurant-shadow-light);
 }
 
 .modal-body {
@@ -255,12 +261,12 @@ watch(() => props.show, (newVal) => {
 .item-name {
     font-size: 1.5rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-text-primary);
     margin: 0 0 0.75rem 0;
 }
 
 .item-description {
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
     line-height: 1.5;
     margin: 0 0 1.5rem 0;
 }
@@ -270,18 +276,22 @@ watch(() => props.show, (newVal) => {
     align-items: center;
     gap: 0.75rem;
     margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--restaurant-bg-light);
+    border-radius: 8px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .original-price {
     font-size: 1rem;
-    color: var(--text-muted, #999);
+    color: var(--restaurant-text-muted);
     text-decoration: line-through;
 }
 
 .current-price {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--price-color, #e74c3c);
+    color: var(--restaurant-primary-dark);
 }
 
 .item-options {
@@ -291,18 +301,22 @@ watch(() => props.show, (newVal) => {
 .item-options h5 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-text-primary);
     margin: 0 0 1rem 0;
 }
 
 .option-group {
     margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--restaurant-bg-light);
+    border-radius: 8px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .option-label {
     display: block;
     font-weight: 500;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -317,18 +331,21 @@ watch(() => props.show, (newVal) => {
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
-    padding: 0.5rem;
+    padding: 0.75rem;
     border-radius: 6px;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    background: var(--restaurant-bg-primary);
+    border: 1px solid var(--restaurant-border-medium);
 }
 
 .option-item:hover {
-    background: #f8f9fa;
+    background: var(--restaurant-shadow-light);
+    border-color: var(--restaurant-primary-light);
 }
 
 .option-price {
     margin-left: auto;
-    color: var(--price-color, #e74c3c);
+    color: var(--restaurant-primary-dark);
     font-weight: 500;
 }
 
@@ -341,7 +358,7 @@ watch(() => props.show, (newVal) => {
 .notes-label {
     display: block;
     font-weight: 500;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -349,13 +366,17 @@ watch(() => props.show, (newVal) => {
     display: flex;
     align-items: center;
     gap: 1rem;
+    padding: 1rem;
+    background: var(--restaurant-bg-light);
+    border-radius: 8px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .quantity-btn {
     width: 2.5rem;
     height: 2.5rem;
-    border: 1px solid #ddd;
-    background: #fff;
+    border: 1px solid var(--restaurant-border-medium);
+    background: var(--restaurant-bg-primary);
     border-radius: 6px;
     cursor: pointer;
     display: flex;
@@ -363,13 +384,16 @@ watch(() => props.show, (newVal) => {
     justify-content: center;
     font-size: 1.2rem;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    color: var(--restaurant-text-primary);
 }
 
 .quantity-btn:hover:not(:disabled) {
-    background: var(--primary-color, #ff6c00);
-    color: #fff;
-    border-color: var(--primary-color, #ff6c00);
+    background: var(--restaurant-gradient-primary);
+    color: var(--restaurant-text-primary);
+    border-color: var(--restaurant-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
 }
 
 .quantity-btn:disabled {
@@ -382,20 +406,25 @@ watch(() => props.show, (newVal) => {
     font-weight: 600;
     min-width: 2rem;
     text-align: center;
+    color: var(--restaurant-text-primary);
 }
 
 .notes-input {
     width: 100%;
     padding: 0.75rem;
-    border: 1px solid #ddd;
+    border: 1px solid var(--restaurant-border-medium);
+    background: var(--restaurant-bg-primary);
     border-radius: 6px;
     resize: vertical;
     font-family: inherit;
+    color: var(--restaurant-text-primary);
+    transition: all 0.2s ease;
 }
 
 .notes-input:focus {
     outline: none;
-    border-color: var(--primary-color, #ff6c00);
+    border-color: var(--restaurant-primary);
+    box-shadow: 0 0 0 2px var(--restaurant-shadow-light);
 }
 
 .modal-footer {
@@ -403,30 +432,33 @@ watch(() => props.show, (newVal) => {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-top: 1px solid #eee;
-    background: #f8f9fa;
+    border-top: 1px solid var(--restaurant-border-light);
+    background: var(--restaurant-bg-secondary);
     border-radius: 0 0 12px 12px;
 }
 
 .total-price {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-primary-dark);
 }
 
 .add-to-cart-btn {
-    background: var(--primary-color, #ff6c00);
-    color: #fff;
-    border: none;
+    background: var(--restaurant-gradient-primary);
+    color: var(--restaurant-text-primary);
+    border: 1px solid var(--restaurant-primary-light);
     padding: 0.75rem 2rem;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
 }
 
 .add-to-cart-btn:hover {
-    background: var(--primary-hover, #e55a00);
+    background: var(--restaurant-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px var(--restaurant-shadow-medium);
 }
 
 /* 响应式设计 */

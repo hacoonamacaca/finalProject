@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-container">
+    <div class="restaurant-container restaurant-theme">
         <!-- 餐廳橫幅 -->
         <RestaurantBanner :restaurant="restaurant" />
 
@@ -9,7 +9,7 @@
         </div>
 
         <!-- TabMenu 區域 -->
-        <div class="tab-menu-section">
+        <div class="tab-menu-section restaurant-light-bg">
             <div class="tab-menu-container">
                 <div class="tab-menu-tabs">
                     <button class="tab-menu-tab" :class="{ active: activeTab === 'reservation' }"
@@ -58,6 +58,7 @@ import RestaurantMenu from './RestaurantMenu.vue'
 import RestaurantMap from './RestaurantMap.vue'
 import ReservationForm from './ReservationForm.vue'
 import RestaurantFooter from './RestaurantFooter.vue'
+import '@/assets/css/restaurant-theme.css'
 
 // 接收餐廳資料
 defineProps({
@@ -68,7 +69,7 @@ defineProps({
 })
 
 // Tab狀態管理
-const activeTab = ref('reservation') // 預設顯示預約訂位
+const activeTab = ref('order') // 預設顯示線上訂餐以展示MenuNavigation
 
 // 處理結帳
 const handleCheckout = (orderData) => {
@@ -84,30 +85,33 @@ const handleCheckout = (orderData) => {
     max-width: 1200px;
     margin: 0 auto;
     padding: 0;
-    background: #fff;
+    background: var(--restaurant-bg-primary);
+    box-shadow: 0 0 20px var(--restaurant-shadow-light);
 }
 
 .restaurant-header {
     text-align: left;
     padding: 2rem 1rem;
-    background: #fff;
+    background: var(--restaurant-gradient-subtle);
     width: 100%;
     margin: 0 0;
+    border-bottom: 2px solid var(--restaurant-border-light);
 }
 
 .restaurant-main-title {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #333;
+    color: var(--restaurant-text-primary);
     margin: 0;
     letter-spacing: 1px;
+    text-shadow: 0 1px 2px var(--restaurant-shadow-neutral);
 }
 
-/* TabMenu 樣式 - 簡約風格 */
+/* TabMenu 樣式 - 優雅主題 */
 .tab-menu-section {
-    background: #fff;
+    background: var(--restaurant-bg-secondary);
     padding: 1rem;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 2px solid var(--restaurant-border-light);
 }
 
 .tab-menu-container {
@@ -116,31 +120,14 @@ const handleCheckout = (orderData) => {
     text-align: center;
 }
 
-.tab-menu-header {
-    margin-bottom: 1rem;
-}
-
-.tab-menu-title {
-    font-size: 1.5rem;
-    font-weight: 500;
-    color: var(--text-primary, #333);
-    margin: 0 0 0.25rem 0;
-}
-
-.tab-menu-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-secondary, #888);
-    margin: 0;
-    font-weight: 400;
-}
-
 .tab-menu-tabs {
     display: inline-flex;
-    background: #f8f9fa;
+    background: var(--restaurant-bg-primary);
+    border: 1px solid var(--restaurant-border-medium);
     border-radius: 8px;
     padding: 0.25rem;
     gap: 0.25rem;
-    margin-top: 1rem;
+    box-shadow: 0 2px 8px var(--restaurant-shadow-neutral);
 }
 
 .tab-menu-tab {
@@ -152,21 +139,23 @@ const handleCheckout = (orderData) => {
     border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-size: 0.9rem;
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
     font-weight: 500;
 }
 
 .tab-menu-tab:hover {
-    background: rgba(255, 108, 0, 0.1);
-    color: var(--primary-color, #ff6c00);
+    background: var(--restaurant-bg-accent);
+    color: var(--restaurant-text-primary);
+    transform: translateY(-1px);
 }
 
 .tab-menu-tab.active {
-    background: var(--primary-color, #ff6c00);
-    color: #fff;
-    box-shadow: 0 2px 8px rgba(255, 108, 0, 0.2);
+    background: var(--restaurant-text-secondary);
+    color: var(--restaurant-bg-primary);
+    box-shadow: 0 3px 12px var(--restaurant-shadow-medium);
+    transform: translateY(-1px);
 }
 
 .tab-menu-tab i {
@@ -177,37 +166,19 @@ const handleCheckout = (orderData) => {
     font-weight: 500;
 }
 
-/* Tab 內容區域 - 簡約風格 */
+/* Tab 內容區域 - 黃白主題 */
 .tab-content-section {
-    background: #fff;
+    background: var(--restaurant-bg-primary);
     width: 100%;
     margin: 0;
     padding: 0;
+    border-top: 1px solid var(--restaurant-border-light);
 }
 
 .tab-content {
     padding: 1.5rem 1rem;
     scroll-margin-top: 80px;
-}
-
-.content-header {
-    max-width: 800px;
-    margin: 0 auto 1rem auto;
-    text-align: center;
-}
-
-.content-header h3 {
-    font-size: 1.25rem;
-    font-weight: 500;
-    color: var(--text-primary, #333);
-    margin: 0 0 0.25rem 0;
-}
-
-.content-header p {
-    font-size: 0.85rem;
-    color: var(--text-secondary, #888);
-    margin: 0;
-    font-weight: 400;
+    background: var(--restaurant-bg-primary);
 }
 
 /* 響應式設計 */

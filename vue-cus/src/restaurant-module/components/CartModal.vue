@@ -1,5 +1,5 @@
 <template>
-    <div class="cart-modal-overlay" @click="closeModal">
+    <div class="cart-modal-overlay restaurant-theme" @click="closeModal">
         <div class="cart-modal-content" @click.stop>
             <div class="cart-header">
                 <h4 class="cart-title">購物車 ({{ totalItems }})</h4>
@@ -93,6 +93,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
     cartItems: {
@@ -170,14 +171,15 @@ const formatOptions = (optionValue) => {
 }
 
 .cart-modal-content {
-    background: #fff;
+    background: var(--restaurant-bg-primary);
+    border: 1px solid var(--restaurant-border-light);
     border-radius: 12px;
     width: 100%;
     max-width: 600px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 12px 40px var(--restaurant-shadow-dark);
 }
 
 .cart-header {
@@ -185,14 +187,15 @@ const formatOptions = (optionValue) => {
     justify-content: space-between;
     align-items: center;
     padding: 1.5rem;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--restaurant-border-light);
+    background: var(--restaurant-gradient-light);
     flex-shrink: 0;
 }
 
 .cart-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-text-primary);
     margin: 0;
 }
 
@@ -200,7 +203,7 @@ const formatOptions = (optionValue) => {
     background: none;
     border: none;
     font-size: 2rem;
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
     cursor: pointer;
     padding: 0;
     width: 2rem;
@@ -208,10 +211,13 @@ const formatOptions = (optionValue) => {
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
 }
 
 .close-btn:hover {
-    color: var(--text-primary, #333);
+    color: var(--restaurant-primary);
+    background: var(--restaurant-shadow-light);
 }
 
 .cart-body {
@@ -223,7 +229,10 @@ const formatOptions = (optionValue) => {
 .empty-cart {
     text-align: center;
     padding: 3rem 1rem;
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
+    background: var(--restaurant-bg-light);
+    border-radius: 8px;
+    margin: 1rem 0;
 }
 
 .empty-cart-icon {
@@ -233,11 +242,12 @@ const formatOptions = (optionValue) => {
 
 .empty-cart p {
     margin: 0.5rem 0;
+    color: var(--restaurant-text-primary);
 }
 
 .empty-cart-desc {
     font-size: 0.9rem;
-    color: var(--text-muted, #999);
+    color: var(--restaurant-text-muted);
 }
 
 .cart-items {
@@ -252,8 +262,15 @@ const formatOptions = (optionValue) => {
     gap: 1rem;
     align-items: start;
     padding: 1rem;
-    background: #f8f9fa;
+    background: var(--restaurant-bg-light);
+    border: 1px solid var(--restaurant-border-light);
     border-radius: 8px;
+    transition: all 0.2s ease;
+}
+
+.cart-item:hover {
+    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
+    border-color: var(--restaurant-primary-light);
 }
 
 .item-image {
@@ -276,29 +293,38 @@ const formatOptions = (optionValue) => {
 .item-name {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-text-primary);
     margin: 0 0 0.5rem 0;
 }
 
 .item-options {
     font-size: 0.85rem;
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
     margin-bottom: 0.5rem;
 }
 
 .option-text {
     display: block;
     margin-bottom: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--restaurant-bg-secondary);
+    border-radius: 4px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .item-notes {
     font-size: 0.85rem;
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
     margin-bottom: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    background: var(--restaurant-bg-secondary);
+    border-radius: 4px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .notes-label {
     font-weight: 500;
+    color: var(--restaurant-text-primary);
 }
 
 .notes-text {
@@ -307,7 +333,7 @@ const formatOptions = (optionValue) => {
 
 .item-price {
     font-size: 0.9rem;
-    color: var(--price-color, #e74c3c);
+    color: var(--restaurant-primary-dark);
     font-weight: 500;
 }
 
@@ -322,13 +348,17 @@ const formatOptions = (optionValue) => {
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--restaurant-bg-primary);
+    border-radius: 6px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .quantity-btn {
     width: 2rem;
     height: 2rem;
-    border: 1px solid #ddd;
-    background: #fff;
+    border: 1px solid var(--restaurant-border-medium);
+    background: var(--restaurant-bg-primary);
     border-radius: 4px;
     cursor: pointer;
     display: flex;
@@ -336,13 +366,15 @@ const formatOptions = (optionValue) => {
     justify-content: center;
     font-size: 1rem;
     font-weight: 600;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
+    color: var(--restaurant-text-primary);
 }
 
 .quantity-btn:hover:not(:disabled) {
-    background: var(--primary-color, #ff6c00);
-    color: #fff;
-    border-color: var(--primary-color, #ff6c00);
+    background: var(--restaurant-gradient-primary);
+    color: var(--restaurant-text-primary);
+    border-color: var(--restaurant-primary);
+    transform: translateY(-1px);
 }
 
 .quantity-btn:disabled {
@@ -355,6 +387,7 @@ const formatOptions = (optionValue) => {
     font-weight: 600;
     min-width: 1.5rem;
     text-align: center;
+    color: var(--restaurant-text-primary);
 }
 
 .remove-btn {
@@ -363,30 +396,36 @@ const formatOptions = (optionValue) => {
     cursor: pointer;
     padding: 0.25rem;
     border-radius: 4px;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    color: var(--restaurant-text-secondary);
 }
 
 .remove-btn:hover {
-    background: #ffebee;
+    background: var(--restaurant-shadow-light);
+    color: var(--restaurant-error);
 }
 
 .item-total {
     font-size: 1rem;
     font-weight: 600;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-primary-dark);
     text-align: right;
 }
 
 .cart-footer {
     flex-shrink: 0;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--restaurant-border-light);
     padding: 1.5rem;
-    background: #f8f9fa;
+    background: var(--restaurant-bg-secondary);
     border-radius: 0 0 12px 12px;
 }
 
 .cart-summary {
     margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--restaurant-bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 .summary-row {
@@ -394,16 +433,16 @@ const formatOptions = (optionValue) => {
     justify-content: space-between;
     align-items: center;
     padding: 0.5rem 0;
-    color: var(--text-secondary, #666);
+    color: var(--restaurant-text-secondary);
 }
 
 .total-row {
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--restaurant-border-medium);
     padding-top: 1rem;
     margin-top: 0.5rem;
     font-weight: 600;
     font-size: 1.1rem;
-    color: var(--text-primary, #333);
+    color: var(--restaurant-primary-dark);
 }
 
 .cart-actions {
@@ -414,34 +453,40 @@ const formatOptions = (optionValue) => {
 .continue-shopping-btn {
     flex: 1;
     padding: 0.75rem 1rem;
-    border: 2px solid var(--primary-color, #ff6c00);
-    background: #fff;
-    color: var(--primary-color, #ff6c00);
+    border: 2px solid var(--restaurant-primary);
+    background: var(--restaurant-bg-primary);
+    color: var(--restaurant-primary);
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    box-shadow: 0 2px 6px var(--restaurant-shadow-light);
 }
 
 .continue-shopping-btn:hover {
-    background: var(--primary-color, #ff6c00);
-    color: #fff;
+    background: var(--restaurant-gradient-primary);
+    color: var(--restaurant-text-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--restaurant-shadow-medium);
 }
 
 .checkout-btn {
     flex: 2;
     padding: 0.75rem 1rem;
-    background: var(--primary-color, #ff6c00);
-    color: #fff;
-    border: none;
+    background: var(--restaurant-gradient-primary);
+    color: var(--restaurant-text-primary);
+    border: 1px solid var(--restaurant-primary-light);
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
 }
 
 .checkout-btn:hover {
-    background: var(--primary-hover, #e55a00);
+    background: var(--restaurant-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--restaurant-shadow-medium);
 }
 
 /* 响应式设计 */
