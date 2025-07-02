@@ -65,7 +65,7 @@ import avataUrl from '../assets/avata.png';
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="#" class="nav-link" active-class="active-link">
+                                <router-link to="/hours" class="nav-link" active-class="active-link">
                                     <i class="fas fa-clock fa-fw me-2"></i> 營業時間
                                 </router-link>
                             </li>

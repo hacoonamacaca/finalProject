@@ -4,6 +4,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import SellerLayout from '../layouts/SellerLayout.vue';
 import MenuManagement from '../pages/MenuManagement.vue';
 import OrderManagement from '../pages/OrderManager.vue';
+import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
 
 const routes = [
     {
@@ -26,6 +27,12 @@ const routes = [
                 path: 'orders', // 代表是 /orders
                 name: 'OrderManager',
                 component: OrderManagement
+            },
+
+            {
+                path: 'hours', // 代表是 /hours
+                name: 'BusinessHoursManager',
+                component: BusinessHoursManager
             }
         ]
     },
