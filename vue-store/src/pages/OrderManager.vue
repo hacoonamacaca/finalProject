@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import OrderList from './OrderList.vue';
-import OrderDetail from './OrderDetail.vue';
+import OrderList from '../components/OrderList.vue';
+import OrderDetail from '../components/OrderDetail.vue';
 
 // 订单列表数据 (模拟数据)
 const orders = ref([]);
