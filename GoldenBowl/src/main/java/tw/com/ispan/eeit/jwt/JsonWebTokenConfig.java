@@ -10,11 +10,11 @@ public class JsonWebTokenConfig implements WebMvcConfigurer {
 	@Autowired
 	private JsonWebTokenInterceptor jsonWebTokenInterceptor;
 
-	@Override
-	public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(jsonWebTokenInterceptor).addPathPatterns(
-				"/ajax/pages/products/**",
-				"/rest/pages/products/**");
-	}
+//	@Override
+//	public void addInterceptors(InterceptorRegistry registry) {
+//		registry.addInterceptor(jsonWebTokenInterceptor).addPathPatterns(
+//				"/ajax/pages/products/**",
+//				"/rest/pages/products/**");
+//	}
 
 }
