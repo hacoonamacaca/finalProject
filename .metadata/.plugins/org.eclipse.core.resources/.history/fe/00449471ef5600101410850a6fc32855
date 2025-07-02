@@ -1,0 +1,12 @@
+Description:
+
+Failed to bind properties under 'spring.profiles.active' to java.util.Set<java.lang.String>:
+
+    Property: spring.profiles.active
+    Value: "@xxx@"
+    Origin: class path resource [application.yml] - 16:13
+    Reason: java.lang.IllegalStateException: Profile '@xxx@' must start and end with a letter or digit
+
+Action:
+
+Update your application's configuration
