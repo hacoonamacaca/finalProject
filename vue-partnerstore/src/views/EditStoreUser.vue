@@ -2,7 +2,7 @@
     <div class="container py-5">
         <div class="text-center mb-4">
             <h3 class="d-inline-block">我的帳戶</h3>
-            <i class="bi bi-info-circle text-secondary ms-2"></i>
+            <i class="text-secondary ms-2"></i>
         </div>
         <!-- 姓名+手機 -->
         <div class="mx-auto" style="max-width: 360px;">
@@ -46,7 +46,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 function goBack() {
-    router.back()
+    router.push('/store')
 }
 
 const initial = reactive({

@@ -25,7 +25,9 @@
         <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> 回首頁*
         </li>
-
+        <li @click="navigateTo('secure/login')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-box-arrow-in-right"></i> 測試登入
+        </li>
         <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-box-arrow-right"></i> 登出
         </li>
@@ -148,9 +150,7 @@ onUnmounted(() => {
 /* 預設為黃色文字 */
 .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
-  background-color: #ffba20;
   color: #ffba20;
-  /* 疑問 */
   font-weight: 500;
 }
 

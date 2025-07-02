@@ -1,23 +1,5 @@
 <template>
-    <div class="admin-layout">
-        <!-- 漢堡按鈕放在 header -->
-        <header class="admin-header">
-        <button class="hamburger" @click="toggleSidebar">☰</button>
-        <h2>網站後台管理系統</h2>
-        </header>
-
-        <!-- Sidebar + Main -->
-        <div class="row admin-body">
-        <!-- Sidebar 用 v-if 或 v-show -->
-        <aside class="admin-sidebar" :class="{ open: sidebarOpen }">
-        <nav>
-            <ul class="list-unstyled">
-            <li>優惠活動管理</li>
-            <li>訂單管理</li>
-            <li>用戶管理</li>
-            </ul>
-        </nav>
-        </aside>
+        <h2>優惠活動</h2>
         <!-- 黑色 Overlay -->
         <div v-if="sidebarOpen" class="overlay" @click="toggleSidebar"></div>
 
@@ -114,15 +96,30 @@
     </div>
 
 
-        <!-- 分頁 -->
-        <div class="pagination">
-            <button class="btn btn-primary" @click="prevPage" :disabled="currentPage === 1">上一頁</button>
-            <span>頁數：{{ currentPage }} / {{ totalPages }}</span>
-            <button class="btn btn-primary" @click="nextPage" :disabled="currentPage === totalPages">下一頁</button>
-        </div>
+<!-- 分頁區塊（訂閱方案版式） -->
+<div class="pagination d-flex justify-content-end align-items-center pagebar-wrap">
+    <button class="btn btn-outline-secondary me-2"
+        :disabled="currentPage === 1"
+        @click="currentPage > 1 && (currentPage--)"
+    >&lt; 上一頁</button>
+    <nav>
+        <ul class="pagination mb-0">
+            <li class="page-item disabled">
+                <span class="page-link">頁數：{{ currentPage }} / {{ totalPages }}</span>
+            </li>
+        </ul>
+    </nav>
+    <button class="btn btn-outline-secondary ms-2"
+        :disabled="currentPage === totalPages"
+        @click="currentPage < totalPages && (currentPage++)"
+    >下一頁 &gt;</button>
+    <div class="ms-3">
+        <select class="form-select" v-model.number="itemsPerPage" style="width:120px; min-width: 90px;">
+            <option v-for="s in [5, 10, 20]" :key="s" :value="s">{{ s }}/每頁</option>
+        </select>
+    </div>
+</div>
         </main>
-    </div>
-    </div>
 </template>
 
 <script setup>
@@ -143,15 +140,9 @@ const newPromotion = ref({
     bindPlan: false, plan_ids_input: '',
 })
 
-
-
-
 const toggleSidebar = () => {
     sidebarOpen.value = !sidebarOpen.value
 }
-
-
-
 
 const filteredPromotions = computed(() => {
     return promotions.value.filter(p =>

@@ -2,30 +2,20 @@
   <div class="user-dropdown-container">
     <a href="#" class="user-link" @click.prevent="toggleDropdown">
       <i class="bi bi-person-circle me-1"></i>
-      <span v-if="!userFullName">使用者*</span>
-      <span v-else>{{ userFullName }}</span>
+      <span v-if="!storeFullName">餐廳*</span>
+      <span v-else>{{ storeFullName }}</span>
     </a>
     <div class="dropdown-menu" v-if="showDropdown">
       <ul class="list-unstyled mb-0">
         <li @click="navigateTo('profile')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-person"></i> 個人資料
         </li>
-        <li @click="navigateTo('VoucherWallet')" class="d-flex align-items-center gap-2 px-3 py-2">
-          <i class="bi bi-ticket-perforated"></i> 優惠券
-        </li>
-        <li @click="navigateTo('subscription')" class="d-flex align-items-center gap-2 px-3 py-2">
-          <i class="bi bi-box-seam"></i> 訂閱
-        </li>
-        <li @click="navigateTo('favorites')" class="d-flex align-items-center gap-2 px-3 py-2">
-          <i class="bi bi-heart"></i> 收藏管理
-        </li>
-        <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
-          <i class="bi bi-journal-text"></i> 歷史訂單
+        <li @click="navigateTo('storeProfile')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-shop"></i> 餐廳資料
         </li>
         <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> 回首頁*
         </li>
-
         <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-box-arrow-right"></i> 登出
         </li>
@@ -43,7 +33,7 @@ import { useUserStore } from '@/stores/user.js';
 const showDropdown = ref(false);
 const router = useRouter();
 
-const userFullName = ref('');
+const storeFullName = ref('');
 const userEmail = ref('');
 
 const userStore = useUserStore();
@@ -75,7 +65,7 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  userFullName.value = localStorage.getItem('userFullName') || ''
+  storeFullName.value = localStorage.getItem('storeFullName') || ''
   userEmail.value = localStorage.getItem('userEmail') || ''
 });
 
@@ -148,9 +138,7 @@ onUnmounted(() => {
 /* 預設為黃色文字 */
 .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
-  background-color: #ffba20;
   color: #ffba20;
-  /* 疑問 */
   font-weight: 500;
 }
 

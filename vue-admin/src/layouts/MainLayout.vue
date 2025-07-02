@@ -1,227 +1,202 @@
-    <template>
-        <div class="app-wrapper">
-        <!-- 顶栏 + 汉堡 -->
-        <header class="admin-header">
-            <button class="hamburger" @click="toggleSidebar">☰</button>
-            <h2>網站後台管理系統</h2>
-        </header>
-    
+<template>
+    <div class="page-wrapper">
+        <!-- Top Navbar，完全取代 header -->
+        <TopNavbar />
+
         <div class="main-container">
-            <!-- 抽屉式侧边栏 -->
-            <aside class="sidebar" :class="{ open: sidebarOpen }">
-            <div class="list-group list-group-flush">
-                <!-- 帳號管理 -->
-                <div>
-                <a
-                    class="list-group-item parent"
-                    :class="{ active: isAccountActive }"
-                    @click="toggle('account')"
-                >帳號管理</a>
-                <router-link
-                    v-if="open.account"
-                    to="/account"
-                    class="list-group-item child"
-                    :class="{ active: isAccountActive }"
-                >帳號相關審核</router-link>
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <div class="sidebar-sticky">
+                    <div class="sidebar-section">
+                        <ul class="list-group list-group-flush">
+                            <li>
+                                <router-link to="/account" class="list-group-item parent" :class="{ active: isAccountActive }">
+                                    <i class="bi bi-person-gear me-2"></i> 管理帳號
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/restaurant" class="list-group-item parent" :class="{ active: isRestaurantActive }">
+                                    <i class="bi bi-clipboard-check me-2"></i> 審核餐廳
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/review" class="list-group-item parent" :class="{ active: isReviewActive }">
+                                    <i class="bi bi-chat-left-dots me-2"></i> 評價檢舉
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/promotionList" class="list-group-item parent" :class="{ active: isPromotionListActive }">
+                                    <i class="bi bi-gift me-2"></i> 優惠活動
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/subscription/plan" class="list-group-item parent" :class="{ active: isSubscriptionPlanActive }">
+                                    <i class="bi bi-bag-check me-2"></i> 訂閱方案
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/subscription/record" class="list-group-item parent" :class="{ active: isSubscriptionRecordActive }">
+                                    <i class="bi bi-clock-history me-2"></i> 訂閱紀錄
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/restaurantTag" class="list-group-item parent" :class="{ active: isRestaurantTagActive }">
+                                    <i class="bi bi-tags me-2"></i> 餐廳標籤
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/foodTag" class="list-group-item parent" :class="{ active: isFoodTagActive }">
+                                    <i class="bi bi-egg-fried me-2"></i> 食物標籤
+                                </router-link>
+                            </li>
+                            <li>
+                                <router-link to="/recommendation" class="list-group-item parent" :class="{ active: isRecommendationActive }">
+                                    <i class="bi bi-star me-2"></i> 網站推薦
+                                </router-link>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-    
-                <!-- 餐廳管理 -->
-                <div>
-                <a
-                    class="list-group-item parent"
-                    :class="{ active: isRestaurantActive }"
-                    @click="toggle('restaurant')"
-                >餐廳管理</a>
-                <router-link
-                    v-if="open.restaurant"
-                    to="/restaurant"
-                    class="list-group-item child"
-                    :class="{ active: isRestaurantActive }"
-                >餐廳審核</router-link>
-                </div>
-    
-                <!-- 評價管理 -->
-                <router-link
-                to="/review"
-                class="list-group-item parent"
-                :class="{ active: isReviewActive }"
-                >評價管理</router-link>
-    
-                <!-- 優惠活動 -->
-                <router-link
-                to="/discount"
-                class="list-group-item parent"
-                :class="{ active: isDiscountActive }"
-                >優惠活動</router-link>
-    
-                <!-- 訂閱管理 -->
-                <div>
-                <a
-                    class="list-group-item parent"
-                    :class="{ active: isSubscriptionPlanActive || isSubscriptionRecordActive }"
-                    @click="toggle('subscription')"
-                >訂閱管理</a>
-                <router-link
-                    v-if="open.subscription"
-                    to="/subscription/plan"
-                    class="list-group-item child"
-                    :class="{ active: isSubscriptionPlanActive }"
-                >訂閱方案</router-link>
-                <router-link
-                    v-if="open.subscription"
-                    to="/subscription/record"
-                    class="list-group-item child"
-                    :class="{ active: isSubscriptionRecordActive }"
-                >訂閱紀錄</router-link>
-                </div>
-    
-                <!-- 餐廳標籤 -->
-                <router-link
-                to="/restaurantTag"
-                class="list-group-item parent"
-                :class="{ active: isRestaurantTagActive }"
-                >餐廳標籤</router-link>
-                <!-- 食物標籤 -->
-                <router-link
-                to="/foodTag"
-                class="list-group-item parent"
-                :class="{ active: isFoodTagActive }"
-                >食物標籤</router-link>
-                <!-- 網站推薦 -->
-                <router-link
-                to="/recommendation"
-                class="list-group-item parent"
-                :class="{ active: isRecommendationActive }"
-                >網站推薦</router-link>
-            </div>
-            </aside>
-    
-            <!-- 主內容區 -->
-            <section class="content">
-            <!-- 麵包屑 -->
-            <nav aria-label="breadcrumb" class="breadcrumb-bar">
-                <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><router-link to="/">首頁</router-link></li>
-                <li v-if="crumbTitle" class="breadcrumb-item active">{{ crumbTitle }}</li>
-                </ol>
             </nav>
-    
-            <!-- 路由页面输出 -->
-            <div class="page-body">
-                <router-view/>
-            </div>
-            </section>
+            <main class="main-content p-4">
+                <router-view />
+            </main>
         </div>
-        </div>
-    </template>
-    
-    <script setup>
-    import { ref, computed, watch } from 'vue'
-    import { useRoute } from 'vue-router'
-    
-    // 路由对象，供 computed/watch 使用
-    const route = useRoute()
-    
-    // 控制侧栏展开/收起
-    const sidebarOpen = ref(false)
-    
-    // 哪些子菜单展开
-    const open = ref({
-        account: false,
-        restaurant: false,
-        subscription: false
-    })
-    
-    // 切换同一组菜单展开状态，收起其它组
-    function toggle(section) {
-        open.value[section] = !open.value[section]
-        Object.keys(open.value).forEach(k => {
-        if (k !== section) open.value[k] = false
-        })
+
+        <!-- Footer -->
+        <footer class="bg-warning text-white text-center p-3 flex-shrink-0">
+            Footer
+        </footer>
+    </div>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import TopNavbar from '@/components/TopNavbar.vue'
+
+const route = useRoute()
+
+const isAccountActive            = computed(() => route.path.startsWith('/account'))
+const isRestaurantActive         = computed(() => route.path.startsWith('/restaurant'))
+const isReviewActive             = computed(() => route.path.startsWith('/review'))
+// const isDiscountActive           = computed(() => route.path.startsWith('/discount'))
+const isPromotionListActive = computed(() => route.path.startsWith('/promotionList'))
+const isSubscriptionPlanActive   = computed(() => route.path.startsWith('/subscription/plan'))
+const isSubscriptionRecordActive = computed(() => route.path.startsWith('/subscription/record'))
+const isRestaurantTagActive      = computed(() => route.path.startsWith('/restaurantTag'))
+const isFoodTagActive            = computed(() => route.path.startsWith('/foodTag'))
+const isRecommendationActive     = computed(() => route.path.startsWith('/recommendation'))
+</script>
+
+<style scoped>
+.brand-title {
+color: #5c3203;
+font-weight: bold;
+font-size: 1.5rem;
+}
+.page-wrapper {
+display: flex;
+flex-direction: column;
+height: 100vh;
+background-color: #fdfaf5;
+}
+.main-container {
+display: flex;
+flex-grow: 1;
+overflow: hidden;
+}
+.sidebar {
+flex-shrink: 0;
+width: 250px;
+min-width: 200px;
+overflow-y: auto;
+border-right: 1px solid #dee2e6;
+background-color: #f7f7f7;
+padding: 2rem 1rem 2rem 1rem;
+height: 100%;
+}
+.sidebar.open {
+transform: translateX(0);
+}
+.sidebar-sticky {
+position: sticky;
+top: 0;
+}
+.sidebar-section {
+margin-bottom: 2rem;
+}
+
+    /* 去除 sidebar ul/li 的圓點與縮排 */
+    .sidebar .list-group {
+    list-style: none;
+    padding-left: 0;
     }
-    
-    // 根据当前路由，自动展开对应子菜单
-    watch(
-        () => route.path,
-        path => {
-        open.value.account     = path.startsWith('/account')
-        open.value.restaurant  = path.startsWith('/restaurant')
-        open.value.subscription= path.startsWith('/subscription')
-        },
-        { immediate: true }
-    )
-    
-    // 切换 sidebar
-    function toggleSidebar() {
-        sidebarOpen.value = !sidebarOpen.value
+    .sidebar .list-group li {
+    list-style: none;
+    padding-left: 0;
     }
-    
-    // Active 状态判断
-    const isAccountActive           = computed(() => route.path.startsWith('/account'))
-    const isRestaurantActive        = computed(() => route.path.startsWith('/restaurant'))
-    const isReviewActive            = computed(() => route.path.startsWith('/review'))
-    const isDiscountActive          = computed(() => route.path.startsWith('/discount'))
-    const isSubscriptionPlanActive  = computed(() => route.path === '/subscription/plan')
-    const isSubscriptionRecordActive= computed(() => route.path === '/subscription/record')
-    const isRestaurantTagActive     = computed(() => route.path.startsWith('/restaurantTag'))
-    const isFoodTagActive           = computed(() => route.path.startsWith('/foodTag'))
-    const isRecommendationActive    = computed(() => route.path.startsWith('/recommendation'))
-    
-    // 面包屑标题映射
-    const crumbTitle = computed(() => {
-        const map = {
-        '/account':                  '帳號相關審核',
-        '/restaurant':               '餐廳審核',
-        '/review':                   '評價管理',
-        '/discount':                 '優惠活動',
-        '/subscription/plan':        '訂閱方案',
-        '/subscription/record':      '訂閱紀錄',
-        '/subscription/status':      '訂閱狀態',
-        '/restaurantTag':            '餐廳標籤',
-        '/foodTag':                  '食物標籤',
-        '/recommendation':           '網站推薦',
-        }
-        return map[route.path] || ''
-    })
-    </script>
-    
-    <style scoped>
-    .app-wrapper { height:100vh; display:flex; flex-direction:column; }
-    .admin-header {
-        display:flex; align-items:center;
-        padding:.5rem 1rem;
-        background:#fff; border-bottom:1px solid #eee;
+
+    /* 去除 router-link(a) 被點選的 outline 藍邊與 hover 背景 */
+    .sidebar .list-group-item:focus,
+    .sidebar .list-group-item:active {
+    outline: none !important;
+    box-shadow: none !important;
     }
-    .hamburger {
-        font-size:1.5rem;
-        background:none; border:none;
-        cursor:pointer; margin-right:1rem;
+
+    /* 視覺再美化：hover 高亮/active 狀態可自訂 */
+    .sidebar .list-group-item:hover,
+    .sidebar .list-group-item.active {
+    background: #fff8e1;
+    color: #ff9800;
+    border: none;
     }
-    
-    .main-container { flex:1; display:flex; overflow:hidden; }
-    .sidebar {
-        width:240px; background:#f8f9fa;
-        border-right:1px solid #ddd;
-        transform:translateX(-100%);
-        transition:transform .2s;
-    }
-    .sidebar.open { transform:translateX(0); }
-    .content { flex:1; overflow:auto; }
-    
-    /* 面包屑 */
-    .breadcrumb-bar {
-        padding:.75rem 1rem;
-        background:#f0f0f0;
-        margin:0;
-    }
-    
-    /* 页面主体 */
-    .page-body { padding:1rem; }
-    
-    /* Active 项 font-weight */
-    .list-group-item.parent.active,
-    .list-group-item.child.active {
-        font-weight: bold;
-    }
-    </style>
-    
+
+.list-group-item {
+background: none;
+border: none;
+font-size: 15px;
+color: #6c757d;
+border-radius: 6px;
+padding: 0.75rem 1rem;
+display: flex;
+align-items: center;
+cursor: pointer;
+transition: all 0.2s;
+}
+.list-group-item.parent {
+font-weight: bold;
+}
+.list-group-item.child {
+padding-left: 2.5rem;
+font-weight: normal;
+}
+.list-group-item.active,
+.list-group-item:hover {
+background-color: #fcebc1;
+color: #eca300;
+}
+.list-group-item.active i,
+.list-group-item:hover i {
+color: #eca300;
+}
+.list-group-item i {
+color: #6c757d;
+min-width: 18px;
+}
+.main-content {
+flex-grow: 1;
+overflow-y: auto;
+background-color: white;
+}
+.breadcrumb-bar {
+background: #f0f0f0;
+padding: .75rem 1rem;
+margin: 0 0 1.5rem 0;
+border-radius: 0.5rem;
+}
+header,
+footer {
+flex-shrink: 0;
+}
+</style>

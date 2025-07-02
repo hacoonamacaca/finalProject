@@ -8,8 +8,8 @@
 
 <script setup>
 import { RouterView } from 'vue-router';
-import Home from "@/views/Jimmy/Home.vue"
-import Navigation from '@/components/Navigation.vue';
+// import Home from "@/views/Home.vue"
+import Navigation from "@/components/Navigation.vue"
 </script>
 
 <style></style>
