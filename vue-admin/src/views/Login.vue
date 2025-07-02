@@ -59,7 +59,7 @@
         cursor: pointer;
     }
     .btn-login {
-        background: #e62271;
+        background: #ffba20;
         color: #fff;
         font-size: 1.25rem;
         font-weight: bold;

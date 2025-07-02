@@ -37,11 +37,11 @@ spring:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         #連結資料庫讓名稱與java相同
 #mogodb的設定
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: textdb
+#  data:
+#    mongodb:
+#      host: localhost
+#      port: 27017
+#      database: textdb
 
   #設定Jackson的日期轉換格式
   jackson:
