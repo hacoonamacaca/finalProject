@@ -125,6 +125,6 @@ background-color: #f5f5f5;
 
 .dropdown-menu li:last-child {
 border-top: 1px solid #ddd;
-color: #d70f64;
+color: #ffba20;
 }
 </style>

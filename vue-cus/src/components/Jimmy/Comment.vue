@@ -87,12 +87,12 @@ return date.toLocaleString('zh-TW', {
 }
 
 .comment-btn:hover {
-    background-color: #b00c50;
+    background-color: #eca300;
 }
 
 .comment-popout {
     position: fixed;
-    top: 0;
+    top: 20px;
     left: 0;
     width: 100%;
     height: 100%;

@@ -3,11 +3,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from "@/views/Jimmy/Home.vue"
 import NotFound from "@/views/NotFound.vue"
 import Forbidden from "@/views/Forbidden.vue"
-
 import Search from "@/views/Jimmy/Search.vue"
 import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
-import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
+import SubscriptionPlan from "@/views/Yifan/SubscriptionPlan.vue"
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
@@ -49,9 +48,9 @@ const routes = [
         name: "VoucherWallet-link"
     },
     {
-        path: '/Checkout',
-        name: 'CheckoutCoupon',
-        component: CheckoutCoupon
+        path: "/Subscription",
+        component: SubscriptionPlan,
+        name: "Subscription-link"
     },
     { path: '/', component: Home },
     { path: '/register', component: Register },

@@ -62,6 +62,21 @@
             </span>
           </button>
         </div>
+
+        <!-- 購物車按鈕 -->
+        <button
+          class="btn position-relative"
+          style="background: transparent; border: none;"
+          @click="goToCart"
+          title="購物車"
+        >
+          <i class="bi bi-cart4 text-white fs-5"></i>
+          <span v-if="cartCount > 0"
+                class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+            {{ cartCount }}
+          </span>
+        </button>
+      
       </div>
     </div>
   </header>
@@ -101,7 +116,6 @@ const toggleRestaurantMenu = () => {
   isRestaurant.value = !isRestaurant.value;
   console.log("目前頁面餐廳為是/餐點為否:" + isRestaurant.value);
 };
-
 // 優惠通知邏輯
 const isNotificationOpen = ref(false)
 const toggleNotification = () => isNotificationOpen.value = !isNotificationOpen.value
@@ -256,6 +270,14 @@ const getLogin = () => {
   font-size: 1.5rem;
 }
 
+.notification-panel {
+  top: 60px; /* 根據你的 navbar 高度調整 */
+  right: 0px; /* 讓箭頭正對鈴鐺 */
+}
+.arrow-up {
+  right: 25px; /* 根據鈴鐺位置微調 */
+}
+
 .navbar {
   background-color: #ffba20;
   color: white;
@@ -268,10 +290,26 @@ const getLogin = () => {
   z-index: 3000;
 }
 
-.navbar-brand {
+.navbar .logo {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.navbar .nav-links {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
+}
+
+.navbar .nav-links a {
+  display: block;
+  color: white;
+  font-size: 18px;
+  margin: 10px 0;
+  width: 100%;
+  text-align: left;
+  text-decoration: none;
+  font-size: 16px;
 }
 
 .location-btn {
@@ -279,13 +317,12 @@ const getLogin = () => {
   color: white;
   border: 1px solid #fff;
   padding: 8px 16px;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 5px;
-  transition: background-color 0.3s ease;
 }
 
 .location-btn:hover {
@@ -308,7 +345,7 @@ const getLogin = () => {
 .popout-content {
   background: #fff;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 8px;
   width: 90%;
   max-width: 400px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -321,7 +358,7 @@ const getLogin = () => {
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 8px;
+  border-radius: 4px;
   margin-bottom: 15px;
 }
 
@@ -330,15 +367,14 @@ const getLogin = () => {
   background: #ffba20;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 4px;
   cursor: pointer;
   font-size: 16px;
   width: 100%;
-  transition: background-color 0.3s ease;
 }
 
 .search-btn:hover {
-  background: #e0a518;
+  background: #ffba20;
 }
 
 .close-btn {
@@ -373,46 +409,7 @@ const getLogin = () => {
   width: 100%;
   height: 3px;
   background: white;
-  border-radius: 2px;
   transition: all 0.3s ease;
-}
-
-.hamburger.active span:nth-child(1) {
-  transform: rotate(45deg) translate(5px, 5px);
-}
-
-.hamburger.active span:nth-child(2) {
-  opacity: 0;
-}
-
-.hamburger.active span:nth-child(3) {
-  transform: rotate(-45deg) translate(7px, -7px);
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.nav-links .auth-section a,
-.nav-links .nav-item {
-  color: white;
-  text-decoration: none;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: color 0.3s ease;
-}
-
-.nav-links .nav-item i {
-  font-size: 20px;
-}
-
-.nav-links .nav-item:hover,
-.nav-links .auth-section a:hover {
-  color: #ffe082;
 }
 
 @media (max-width: 768px) {
@@ -421,22 +418,26 @@ const getLogin = () => {
   }
 
   .nav-links {
-    position: fixed;
-    top: 0;
+    position: absolute;
+    border-radius: 10px;
+    top: 100%;
     right: 0;
-    height: 100%;
-    width: 250px;
+    height: 300px;
+    width: 150px;
     background-color: #ffba20;
     flex-direction: column;
     align-items: flex-start;
     padding: 20px;
-    transform: translateX(100%);
-    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    visibility: hidden;
+    display: none;
     z-index: 2000;
   }
 
   .nav-links.active {
-    transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+    display: flex;
   }
 
   .nav-links .auth-section {
@@ -444,23 +445,27 @@ const getLogin = () => {
     flex-direction: column;
     align-items: flex-start;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 15px;
-    margin-bottom: 15px;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
     order: -1;
+    /* 確保置頂 */
+  }
+
+  .nav-links .auth-section .user-dropdown {
+    width: 100%;
+    text-align: left;
   }
 
   .nav-links .nav-items {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    gap: 15px;
   }
 
-  .nav-links .nav-item,
-  .nav-links .auth-section a {
-    padding: 10px 0;
+  .nav-links .nav-items {
+    flex-direction: column;
+    align-items: flex-start;
     width: 100%;
-    font-size: 18px;
   }
 
   .desktop-only {
@@ -478,13 +483,17 @@ const getLogin = () => {
     width: 100%;
     text-align: left;
     justify-content: space-between;
-    border-radius: 8px;
   }
 
   .navbar {
     flex-direction: column;
     align-items: flex-start;
     padding: 15px;
+  }
+
+  .navbar .logo {
+    width: 100%;
+    margin-bottom: 10px;
   }
 
   .hamburger {

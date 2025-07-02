@@ -44,10 +44,11 @@
 
                     <div class="mb-3 mt-3"> <!-- 多加一個 mt-3 來增加與上方欄位的間距 -->
                         <label class="form-label">品項類別*</label>
-                        <select class="form-select" v-model="form.category"> <!-- <--- 綁定到 form.category -->
-                            <option>精選美食</option>
-                            <option>義式咖啡</option>
-                            <option>風味飲品</option>
+                        <select class="form-select" v-model="form.categoryId"> <!-- <--- 綁定到 form.categoryId -->
+                            <!-- 使用 v-for 來動態生成選項 -->
+                            <option v-for="category in categories" :key="category.id" :value="category.id">
+                            {{ category.name }}
+                            </option>
                         </select>
                     </div>
 
@@ -83,7 +84,10 @@ const props = defineProps({
     item: {
         type: Object,
         default: null, // 如果是新增，prop 會是 null
-    }
+    },
+    categories: { 
+        type: Array, 
+        required: true } // 在 props 中接收 categories
 });
 
 const emit = defineEmits(['close', 'save', 'delete']);
@@ -104,7 +108,7 @@ watchEffect(() => {
             price: 0,
             status: '供應中',
             stock: 0,
-            category: '精選美食',
+            categoryId: props.categories.length > 0 ? props.categories[0].id : null, // 設定預設類別為第一個類別
             description: '',
             img: ''
         };
