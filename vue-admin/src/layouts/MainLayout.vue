@@ -25,7 +25,7 @@
                                 </router-link>
                             </li>
                             <li>
-                                <router-link to="/discount" class="list-group-item parent" :class="{ active: isDiscountActive }">
+                                <router-link to="/promotionList" class="list-group-item parent" :class="{ active: isPromotionListActive }">
                                     <i class="bi bi-gift me-2"></i> 優惠活動
                                 </router-link>
                             </li>
@@ -80,7 +80,8 @@ const route = useRoute()
 const isAccountActive            = computed(() => route.path.startsWith('/account'))
 const isRestaurantActive         = computed(() => route.path.startsWith('/restaurant'))
 const isReviewActive             = computed(() => route.path.startsWith('/review'))
-const isDiscountActive           = computed(() => route.path.startsWith('/discount'))
+// const isDiscountActive           = computed(() => route.path.startsWith('/discount'))
+const isPromotionListActive = computed(() => route.path.startsWith('/promotionList'))
 const isSubscriptionPlanActive   = computed(() => route.path.startsWith('/subscription/plan'))
 const isSubscriptionRecordActive = computed(() => route.path.startsWith('/subscription/record'))
 const isRestaurantTagActive      = computed(() => route.path.startsWith('/restaurantTag'))

@@ -126,6 +126,8 @@ h4 {
 
 .pagebar-wrap .pagination {
   margin-bottom: 0;
+  align-items: center;
+  display: flex;
 }
 
 .pagebar-wrap .form-select {
