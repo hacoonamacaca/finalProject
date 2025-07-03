@@ -1,5 +1,5 @@
 <template>
-    <div class="time-picker-sectioned">
+    <div class="time-picker-sectioned restaurant-theme">
         <div v-for="section in sections" :key="section.label" class="time-section">
             <h6 class="section-label">{{ section.label }}</h6>
             <div class="time-slot-group">
@@ -14,6 +14,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
     modelValue: {
@@ -63,52 +64,59 @@ const timeSlotClasses = (slot) => {
 }
 
 .section-label {
-    color: #666;
+    color: var(--restaurant-primary);
     font-size: 0.9rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px var(--restaurant-shadow-light);
 }
 
 .time-slot-group {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-    gap: 0.5rem;
+    grid-template-columns: repeat(4, 120px);
+    gap: 0.75rem;
+    justify-content: start;
 }
 
 .time-slot {
-    background: #fff;
-    border: 2px solid #e9ecef;
-    border-radius: 6px;
+    background: var(--restaurant-bg-primary);
+    border: 2px solid var(--restaurant-border-medium);
+    border-radius: 8px;
     padding: 0.75rem 0.5rem;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     font-weight: 500;
     font-size: 0.9rem;
-    min-height: 44px;
+    width: 120px;
+    height: 48px;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--restaurant-text-primary);
+    box-shadow: 0 1px 4px var(--restaurant-shadow-light);
 }
 
 .time-slot:hover:not(.disabled) {
-    border-color: #ff6c00;
-    background-color: #fff3e0;
-    transform: translateY(-1px);
+    border-color: var(--restaurant-primary);
+    background: var(--restaurant-shadow-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--restaurant-shadow-medium);
 }
 
 .time-slot.selected {
-    background-color: #ff6c00;
-    border-color: #ff6c00;
-    color: white;
+    background: var(--restaurant-gradient-primary);
+    border-color: var(--restaurant-primary);
+    color: var(--restaurant-text-primary);
     font-weight: 600;
+    box-shadow: 0 4px 16px var(--restaurant-shadow-medium);
 }
 
 .time-slot.disabled {
-    background-color: #f8f9fa;
-    border-color: #dee2e6;
-    color: #adb5bd;
+    background: var(--restaurant-bg-light);
+    border-color: var(--restaurant-border-light);
+    color: var(--restaurant-text-muted);
     cursor: not-allowed;
     opacity: 0.6;
 }
@@ -118,16 +126,18 @@ const timeSlotClasses = (slot) => {
     line-height: 1;
 }
 
-/* 響應式設計 */
+/* 響應式設計 - 保持固定大小 */
 @media (max-width: 768px) {
     .time-slot-group {
-        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
-        gap: 0.4rem;
+        grid-template-columns: repeat(3, 110px);
+        gap: 0.5rem;
+        justify-content: start;
     }
 
     .time-slot {
+        width: 110px;
+        height: 44px;
         padding: 0.5rem 0.25rem;
-        min-height: 40px;
     }
 
     .time-text {
@@ -137,7 +147,14 @@ const timeSlotClasses = (slot) => {
 
 @media (max-width: 480px) {
     .time-slot-group {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 140px);
+        gap: 0.5rem;
+        justify-content: center;
+    }
+
+    .time-slot {
+        width: 140px;
+        height: 44px;
     }
 }
 </style>

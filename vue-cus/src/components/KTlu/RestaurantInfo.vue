@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-info">
+    <div class="restaurant-info restaurant-theme">
         <h3 class="info-title">餐廳資訊</h3>
         <ul class="info-list">
             <li class="info-item">
@@ -17,6 +17,8 @@
 </template>
 
 <script setup>
+import '@/assets/css/restaurant-theme.css'
+
 defineProps({
     restaurant: {
         type: Object,
@@ -30,15 +32,18 @@ defineProps({
     width: 100%;
     margin: 2rem 0;
     padding: 1.5rem;
-    background: #f8f9fa;
-    border-radius: 8px;
+    background: var(--restaurant-bg-light);
+    border: 1px solid var(--restaurant-border-light);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--restaurant-shadow-light);
 }
 
 .info-title {
-    color: #ff6c00;
+    color: var(--restaurant-primary);
     font-size: 1.25rem;
     font-weight: 600;
     margin-bottom: 1rem;
+    text-shadow: 0 1px 2px var(--restaurant-shadow-light);
 }
 
 .info-list {
@@ -51,11 +56,21 @@ defineProps({
     display: flex;
     align-items: center;
     margin-bottom: 0.75rem;
-    color: #333;
+    color: var(--restaurant-text-primary);
+    padding: 0.75rem;
+    background: var(--restaurant-bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--restaurant-border-light);
+    transition: all 0.2s ease;
+}
+
+.info-item:hover {
+    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
+    border-color: var(--restaurant-primary-light);
 }
 
 .info-icon {
-    color: #ff6c00;
+    color: var(--restaurant-primary);
     margin-right: 0.75rem;
     font-size: 1.1rem;
     width: 20px;
@@ -65,24 +80,30 @@ defineProps({
 .phone-link {
     color: inherit;
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 .phone-link:hover {
-    color: #ff6c00;
+    color: var(--restaurant-primary);
     text-decoration: underline;
 }
 
 .hours-title {
-    color: #ff6c00;
+    color: var(--restaurant-primary);
     font-size: 1.1rem;
     font-weight: 600;
     margin-bottom: 0.5rem;
+    text-shadow: 0 1px 2px var(--restaurant-shadow-light);
 }
 
 .hours-text {
-    color: #333;
+    color: var(--restaurant-text-primary);
     margin: 0;
     line-height: 1.5;
+    padding: 0.75rem;
+    background: var(--restaurant-bg-primary);
+    border-radius: 8px;
+    border: 1px solid var(--restaurant-border-light);
 }
 
 /* 響應式設計 */

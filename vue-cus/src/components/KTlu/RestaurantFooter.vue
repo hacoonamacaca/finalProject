@@ -1,10 +1,12 @@
 <template>
-    <footer class="restaurant-footer">
+    <footer class="restaurant-footer restaurant-theme">
         {{ restaurant.copyrightText || '© 2021 Restaurant All Rights Reserved' }}
     </footer>
 </template>
 
 <script setup>
+import '@/assets/css/restaurant-theme.css'
+
 defineProps({
     restaurant: {
         type: Object,
@@ -16,10 +18,11 @@ defineProps({
 <style scoped>
 .restaurant-footer {
     text-align: center;
-    color: #666;
+    color: var(--restaurant-text-secondary);
     margin-top: 3rem;
     padding: 2rem 0;
     font-size: 0.9rem;
-    border-top: 1px solid #eee;
+    border-top: 2px solid var(--restaurant-border-light);
+    background: var(--restaurant-bg-secondary);
 }
 </style>
