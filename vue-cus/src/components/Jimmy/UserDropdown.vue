@@ -143,20 +143,10 @@ onUnmounted(() => {
 
 /* 游標滑到下拉式選單圖示會變色 */
 .dropdown-menu li:hover i {
-<<<<<<< HEAD
-=======
-  color: #ffba20;
-}
-
-/* 預設為黃色文字 */
-.dropdown-menu li:last-child {
-  border-top: 1px solid #ddd;
->>>>>>> yifan
   color: #ffba20;
   font-weight: 500;
 }
 
-<<<<<<< HEAD
 /* 預設為黃色文字 */
 .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
@@ -166,15 +156,8 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-=======
->>>>>>> yifan
 /* 滑鼠移上去時反轉背景與文字顏色 */
 .dropdown-menu li:last-child:hover {
   color: #5c3202;
 }
-<<<<<<< HEAD
-=======
-
-
->>>>>>> yifan
 </style>
