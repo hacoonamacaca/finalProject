@@ -23,12 +23,16 @@ public class OwnerBean {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(nullable = false, unique = true, length = 50)
     private String email;
 
+    @Column(nullable = false, length = 100)
     private String password;
 
+    @Column(nullable = false, length = 50)
     private String name;
 
+    @Column(length = 10)
     private String phone;
 
     @Column(name = "sigup_date")
