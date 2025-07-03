@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import RestaurantBanner from './RestaurantBanner.vue'
 import RestaurantInfo from './RestaurantInfo.vue'
 import RestaurantMenu from './RestaurantMenu.vue'
@@ -78,6 +78,210 @@ const handleCheckout = (orderData) => {
     // 例如：跳轉到支付頁面、顯示結帳表單等
     alert(`訂單總計：NT$${orderData.totalAmount}\n正在處理訂單...`)
 }
+
+// IntersectionObserver 相關變量
+let categoryObservers = []
+let currentActiveCategory = null
+
+// 創建觸發區域標示
+const createTriggerIndicator = (categoryName, triggerTop) => {
+    const triggerIndicator = document.createElement('div')
+    triggerIndicator.className = 'trigger-indicator'
+    triggerIndicator.dataset.category = categoryName
+    triggerIndicator.style.cssText = `
+        position: absolute;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #ff0000, #ff6b6b, #ff0000);
+        z-index: 1000;
+        pointer-events: none;
+        opacity: 0.8;
+        border-radius: 2px;
+        box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+        top: ${triggerTop}px;
+    `
+
+    // 添加標籤文字
+    const label = document.createElement('div')
+    label.style.cssText = `
+        position: absolute;
+        top: -25px;
+        left: 20px;
+        background: #ff0000;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: bold;
+        white-space: nowrap;
+    `
+    label.textContent = `觸發區域: ${categoryName}`
+    triggerIndicator.appendChild(label)
+
+    return triggerIndicator
+}
+
+// 更新觸發指示器狀態
+const updateTriggerIndicator = (categoryName, isActive) => {
+    const triggerIndicator = document.querySelector(`.trigger-indicator[data-category="${categoryName}"]`)
+    if (triggerIndicator) {
+        const label = triggerIndicator.querySelector('div')
+
+        if (isActive) {
+            triggerIndicator.style.background = 'linear-gradient(90deg, #00ff00, #00ff88, #00ff00)'
+            triggerIndicator.style.boxShadow = '0 0 15px rgba(0, 255, 0, 0.8)'
+            if (label) {
+                label.style.background = '#00ff00'
+                label.textContent = `✅ 當前觸發: ${categoryName}`
+            }
+        } else {
+            triggerIndicator.style.background = 'linear-gradient(90deg, #ff0000, #ff6b6b, #ff0000)'
+            triggerIndicator.style.boxShadow = '0 0 10px rgba(255, 0, 0, 0.5)'
+            if (label) {
+                label.style.background = '#ff0000'
+                label.textContent = `觸發區域: ${categoryName}`
+            }
+        }
+    }
+}
+
+// 設置 IntersectionObserver
+const setupCategoryObservers = () => {
+    // 清除之前的觀察器
+    categoryObservers.forEach(observer => observer.disconnect())
+    categoryObservers = []
+
+    // 清除之前的觸發區域標示
+    const existingTriggers = document.querySelectorAll('.trigger-indicator')
+    existingTriggers.forEach(el => el.remove())
+
+    // 獲取所有分類 section
+    const categorySections = document.querySelectorAll('[id^="category-"]')
+
+    categorySections.forEach((section, index) => {
+        const h2Element = section.querySelector('.category-title')
+        if (!h2Element) return
+
+        const categoryName = h2Element.textContent.trim()
+        const sectionTop = section.offsetTop
+        const h2Top = sectionTop + h2Element.offsetTop
+        const triggerTop = h2Top - 220 // H2 標題向上 220px
+
+        // 獲取 header 高度
+        const header = document.querySelector('header')
+        const headerHeight = header ? header.offsetHeight : 100
+
+        // 創建觸發區域標示（相對於 header 定位）
+        const triggerIndicator = createTriggerIndicator(categoryName, triggerTop - headerHeight)
+        document.body.appendChild(triggerIndicator)
+
+        // 創建 IntersectionObserver
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const categoryName = entry.target.dataset.category
+
+                if (entry.isIntersecting) {
+                    // 分類進入 header navbar 下緣
+                    console.log(`分類進入 header navbar 下緣: ${categoryName}`)
+                    currentActiveCategory = categoryName
+                    updateTriggerIndicator(categoryName, true)
+
+                    // 更新其他分類為非活動狀態
+                    categorySections.forEach(otherSection => {
+                        const otherH2 = otherSection.querySelector('.category-title')
+                        if (otherH2 && otherH2.textContent.trim() !== categoryName) {
+                            updateTriggerIndicator(otherH2.textContent.trim(), false)
+                        }
+                    })
+                } else {
+                    // 分類離開 header navbar 下緣
+                    console.log(`分類離開 header navbar 下緣: ${categoryName}`)
+                    updateTriggerIndicator(categoryName, false)
+                }
+            })
+        }, {
+            root: header, // 使用 header 作為根元素
+            rootMargin: '0px 0px 0px 0px', // 精確對齊 header 下緣
+            threshold: 0.1 // 10% 可見時觸發
+        })
+
+        // 創建一個不可見的觸發元素（相對於 header 定位）
+        const triggerElement = document.createElement('div')
+        triggerElement.style.cssText = `
+            position: absolute;
+            top: ${triggerTop - headerHeight}px;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            pointer-events: none;
+            z-index: -1;
+        `
+        triggerElement.dataset.category = categoryName
+        document.body.appendChild(triggerElement)
+
+        // 觀察觸發元素
+        observer.observe(triggerElement)
+        categoryObservers.push(observer)
+
+        console.log(`設置觀察器: ${categoryName}, 觸發位置: ${triggerTop - headerHeight}px (相對於header)`)
+    })
+}
+
+// 監聽菜單載入
+const watchMenuLoad = () => {
+    // 使用 MutationObserver 監聽 DOM 變化
+    const menuObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // 檢查是否有新的分類 section 被添加
+                        const categorySections = node.querySelectorAll ? node.querySelectorAll('[id^="category-"]') : []
+                        if (categorySections.length > 0 || node.matches && node.matches('[id^="category-"]')) {
+                            console.log('檢測到新的分類 section，重新設置觀察器')
+                            setTimeout(() => {
+                                setupCategoryObservers()
+                            }, 100)
+                        }
+                    }
+                })
+            }
+        })
+    })
+
+    // 開始觀察
+    menuObserver.observe(document.body, {
+        childList: true,
+        subtree: true
+    })
+
+    return menuObserver
+}
+
+// 生命周期
+onMounted(() => {
+    nextTick(() => {
+        // 延遲設置，確保菜單組件已載入
+        setTimeout(() => {
+            setupCategoryObservers()
+            watchMenuLoad()
+        }, 1500)
+    })
+})
+
+onUnmounted(() => {
+    // 清除所有觀察器
+    categoryObservers.forEach(observer => observer.disconnect())
+
+    // 清除觸發區域標示
+    const existingTriggers = document.querySelectorAll('.trigger-indicator')
+    existingTriggers.forEach(el => el.remove())
+
+    // 清除觸發元素
+    const triggerElements = document.querySelectorAll('[data-category]')
+    triggerElements.forEach(el => el.remove())
+})
 </script>
 
 <style scoped>
