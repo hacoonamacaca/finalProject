@@ -5,6 +5,8 @@ import RegisterVerify from '@/views/RegisterVerify.vue'
 import RegisterStoreInfo from '@/views/RegisterStoreInfo.vue'
 import VerifyAddress from '@/views/VerifyAddress.vue'
 import VerifyPending from '@/views/VerifyPending.vue'
+import EditStoreUser from '@/views/EditStoreUser.vue'
+import EditStore from '@/views/EditStore.vue'
 
 const routes = [
 
@@ -19,7 +21,18 @@ const routes = [
         name: 'ResetPasswordEmail',
         component: () => import('@/views/ResetPasswordEmail.vue'),
         props: router => ({ email: router.query.email })
+    },
+    {
+        path: '/editStoreUser',
+        name: 'EditStoreUser',
+        component: EditStoreUser,
+    },
+    {
+        path: '/editStore',
+        name: 'EditStore',
+        component: EditStore,
     }
+
 ]
 
 const router = createRouter({

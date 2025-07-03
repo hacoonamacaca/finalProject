@@ -1,89 +1,94 @@
+<script setup>
+import { ref, computed } from 'vue';
+
+// 1. 定義 Props
+const props = defineProps({
+    items: { type: Array, required: true },
+    categories: { type: Array, required: true }
+});
+
+// 2. 定義 Emits
+const emit = defineEmits(['addNewItem', 'editItem']);
+
+// 3. 核心邏輯：使用 computed 將扁平的 items 陣列轉換為按 categoryId 分組的物件
+const groupedItems = computed(() => {
+    // 先按 category 的 order 排序
+    const sortedCategories = [...props.categories].sort((a, b) => a.order - b.order);
+
+    // 使用 reduce 建立一個 { 'cat-1': { name: '招牌飲品', items: [...] }, ... } 結構
+    return sortedCategories.reduce((acc, category) => {
+        acc[category.id] = {
+            name: category.name,
+            items: props.items.filter(item => item.categoryId === category.id)
+        };
+        return acc;
+    }, {});
+});
+
+// 4. 內部狀態：用一個陣列來記錄哪些類別是展開的
+const expandedCategories = ref(
+    // 預設將第一個類別展開
+    props.categories.length > 0 ? [props.categories.sort((a,b) => a.order - b.order)[0].id] : []
+);
+
+// 5. 方法：處理類別的展開/收合
+const toggleCategory = (categoryId) => {
+    const index = expandedCategories.value.indexOf(categoryId);
+    if (index === -1) {
+        // 如果不在陣列中，就加進去 (展開)
+        expandedCategories.value.push(categoryId);
+    } else {
+        // 如果在陣列中，就移除 (收合)
+        expandedCategories.value.splice(index, 1);
+    }
+};
+
+// 輔助函式，檢查某類別是否展開
+const isCategoryExpanded = (categoryId) => {
+    return expandedCategories.value.includes(categoryId);
+};
+</script>
+
 <template>
     <div>
-    <!-- 搜尋框和新增按鈕 -->
+        <!-- 頂部的新增按鈕和搜尋框 (不變) -->
         <div class="d-flex justify-content-between align-items-center mb-3">
             <div class="input-group" style="max-width: 400px;">
                 <span class="input-group-text">🔍</span>
                 <input type="text" class="form-control" placeholder="搜尋品項">
             </div>
-            <button class="btn btn-warning" @click="handleAddNew">+ 新增</button>
+            <button class="btn btn-warning" @click="emit('addNewItem')">+ 新增</button>
         </div>
 
-        <div class="list-group">
-            <!-- 點擊整列觸發編輯 -->
-            <div v-for="item in items" :key="item.id"
-                class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"
-                @click="handleEdit(item)" style="cursor: pointer;">
-                <div class="d-flex align-items-center">
-                    <span class="me-3">☰</span>
-                    <img :src="item.img || 'https://via.placeholder.com/60x60'" alt="item image" width="60" height="60"
-                        class="me-3">
-                    <span>{{ item.name }}</span>
+        <!-- 列表區域：現在我們要遍歷分好組的 groupedItems -->
+        <div class="category-list-container">
+            <div v-for="(group, categoryId) in groupedItems" :key="categoryId" class="list-group mb-3">
+                <!-- 品項類別 Header -->
+                <div class="list-group-item list-group-item-light fw-bold d-flex justify-content-between align-items-center" @click="toggleCategory(categoryId)" style="cursor: pointer;">
+                    <span>{{ group.name }}</span>
+                    <!-- 根據展開狀態顯示不同圖標 -->
+                    <span class="fs-5">{{ isCategoryExpanded(categoryId) ? '▼' : '▲' }}</span>
                 </div>
-                <div class="d-flex align-items-center">
-                    <span class="me-4">NT$ {{ item.price }}</span>
 
-                    <!-- 將 dropdown 相關的邏輯用一個 div 包起來 -->
-                    <div class="position-relative dropdown-container">
-                        <!-- 點擊按鈕時阻止事件冒泡到父層的 handleEdit，並觸發我們自己的 toggleDropdown -->
-                        <button class="btn btn-sm dropdown-toggle"
-                            :class="item.status === '供應中' ? 'btn-outline-success' : 'btn-outline-secondary'"
-                            type="button" @click.stop="toggleDropdown(item.id)">
-                            {{ item.status }}
-                        </button>
-                        <!-- 使用 v-if 根據 activeDropdown 的狀態來決定是否顯示下拉選單 -->
-                        <ul class="dropdown-menu" :class="{ show: activeDropdown === item.id }" style="z-index: 10;">
-                            <!-- 點擊選項時也要阻止冒泡 -->
-                            <li><a class="dropdown-item" href="#" @click.stop>供應中</a></li>
-                            <li><a class="dropdown-item" href="#" @click.stop>暫停供應</a></li>
-                        </ul>
+                <!-- 屬於該類別的品項列表，使用 v-show 來控制顯示/隱藏 -->
+                <div v-show="isCategoryExpanded(categoryId)">
+                    <div v-for="item in group.items" :key="item.id" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center ps-5" @click="emit('editItem', item)">
+                        <div class="d-flex align-items-center">
+                            <span class="me-3">☰</span>
+                            <img :src="item.img" alt="" width="60" height="60" class="me-3 rounded">
+                            <span>{{ item.name }}</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="me-4">NT$ {{ item.price }}</span>
+                            <!-- 狀態按鈕，這裡為了簡化先只顯示文字 -->
+                            <span class="badge" :class="item.status === '供應中' ? 'bg-success' : 'bg-secondary'">
+                                {{ item.status }}
+                            </span>
+                        </div>
                     </div>
-
                 </div>
+
             </div>
         </div>
     </div>
 </template>
-
-<script setup>
-import { ref } from 'vue';
-
-defineProps({
-    items: {
-        type: Array,
-        required: true
-    }
-});
-
-const emit = defineEmits(['addNewItem', 'editItem']);
-
-// 為每個下拉選單獨立控制其開關狀態
-const activeDropdown = ref(null); // 用來儲存當前打開的下拉選單的 item id
-
-const toggleDropdown = (itemId) => {
-    if (activeDropdown.value === itemId) {
-        activeDropdown.value = null; // 如果再次點擊已打開的，就關閉它
-    } else {
-        activeDropdown.value = itemId; // 否則打開新的
-    }
-};
-
-// 點擊品項列時，要確保不會因為點到下拉選單而關閉它
-const handleEdit = (item) => {
-    emit('editItem', item);
-};
-
-// 點擊新增按鈕
-const handleAddNew = () => {
-    emit('addNewItem');
-}
-
-// 點擊頁面其他地方時，關閉所有下拉選單
-document.addEventListener('click', (e) => {
-    // 檢查點擊的目標是否在 dropdown 內部，如果不是，則關閉
-    if (!e.target.closest('.dropdown-container')) {
-        activeDropdown.value = null;
-    }
-})
-
-</script>

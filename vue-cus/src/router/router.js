@@ -16,77 +16,84 @@ import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
 import {
     getRestaurantById
-} from "@/data/restaurants.js"
-
+} from "@/restaurant-module"
+import EditUser from '@/views/Ivy/EditUser.vue'
+// } from "@/data/restaurants.js"
+與上面衝突部分
 
 const routes = [{
-        path: "/",
-        component: Home,
-        name: "home-link"
-    },
-    {
-        path: "/:pathMatch(.*)*",
-        component: NotFound,
-        name: "404-link"
-    },
-    {
-        path: "/403",
-        component: Forbidden,
-        name: "403-link"
-    },
-    {
-        path: "/search",
-        component: Search,
-        name: "search-link"
-    },
-    {
-        path: "/OrderList",
-        component: OrderList,
-        name: "OrderList-link"
-    },
-    {
-        path: "/VoucherWallet",
-        component: VoucherWallet,
-        name: "VoucherWallet-link"
-    },
-    {
-        path: '/Checkout',
-        name: 'CheckoutCoupon',
-        component: CheckoutCoupon
-    },
-    {
-        path: '/',
-        component: Home
-    },
-    {
-        path: '/register',
-        component: Register
-    },
-    {
-        path: '/verify-pending',
-        component: VerifyPending
-    },
-    {
-        path: '/register-profile',
-        component: RegisterProfile
-    },
-    {
-        path: '/resetPasswordEmail',
-        name: 'ResetPasswordEmail',
-        component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
-        props: router => ({
-            email: router.query.email
-        })
-    },
-    {
-        // 餐廳頁面路由
-        path: "/restaurant/:id",
-        name: "Restaurant",
-        component: () => import("@/views/KTlu/RestaurantPage.vue"),
-        props: (route) => ({
-            restaurant: getRestaurantById(parseInt(route.params.id)),
-        }),
-    },
+    path: "/",
+    component: Home,
+    name: "home-link"
+},
+{
+    path: "/:pathMatch(.*)*",
+    component: NotFound,
+    name: "404-link"
+},
+{
+    path: "/403",
+    component: Forbidden,
+    name: "403-link"
+},
+{
+    path: "/search",
+    component: Search,
+    name: "search-link"
+},
+{
+    path: "/OrderList",
+    component: OrderList,
+    name: "OrderList-link"
+},
+{
+    path: "/VoucherWallet",
+    component: VoucherWallet,
+    name: "VoucherWallet-link"
+},
+{
+    path: '/Checkout',
+    name: 'CheckoutCoupon',
+    component: CheckoutCoupon
+},
+{
+    path: '/',
+    component: Home
+},
+{
+    path: '/register',
+    component: Register
+},
+{
+    path: '/verify-pending',
+    component: VerifyPending
+},
+{
+    path: '/register-profile',
+    component: RegisterProfile
+},
+{
+    path: '/resetPasswordEmail',
+    name: 'ResetPasswordEmail',
+    component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
+    props: router => ({
+        email: router.query.email
+    })
+},
+{
+    // 餐廳頁面路由
+    path: "/restaurant/:id",
+    name: "Restaurant",
+    component: () => import("@/views/KTlu/RestaurantPage.vue"),
+    props: (route) => ({
+        restaurant: getRestaurantById(parseInt(route.params.id)),
+    }),
+},
+{
+    path: '/profile',
+    name: 'EditUser',
+    component: EditUser
+},
 ];
 
 const router = createRouter({

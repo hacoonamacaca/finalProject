@@ -1,4 +1,3 @@
-
 <template>
   <header class="navbar">
     <a class="navbar-brand d-flex align-items-center gap-3" style="cursor: pointer" @click="$router.push('/search')">
@@ -9,18 +8,14 @@
     <div class="location-btn-container mobile-only">
       <button class="location-btn" @click="showPopout = true">
         目前位置為： {{ address }}
-        <a @click.stop="getCurrentLocationAndNavigate">
-          <button style="background: transparent; border: none; color: white;">📍</button>
-        </a>
+        <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
       </button>
     </div>
     <!-- 桌機版專用的 location-btn -->
     <div class="location-btn-container desktop-only">
       <button class="location-btn" @click="showPopout = true">
         目前位置為： {{ address }}
-        <a @click.stop="getCurrentLocationAndNavigate">
-          <button style="background: transparent; border: none; color: white;">📍</button>
-        </a>
+        <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
       </button>
     </div>
     <button class="hamburger" @click="toggleMenu">
@@ -37,48 +32,32 @@
       <!-- 其他導航項 -->
       <div class="nav-items">
         <!-- 餐廳/餐點按鈕 -->
-        <a
-          href="#"
-          @click.prevent="toggleRestaurantMenu"
-          :title="isRestaurant ? '餐廳' : '餐點'"
-          class="nav-item d-flex align-items-center gap-2"
-        >
+        <a href="#" @click.prevent="toggleRestaurantMenu" :title="isRestaurant ? '餐廳' : '餐點'"
+          class="nav-item d-flex align-items-center gap-2">
           <i :class="isRestaurant ? 'fas fa-store' : 'fas fa-utensils'"></i>
           <span>{{ isRestaurant ? '餐廳' : '餐點' }}</span>
         </a>
 
         <!-- 優惠通知鈴鐺 -->
         <div class="nav-item" style="position: relative;">
-          <button
-            class="btn position-relative"
-            style="background: transparent; border: none;"
-            @click="toggleNotification"
-            title="優惠通知"
-          >
+          <button class="btn position-relative" style="background: transparent; border: none;"
+            @click="toggleNotification" title="優惠通知">
             <i class="bi bi-bell-fill text-white"></i>
             <span v-if="unreadCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
               {{ unreadCount }}
             </span>
           </button>
-          <NotificationList
-            :visible="isNotificationOpen"
-            :notifications="notifications"
-            @mark-as-read="markAsRead"
-          />
+          <NotificationList :visible="isNotificationOpen" :notifications="notifications" @mark-as-read="markAsRead" />
         </div>
 
         <!-- 購物車按鈕 -->
         <div class="nav-item">
-          <button
-            class="btn position-relative"
-            style="background: transparent; border: none;"
-            @click="goToCart"
-            title="購物車"
-          >
+          <button class="btn position-relative" style="background: transparent; border: none;" @click="goToCart"
+            title="購物車">
             <i class="bi bi-cart4 text-white"></i>
             <span v-if="cartCount > 0"
-                  class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+              class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
               {{ cartCount }}
             </span>
           </button>
@@ -271,22 +250,22 @@ const getLogin = () => {
 </script>
 
 <style scoped>
-.brand-title {
-  color: #5c3203;
-  font-weight: bold;
-  font-size: 1.5rem;
-}
-
 .navbar {
   background-color: #ffba20;
   color: white;
-  padding: 15px 20px;
+  padding: 5px 20px; /* 將上下 padding 從 15px 縮減為 5px (15px * 1/3) */
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 3000;
+}
+
+.brand-title {
+  color: #5c3203;
+  font-weight: bold;
+  font-size: 1.5rem;
 }
 
 .navbar-brand {
@@ -505,12 +484,12 @@ const getLogin = () => {
   .navbar {
     flex-direction: column;
     align-items: flex-start;
-    padding: 15px;
+    padding: 5px 15px; /* 行動版也調整上下 padding 為 5px */
   }
 
   .hamburger {
     position: absolute;
-    top: 15px;
+    top: 5px; /* 與縮減的 padding 對齊 */
     right: 15px;
   }
 }

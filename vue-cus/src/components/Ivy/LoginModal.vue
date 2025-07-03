@@ -92,7 +92,7 @@ transition: background 0.15s;
 }
 .google-btn:hover {
     box-shadow: 0 2px 10px 0 rgba(236,29,111,0.10);
-    border-color: #EC1D6F;
+    border-color: #ffba20;
 }
 .google-icon {
     width: 24px;
@@ -135,9 +135,9 @@ transition: background 0.15s;
     transform: translateY(-50%);
 }
 
-/* 主要粉色登入按鈕 */
+/* 主要登入按鈕 */
 .btn-main {
-    background: #EC1D6F;
+    background: #ffba20;
     color: #fff;
     font-weight: bold;
     font-size: 20px;
@@ -150,6 +150,8 @@ transition: background 0.15s;
 }
 .btn-main:hover {
     filter: brightness(1.12);
+    background: #f1cd78;
+
 }
 
 /* 黑框白底註冊 */
@@ -166,7 +168,7 @@ transition: background 0.15s;
 }
 .btn-outline:hover {
     background: #F2F2F2;
-    color: #EC1D6F;
-    border-color: #EC1D6F;
+    color: #ffba20;
+    border-color: #ffba20;
 }
 </style>

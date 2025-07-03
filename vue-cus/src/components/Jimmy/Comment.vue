@@ -1,7 +1,7 @@
 <template>
 <div class="comment-wrapper">
     <button class="comment-btn" @click="showCommentPopout = true">
-    查看評論({{ commentCount }}) <!-- 修改為 commentCount -->
+        {{ commentCount != 0 ? '查看評論(' + commentCount + ')' : '暫無評論' }}
     </button>
     <div class="comment-popout" v-if="showCommentPopout">
     <div class="comment-popout-content">
@@ -92,7 +92,7 @@ return date.toLocaleString('zh-TW', {
 
 .comment-popout {
     position: fixed;
-    top: 0;
+    top: 20px;
     left: 0;
     width: 100%;
     height: 100%;

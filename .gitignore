@@ -1,3 +1,4 @@
+.metadata/
 # Compiled class file
 *.class
 
@@ -123,3 +124,4 @@ types/v3-generated.d.ts
 
 =======
 >>>>>>> ddc877758ba84c9fd6a24432130381e784452fa8
+/.metadata/

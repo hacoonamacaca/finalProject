@@ -6,8 +6,8 @@
         <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
           <img :src="restaurant.image" :alt="restaurant.name" @click="$router.push(`/restaurant/${restaurant.id}`)" style="cursor: pointer;" />
           <div class="info">
-            <h3>{{ restaurant.name }} {{ restaurant.score }}★<Comment v-if="restaurant.comments?.length > 0" :comments="restaurant.comments" :comment-count="restaurant.comments.length" /></h3>
-            
+            <h3>{{ restaurant.name }} {{ restaurant.score }}★<Comment  :comments="restaurant.comments" :comment-count="restaurant.comments.length" /></h3>
+            <!-- v-if="restaurant.comments?.length > 0" -->
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@
             <h3>{{ restaurant.name }}</h3>
             <p>{{ restaurant.category }} • {{ restaurant.deliveryTime }} 分鐘 • {{ restaurant.promo || '' }}</p>
             <p>{{ restaurant.score }}★
-              <Comment v-if="restaurant.comments?.length > 0" :comments="restaurant.comments" :comment-count="restaurant.comments.length" />
+              <Comment :comments="restaurant.comments" :comment-count="restaurant.comments.length" />
             </p>
             <div class="tags">
               <span v-for="tag in restaurant.tags" :key="tag">{{ tag }}</span>
