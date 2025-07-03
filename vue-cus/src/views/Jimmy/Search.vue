@@ -100,7 +100,6 @@
   import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
   import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
   import Comment from '@/components/Jimmy/Comment.vue';
-<<<<<<< HEAD
   import { useRoute } from 'vue-router';
   
   const route = useRoute();
@@ -127,8 +126,6 @@
     { immediate: true } // 立即執行一次，確保在組件初始化時檢查
   );
 
-=======
->>>>>>> yifan
 
   const isSidebarActive = ref(false);
   const toggleSidebar = () => {

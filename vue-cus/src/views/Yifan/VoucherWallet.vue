@@ -1,34 +1,23 @@
+// ✅ VoucherWallet.vue
 <template>
-  <div class="voucher-container container my-5 p-4 shadow-sm bg-white rounded-4">
-    <h2 class="mb-4 fw-bold text-center">
-      <i class="bi bi-ticket-perforated me-3 text-warning"></i>我的優惠券
-    </h2>
+  <div class="container my-5">
+    <h2 class="mb-4 fw-bold text-center">我的優惠券</h2>
 
-    <!-- 📌 Tabs -->
-    <ul class="nav nav-tabs justify-content-center mb-4 border-bottom-yellow">
+    <!-- 📌 Tabs 切換分類 -->
+    <ul class="nav nav-tabs justify-content-center mb-4">
       <li class="nav-item" v-for="tab in tabs" :key="tab.value">
-        <button
-          class="nav-link tab-btn px-4 py-2 mx-1"
-          :class="{ active: activeTab === tab.value }"
-          @click="activeTab = tab.value"
-        >
-          <i :class="tab.icon" class="me-2"></i>{{ tab.label }}
+        <button class="nav-link" :class="{ active: activeTab === tab.value }" @click="activeTab = tab.value">
+          {{ tab.icon }} {{ tab.label }}
         </button>
       </li>
     </ul>
 
-    <!-- 📌 列表區 -->
+    <!-- 📌 優惠券清單 -->
     <div v-if="filteredPromotions.length > 0" class="d-flex flex-column gap-3">
-      <VoucherCard
-        v-for="promotion in filteredPromotions"
-        :key="promotion.id"
-        :promotion="promotion"
-        :cartAmount="cartAmount"
-        @use="handleUse"
-      />
+      <VoucherCard v-for="promotion in filteredPromotions" :key="promotion.id" :promotion="promotion"
+        :cartAmount="cartAmount" @use="handleUse" />
     </div>
-    <div v-else class="text-muted text-center mt-5 fs-5">
-      <i class="fas fa-ticket-alt me-2 text-warning"></i>
+    <div v-else class="text-muted text-center mt-4">
       此分類目前沒有可用優惠券
     </div>
   </div>
@@ -37,22 +26,32 @@
 <script setup>
 import { ref, computed } from 'vue'
 import VoucherCard from '@/components/Yifan/VoucherCard.vue'
-import { promotionList as rawPromotions } from '@/mock/PromotionData.js'
+import globalImg from '@/assets/vouchers/global.png'
+import restaurantImg from '@/assets/vouchers/restaurant.png'
+import foodImg from '@/assets/vouchers/food.png'
+import memberImg from '@/assets/vouchers/member.png'
 
 const cartAmount = ref(500)
 const activeTab = ref('all')
 
 const tabs = [
-  { label: '全部', value: 'all', icon: 'fas fa-folder-open' },
-  { label: '全平台', value: 'global', icon: 'fas fa-globe' },
-  { label: '餐廳限定', value: 'restaurant', icon: 'fas fa-utensils' },
-  { label: '餐點限定', value: 'food', icon: 'fas fa-drumstick-bite' },
-  { label: '會員限定', value: 'member', icon: 'fas fa-crown' },
-  { label: '歷史紀錄', value: 'history', icon: 'fas fa-clock' }
+  { label: '全部', value: 'all', icon: '📂' },
+  { label: '全平台', value: 'global', icon: '🌐' },
+  { label: '餐廳限定', value: 'restaurant', icon: '🍽️' },
+  { label: '餐點限定', value: 'food', icon: '🍔' },
+  { label: '會員限定', value: 'member', icon: '👑' },
+  { label: '歷史紀錄', value: 'history', icon: '🕓' }
 ]
 
-const promotionList = ref(rawPromotions)
+// 📌 假資料，含 used 狀態
+const promotionList = ref([
+  { id: 1, title: '全平台券 - 滿 500 折 50', imageUrl: globalImg, restaurant_id: null, food_category_id: null, plan_id: null, min_spend: 500, discount_value: 50, start_time: '2025-06-01', end_time: '2025-06-30', description: '全站可使用', used: false },
+  { id: 2, title: '餐廳限定券 - 滿 800 折 100', imageUrl: restaurantImg, restaurant_id: 2, food_category_id: null, plan_id: null, min_spend: 800, discount_value: 100, start_time: '2025-06-01', end_time: '2025-06-30', description: '僅限餐廳 ID 2', used: false },
+  { id: 3, title: '餐點限定券 - 炸雞類折 30', imageUrl: foodImg, restaurant_id: null, food_category_id: 5, plan_id: null, min_spend: 300, discount_value: 30, start_time: '2025-06-01', end_time: '2025-06-30', description: '僅限分類 ID 5', used: true },
+  { id: 4, title: '會員限定券 - VIP 9 折', imageUrl: memberImg, restaurant_id: null, food_category_id: null, plan_id: 1, min_spend: 0, discount_value: 10, start_time: '2025-06-01', end_time: '2025-06-30', description: 'VIP 會員專用', used: true }
+])
 
+// 📌 篩選資料
 const filteredPromotions = computed(() => {
   const current = activeTab.value
   return promotionList.value.filter(p => {
@@ -73,52 +72,13 @@ const handleUse = (promo) => {
 </script>
 
 <style scoped>
-h2 {
-  font-size: 1.8rem;
-  letter-spacing: 1px;
+/* ✅ 統一 hover 效果 */
+.nav-link {
+  cursor: pointer;
 }
 
-/* 主容器美化 */
-.voucher-container {
-  background-color: #fffbea;
-}
-
-/* Tabs 樣式 */
-.nav-tabs {
-  border-bottom: 2px solid #ffc94d;
-}
-
-.nav-tabs .nav-link {
-  border-radius: 0; /* 去掉圓角 */
-  color: #555;
-  font-weight: 500;
-  padding: 10px 20px;
-}
-
-
-.tab-btn {
-  background-color: transparent;
-  color: #666;
-  border: 1px solid transparent;
-  transition: all 0.2s ease;
-  border-radius: 0 !important;
-}
-
-.tab-btn:hover {
-  background-color: #fff3cd;
-  color: #d48806;
-  border-color: #ffe58f;
-}
-
-.tab-btn.active {
-  background-color: #ffc94d;
-  color: white;
+.nav-link.active {
   font-weight: bold;
-  border-color: #ffc94d;
-}
-
-/* 無資料訊息 */
-.text-muted i {
-  font-size: 1.2rem;
+  color: #4b80d0;
 }
 </style>
