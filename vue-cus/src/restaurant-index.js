@@ -38,7 +38,7 @@ from '../components/KTlu/TimePickerSectioned.vue'
 // 資料和服務
 export {
     restaurants,
-    getRestaurantById
+    getRestaurantById as getKTluRestaurantById
 }
 from '../data/restaurants.js'
 export {
