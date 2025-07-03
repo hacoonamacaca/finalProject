@@ -16,7 +16,7 @@ import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
 import {
     getRestaurantById
-} from "@/restaurant-module"
+} from "@/data/restaurants.js"
 
 
 const routes = [{

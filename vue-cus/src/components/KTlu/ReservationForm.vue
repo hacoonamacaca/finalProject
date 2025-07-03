@@ -80,8 +80,8 @@ import {
     getTimeSlotsForDate,
     groupTimeSlotsByPeriod,
     formatDateToString
-} from '../utils/timeSlotUtils.js'
-import { fetchRestaurantTimeSlots, fetchBookedTimeSlots } from '../services/timeSlotService.js'
+} from '@/utils/timeSlotUtils.js'
+import { fetchRestaurantTimeSlots, fetchBookedTimeSlots } from '@/services/timeSlotService.js'
 
 // 定義 props 接收餐廳 ID
 const props = defineProps({

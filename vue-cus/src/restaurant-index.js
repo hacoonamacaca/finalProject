@@ -5,62 +5,62 @@
 export {
     default as RestaurantTemplate
 }
-from './components/RestaurantTemplate.vue'
+from '../components/KTlu/RestaurantTemplate.vue'
 export {
     default as ReservationForm
 }
-from './components/ReservationForm.vue'
+from '../components/KTlu/ReservationForm.vue'
 export {
     default as RestaurantBanner
 }
-from './components/RestaurantBanner.vue'
+from '../components/KTlu/RestaurantBanner.vue'
 export {
     default as RestaurantInfo
 }
-from './components/RestaurantInfo.vue'
+from '../components/KTlu/RestaurantInfo.vue'
 export {
     default as RestaurantMenu
 }
-from './components/RestaurantMenu.vue'
+from '../components/KTlu/RestaurantMenu.vue'
 export {
     default as RestaurantMap
 }
-from './components/RestaurantMap.vue'
+from '../components/KTlu/RestaurantMap.vue'
 export {
     default as RestaurantFooter
 }
-from './components/RestaurantFooter.vue'
+from '../components/KTlu/RestaurantFooter.vue'
 export {
     default as TimePickerSectioned
 }
-from './components/TimePickerSectioned.vue'
+from '../components/KTlu/TimePickerSectioned.vue'
 
 // 資料和服務
 export {
     restaurants,
     getRestaurantById
 }
-from './data/restaurants.js'
+from '../data/restaurants.js'
 export {
     fetchRestaurantTimeSlots,
     fetchBookedTimeSlots,
     submitReservation,
     checkTimeSlotAvailability
 }
-from './services/timeSlotService.js'
-export * from './utils/timeSlotUtils.js'
+from '../services/timeSlotService.js'
+export * from '../utils/timeSlotUtils.js'
 
 // 為install函數導入組件
-import RestaurantTemplate from './components/RestaurantTemplate.vue'
-import RestaurantBanner from './components/RestaurantBanner.vue'
-import RestaurantInfo from './components/RestaurantInfo.vue'
-import RestaurantMenu from './components/RestaurantMenu.vue'
-import RestaurantMap from './components/RestaurantMap.vue'
-import RestaurantFooter from './components/RestaurantFooter.vue'
-import ReservationForm from './components/ReservationForm.vue'
-import TimePickerSectioned from './components/TimePickerSectioned.vue'
-import ItemDetailModal from './components/ItemDetailModal.vue'
-import CartModal from './components/CartModal.vue'
+import RestaurantTemplate from '../components/KTlu/RestaurantTemplate.vue'
+import RestaurantBanner from '../components/KTlu/RestaurantBanner.vue'
+import RestaurantInfo from '../components/KTlu/RestaurantInfo.vue'
+import RestaurantMenu from '../components/KTlu/RestaurantMenu.vue'
+import RestaurantMap from '../components/KTlu/RestaurantMap.vue'
+import RestaurantFooter from '../components/KTlu/RestaurantFooter.vue'
+import ReservationForm from '../components/KTlu/ReservationForm.vue'
+import TimePickerSectioned from '../components/KTlu/TimePickerSectioned.vue'
+import ItemDetailModal from '../components/KTlu/ItemDetailModal.vue'
+import CartModal from '../components/KTlu/CartModal.vue'
 
 // CSS 變數（供主專案使用）
 export const restaurantTheme = {

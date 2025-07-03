@@ -3,6 +3,6 @@
 </template>
 
 <script setup>
-import { RestaurantTemplate } from "@/restaurant-module";
+import RestaurantTemplate from "@/components/KTlu/RestaurantTemplate.vue";
 defineProps(["restaurant"]);
 </script>
