@@ -15,6 +15,7 @@ import {
     getRestaurantById
 } from "@/restaurant-module"
 import EditUser from '@/views/Ivy/EditUser.vue'
+import WebRecom from "@/views/Jimmy/WebRecom.vue"
 
 
 const routes = [
@@ -76,6 +77,11 @@ const routes = [
         path: '/profile',
         name: 'EditUser',
         component: EditUser
+    },
+    {
+        path: '/WebRecom',
+        name: 'WebRecom',
+        component: WebRecom
     },
 ];
 

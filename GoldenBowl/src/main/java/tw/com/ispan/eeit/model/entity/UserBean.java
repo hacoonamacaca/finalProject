@@ -28,7 +28,7 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "user")
+@Table(name = "[user]")
 public class UserBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

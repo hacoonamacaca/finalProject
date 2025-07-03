@@ -4,11 +4,13 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -22,7 +24,7 @@ public class WebRecomController {
     @Autowired
     private WebRecomService webRecomService;
 
-    // 創建或更新記錄
+    // 創建TAG
     @PostMapping
     public ResponseEntity<WebRecomBean> createOrUpdate(@RequestBody WebRecomBean webRecomBean) {
         try {
@@ -30,6 +32,17 @@ public class WebRecomController {
             return ResponseEntity.ok(savedBean);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    // 更新TAG
+    @PutMapping("/{id}")
+    public ResponseEntity<WebRecomBean> update(@PathVariable Integer id, @RequestBody WebRecomBean webRecom) {
+        try {
+            WebRecomBean updated = webRecomService.update(id, webRecom);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 

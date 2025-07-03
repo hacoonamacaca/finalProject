@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.locationtech.jts.geom.Point;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -45,11 +47,11 @@ public class StoreBean {
     @Column(length = 50)
     private String address;
 
-    @Column(name = "store_coords")
-    private String storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
-
+    @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
+    private Point storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
+    
     private Double lng;
-
+    
     private Double lat;
 
     @Column(columnDefinition = "varchar(max)")
