@@ -1,27 +1,23 @@
 <template>
   <header class="navbar">
     <a class="navbar-brand d-flex align-items-center gap-3" style="cursor: pointer" @click="$router.push('/search')">
-  <img src="@/assets/logo.png" alt="Logo" height="80" />
-  <span class="brand-title">金碗GoldenBowl Foolog</span>
-</a>
-
-
-  <!-- 行動版專用 -->
-  <div class="location-btn-container mobile-only">
-    <button class="location-btn" @click="showPopout = true">
-      目前位置為：{{ address }}
-      <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
-    </button>
-  </div>
-
-  <!-- 桌機版專用 -->
-  <div class="location-btn-container desktop-only">
-    <button class="location-btn" @click="showPopout = true">
-      目前位置為：{{ address }}
-      <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
-    </button>
-  </div>
-
+      <img src="@/assets/logo.png" alt="Logo" height="80" />
+      <span class="brand-title">金碗GoldenBowl</span>
+    </a>
+    <!-- 行動版專用的 location-btn -->
+    <div class="location-btn-container mobile-only">
+      <button class="location-btn" @click="showPopout = true">
+        目前位置為： {{ address }}
+        <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
+      </button>
+    </div>
+    <!-- 桌機版專用的 location-btn -->
+    <div class="location-btn-container desktop-only">
+      <button class="location-btn" @click="showPopout = true">
+        目前位置為： {{ address }}
+        <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate"></i>
+      </button>
+    </div>
     <button class="hamburger" @click="toggleMenu">
       <span></span>
       <span></span>
@@ -35,54 +31,37 @@
       </div>
       <!-- 其他導航項 -->
       <div class="nav-items">
-
         <!-- 餐廳/餐點按鈕 -->
-        <a
-          href="#"
-          @click.prevent="toggleRestaurantMenu"
-          :title="isRestaurant ? '餐廳' : '餐點'"
-          class="text-white d-flex align-items-center gap-2 fs-5"
-        >
+        <a href="#" @click.prevent="toggleRestaurantMenu" :title="isRestaurant ? '餐廳' : '餐點'"
+          class="nav-item d-flex align-items-center gap-2">
           <i :class="isRestaurant ? 'fas fa-store' : 'fas fa-utensils'"></i>
+          <span>{{ isRestaurant ? '餐廳' : '餐點' }}</span>
         </a>
 
-<!-- 優惠通知鈴鐺 -->
-        <div style="position: relative;">
-          <button
-            class="btn position-relative"
-            style="background: transparent; border: none;"
-            @click="toggleNotification"
-            title="優惠通知"
-          >
-            <i class="bi bi-bell-fill text-white fs-5"></i>
+        <!-- 優惠通知鈴鐺 -->
+        <div class="nav-item" style="position: relative;">
+          <button class="btn position-relative" style="background: transparent; border: none;"
+            @click="toggleNotification" title="優惠通知">
+            <i class="bi bi-bell-fill text-white"></i>
             <span v-if="unreadCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
               {{ unreadCount }}
             </span>
           </button>
-
-          <!-- ✅ 通知清單元件 -->
-          <NotificationList
-            :visible="isNotificationOpen"
-            :notifications="notifications"
-            @mark-as-read="markAsRead"
-          />
+          <NotificationList :visible="isNotificationOpen" :notifications="notifications" @mark-as-read="markAsRead" />
         </div>
 
         <!-- 購物車按鈕 -->
-        <button
-          class="btn position-relative"
-          style="background: transparent; border: none;"
-          @click="goToCart"
-          title="購物車"
-        >
-          <i class="bi bi-cart4 text-white fs-5"></i>
-          <span v-if="cartCount > 0"
-                class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
-            {{ cartCount }}
-          </span>
-        </button>
-      
+        <div class="nav-item">
+          <button class="btn position-relative" style="background: transparent; border: none;" @click="goToCart"
+            title="購物車">
+            <i class="bi bi-cart4 text-white"></i>
+            <span v-if="cartCount > 0"
+              class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+              {{ cartCount }}
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -90,13 +69,13 @@
     <div class="popout-content">
       <button class="close-btn" @click="showPopout = false">✕</button>
       <input type="text" placeholder="輸入您的地址" @focus="address = ''" v-model="address" />
-      <button class="search-btn" @click="searchAddress">搜尋</button>
+      <button class="search-btn" @click="address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
     </div>
   </section>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
 import NotificationList from '@/components/Yifan/NotificationList.vue'
@@ -122,6 +101,7 @@ const toggleRestaurantMenu = () => {
   isRestaurant.value = !isRestaurant.value;
   console.log("目前頁面餐廳為是/餐點為否:" + isRestaurant.value);
 };
+
 // 優惠通知邏輯
 const isNotificationOpen = ref(false)
 const toggleNotification = () => isNotificationOpen.value = !isNotificationOpen.value
@@ -134,6 +114,8 @@ const notifications = ref([
 
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
 const markAsRead = (item) => { item.is_read = true }
+
+
 
 // 搜尋地址
 const searchAddress = async () => {
@@ -151,6 +133,7 @@ const searchAddress = async () => {
 const getCurrentLocationAndNavigate = async () => {
   const success = await getCurrentLocation();
   if (success) {
+    showPopout.value = false;
     router.push({
       path: '/search',
       query: { address: address.value }
@@ -267,24 +250,10 @@ const getLogin = () => {
 </script>
 
 <style scoped>
-.brand-title {
-  color: #5c3203;
-  font-weight: bold;
-  font-size: 1.5rem;
-}
-
-.notification-panel {
-  top: 60px; /* 根據你的 navbar 高度調整 */
-  right: 0px; /* 讓箭頭正對鈴鐺 */
-}
-.arrow-up {
-  right: 25px; /* 根據鈴鐺位置微調 */
-}
-
 .navbar {
   background-color: #ffba20;
   color: white;
-  padding: 15px 20px;
+  padding: 5px 20px; /* 將上下 padding 從 15px 縮減為 5px (15px * 1/3) */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -293,26 +262,16 @@ const getLogin = () => {
   z-index: 3000;
 }
 
-.navbar .logo {
-  font-size: 26px;
+.brand-title {
+  color: #5c3203;
   font-weight: bold;
+  font-size: 1.5rem;
 }
 
-.navbar .nav-links {
+.navbar-brand {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-.navbar .nav-links a {
-  display: block;
-  color: white;
-  font-size: 18px;
-  margin: 10px 0;
-  width: 100%;
-  text-align: left;
-  text-decoration: none;
-  font-size: 16px;
+  gap: 15px;
 }
 
 .location-btn {
@@ -320,12 +279,13 @@ const getLogin = () => {
   color: white;
   border: 1px solid #fff;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 5px;
+  transition: background-color 0.3s ease;
 }
 
 .location-btn:hover {
@@ -348,7 +308,7 @@ const getLogin = () => {
 .popout-content {
   background: #fff;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 90%;
   max-width: 400px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -361,7 +321,7 @@ const getLogin = () => {
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-bottom: 15px;
 }
 
@@ -370,14 +330,15 @@ const getLogin = () => {
   background: #ffba20;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
   width: 100%;
+  transition: background-color 0.3s ease;
 }
 
 .search-btn:hover {
-  background: #ffba20;
+  background: #e0a518;
 }
 
 .close-btn {
@@ -412,7 +373,46 @@ const getLogin = () => {
   width: 100%;
   height: 3px;
   background: white;
+  border-radius: 2px;
   transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-links .auth-section a,
+.nav-links .nav-item {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.3s ease;
+}
+
+.nav-links .nav-item i {
+  font-size: 20px;
+}
+
+.nav-links .nav-item:hover,
+.nav-links .auth-section a:hover {
+  color: #ffe082;
 }
 
 @media (max-width: 768px) {
@@ -421,26 +421,22 @@ const getLogin = () => {
   }
 
   .nav-links {
-    position: absolute;
-    border-radius: 10px;
-    top: 100%;
+    position: fixed;
+    top: 0;
     right: 0;
-    height: 300px;
-    width: 150px;
+    height: 100%;
+    width: 250px;
     background-color: #ffba20;
     flex-direction: column;
     align-items: flex-start;
     padding: 20px;
-    opacity: 0;
-    visibility: hidden;
-    display: none;
+    transform: translateX(100%);
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.2);
     z-index: 2000;
   }
 
   .nav-links.active {
-    opacity: 1;
-    visibility: visible;
-    display: flex;
+    transform: translateX(0);
   }
 
   .nav-links .auth-section {
@@ -448,27 +444,23 @@ const getLogin = () => {
     flex-direction: column;
     align-items: flex-start;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 10px;
-    margin-bottom: 10px;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
     order: -1;
-    /* 確保置頂 */
-  }
-
-  .nav-links .auth-section .user-dropdown {
-    width: 100%;
-    text-align: left;
   }
 
   .nav-links .nav-items {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
+    gap: 15px;
   }
 
-  .nav-links .nav-items {
-    flex-direction: column;
-    align-items: flex-start;
+  .nav-links .nav-item,
+  .nav-links .auth-section a {
+    padding: 10px 0;
     width: 100%;
+    font-size: 18px;
   }
 
   .desktop-only {
@@ -486,22 +478,18 @@ const getLogin = () => {
     width: 100%;
     text-align: left;
     justify-content: space-between;
+    border-radius: 8px;
   }
 
   .navbar {
     flex-direction: column;
     align-items: flex-start;
-    padding: 15px;
-  }
-
-  .navbar .logo {
-    width: 100%;
-    margin-bottom: 10px;
+    padding: 5px 15px; /* 行動版也調整上下 padding 為 5px */
   }
 
   .hamburger {
     position: absolute;
-    top: 15px;
+    top: 5px; /* 與縮減的 padding 對齊 */
     right: 15px;
   }
 }

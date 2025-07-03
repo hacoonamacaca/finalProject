@@ -7,84 +7,87 @@ import avataUrl from '../assets/avata.png';
 <template>
     <div class="page-wrapper">
         <!-- Header: 在 Flex 容器中，它是一個獨立的區塊 -->
-        <header class="navbar d-flex justify-content-between align-items-center px-4 py-2 shadow-sm" style="background-color: #ffba20;">
-            <a class="navbar-brand d-flex align-items-center gap-3" style="cursor: pointer" @click="$router.push('/vendor/dashboard')">
+        <header class="navbar d-flex justify-content-between align-items-center px-4 py-2 shadow-sm"
+            style="background-color: #ffba20;">
+            <a class="navbar-brand d-flex align-items-center gap-3" style="cursor: pointer"
+                @click="$router.push('/vendor/dashboard')">
                 <img :src="logoUrl" alt="Logo" height="80" />
                 <span class="brand-title">商家管理中心</span>
             </a>
             <!-- 右側使用者資訊 -->
             <div class="d-flex align-items-center gap-3">
-                <span class="text-white fw-semibold">{{ userName }}使用者，您好！</span>
-                <img :src="avataUrl" alt="Avatar" class="rounded-circle" style="height: 40px; width: 40px; object-fit: cover;" />
+                <span class="text-white fw-semibold">使用者，您好！</span>
+                <img :src="avataUrl" alt="Avatar" class="rounded-circle"
+                    style="height: 40px; width: 40px; object-fit: cover;" />
             </div>
         </header>
 
-    <div class="main-container">
-    <!-- 側邊欄連結使用 router-link 並透過 "to" 屬性指定目標路徑-->
+        <div class="main-container">
+            <!-- 側邊欄連結使用 router-link 並透過 "to" 屬性指定目標路徑-->
 
-    <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="sidebar-sticky">
-            <!-- 商家資訊 -->
-            <div class="sidebar-section">
-                <h6 class="section-title">管理你的商家資訊</h6>
-                <ul class="nav flex-column">
-                <li class="nav-item">
-                    <router-link to="#" class="nav-link" active-class="active-link">
-                    <i class="fas fa-user-gear fa-fw me-2"></i> 商家資料
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link to="/menu" class="nav-link" active-class="active-link">
-                    <i class="fas fa-utensils fa-fw me-2"></i> 菜單管理
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link to="#" class="nav-link" active-class="active-link">
-                    <i class="fas fa-store fa-fw me-2"></i> 店鋪管理
-                    </router-link>
-                </li>
-                </ul>
-            </div>
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <div class="sidebar-sticky">
+                    <!-- 商家資訊 -->
+                    <div class="sidebar-section">
+                        <h6 class="section-title">管理你的商家資訊</h6>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <router-link to="#" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-user-gear fa-fw me-2"></i> 商家資料
+                                </router-link>
+                            </li>
+                            <li class="nav-item">
+                                <router-link to="/menu" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-utensils fa-fw me-2"></i> 菜單管理
+                                </router-link>
+                            </li>
+                            <li class="nav-item">
+                                <router-link to="#" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-store fa-fw me-2"></i> 店鋪管理
+                                </router-link>
+                            </li>
+                        </ul>
+                    </div>
 
-            <!-- 主要功能 -->
-            <div class="sidebar-section">
-                <h6 class="section-title">主要功能設定</h6>
-                <ul class="nav flex-column mb-2">
-                <li class="nav-item">
-                    <router-link to="/orders" class="nav-link" active-class="active-link">
-                    <i class="fas fa-file-invoice fa-fw me-2"></i> 訂單管理
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link to="#" class="nav-link" active-class="active-link">
-                    <i class="fas fa-chair fa-fw me-2"></i> 訂位管理
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link to="#" class="nav-link" active-class="active-link">
-                    <i class="fas fa-clock fa-fw me-2"></i> 營業時間
-                    </router-link>
-                </li>
-                <li class="nav-item">
-                    <router-link to="#" class="nav-link" active-class="active-link">
-                    <i class="fas fa-comments fa-fw me-2"></i> 評論回覆
-                    </router-link>
-                </li>
-                </ul>
-            </div>
-            </div>
-        </nav>
+                    <!-- 主要功能 -->
+                    <div class="sidebar-section">
+                        <h6 class="section-title">主要功能設定</h6>
+                        <ul class="nav flex-column mb-2">
+                            <li class="nav-item">
+                                <router-link to="/orders" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-file-invoice fa-fw me-2"></i> 訂單管理
+                                </router-link>
+                            </li>
+                            <li class="nav-item">
+                                <router-link to="#" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-chair fa-fw me-2"></i> 訂位管理
+                                </router-link>
+                            </li>
+                            <li class="nav-item">
+                                <router-link to="/hours" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-clock fa-fw me-2"></i> 營業時間
+                                </router-link>
+                            </li>
+                            <li class="nav-item">
+                                <router-link to="#" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-comments fa-fw me-2"></i> 評論回覆
+                                </router-link>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
 
-        <!-- 主內容區域 -->
-        <main class="main-content p-4">
-            <router-view />
-        </main>
+            <!-- 主內容區域 -->
+            <main class="main-content p-4">
+                <router-view />
+            </main>
         </div>
 
         <!-- Footer -->
         <footer class="bg-warning text-white text-center p-3 flex-shrink-0">
-        Footer
+            Footer
         </footer>
     </div>
 </template>
@@ -153,7 +156,7 @@ import avataUrl from '../assets/avata.png';
     padding: 0.5rem 1rem;
     border-radius: 6px;
     transition: all 0.3s ease;
-    transform: translateX(0); 
+    transform: translateX(0);
 }
 
 /* 圖示顏色 */
@@ -162,11 +165,13 @@ import avataUrl from '../assets/avata.png';
     width: 18px;
     text-align: center;
 }
+
 .nav-link:hover i {
     color: #eca300;
     width: 18px;
     text-align: center;
 }
+
 /* 當滑鼠移到按鈕時改變背景色和文字顏色 */
 .nav-link:hover {
     background-color: #fcebc1;
@@ -195,7 +200,6 @@ import avataUrl from '../assets/avata.png';
 /* 確保 header 和 footer 不會被壓縮 */
 header,
 footer {
-    flex-shrink: 0; 
+    flex-shrink: 0;
 }
-
 </style>

@@ -1,111 +1,102 @@
-    <template>
-        <div class="profile-bg">
-            <div class="profile-card">
-                <img src="https://cdn-icons-png.flaticon.com/512/2815/2815428.png" alt="icon"
-                    class="profile-img mb-2" />
-                <h2 class="mb-1 fw-bold">讓我們開始吧！</h2>
-                <div class="mb-3 text-secondary" style="font-size:15px;">
-                    首先，用 <span class="text-dark fw-bold">{{ email }}</span> 建立你的 foodpanda 帳號。
-                </div>
-                <form @submit.prevent="onSubmit">
-                    <div class="row gx-2 mb-3">
-                        <div class="col">
-                            <input type="text" v-model="lastName" class="form-control custom-input" placeholder="姓"
-                                required />
-                        </div>
-                        <div class="col">
-                            <input type="text" v-model="firstName" class="form-control custom-input" placeholder="名"
-                                required />
-                        </div>
-                    </div>
-                    <div class="mb-3 position-relative">
-                        <input :type="showPassword ? 'text' : 'password'" v-model="password"
-                            class="form-control custom-input" placeholder="密碼" required autocomplete="new-password" />
-                        <button type="button" class="eye-btn" @click="togglePassword" tabindex="-1">
-                            <svg v-if="!showPassword" width="22" height="22" fill="none" viewBox="0 0 24 24">
-                                <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#EC1D6F"
-                                    stroke-width="2" />
-                                <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2" />
-                            </svg>
-                            <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
-                                <path
-                                    d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22"
-                                    stroke="#EC1D6F" stroke-width="2" stroke-linecap="round" />
-                                <circle cx="12" cy="12" r="3" stroke="#EC1D6F" stroke-width="2" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <!-- 密碼強度條 & 說明 -->
-                    <div class="d-flex align-items-center mb-1">
-                        <span style="font-size:16px;color:#888;">密碼強度</span>
-                        <span :style="{
-                            color: strength.color,
-                            fontWeight: 'bold',
-                            marginLeft: '6px',
-                            fontSize: '15px'
-                        }">
-                            {{ strength.label }}
-                        </span>
-                    </div>
-                    <div class="progress my-2" style="height: 6px; background: #eee;">
-                        <div class="progress-bar" :style="{
-                            width: `${strength.percent * 100}%`,
-                            background: strength.color
-                        }"></div>
-                    </div>
-                    <div class="text-start mb-2" style="font-size:15px;">
-                        <span>密碼必須包含：</span>
-                        <ul class="mb-1" style="list-style:none; padding-left:0;">
-                            <li class="require-item">
-                                <span :class="{ check: hasLen }">
-                                    <svg v-if="hasLen" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                        <path d="M6 12l4 4 8-8" stroke="#4caf50" stroke-width="2"
-                                            stroke-linecap="round" />
-                                    </svg>
-                                    <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="9" cy="12" r="1.5" fill="#bbb" />
-                                        <circle cx="15" cy="12" r="1.5" fill="#bbb" />
-                                    </svg>
-                                </span>
-                                至少需要 8 個字
-                            </li>
-                            <li class="require-item">
-                                <span :class="{ check: hasLower }">
-                                    <svg v-if="hasLower" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                        <path d="M6 12l4 4 8-8" stroke="#4caf50" stroke-width="2"
-                                            stroke-linecap="round" />
-                                    </svg>
-                                    <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="9" cy="12" r="1.5" fill="#bbb" />
-                                        <circle cx="15" cy="12" r="1.5" fill="#bbb" />
-                                    </svg>
-                                </span>
-                                至少需要一個小寫字母 (a-z)
-                            </li>
-                            <li class="require-item">
-                                <span :class="{ check: hasNumber }">
-                                    <svg v-if="hasNumber" width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                        <path d="M6 12l4 4 8-8" stroke="#4caf50" stroke-width="2"
-                                            stroke-linecap="round" />
-                                    </svg>
-                                    <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
-                                        <circle cx="9" cy="12" r="1.5" fill="#bbb" />
-                                        <circle cx="15" cy="12" r="1.5" fill="#bbb" />
-                                    </svg>
-                                </span>
-                                至少需要一個數字 (0-9)
-                            </li>
-                        </ul>
-                    </div>
-
-                    <button type="submit" class="btn btn-main w-100" :disabled="!firstName || !lastName">
-                        建立帳戶
-                    </button>
-                </form>
+<template>
+    <div class="profile-bg">
+        <div class="profile-card">
+            <img src="https://cdn-icons-png.flaticon.com/512/2815/2815428.png" alt="icon" class="profile-img mb-2" />
+            <h2 class="mb-1 fw-bold">讓我們開始吧！</h2>
+            <div class="mb-3 text-secondary" style="font-size:15px;">
+                首先，用 <span class="text-dark fw-bold">{{ email }}</span> 建立你的帳號。
             </div>
+            <form @submit.prevent="onSubmit">
+                <div class="row gx-2 mb-3">
+                    <div class="col">
+                        <input type="text" v-model="fullName" class="form-control custom-input" placeholder="姓名"
+                            required />
+                    </div>
+                </div>
+                <div class="mb-3 position-relative">
+                    <input :type="showPassword ? 'text' : 'password'" v-model="password"
+                        class="form-control custom-input" placeholder="密碼" required autocomplete="new-password" />
+                    <button type="button" class="eye-btn" @click="togglePassword" tabindex="-1">
+                        <svg v-if="!showPassword" width="22" height="22" fill="none" viewBox="0 0 24 24">
+                            <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ffba20" stroke-width="2" />
+                            <circle cx="12" cy="12" r="3" stroke="#ffba20" stroke-width="2" />
+                        </svg>
+                        <svg v-else width="22" height="22" fill="none" viewBox="0 0 24 24">
+                            <path
+                                d="M17.94 17.94C16.14 19.25 14.12 20 12 20c-7 0-11-8-11-8a19.89 19.89 0 0 1 5.06-5.94M10.11 6.11A7.01 7.01 0 0 1 12 6c7 0 11 8 11 8a19.89 19.89 0 0 1-4.13 5.11M1 1l22 22"
+                                stroke="#ffba20" stroke-width="2" stroke-linecap="round" />
+                            <circle cx="12" cy="12" r="3" stroke="#ffba20" stroke-width="2" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- 密碼強度條 & 說明 -->
+                <div class="d-flex align-items-center mb-1">
+                    <span style="font-size:16px;color:#888;">密碼強度</span>
+                    <span :style="{
+                        color: strength.color,
+                        fontWeight: 'bold',
+                        marginLeft: '6px',
+                        fontSize: '15px'
+                    }">
+                        {{ strength.label }}
+                    </span>
+                </div>
+                <div class="progress my-2" style="height: 6px; background: #eee;">
+                    <div class="progress-bar" :style="{
+                        width: `${strength.percent * 100}%`,
+                        background: strength.color
+                    }"></div>
+                </div>
+                <div class="text-start mb-2" style="font-size:15px;">
+                    <span>密碼必須包含：</span>
+                    <ul class="mb-1" style="list-style:none; padding-left:0;">
+                        <li class="require-item">
+                            <span :class="{ check: hasLen }">
+                                <svg v-if="hasLen" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 12l4 4 8-8" stroke="#4caf50" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="9" cy="12" r="1.5" fill="#bbb" />
+                                    <circle cx="15" cy="12" r="1.5" fill="#bbb" />
+                                </svg>
+                            </span>
+                            至少需要 8 個字
+                        </li>
+                        <li class="require-item">
+                            <span :class="{ check: hasLower }">
+                                <svg v-if="hasLower" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 12l4 4 8-8" stroke="#4caf50" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="9" cy="12" r="1.5" fill="#bbb" />
+                                    <circle cx="15" cy="12" r="1.5" fill="#bbb" />
+                                </svg>
+                            </span>
+                            至少需要一個小寫字母 (a-z)
+                        </li>
+                        <li class="require-item">
+                            <span :class="{ check: hasNumber }">
+                                <svg v-if="hasNumber" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <path d="M6 12l4 4 8-8" stroke="#4caf50" stroke-width="2" stroke-linecap="round" />
+                                </svg>
+                                <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
+                                    <circle cx="9" cy="12" r="1.5" fill="#bbb" />
+                                    <circle cx="15" cy="12" r="1.5" fill="#bbb" />
+                                </svg>
+                            </span>
+                            至少需要一個數字 (0-9)
+                        </li>
+                    </ul>
+                </div>
+
+                <button type="submit" class="btn btn-main w-100" :disabled="!canSubmit">
+                    建立帳戶
+                </button>
+            </form>
         </div>
-    </template>
+    </div>
+</template>
 
 <script setup>
 import { ref, computed } from 'vue'
@@ -115,11 +106,10 @@ const route = useRoute()
 const router = useRouter()
 
 // 從 query 拿到 email
-const email = route.query.email || ''
+const email = ref(route.query.email || localStorage.getItem('userEmail') || '')
 
 // 表單欄位
-const lastName = ref('')
-const firstName = ref('')
+const fullName = ref('')
 const password = ref('')
 const showPassword = ref(false)
 
@@ -139,7 +129,7 @@ const strength = computed(() => {
 
 // 送出按鈕啟用條件
 const canSubmit = computed(() =>
-    lastName.value && firstName.value && hasLen.value && hasLower.value && hasNumber.value
+    fullName.value.trim() !== '' && hasLen.value && hasLower.value && hasNumber.value
 )
 
 function togglePassword() {
@@ -147,12 +137,11 @@ function togglePassword() {
 }
 
 function onSubmit() {
-    localStorage.setItem('userFirstName', firstName.value)
-    router.push('/')
+    localStorage.setItem('userFullName', fullName.value.trim())
+    localStorage.setItem('userEmail', email.value)
+    router.push('/search')
 }
 </script>
-
-
 
 <style scoped>
 .profile-bg {
@@ -190,7 +179,7 @@ function onSubmit() {
 }
 
 .btn-main {
-    background: #EC1D6F;
+    background: #ffba20;
     color: #fff;
     font-weight: bold;
     font-size: 20px;
@@ -199,7 +188,7 @@ function onSubmit() {
     border: none;
     letter-spacing: 2px;
     transition: filter 0.15s;
-    box-shadow: 0 2px 8px 1px #ec1d6f0f;
+    box-shadow: 0 2px 8px 1px #ffba200f;
 }
 
 .btn-main:disabled {
@@ -209,7 +198,7 @@ function onSubmit() {
 
 .btn-main:hover:enabled {
     filter: brightness(1.08);
-    background: #e0126c;
+    background: #f1cd78;
 }
 
 .eye-btn {

@@ -2,8 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 
 // 為了讓路由設定更乾淨，我們在這裡導入頁面組件
 import SellerLayout from '../layouts/SellerLayout.vue';
-import MenuManagement from '../pages/MenuOverview.vue';
-// import OrderManagement from '../pages/OrderManager.vue';
+import MenuManagement from '../pages/MenuManagement.vue';
+import OrderManagement from '../pages/OrderManager.vue';
+import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
 
 const routes = [
     {
@@ -22,11 +23,17 @@ const routes = [
             },
 
             // 未來您可以繼續在這裡新增路由
-            // {
-            //     path: 'orders', // 代表是 /orders
-            //     name: 'OrderManager',
-            //     component: OrderManagement
-            // }
+            {
+                path: 'orders', // 代表是 /orders
+                name: 'OrderManager',
+                component: OrderManagement
+            },
+
+            {
+                path: 'hours', // 代表是 /hours
+                name: 'BusinessHoursManager',
+                component: BusinessHoursManager
+            }
         ]
     },
 ];

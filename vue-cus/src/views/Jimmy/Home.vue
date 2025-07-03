@@ -11,8 +11,7 @@
     <p>當前位置：{{ address }}</p>
     <input type="text" placeholder="輸入您的查詢內容" v-model="address" />
     <button @click="address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
-    <a @click="getCurrentLocationAndNavigate"><button
-        style="background: transparent; border: none; color: white;">📍</button></a>
+    <i class="bi bi-geo-alt-fill ms-2" @click.stop="getCurrentLocationAndNavigate" style="cursor: pointer;"></i>
     <p v-if="loading" class="loading">正在查詢...</p>
     <p v-else-if="coordinates" class="result">
       經緯度：{{ coordinates.lat }}, {{ coordinates.lon }}

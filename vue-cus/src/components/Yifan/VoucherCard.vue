@@ -24,7 +24,7 @@
           :disabled="promotion.min_spend > cartAmount || promotion.used"
           @click="$emit('use', promotion)"
         >
-          使用
+          使用1
         </button>
       </div>
 
@@ -51,12 +51,11 @@ const emit = defineEmits(['use'])
 /* 卡片區塊 */
 .voucher-card {
   background: white;
-  border-radius: 12px;
-  border: 1px solid #ddd;
+  border-radius: 16px;
   overflow: hidden;
   display: flex;
   margin-bottom: 20px;
-  border-left: 10px solid #8f530f; /* 左側強調色條 */
+  border-left: 10px solid #e8b212; /* 左側強調色條 */
   transition: box-shadow 0.3s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
@@ -74,7 +73,7 @@ const emit = defineEmits(['use'])
 /* 左側圖片區域 */
 .voucher-label {
   width: 150px;
-  background: #ffba20;
+  background: #ffc94d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -104,7 +103,7 @@ const emit = defineEmits(['use'])
 
 /* 使用按鈕樣式 */
 .btn-use {
-  background-color: #ffba20;
+  background-color: #ffc94d;
   border: none;
   padding: 8px 18px;
   font-size: 0.95rem;
@@ -114,8 +113,8 @@ const emit = defineEmits(['use'])
   transition: all 0.3s ease;
 }
 .btn-use:hover:enabled {
-  background-color: #eca300;
-  box-shadow: 0 0 0 3px #8f530f;
+  background-color: #f5c147;
+  box-shadow: 0 0 0 3px #e8b418;
 }
 .btn-use:disabled {
   background-color: #e0e0e0;
@@ -123,24 +122,4 @@ const emit = defineEmits(['use'])
   cursor: not-allowed;
   box-shadow: none;
 }
-
-.nav-link {
-    display: flex;
-    align-items: center;
-    font-size: 15px;
-    color: #6c757d;
-    background-color: transparent;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    transform: translateX(0); 
-}
-
-.nav-link:hover {
-    background-color: #fcebc1;
-    color: #eca300;
-    transform: translateX(4px);
-}
-
 </style>

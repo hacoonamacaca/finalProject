@@ -10,7 +10,7 @@
         </button>
         <div class="mt-5 text-end w-100" style="max-width: 350px;">
             謝謝，<br>
-            <span style="color: #EC1D6F; font-weight: bold;">您的 foodpanda 團隊</span>
+            <span style="color: #ffba20; font-weight: bold;">您的 foodpanda 團隊</span>
         </div>
         </div>
     </template>
@@ -34,7 +34,7 @@ function handleVerify() {
     
     <style scoped>
     .btn-main {
-        background: #EC1D6F;
+        background: #ffba20;
         color: #fff;
         font-weight: bold;
         font-size: 20px;
@@ -43,11 +43,11 @@ function handleVerify() {
         border: none;
         letter-spacing: 2px;
         transition: filter 0.15s;
-        box-shadow: 0 2px 8px 1px #ec1d6f0f;
+        box-shadow: 0 2px 8px 1px #ffba200f;
     }
     .btn-main:hover {
         filter: brightness(1.08);
-        background: #e0126c;
+        background: #f1cd78;
     }
     </style>
     

@@ -11,9 +11,9 @@ spring:
     ansi:
       enabled: always
 
-#  #設定profile
-#  profiles:
-#    active: "@xxx@" 
+  #設定profile
+  # profiles:
+  #   active: "@xxx@" 
 
   #設定資料庫執行環境
   datasource:
