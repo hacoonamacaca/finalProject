@@ -59,4 +59,14 @@ public class OrderBean {
 
 	@OneToMany(mappedBy = "order")
 	private List<CommentBean> comments;
+
+	@Override
+	public String toString() {
+		return "OrderBean [id=" + id + ", user=" + user.getId() + ", store=" + store.getId() + ", promotion=" + promotion.getId() + ", total="
+				+ total + ", status=" + status + ", createTime=" + createTime + ", content=" + content + ", pickupTime="
+				+ pickupTime + ", orderDetails=" + orderDetails + ", comments=" + comments + "]";
+	}
+	
+	
+	
 }

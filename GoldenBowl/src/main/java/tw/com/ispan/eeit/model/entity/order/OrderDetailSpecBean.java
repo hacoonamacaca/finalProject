@@ -6,8 +6,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "order_spec")
-public class OrderSpecBean {
+@Table(name = "order_detail_spec")
+public class OrderDetailSpecBean {
 
 	@Id
 	@Column(name = "id")
