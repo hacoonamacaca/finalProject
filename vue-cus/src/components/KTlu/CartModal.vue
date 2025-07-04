@@ -7,63 +7,101 @@
             </div>
 
             <div class="cart-body">
-                <div v-if="cartItems.length === 0" class="empty-cart">
+                <div v-if="restaurantCount === 0" class="empty-cart">
                     <div class="empty-cart-icon">🛒</div>
                     <p>購物車是空的</p>
                     <p class="empty-cart-desc">快去選購美味的商品吧！</p>
                 </div>
 
-                <div v-else class="cart-items">
-                    <div v-for="item in cartItems" :key="item.id" class="cart-item">
-                        <div class="item-image">
-                            <img :src="item.image" :alt="item.name" />
-                        </div>
-
-                        <div class="item-details">
-                            <h5 class="item-name">{{ item.name }}</h5>
-
-                            <!-- 显示选项 -->
-                            <div v-if="item.selectedOptions && hasSelectedOptions(item.selectedOptions)"
-                                class="item-options">
-                                <div v-for="(optionValue, optionId) in item.selectedOptions" :key="optionId">
-                                    <span v-if="optionValue && optionValue.length > 0" class="option-text">
-                                        {{ formatOptions(optionValue) }}
-                                    </span>
+                <div v-else class="cart-restaurants">
+                    <div v-for="(restaurantCart, restaurantId) in cartByRestaurant" :key="restaurantId"
+                        class="restaurant-section">
+                        <!-- 餐廳標題 -->
+                        <div class="restaurant-header">
+                            <div class="restaurant-info">
+                                <img :src="restaurantCart.restaurant.image" :alt="restaurantCart.restaurant.name"
+                                    class="restaurant-image" />
+                                <div class="restaurant-details">
+                                    <h5 class="restaurant-name">{{ restaurantCart.restaurant.name }}</h5>
+                                    <span class="restaurant-item-count">{{ restaurantCart.items.length }} 項商品</span>
                                 </div>
                             </div>
-
-                            <!-- 显示备注 -->
-                            <div v-if="item.notes" class="item-notes">
-                                <span class="notes-label">備註：</span>
-                                <span class="notes-text">{{ item.notes }}</span>
+                            <div class="restaurant-actions">
+                                <button class="checkout-restaurant-btn" @click="checkoutRestaurant(restaurantId)">
+                                    結帳此餐廳 (NT${{ getRestaurantTotal(restaurantId) }})
+                                </button>
+                                <button class="clear-restaurant-btn" @click="clearRestaurant(restaurantId)"
+                                    title="清空此餐廳">
+                                    <i class="pi pi-trash"></i>
+                                </button>
                             </div>
-
-                            <div class="item-price">NT${{ item.price }}</div>
                         </div>
 
-                        <div class="item-controls">
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" @click="updateQuantity(item.id, item.quantity - 1)"
-                                    :disabled="item.quantity <= 1">-</button>
-                                <span class="quantity-display">{{ item.quantity }}</span>
-                                <button class="quantity-btn"
-                                    @click="updateQuantity(item.id, item.quantity + 1)">+</button>
-                            </div>
+                        <!-- 該餐廳的商品列表 -->
+                        <div class="restaurant-items">
+                            <div v-for="item in restaurantCart.items" :key="item.id" class="cart-item">
+                                <div class="item-image">
+                                    <img :src="item.image" :alt="item.name" />
+                                </div>
 
-                            <button class="remove-btn" @click="removeItem(item.id)" title="移除商品">
-                                <i class="pi pi-trash"></i>
-                            </button>
+                                <div class="item-details">
+                                    <h5 class="item-name">{{ item.name }}</h5>
+
+                                    <!-- 显示选项 -->
+                                    <div v-if="item.selectedOptions && hasSelectedOptions(item.selectedOptions)"
+                                        class="item-options">
+                                        <div v-for="(optionValue, optionId) in item.selectedOptions" :key="optionId">
+                                            <span v-if="optionValue && optionValue.length > 0" class="option-text">
+                                                {{ formatOptions(optionValue) }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- 显示备注 -->
+                                    <div v-if="item.notes" class="item-notes">
+                                        <span class="notes-label">備註：</span>
+                                        <span class="notes-text">{{ item.notes }}</span>
+                                    </div>
+
+                                    <div class="item-price">NT${{ item.price }}</div>
+                                </div>
+
+                                <div class="item-controls">
+                                    <div class="quantity-controls">
+                                        <button class="quantity-btn"
+                                            @click="updateQuantity(item.id, item.quantity - 1, restaurantId)"
+                                            :disabled="item.quantity <= 1">-</button>
+                                        <span class="quantity-display">{{ item.quantity }}</span>
+                                        <button class="quantity-btn"
+                                            @click="updateQuantity(item.id, item.quantity + 1, restaurantId)">+</button>
+                                    </div>
+
+                                    <button class="remove-btn" @click="removeItem(item.id, restaurantId)" title="移除商品">
+                                        <i class="pi pi-trash"></i>
+                                    </button>
+                                </div>
+
+                                <div class="item-total">
+                                    NT${{ item.price * item.quantity }}
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="item-total">
-                            NT${{ item.price * item.quantity }}
+                        <!-- 餐廳小計 -->
+                        <div class="restaurant-subtotal">
+                            <span>此餐廳小計：</span>
+                            <span class="subtotal-amount">NT${{ getRestaurantTotal(restaurantId) }}</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div v-if="cartItems.length > 0" class="cart-footer">
+            <div v-if="restaurantCount > 0" class="cart-footer">
                 <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>餐廳數量</span>
+                        <span>{{ restaurantCount }} 家</span>
+                    </div>
                     <div class="summary-row">
                         <span>商品小計</span>
                         <span>NT${{ totalAmount }}</span>
@@ -82,8 +120,8 @@
                     <button class="continue-shopping-btn" @click="closeModal">
                         繼續購物
                     </button>
-                    <button class="checkout-btn" @click="proceedToCheckout">
-                        前往結帳 (NT${{ totalAmount + deliveryFee }})
+                    <button class="checkout-all-btn" @click="checkoutAllRestaurants">
+                        全部結帳 (NT${{ totalAmount + deliveryFee }})
                     </button>
                 </div>
             </div>
@@ -96,8 +134,8 @@ import { computed } from 'vue'
 import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
-    cartItems: {
-        type: Array,
+    cartByRestaurant: {
+        type: Object,
         required: true
     },
     totalAmount: {
@@ -106,11 +144,17 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['close', 'update-quantity', 'remove-item', 'checkout'])
+const emit = defineEmits(['close', 'update-quantity', 'remove-item', 'checkout-restaurant', 'checkout-all', 'clear-restaurant'])
 
 // 计算属性
 const totalItems = computed(() => {
-    return props.cartItems.reduce((sum, item) => sum + item.quantity, 0)
+    return Object.values(props.cartByRestaurant).reduce((total, restaurantCart) => {
+        return total + restaurantCart.items.reduce((sum, item) => sum + item.quantity, 0)
+    }, 0)
+})
+
+const restaurantCount = computed(() => {
+    return Object.keys(props.cartByRestaurant).length
 })
 
 const deliveryFee = computed(() => {
@@ -123,16 +167,31 @@ const closeModal = () => {
     emit('close')
 }
 
-const updateQuantity = (itemId, newQuantity) => {
-    emit('update-quantity', itemId, newQuantity)
+const updateQuantity = (itemId, newQuantity, restaurantId) => {
+    emit('update-quantity', itemId, newQuantity, restaurantId)
 }
 
-const removeItem = (itemId) => {
-    emit('remove-item', itemId)
+const removeItem = (itemId, restaurantId) => {
+    emit('remove-item', itemId, restaurantId)
 }
 
-const proceedToCheckout = () => {
-    emit('checkout')
+const checkoutRestaurant = (restaurantId) => {
+    emit('checkout-restaurant', restaurantId)
+}
+
+const checkoutAllRestaurants = () => {
+    emit('checkout-all')
+}
+
+const clearRestaurant = (restaurantId) => {
+    emit('clear-restaurant', restaurantId)
+}
+
+const getRestaurantTotal = (restaurantId) => {
+    const restaurantCart = props.cartByRestaurant[restaurantId]
+    if (!restaurantCart) return 0
+
+    return restaurantCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 }
 
 const hasSelectedOptions = (selectedOptions) => {
@@ -175,7 +234,7 @@ const formatOptions = (optionValue) => {
     border: 1px solid var(--restaurant-border-light);
     border-radius: 12px;
     width: 100%;
-    max-width: 600px;
+    max-width: 800px;
     max-height: 90vh;
     display: flex;
     flex-direction: column;
@@ -250,10 +309,94 @@ const formatOptions = (optionValue) => {
     color: var(--restaurant-text-muted);
 }
 
-.cart-items {
+.cart-restaurants {
     display: flex;
     flex-direction: column;
+    gap: 2rem;
+}
+
+.restaurant-section {
+    border: 1px solid var(--restaurant-border-light);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--restaurant-bg-light);
+}
+
+.restaurant-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--restaurant-gradient-light);
+    border-bottom: 1px solid var(--restaurant-border-light);
+}
+
+.restaurant-info {
+    display: flex;
+    align-items: center;
     gap: 1rem;
+}
+
+.restaurant-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.restaurant-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--restaurant-text-primary);
+    margin: 0 0 0.25rem 0;
+}
+
+.restaurant-item-count {
+    font-size: 0.85rem;
+    color: var(--restaurant-text-secondary);
+}
+
+.restaurant-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkout-restaurant-btn {
+    background: var(--restaurant-gradient-primary);
+    color: var(--restaurant-text-primary);
+    border: 1px solid var(--restaurant-primary-light);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+}
+
+.checkout-restaurant-btn:hover {
+    background: var(--restaurant-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--restaurant-shadow-medium);
+}
+
+.clear-restaurant-btn {
+    background: none;
+    border: 1px solid var(--restaurant-border-medium);
+    color: var(--restaurant-text-secondary);
+    padding: 0.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-restaurant-btn:hover {
+    background: var(--restaurant-shadow-light);
+    color: var(--restaurant-error);
+}
+
+.restaurant-items {
+    padding: 1rem;
 }
 
 .cart-item {
@@ -262,10 +405,11 @@ const formatOptions = (optionValue) => {
     gap: 1rem;
     align-items: start;
     padding: 1rem;
-    background: var(--restaurant-bg-light);
+    background: var(--restaurant-bg-primary);
     border: 1px solid var(--restaurant-border-light);
     border-radius: 8px;
     transition: all 0.2s ease;
+    margin-bottom: 1rem;
 }
 
 .cart-item:hover {
@@ -412,6 +556,22 @@ const formatOptions = (optionValue) => {
     text-align: right;
 }
 
+.restaurant-subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: var(--restaurant-bg-secondary);
+    border-top: 1px solid var(--restaurant-border-light);
+    font-weight: 600;
+    color: var(--restaurant-text-primary);
+}
+
+.subtotal-amount {
+    color: var(--restaurant-primary-dark);
+    font-size: 1.1rem;
+}
+
 .cart-footer {
     flex-shrink: 0;
     border-top: 1px solid var(--restaurant-border-light);
@@ -470,7 +630,7 @@ const formatOptions = (optionValue) => {
     box-shadow: 0 4px 12px var(--restaurant-shadow-medium);
 }
 
-.checkout-btn {
+.checkout-all-btn {
     flex: 2;
     padding: 0.75rem 1rem;
     background: var(--restaurant-gradient-primary);
@@ -483,7 +643,7 @@ const formatOptions = (optionValue) => {
     box-shadow: 0 2px 8px var(--restaurant-shadow-light);
 }
 
-.checkout-btn:hover {
+.checkout-all-btn:hover {
     background: var(--restaurant-primary-hover);
     transform: translateY(-2px);
     box-shadow: 0 6px 16px var(--restaurant-shadow-medium);
@@ -501,6 +661,17 @@ const formatOptions = (optionValue) => {
     .cart-body,
     .cart-footer {
         padding: 1rem;
+    }
+
+    .restaurant-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .restaurant-actions {
+        width: 100%;
+        justify-content: space-between;
     }
 
     .cart-item {
@@ -539,7 +710,7 @@ const formatOptions = (optionValue) => {
     }
 
     .continue-shopping-btn,
-    .checkout-btn {
+    .checkout-all-btn {
         padding: 0.875rem;
     }
 }

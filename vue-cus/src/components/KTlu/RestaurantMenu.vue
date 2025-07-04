@@ -1,59 +1,51 @@
 <template>
     <div class="restaurant-menu restaurant-theme">
-        <!-- Hero Banner區域 - 先凸顯主題 -->
-        <section class="menu-hero-banner">
-            <div class="hero-content">
-                <h1 class="hero-title">{{ restaurant?.name || '美味餐廳' }}</h1>
-                <p class="hero-description">探索我們精心調製的美食世界</p>
-                <div class="hero-stats">
-                    <span class="stat-item">
-                        <i class="pi pi-shopping-cart"></i>
-                        {{ categories.length }} 個分類
-                    </span>
-                    <span class="stat-item">
-                        <i class="pi pi-heart"></i>
-                        {{ allItemsCount }} 道精選料理
-                    </span>
-                </div>
-            </div>
-            <div class="hero-decoration"></div>
-        </section>
+        <div class="menu-container" id="all-categories">
+            <nav class="sticky-nav" ref="stickyNav">
+                <div class="sticky-nav-container">
+                    <button v-if="showScrollButtons" @click="scrollTabs('left')"
+                        :class="['scroll-button', 'scroll-button--left', { 'hidden': !canScrollLeft }]">
+                        ←
+                    </button>
 
-        <!-- 黏性導航區域 - 滾動時才固定 -->
-        <nav class="sticky-nav" ref="stickyNav">
-            <div class="sticky-nav-container" ref="tabsContainer">
-                <div class="nav-tabs">
-                    <a v-for="category in categories" :key="category.id"
-                        :class="['nav-tab', { 'active': activeCategory === category.name }]"
-                        :href="`#category-${category.id}`" @click="onTabClick($event, category)">
-                        {{ category.name }}
-                        <span class="tab-count">({{ category.count }})</span>
-                    </a>
-                    <a :class="['nav-tab', { 'active': activeCategory === '' }]" href="#all-categories"
-                        @click="onTabClick($event, { name: '', id: 'all' })">
-                        全部
-                        <span class="tab-count">({{ allItemsCount }})</span>
-                    </a>
-                </div>
-                <div class="nav-slider" ref="tabSlider"></div>
-            </div>
-        </nav>
+                    <div class="nav-tabs-wrapper" ref="tabsContainer">
+                        <a v-for="category in categories" :key="category.id"
+                            :class="['nav-tab', { 'active': activeCategory === category.name }]"
+                            @click="onTabClick($event, category)">
+                            {{ category.name }}
+                            <span class="tab-count">({{ getCategoryItems(category.name).length }})</span>
+                        </a>
+                        <a :class="['nav-tab', { 'active': activeCategory === 'all' }]"
+                            @click="onTabClick($event, { name: 'all', id: 'all' })">
+                            全部菜單
+                            <span class="tab-count">({{ allItemsCount }})</span>
+                        </a>
+                    </div>
 
-        <!-- 菜品內容區域 -->
-        <div class="menu-container">
+                    <button v-if="showScrollButtons" @click="scrollTabs('right')"
+                        :class="['scroll-button', 'scroll-button--right', { 'hidden': !canScrollRight }]">
+                        →
+                    </button>
+                </div>
+
+                <!-- 調試顯示器 -->
+                <!-- <div class="debug-indicator"
+                    style="position: absolute; top: -30px; right: 20px; background: #333; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; z-index: 1000;">
+                    當前活動: {{ activeCategory }}
+                </div> -->
+            </nav>
+
             <main class="menu-main">
                 <div v-if="hasMenuItems">
-                    <!-- 依分類顯示菜品 -->
                     <section v-for="category in categories" :key="category.id" :id="`category-${category.id}`"
-                        class="menu-slide category-section"
-                        v-show="activeCategory === '' || activeCategory === category.name">
-                        <h2 v-show="filteredItemsByCategory(category.name).length > 0" class="category-title">
+                        class="category-section">
+                        <h2 v-if="getCategoryItems(category.name).length > 0" class="category-title">
                             {{ category.name }}
+                            <span class="category-count">({{ getCategoryItems(category.name).length }})</span>
                         </h2>
-                        <div class="menu-grid" v-if="filteredItemsByCategory(category.name).length > 0">
-                            <div class="menu-item" v-for="item in filteredItemsByCategory(category.name)" :key="item.id"
+                        <div class="menu-grid" v-if="getCategoryItems(category.name).length > 0">
+                            <div class="menu-item" v-for="item in getCategoryItems(category.name)" :key="item.id"
                                 @click="openItemDetail(item)">
-                                <!-- 標籤 -->
                                 <div class="item-tags" v-if="item.tags && item.tags.length > 0">
                                     <span v-for="tag in item.tags" :key="tag" class="item-tag">{{ tag }}</span>
                                 </div>
@@ -86,20 +78,14 @@
             </main>
         </div>
 
-        <div class="cart-float-btn" v-if="totalCartQuantity > 0" @click="toggleCartVisibility">
-            <div class="cart-icon">
-                <i class="pi pi-shopping-cart"></i>
-                <span class="cart-badge">{{ totalCartQuantity }}</span>
-            </div>
-            <div class="cart-total">NT${{ totalCartAmount }}</div>
-        </div>
+
 
         <ItemDetailModal v-if="showItemDetail" :item="selectedItem" :show="showItemDetail" @close="closeItemDetail"
             @add-to-cart="handleAddToCart" />
 
-        <CartModal v-if="isCartVisible" :cart-items="cartItems" :total-amount="totalCartAmount"
-            @close="toggleCartVisibility" @update-quantity="updateCartItemQuantity" @remove-item="removeCartItem"
-            @checkout="checkout" />
+        <!-- <CartModal v-if="cartStore.isCartVisible" :cartItems="cartStore.cartItems" :totalAmount="cartStore.totalAmount"
+            @close="cartStore.hideCart" @update-quantity="updateCartItemQuantity" @remove-item="removeCartItem"
+            @checkout="checkout" /> -->
     </div>
 </template>
 
@@ -107,6 +93,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import ItemDetailModal from './ItemDetailModal.vue'
 import CartModal from './CartModal.vue'
+import { useCartStore } from '@/stores/cart'
 import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
@@ -118,29 +105,36 @@ const props = defineProps({
 
 const emit = defineEmits(['checkout'])
 
+// 購物車 store
+const cartStore = useCartStore()
+
 // 基本狀態
 const selectedItem = ref(null)
 const showItemDetail = ref(false)
-const cartItems = ref([])
-const isCartVisible = ref(false)
 
-// 分類狀態
-const activeCategory = ref('')
-
-// Refs
-const tabsContainer = ref(null)
-const tabSlider = ref(null)
+// 導航狀態
+const activeCategory = ref('人氣精選') // 初始設為第一個分類
 const stickyNav = ref(null)
+// 新增 ref 來引用可滾動的分類導航容器
+const tabsContainer = ref(null);
+// 控制滾動按鈕的顯示/隱藏狀態
+const showScrollButtons = ref(false);
+// 控制左右按鈕的禁用狀態
+const canScrollLeft = ref(false);
+const canScrollRight = ref(false);
+
+// 監控 activeCategory 變化
+watch(activeCategory, (newValue, oldValue) => {
+    console.log(`🎯 RestaurantMenu activeCategory 變化: ${oldValue} → ${newValue}`)
+}, { immediate: true })
+
+// Intersection Observer 相關
+let observers = [] // 儲存所有的 Intersection Observers
 
 // Sticky navigation constants
-const STICKY_OFFSET = 80 // 固定時的偏移量
+const STICKY_TOP_POSITION = 100 // sticky nav固定時的top位置（與CSS一致）
 
-// State for sticky navigation
-let currentId = null
-let currentTab = null
-let isSticky = false
-
-// 預設分類和商品資料
+// 分類和商品資料 (保持不變)
 const categories = ref([
     { id: 'popular', name: '人氣精選', count: 3 },
     { id: 'new-arrivals', name: '新品上市', count: 3 },
@@ -162,11 +156,9 @@ const items = ref([
     { id: 7, name: '黑糖珍珠鮮奶', description: '香濃黑糖、Q彈珍珠、新鮮牛奶', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+7', originalPrice: 90, discountPrice: 75, category: '奶茶系列', tags: ['經典'] },
     { id: 8, name: '經典美式咖啡', description: '嚴選咖啡豆、香醇濃郁', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+8', originalPrice: 70, discountPrice: 60, category: '冬瓜 / 百香果系列' },
     { id: 9, name: '酥炸雞米花', description: '外酥內嫩、香辣可口', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+9', originalPrice: 100, discountPrice: 85, category: '人氣精選', tags: ['酥脆'] },
-    { id: 10, name: '抹茶拿鐵', description: '日式抹茶、香醇牛奶', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+10', originalPrice: 110, discountPrice: 90, category: '奶茶系列', tags: ['日式'] },
+    { id: 10, name: '抹茶拿鐵', description: '日式抹茶、香醇牛奶', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product:10', originalPrice: 110, discountPrice: 90, category: '奶茶系列', tags: ['日式'] },
     { id: 11, name: '綜合水果優格', description: '新鮮水果、低脂優格', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+11', originalPrice: 150, discountPrice: 120, category: '優多系列', tags: ['健康', '低脂'] },
     { id: 12, name: '香草冰淇淋', description: '濃郁香草、清涼消暑', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+12', originalPrice: 80, discountPrice: 70, category: '店長推薦', tags: ['甜品'] },
-
-    // 新增更多測試商品
     { id: 13, name: '蜂蜜芥末雞腿堡', description: '酥脆雞腿、蜂蜜芥末醬、生菜', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+13', originalPrice: 220, discountPrice: 180, category: '新品上市', tags: ['新品', '辣味'] },
     { id: 14, name: '日式照燒豚肉飯', description: '軟嫩豚肉、照燒醬汁、白飯', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+14', originalPrice: 200, discountPrice: 160, category: '店長推薦', tags: ['日式'] },
     { id: 15, name: '芒果芝士蛋糕', description: '濃郁芝士、新鮮芒果、酥脆餅底', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+15', originalPrice: 180, discountPrice: 150, category: '店長推薦', tags: ['甜品', '限量'] },
@@ -182,44 +174,20 @@ const items = ref([
 ])
 
 // 計算屬性
-const filteredItems = computed(() => {
-    if (activeCategory.value === '') {
-        return items.value // 顯示全部商品
-    }
-    return items.value.filter(item => item.category === activeCategory.value)
-})
-
-const filteredItemsByCategory = (categoryName) => {
-    if (activeCategory.value === '') {
-        // 顯示全部時，按分類過濾
-        return items.value.filter(item => item.category === categoryName)
-    } else if (activeCategory.value === categoryName) {
-        // 選中特定分類時，只顯示該分類
-        return items.value.filter(item => item.category === categoryName)
-    }
-    return [] // 其他分類不顯示
-}
-
 const hasMenuItems = computed(() => {
-    if (activeCategory.value === '') {
-        return categories.value.some(category =>
-            items.value.some(item => item.category === category.name)
-        )
-    }
-    return filteredItems.value.length > 0
+    return items.value.length > 0
 })
 
-const totalCartQuantity = computed(() => {
-    return cartItems.value.reduce((sum, item) => sum + item.quantity, 0)
-})
 
-const totalCartAmount = computed(() => {
-    return cartItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-})
 
 const allItemsCount = computed(() => {
     return items.value.length
 })
+
+// 根據分類獲取商品
+const getCategoryItems = (categoryName) => {
+    return items.value.filter(item => item.category === categoryName)
+}
 
 // 方法
 const openItemDetail = (item) => {
@@ -244,521 +212,612 @@ const quickAddToCart = (item) => {
 }
 
 const handleAddToCart = (itemToAdd) => {
-    const existingItemIndex = cartItems.value.findIndex(item => item.id === itemToAdd.id)
-
-    if (existingItemIndex > -1) {
-        cartItems.value[existingItemIndex].quantity += itemToAdd.quantity
-    } else {
-        cartItems.value.push({ ...itemToAdd })
-    }
+    cartStore.addToCart(itemToAdd, props.restaurant)
 
     if (showItemDetail.value) {
         closeItemDetail()
     }
 
-    setTimeout(() => {
-        isCartVisible.value = true
-    }, 300)
+    // 只在購物車未開啟時才開啟
+    if (!cartStore.isCartVisible) {
+        cartStore.showCart()
+    }
 }
 
 const updateCartItemQuantity = (itemId, newQuantity) => {
-    if (newQuantity <= 0) {
-        removeCartItem(itemId)
-        return
-    }
-
-    const itemIndex = cartItems.value.findIndex(item => item.id === itemId)
-    if (itemIndex > -1) {
-        cartItems.value[itemIndex].quantity = newQuantity
-    }
+    cartStore.updateQuantity(itemId, newQuantity, props.restaurant.id)
 }
 
 const removeCartItem = (itemId) => {
-    cartItems.value = cartItems.value.filter(item => item.id !== itemId)
+    cartStore.removeItem(itemId, props.restaurant.id)
 }
 
-const toggleCartVisibility = () => {
-    isCartVisible.value = !isCartVisible.value
-}
+
 
 const checkout = () => {
-    const orderData = {
-        restaurant: {
-            id: props.restaurant.id,
-            name: props.restaurant.name
-        },
-        items: cartItems.value,
-        totalAmount: totalCartAmount.value,
-        orderTime: new Date().toISOString()
+    const orderData = cartStore.checkoutSingleRestaurant(props.restaurant.id)
+    if (orderData) {
+        emit('checkout', orderData)
+        cartStore.hideCart()
     }
-
-    emit('checkout', orderData)
-    cartItems.value = []
-    isCartVisible.value = false
 }
 
-// 處理分類點擊事件（從子組件接收）
-const handleCategoryClick = (category) => {
-    activeCategory.value = category.name
-}
+// 滾動方法
+const scrollTabs = (direction) => {
+    console.log(`🔄 滾動按鈕點擊: ${direction}`)
+    if (tabsContainer.value) {
+        const scrollAmount = 150; // 每次滾動的像素量，可調整
+        const currentScrollLeft = tabsContainer.value.scrollLeft;
+        const newScrollLeft = direction === 'left' ? currentScrollLeft - scrollAmount : currentScrollLeft + scrollAmount;
 
-// 處理分類按鈕點擊
-const selectCategory = (categoryName) => {
-    activeCategory.value = categoryName
-}
+        console.log(`📊 滾動前: ${currentScrollLeft}, 滾動後: ${newScrollLeft}`)
 
-// Hero導航相關方法
+        tabsContainer.value.scrollTo({
+            left: newScrollLeft,
+            behavior: 'smooth'
+        });
+
+        // 滾動完成後重新檢查按鈕狀態
+        setTimeout(() => {
+            checkScrollButtonVisibility();
+        }, 300);
+    } else {
+        console.error('❌ tabsContainer 未找到')
+    }
+};
+
+// 檢查滾動按鈕可見性及禁用狀態
+const checkScrollButtonVisibility = () => {
+    console.log('🔍 檢查滾動按鈕可見性...')
+    if (tabsContainer.value) {
+        const { scrollWidth, clientWidth, scrollLeft } = tabsContainer.value;
+        const shouldShowButtons = scrollWidth > clientWidth;
+        const canScrollLeftNow = scrollLeft > 0;
+        const canScrollRightNow = scrollLeft + clientWidth < scrollWidth;
+
+        console.log(`📊 滾動容器狀態:`, {
+            scrollWidth,
+            clientWidth,
+            scrollLeft,
+            shouldShowButtons,
+            canScrollLeftNow,
+            canScrollRightNow
+        })
+
+        showScrollButtons.value = shouldShowButtons;
+        canScrollLeft.value = canScrollLeftNow;
+        canScrollRight.value = canScrollRightNow;
+
+        console.log(`🎯 按鈕狀態:`, {
+            showScrollButtons: showScrollButtons.value,
+            canScrollLeft: canScrollLeft.value,
+            canScrollRight: canScrollRight.value
+        })
+    } else {
+        console.error('❌ tabsContainer 未找到，無法檢查滾動按鈕')
+    }
+};
+
+// Tab點擊事件 (更新為使用 scrollIntoView)
 const onTabClick = (event, category) => {
     event.preventDefault()
 
-    // 更新活動分類
-    activeCategory.value = category.name
-
-    // 如果點擊的是分類（不是"全部"），滾動到對應分類
-    if (category.name && category.id !== 'all') {
-        const target = document.getElementById(`category-${category.id}`)
-        if (target) {
-            const scrollTop = target.offsetTop - STICKY_OFFSET
+    if (category.name === 'all' || category.id === 'all') {
+        const menuMain = document.querySelector('.menu-main')
+        if (menuMain) {
             window.scrollTo({
-                top: scrollTop,
+                top: menuMain.offsetTop - STICKY_TOP_POSITION,
                 behavior: 'smooth'
             })
         }
-    } else {
-        // 點擊"全部"時滾動到菜單開始位置
-        const menuContainer = document.querySelector('.menu-container')
-        if (menuContainer) {
-            const scrollTop = menuContainer.offsetTop - STICKY_OFFSET
-            window.scrollTo({
-                top: scrollTop,
-                behavior: 'smooth'
-            })
-        }
+        return
+    }
+
+    const target = document.getElementById(`category-${category.id}`)
+    if (target) {
+        const yOffset = - (STICKY_TOP_POSITION + (stickyNav.value ? stickyNav.value.offsetHeight : 60) + 10);
+        const y = target.getBoundingClientRect().top + window.scrollY + yOffset;
+
+        window.scrollTo({ top: y, behavior: 'smooth' });
+
+        activeCategory.value = category.name;
+
+        // 點擊後，將當前點擊的 tab 滾動到 tabsContainer 的中心（可選）
+        nextTick(() => {
+            const activeTab = tabsContainer.value.querySelector('.nav-tab.active');
+            if (activeTab && tabsContainer.value) {
+                // 計算需要滾動的距離，讓 activeTab 盡量居中
+                const tabOffsetLeft = activeTab.offsetLeft;
+                const tabWidth = activeTab.offsetWidth;
+                const containerWidth = tabsContainer.value.clientWidth;
+                const scrollLeft = tabOffsetLeft - (containerWidth / 2) + (tabWidth / 2);
+
+                tabsContainer.value.scrollTo({
+                    left: scrollLeft,
+                    behavior: 'smooth'
+                });
+            }
+        });
     }
 }
 
-const checkStickyNavPosition = () => {
-    if (!stickyNav.value) return
+// 備用滾動檢測機制
+const checkActiveCategoryOnScroll = () => {
+    const scrollY = window.scrollY;
+    const menuContainerTop = document.querySelector('.menu-container')?.offsetTop || 0;
+    const stickyNavHeight = stickyNav.value ? stickyNav.value.offsetHeight : 60;
+    const triggerOffset = STICKY_TOP_POSITION + stickyNavHeight;
 
-    const heroBanner = document.querySelector('.menu-hero-banner')
-    if (heroBanner) {
-        const heroBottom = heroBanner.offsetTop + heroBanner.offsetHeight
-        const currentScrollY = window.scrollY
-
-        if (currentScrollY >= heroBottom - 20) { // 20px緩衝區
-            if (!isSticky) {
-                isSticky = true
-                stickyNav.value.classList.add('sticky-nav--fixed')
-                // 為body添加padding避免內容跳動
-                document.body.style.paddingTop = `${STICKY_OFFSET}px`
-                setTimeout(() => {
-                    setSliderCss()
-                }, 100)
-            }
-        } else {
-            if (isSticky) {
-                isSticky = false
-                stickyNav.value.classList.remove('sticky-nav--fixed')
-                document.body.style.paddingTop = '0'
-                setTimeout(() => {
-                    setSliderCss()
-                }, 100)
-            }
+    // 檢查是否在頂部
+    const isAtTop = scrollY < menuContainerTop - STICKY_TOP_POSITION + 50;
+    if (isAtTop && categories.value.length > 0) {
+        const firstCategory = categories.value[0].name;
+        if (activeCategory.value !== firstCategory) {
+            console.log(`🔄 滾動檢測 - 頁面頂部，設置第一個分類: ${firstCategory}`)
+            activeCategory.value = firstCategory;
         }
+        return;
     }
-}
 
-const findCurrentTabSelector = () => {
-    let newCurrentId = null
-    let newCurrentTab = null
+    // 檢查每個分類的位置
+    let currentActiveCategory = null;
+    let minDistance = Infinity;
 
-    const tabs = tabsContainer.value?.querySelectorAll('.nav-tab')
-    if (!tabs) return
+    categories.value.forEach(category => {
+        const element = document.getElementById(`category-${category.id}`);
+        if (element) {
+            const rect = element.getBoundingClientRect();
+            const distance = Math.abs(rect.top - triggerOffset);
 
-    tabs.forEach(tab => {
-        const id = tab.getAttribute('href')
-        if (id && id !== '#all-categories') {
-            const element = document.querySelector(id)
-            if (element) {
-                const offsetTop = element.offsetTop - STICKY_OFFSET
-                const offsetBottom = element.offsetTop + element.offsetHeight - STICKY_OFFSET
-                const currentScrollY = window.scrollY
-
-                if (currentScrollY >= offsetTop && currentScrollY < offsetBottom) {
-                    newCurrentId = id
-                    newCurrentTab = tab
+            // 如果分類標題在觸發線附近，選擇距離最小的
+            if (rect.top <= triggerOffset + 50 && rect.bottom >= triggerOffset - 50) {
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    currentActiveCategory = category.name;
                 }
             }
         }
-    })
+    });
 
-    if (currentId !== newCurrentId) {
-        currentId = newCurrentId
-        currentTab = newCurrentTab
+    if (currentActiveCategory && activeCategory.value !== currentActiveCategory) {
+        console.log(`🔄 滾動檢測 - 更新 activeCategory: ${activeCategory.value} → ${currentActiveCategory}`)
+        activeCategory.value = currentActiveCategory;
+    }
+};
 
-        // 更新活動分類
-        if (newCurrentTab) {
-            const categoryName = newCurrentTab.textContent.replace(/\(\d+\)/, '').trim()
-            if (activeCategory.value !== categoryName && categoryName !== '全部') {
-                activeCategory.value = categoryName
+// Sticky導航檢測 (保持不變)
+const checkStickyNavPosition = () => {
+    if (!stickyNav.value) return
+
+    const scrollY = window.scrollY
+    const menuContainer = document.querySelector('.menu-container')
+
+    if (menuContainer) {
+        const menuTop = menuContainer.offsetTop
+
+        if (scrollY >= menuTop - STICKY_TOP_POSITION) {
+            stickyNav.value.classList.add('sticky-nav--fixed')
+        } else {
+            stickyNav.value.classList.remove('sticky-nav--fixed')
+        }
+    }
+
+    // 同時檢查 active category
+    checkActiveCategoryOnScroll();
+}
+
+// =======================================================
+// Intersection Observer 實現高亮判斷
+// =======================================================
+const setupIntersectionObserver = () => {
+    console.log('🔄 RestaurantMenu: 設置 IntersectionObserver')
+
+    observers.forEach(observer => observer.disconnect());
+    observers = [];
+
+    // 計算觸發位置：sticky nav 底部位置
+    const stickyNavHeight = stickyNav.value ? stickyNav.value.offsetHeight : 60;
+    const triggerOffset = STICKY_TOP_POSITION + stickyNavHeight;
+
+    console.log(`📊 觸發位置計算: STICKY_TOP_POSITION=${STICKY_TOP_POSITION}, stickyNavHeight=${stickyNavHeight}, triggerOffset=${triggerOffset}`)
+
+    const observerOptions = {
+        root: null,
+        rootMargin: `-${triggerOffset}px 0px 0px 0px`, // 只考慮頂部觸發
+        threshold: 0.1 // 10% 可見時觸發
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        console.log('👁️ IntersectionObserver 觸發，entries:', entries.length)
+
+        // 找到所有正在相交的元素
+        const intersectingEntries = entries.filter(entry => entry.isIntersecting);
+        console.log(`📊 相交的元素數量: ${intersectingEntries.length}`)
+
+        if (intersectingEntries.length === 0) {
+            // 沒有元素相交，檢查是否在頂部
+            const menuContainerTop = document.querySelector('.menu-container')?.offsetTop || 0;
+            const scrollY = window.scrollY;
+            const isAtTop = scrollY < menuContainerTop - STICKY_TOP_POSITION + 50;
+
+            if (isAtTop && categories.value.length > 0) {
+                const firstCategory = categories.value[0].name;
+                if (activeCategory.value !== firstCategory) {
+                    console.log(`🏠 頁面頂部，設置第一個分類: ${firstCategory}`)
+                    activeCategory.value = firstCategory;
+                }
             }
+            return;
         }
 
-        setSliderCss()
-    }
-}
+        // 找到最靠近頂部的相交元素
+        let closestEntry = null;
+        let minTop = Infinity;
 
-const setSliderCss = () => {
-    if (!tabSlider.value || !tabsContainer.value) return
+        intersectingEntries.forEach(entry => {
+            const top = entry.boundingClientRect.top;
+            console.log(`📊 檢查分類: ${entry.target.id}, top: ${top}`)
 
-    let width = 0
-    let left = 0
+            if (top < minTop) {
+                minTop = top;
+                closestEntry = entry;
+            }
+        });
 
-    // 找到當前活動的tab
-    const activeTab = tabsContainer.value.querySelector('.nav-tab.active')
-    if (activeTab) {
-        const rect = activeTab.getBoundingClientRect()
-        const containerRect = tabsContainer.value.getBoundingClientRect()
+        if (closestEntry) {
+            const categoryId = closestEntry.target.id.replace('category-', '');
+            const newActiveCategory = categories.value.find(cat => cat.id === categoryId)?.name;
 
-        width = rect.width
-        left = rect.left - containerRect.left
-    }
+            console.log(`🎯 最靠近頂部的分類: ${newActiveCategory}, top: ${minTop}`)
 
-    tabSlider.value.style.width = `${width}px`
-    tabSlider.value.style.left = `${left}px`
-    tabSlider.value.style.opacity = width > 0 ? '1' : '0'
-}
+            if (newActiveCategory && activeCategory.value !== newActiveCategory) {
+                console.log(`🎯 更新 activeCategory: ${activeCategory.value} → ${newActiveCategory}`)
+                activeCategory.value = newActiveCategory;
+            }
+        }
+    }, observerOptions);
 
-const onScroll = () => {
-    checkStickyNavPosition()
-    if (isSticky) {
-        findCurrentTabSelector()
-    }
-}
+    // 觀察所有分類區塊
+    categories.value.forEach(category => {
+        const element = document.getElementById(`category-${category.id}`);
+        if (element) {
+            observer.observe(element);
+            console.log(`👁️ 觀察分類: ${category.name} (ID: ${category.id})`)
+        } else {
+            console.error(`❌ 找不到分類元素: category-${category.id}`)
+        }
+    });
 
-const onResize = () => {
-    if (activeCategory.value !== null) {
-        setSliderCss()
-    }
-}
+    observers.push(observer);
+    console.log('✅ IntersectionObserver 設置完成')
+};
 
 // 生命周期
 onMounted(() => {
-    // 設置預設分類
-    if (props.restaurant?.categories?.length > 0) {
-        activeCategory.value = '' // 預設顯示所有分類
-    }
+    console.log('🏪 餐廳菜單已載入，顯示所有菜品');
 
-    // 初始化黏性導航
     nextTick(() => {
-        setSliderCss()
+        console.log('🔄 開始初始化組件...')
 
-        // 添加事件監聽器
-        window.addEventListener('scroll', onScroll, { passive: true })
-        window.addEventListener('resize', onResize, { passive: true })
-    })
+        // 延遲設置 IntersectionObserver，確保 DOM 完全渲染
+        setTimeout(() => {
+            console.log('⏰ 延遲設置 IntersectionObserver...')
+            setupIntersectionObserver();
+        }, 500);
+
+        window.addEventListener('scroll', checkStickyNavPosition, { passive: true });
+        checkStickyNavPosition(); // 初始檢查 sticky nav 狀態
+
+        // 監聽 tabsContainer 自身滾動事件，以更新按鈕禁用狀態
+        if (tabsContainer.value) {
+            console.log('✅ tabsContainer 找到，設置滾動監聽器')
+            tabsContainer.value.addEventListener('scroll', checkScrollButtonVisibility, { passive: true });
+        } else {
+            console.error('❌ tabsContainer 未找到')
+        }
+
+        // 延遲檢查滾動按鈕可見性，確保 DOM 完全渲染
+        setTimeout(() => {
+            console.log('⏰ 延遲檢查滾動按鈕可見性...')
+            checkScrollButtonVisibility();
+        }, 100);
+
+        // 多次強制檢查，確保按鈕狀態正確
+        setTimeout(() => {
+            forceCheckScrollButtons();
+        }, 300);
+
+        setTimeout(() => {
+            forceCheckScrollButtons();
+        }, 500);
+
+        setTimeout(() => {
+            forceCheckScrollButtons();
+        }, 1000);
+
+        // 監聽窗口大小變化，當佈局變化時重新檢查按鈕可見性
+        window.addEventListener('resize', () => {
+            console.log('📱 窗口大小變化，重新檢查滾動按鈕')
+            setTimeout(checkScrollButtonVisibility, 100);
+        });
+
+        console.log('✅ 組件初始化完成')
+    });
 })
 
 onUnmounted(() => {
-    // 清理事件監聽器
-    window.removeEventListener('scroll', onScroll)
-    window.removeEventListener('resize', onResize)
-
-    // 清理body padding
-    document.body.style.paddingTop = '0'
-})
-
-// 監聽活動分類變化
-watch(activeCategory, () => {
-    nextTick(() => {
-        setSliderCss()
-    })
+    window.removeEventListener('scroll', checkStickyNavPosition);
+    window.removeEventListener('resize', checkScrollButtonVisibility);
+    if (tabsContainer.value) {
+        tabsContainer.value.removeEventListener('scroll', checkScrollButtonVisibility);
+    }
+    observers.forEach(observer => observer.disconnect());
 })
 </script>
 
 <style scoped>
-/* Hero Banner區域 - 先凸顯主題 */
-.menu-hero-banner {
+/* 保持原有的 .restaurant-menu, .menu-container, .sticky-nav 樣式 */
+.restaurant-menu {
+    background: #f8f9fa;
+    min-height: 100vh;
+    padding: 20px 0;
+}
+
+.menu-container {
+    max-width: 1200px;
+    margin: 20px auto 0;
+    padding: 0 20px;
     position: relative;
-    background: linear-gradient(135deg,
-            var(--restaurant-primary-color, #ff6b35) 0%,
-            var(--restaurant-secondary-color, #f7931e) 100%);
-    min-height: 70vh;
-    padding: 80px 20px 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    overflow: hidden;
 }
 
-.hero-content {
-    text-align: center;
-    z-index: 2;
-    position: relative;
-    max-width: 800px;
-}
-
-.hero-title {
-    font-size: 4rem;
-    font-weight: 800;
-    margin-bottom: 24px;
-    text-shadow: 2px 4px 8px rgba(0, 0, 0, 0.3);
-    letter-spacing: 2px;
-    line-height: 1.1;
-}
-
-.hero-description {
-    font-size: 1.5rem;
-    font-weight: 300;
-    margin-bottom: 40px;
-    opacity: 0.95;
-    letter-spacing: 0.5px;
-    line-height: 1.4;
-}
-
-.hero-stats {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-top: 40px;
-}
-
-.stat-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1.1rem;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.15);
-    padding: 12px 24px;
-    border-radius: 30px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.stat-item i {
-    font-size: 1.3rem;
-}
-
-.hero-decoration {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 20"><defs><radialGradient id="a" cx="50%" cy="50%"><stop offset="0%" stop-color="rgba(255,255,255,.1)"/><stop offset="100%" stop-color="rgba(255,255,255,0)"/></radialGradient></defs><circle cx="20" cy="10" r="8" fill="url(%23a)"/><circle cx="80" cy="10" r="6" fill="url(%23a)"/></svg>');
-    opacity: 0.5;
-    animation: float 20s ease-in-out infinite;
-}
-
-@keyframes float {
-
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-20px);
-    }
-}
-
-/* 黏性導航區域 - 符合文章理念 */
 .sticky-nav {
-    background: white;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100;
     position: relative;
-}
-
-.sticky-nav--fixed {
-    position: fixed;
     top: 0;
     left: 0;
     right: 0;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
-    border-bottom: 1px solid var(--restaurant-primary-color, #ff6b35);
-    animation: slideDownSticky 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
-@keyframes slideDownSticky {
-    from {
-        opacity: 0;
-        transform: translateY(-100%);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* 固定時的 sticky-nav 樣式 (保持你修改後的) */
+.sticky-nav--fixed {
+    position: fixed !important;
+    top: 100px;
+    left: 0;
+    right: 0;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-bottom: 2px solid #ffc933;
+    /* 醒目的橙紅色粗線，代表 navBottomPosition */
+    z-index: 100;
 }
 
+/* 調整 sticky-nav-container 為 flex 容器，以容納按鈕和滾動區域 */
 .sticky-nav-container {
     max-width: 1200px;
     margin: 0 auto;
-    position: relative;
     padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    position: relative;
+    /* 確保子元素定位正確 */
 }
 
-.nav-tabs {
+/* 新增或修改此部分為滾動容器 */
+.nav-tabs-wrapper {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 0;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    flex-grow: 1;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding: 12px 0;
+    margin: 0 10px;
+    /* 為按鈕留出空間 */
 }
+
+/* 隱藏 Chrome/Safari/Opera 上的滾動條 */
+.nav-tabs-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* 原有的 .nav-tabs 可以移除，或者將其改名為 .nav-tabs-wrapper */
+/* 因為我這裡已經把 nav-tabs 改名為 nav-tabs-wrapper 了 */
+/* 並且將 justify-content: center 移除，因為按鈕會影響居中 */
+/* 如果你需要 nav-tab 本身依然居中，可以在 nav-tabs-wrapper 內部使用 padding 調整 */
+
 
 .nav-tab {
+    flex-shrink: 0;
+    /* 防止導航項被縮小 */
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 12px 24px;
-    color: var(--restaurant-primary-color, #ff6b35);
+    padding: 10px 20px;
+    margin-right: 8px;
+    /* 項目之間增加間距 */
+    color: #666;
     text-decoration: none;
     font-weight: 500;
-    font-size: 1rem;
+    font-size: 0.9rem;
     border-radius: 25px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
     white-space: nowrap;
-    position: relative;
-    z-index: 2;
-    background: transparent;
-    border: 2px solid transparent;
+    background: white;
+    border: 2px solid #eee;
+    min-width: fit-content;
 }
 
 .nav-tab:hover {
-    background: rgba(255, 107, 53, 0.1);
-    border-color: rgba(255, 107, 53, 0.2);
+    background: rgba(255, 186, 32, 0.1);
+    border-color: rgba(255, 186, 32, 0.3);
+    color: var(--restaurant-primary, #ffba20);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
 }
 
 .nav-tab.active {
-    background: var(--restaurant-primary-color, #ff6b35);
+    background: var(--restaurant-primary, #ffba20);
     color: white;
-    border-color: var(--restaurant-primary-color, #ff6b35);
+    border-color: var(--restaurant-primary, #ffba20);
     font-weight: 600;
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 4px 15px rgba(255, 186, 32, 0.3);
 }
 
 .tab-count {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     opacity: 0.8;
     font-weight: 400;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 6px;
+    border-radius: 12px;
 }
 
-.nav-tab.active .tab-count {
-    opacity: 1;
+.nav-tab:not(.active) .tab-count {
+    background: rgba(0, 0, 0, 0.1);
+    color: #666;
 }
 
-/* 滑塊效果 */
-.nav-slider {
-    position: absolute;
-    bottom: 8px;
-    height: 3px;
-    background: var(--restaurant-primary-color, #ff6b35);
-    border-radius: 2px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0;
-    z-index: 1;
+/* 滾動按鈕的樣式 */
+.scroll-button {
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    color: #555;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+    /* 防止按鈕被壓縮 */
+    position: relative;
+    /* 確保按鈕在正確位置 */
 }
 
-.sticky-nav--fixed .nav-slider {
-    bottom: 6px;
-    height: 4px;
-    background: linear-gradient(90deg,
-            var(--restaurant-primary-color, #ff6b35),
-            var(--restaurant-secondary-color, #f7931e));
+.scroll-button:hover {
+    background: #f0f0f0;
+    transform: scale(1.05);
+    border-color: #ccc;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* 菜單容器 */
-.menu-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 60px 20px;
+.scroll-button:active {
+    transform: scale(0.98);
 }
 
-/* 分類區域 */
+.scroll-button.hidden {
+    opacity: 0.3;
+    pointer-events: none;
+    /* 禁用點擊事件 */
+    cursor: not-allowed;
+}
+
+/* 調整 sticky-nav--fixed 狀態下的樣式 */
+.sticky-nav--fixed .sticky-nav-container {
+    padding: 0 20px;
+    /* 確保左右有足夠空間給按鈕 */
+}
+
+/* 移除固定時的 flex-wrap: nowrap 和 overflow-x: visible
+   因為 .nav-tabs-wrapper 已經處理了這些 */
+.sticky-nav--fixed .nav-tabs-wrapper {
+    justify-content: flex-start;
+    /* 保持內容左對齊 */
+    gap: 8px;
+    /* 保持間距，或根據需要調整 */
+    padding: 12px 0;
+    /* 確保有 padding */
+}
+
+.sticky-nav--fixed .nav-tab {
+    flex: none;
+    /* 移除 flex: 1，讓按鈕保持其內容寬度 */
+    max-width: none;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    margin-right: 0;
+    /* 移除額外的 margin */
+}
+
+/* 保持原有的 .menu-main, .category-section 等樣式 */
+.menu-main {
+    background: white;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    padding: 30px;
+}
+
+.sticky-nav--fixed+.menu-main,
+.sticky-nav--fixed~* .menu-main {
+    border-radius: 12px;
+    margin-top: 80px;
+}
+
 .category-section {
-    margin-bottom: 80px;
-    scroll-margin-top: 100px;
-    /* 為sticky導航預留空間 */
+    margin-bottom: 50px;
+    scroll-margin-top: 320px;
+}
+
+.category-section:last-child {
+    margin-bottom: 0;
 }
 
 .category-title {
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: 700;
-    color: var(--restaurant-primary-color, #ff6b35);
-    margin-bottom: 40px;
-    padding-bottom: 20px;
-    border-bottom: 3px solid rgba(255, 107, 53, 0.2);
-    position: relative;
+    color: #333;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid var(--restaurant-primary, #ffba20);
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
 
-.category-title::after {
-    content: '';
-    position: absolute;
-    bottom: -3px;
-    left: 0;
-    width: 60px;
-    height: 3px;
-    background: var(--restaurant-primary-color, #ff6b35);
-    border-radius: 2px;
+.category-count {
+    font-size: 1.2rem;
+    color: #666;
+    font-weight: 500;
 }
 
-/* 菜品網格 */
 .menu-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 30px;
-    margin-bottom: 40px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
 }
 
 .menu-item {
     background: white;
-    border-radius: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     overflow: hidden;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s ease;
     cursor: pointer;
+    border: 1px solid #eee;
     position: relative;
-    border: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.menu-item:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-    border-color: var(--restaurant-primary-color, #ff6b35);
-}
-
-.item-tags {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    z-index: 3;
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-}
-
-.item-tag {
-    background: var(--restaurant-primary-color, #ff6b35);
-    color: white;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
 }
 
 .item-image {
     position: relative;
-    height: 220px;
+    height: 200px;
     overflow: hidden;
 }
 
@@ -773,12 +832,31 @@ watch(activeCategory, () => {
     transform: scale(1.05);
 }
 
+.item-tags {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.item-tag {
+    background: var(--restaurant-primary, #ffba20);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .item-content {
-    padding: 25px;
+    padding: 20px;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    gap: 15px;
 }
 
 .item-info {
@@ -786,170 +864,111 @@ watch(activeCategory, () => {
 }
 
 .item-name {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     font-weight: 600;
     color: #333;
     margin-bottom: 8px;
-    line-height: 1.3;
 }
 
 .item-desc {
     color: #666;
-    font-size: 0.95rem;
-    line-height: 1.5;
     margin-bottom: 15px;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    line-height: 1.4;
+    font-size: 0.9rem;
 }
 
 .price-section {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .original-price {
+    text-decoration: line-through;
     color: #999;
     font-size: 0.9rem;
-    text-decoration: line-through;
 }
 
 .current-price {
-    color: var(--restaurant-primary-color, #ff6b35);
-    font-size: 1.2rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--restaurant-primary, #ffba20);
 }
 
 .item-actions {
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 10px;
+    margin-left: 15px;
 }
 
 .add-to-cart-btn {
     background: var(--restaurant-primary-color, #ff6b35);
     color: white;
-    width: 45px;
-    height: 45px;
+    padding: 10px;
     border-radius: 50%;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+    width: 40px;
+    height: 40px;
 }
 
 .add-to-cart-btn:hover {
-    background: var(--restaurant-secondary-color, #f7931e);
+    background: #e55a2b;
     transform: scale(1.1);
-    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.4);
 }
 
-/* 購物車浮動按鈕 */
-.cart-float-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: var(--restaurant-primary-color, #ff6b35);
-    color: white;
-    border-radius: 30px;
-    padding: 15px 25px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    cursor: pointer;
-    box-shadow: 0 8px 30px rgba(255, 107, 53, 0.4);
-    transition: all 0.3s ease;
-    z-index: 1000;
-}
 
-.cart-float-btn:hover {
-    background: var(--restaurant-secondary-color, #f7931e);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(255, 107, 53, 0.5);
-}
-
-.cart-icon {
-    position: relative;
-}
-
-.cart-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #e74c3c;
-    color: white;
-    border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.cart-total {
-    font-weight: 600;
-    font-size: 1.1rem;
-}
 
 .no-menu {
     text-align: center;
-    color: #999;
+    padding: 60px 20px;
+    color: #666;
     font-size: 1.2rem;
-    margin: 60px 0;
 }
 
 /* 響應式設計 */
 @media (max-width: 768px) {
-    .menu-hero-banner {
-        min-height: 60vh;
-        padding: 60px 15px 40px;
+    .sticky-nav--fixed {
+        top: 150px;
     }
 
-    .hero-title {
-        font-size: 2.8rem;
-        margin-bottom: 20px;
+    .category-section {
+        scroll-margin-top: 250px;
     }
 
-    .hero-description {
-        font-size: 1.2rem;
-        margin-bottom: 30px;
-    }
-
-    .hero-stats {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-    }
-
+    /* 在小螢幕下，導航按鈕和滾動容器的佈局保持一致 */
     .sticky-nav-container {
-        padding: 0 15px;
+        padding: 0 10px;
+        /* 減小左右 padding */
     }
 
-    .nav-tabs {
-        padding: 12px 0;
+    .scroll-button {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+
+    .nav-tabs-wrapper {
+        padding: 10px 0;
         gap: 6px;
     }
 
     .nav-tab {
-        padding: 10px 16px;
-        font-size: 0.9rem;
+        padding: 8px 16px;
+        font-size: 0.85rem;
     }
 
     .menu-container {
-        padding: 40px 15px;
+        padding: 0 15px;
+        margin-top: 15px;
     }
 
-    .category-title {
-        font-size: 2rem;
-        margin-bottom: 30px;
+    .menu-main {
+        padding: 20px;
     }
 
     .menu-grid {
@@ -957,70 +976,45 @@ watch(activeCategory, () => {
         gap: 20px;
     }
 
-    .cart-float-btn {
-        bottom: 20px;
-        right: 15px;
-        padding: 12px 20px;
-        gap: 12px;
+    .category-title {
+        font-size: 1.5rem;
     }
+
+
 }
 
 @media (max-width: 480px) {
-    .menu-hero-banner {
-        min-height: 50vh;
-        padding: 40px 10px 30px;
+    .sticky-nav--fixed {
+        top: 120px;
     }
 
-    .hero-title {
-        font-size: 2.2rem;
-        letter-spacing: 1px;
+    .category-section {
+        scroll-margin-top: 200px;
     }
 
-    .hero-description {
-        font-size: 1rem;
-        margin-bottom: 25px;
+    .sticky-nav-container {
+        padding: 0 5px;
+        /* 進一步減小左右 padding */
     }
 
-    .nav-tabs {
+    .scroll-button {
+        width: 28px;
+        height: 28px;
+        font-size: 0.8rem;
+    }
+
+    .nav-tabs-wrapper {
         gap: 4px;
-        padding: 10px 0;
+        padding: 8px 0;
     }
 
     .nav-tab {
-        padding: 8px 12px;
-        font-size: 0.85rem;
+        padding: 6px 12px;
+        font-size: 0.8rem;
     }
 
     .tab-count {
-        font-size: 0.75rem;
+        font-size: 0.7rem;
     }
-
-    .menu-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-
-    .menu-item {
-        border-radius: 15px;
-    }
-
-    .item-content {
-        padding: 20px;
-    }
-
-    .item-name {
-        font-size: 1.2rem;
-    }
-
-    .category-title {
-        font-size: 1.8rem;
-    }
-}
-
-/* CSS變數定義 */
-:root {
-    --restaurant-primary-color: #ff6b35;
-    --restaurant-secondary-color: #f7931e;
-    --restaurant-primary-rgb: 255, 107, 53;
 }
 </style>

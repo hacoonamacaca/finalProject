@@ -1,0 +1,69 @@
+package tw.com.ispan.eeit.model.entity;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.enums.ReservationStatus;
+
+@Entity
+@Table(name = "reservation")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+
+public class ReservationBean {
+    @ManyToMany
+    @JoinTable(name = "reservation_tables", joinColumns = @JoinColumn(name = "reservation_id"), inverseJoinColumns = @JoinColumn(name = "tables_id"))
+    private Set<TableBean> tables = new HashSet<>();
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
+
+    @Column(name = "store_id", nullable = false)
+    private Integer storeId;
+
+    @Column(name = "reserved_date", nullable = false)
+    private LocalDate reservedDate;
+
+    @Column(name = "reserved_time", nullable = false)
+    private LocalDateTime reservedTime;
+
+    @Column(name = "guests", nullable = false)
+    private Integer guests;
+
+    @Column(name = "duration", nullable = false)
+    private Integer duration;
+
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private ReservationStatus status;
+
+    @Column(name = "content", length = 50)
+    private String content;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+}

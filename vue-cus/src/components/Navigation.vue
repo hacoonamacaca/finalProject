@@ -53,7 +53,7 @@
 
         <!-- 購物車按鈕 -->
         <div class="nav-item">
-          <button class="btn position-relative" style="background: transparent; border: none;" @click="goToCart"
+          <button class="btn position-relative" style="background: transparent; border: none;" @click="showCart"
             title="購物車">
             <i class="bi bi-cart4 text-white"></i>
             <!-- <span v-if="cartCount > 0"
@@ -65,7 +65,14 @@
       </div>
     </div>
   </header>
+
+  <!-- 購物車模態框 -->
+  <CartModal v-if="isCartVisible" :cartByRestaurant="cartByRestaurant" :totalAmount="totalAmount" @close="hideCart"
+    @update-quantity="updateQuantity" @remove-item="removeItem" @checkout-restaurant="handleCheckoutRestaurant"
+    @checkout-all="handleCheckoutAll" @clear-restaurant="clearRestaurant" />
   <section class="popout" v-if="showPopout">
+
+
     <div class="popout-content">
       <button class="close-btn" @click="showPopout = false">✕</button>
       <input type="text" placeholder="輸入您的地址" @focus="address = ''" v-model="address" />
@@ -78,7 +85,12 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
-import NotificationList from '@/components/Yifan/NotificationList.vue'
+import NotificationList from '@/components/Yifan/NotificationList.vue';
+import CartModal from '@/components/KTlu/CartModal.vue';
+import { useCartStore } from '@/stores/cart';
+
+// 購物車 store
+const cartStore = useCartStore();
 
 const isLoggedIn = ref(true); // 根據實際登入狀態設定
 const isMenuOpen = ref(false);
@@ -90,6 +102,38 @@ const address = ref(route.query.address || '');
 const coordinates = ref(null);
 const loading = ref(false);
 const error = ref('');
+
+// 購物車相關的計算屬性和方法
+const cartCount = computed(() => cartStore.cartCount);
+const cartByRestaurant = computed(() => cartStore.cartByRestaurant);
+const totalAmount = computed(() => cartStore.totalAmount);
+const isCartVisible = computed(() => cartStore.isCartVisible);
+
+const showCart = () => cartStore.showCart();
+const hideCart = () => cartStore.hideCart();
+const updateQuantity = (itemId, newQuantity, restaurantId) => cartStore.updateQuantity(itemId, newQuantity, restaurantId);
+const removeItem = (itemId, restaurantId) => cartStore.removeItem(itemId, restaurantId);
+const clearRestaurant = (restaurantId) => cartStore.clearRestaurantCart(restaurantId);
+
+const handleCheckoutRestaurant = (restaurantId) => {
+  const orderData = cartStore.checkoutSingleRestaurant(restaurantId);
+  if (orderData) {
+    console.log('單一餐廳結帳：', orderData);
+    cartStore.hideCart();
+    // 可以導航到結帳頁面
+    // router.push('/checkout', { state: { orderData } });
+  }
+};
+
+const handleCheckoutAll = () => {
+  const orders = cartStore.checkoutAllRestaurants();
+  if (orders.length > 0) {
+    console.log('全部餐廳結帳：', orders);
+    cartStore.hideCart();
+    // 可以導航到結帳頁面
+    // router.push('/checkout', { state: { orders } });
+  }
+};
 
 // 控制漢堡選單
 const toggleMenu = () => {

@@ -51,7 +51,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import RestaurantBanner from './RestaurantBanner.vue'
 import RestaurantInfo from './RestaurantInfo.vue'
 import RestaurantMenu from './RestaurantMenu.vue'
@@ -78,6 +78,11 @@ const handleCheckout = (orderData) => {
     // 例如：跳轉到支付頁面、顯示結帳表單等
     alert(`訂單總計：NT$${orderData.totalAmount}\n正在處理訂單...`)
 }
+
+// 生命周期
+onMounted(() => {
+    console.log('🏪 RestaurantTemplate 已載入')
+})
 </script>
 
 <style scoped>
