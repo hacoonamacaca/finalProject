@@ -78,20 +78,14 @@
             </main>
         </div>
 
-        <div class="cart-float-btn" v-if="totalCartQuantity > 0" @click="toggleCartVisibility">
-            <div class="cart-icon">
-                <i class="pi pi-shopping-cart"></i>
-                <span class="cart-badge">{{ totalCartQuantity }}</span>
-            </div>
-            <div class="cart-total">NT${{ totalCartAmount }}</div>
-        </div>
+
 
         <ItemDetailModal v-if="showItemDetail" :item="selectedItem" :show="showItemDetail" @close="closeItemDetail"
             @add-to-cart="handleAddToCart" />
 
-        <CartModal v-if="isCartVisible" :cart-items="cartItems" :total-amount="totalCartAmount"
-            @close="toggleCartVisibility" @update-quantity="updateCartItemQuantity" @remove-item="removeCartItem"
-            @checkout="checkout" />
+        <!-- <CartModal v-if="cartStore.isCartVisible" :cartItems="cartStore.cartItems" :totalAmount="cartStore.totalAmount"
+            @close="cartStore.hideCart" @update-quantity="updateCartItemQuantity" @remove-item="removeCartItem"
+            @checkout="checkout" /> -->
     </div>
 </template>
 
@@ -99,6 +93,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import ItemDetailModal from './ItemDetailModal.vue'
 import CartModal from './CartModal.vue'
+import { useCartStore } from '@/stores/cart'
 import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
@@ -110,11 +105,12 @@ const props = defineProps({
 
 const emit = defineEmits(['checkout'])
 
+// 購物車 store
+const cartStore = useCartStore()
+
 // 基本狀態
 const selectedItem = ref(null)
 const showItemDetail = ref(false)
-const cartItems = ref([])
-const isCartVisible = ref(false)
 
 // 導航狀態
 const activeCategory = ref('人氣精選') // 初始設為第一個分類
@@ -182,13 +178,7 @@ const hasMenuItems = computed(() => {
     return items.value.length > 0
 })
 
-const totalCartQuantity = computed(() => {
-    return cartItems.value.reduce((sum, item) => sum + item.quantity, 0)
-})
 
-const totalCartAmount = computed(() => {
-    return cartItems.value.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-})
 
 const allItemsCount = computed(() => {
     return items.value.length
@@ -222,57 +212,34 @@ const quickAddToCart = (item) => {
 }
 
 const handleAddToCart = (itemToAdd) => {
-    const existingItemIndex = cartItems.value.findIndex(item => item.id === itemToAdd.id)
-
-    if (existingItemIndex > -1) {
-        cartItems.value[existingItemIndex].quantity += itemToAdd.quantity
-    } else {
-        cartItems.value.push({ ...itemToAdd })
-    }
+    cartStore.addToCart(itemToAdd, props.restaurant)
 
     if (showItemDetail.value) {
         closeItemDetail()
     }
 
-    setTimeout(() => {
-        isCartVisible.value = true
-    }, 300)
+    // 只在購物車未開啟時才開啟
+    if (!cartStore.isCartVisible) {
+        cartStore.showCart()
+    }
 }
 
 const updateCartItemQuantity = (itemId, newQuantity) => {
-    if (newQuantity <= 0) {
-        removeCartItem(itemId)
-        return
-    }
-
-    const itemIndex = cartItems.value.findIndex(item => item.id === itemId)
-    if (itemIndex > -1) {
-        cartItems.value[itemIndex].quantity = newQuantity
-    }
+    cartStore.updateQuantity(itemId, newQuantity, props.restaurant.id)
 }
 
 const removeCartItem = (itemId) => {
-    cartItems.value = cartItems.value.filter(item => item.id !== itemId)
+    cartStore.removeItem(itemId, props.restaurant.id)
 }
 
-const toggleCartVisibility = () => {
-    isCartVisible.value = !isCartVisible.value
-}
+
 
 const checkout = () => {
-    const orderData = {
-        restaurant: {
-            id: props.restaurant.id,
-            name: props.restaurant.name
-        },
-        items: cartItems.value,
-        totalAmount: totalCartAmount.value,
-        orderTime: new Date().toISOString()
+    const orderData = cartStore.checkoutSingleRestaurant(props.restaurant.id)
+    if (orderData) {
+        emit('checkout', orderData)
+        cartStore.hideCart()
     }
-
-    emit('checkout', orderData)
-    cartItems.value = []
-    isCartVisible.value = false
 }
 
 // 滾動方法
@@ -954,54 +921,7 @@ onUnmounted(() => {
     transform: scale(1.1);
 }
 
-.cart-float-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background: var(--restaurant-primary-color, #ff6b35);
-    color: white;
-    border-radius: 50px;
-    padding: 15px 25px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
-    z-index: 1000;
-}
 
-.cart-float-btn:hover {
-    background: #e55a2b;
-    transform: scale(1.05);
-}
-
-.cart-icon {
-    position: relative;
-    font-size: 1.2rem;
-}
-
-.cart-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #ff4444;
-    color: white;
-    border-radius: 50%;
-    padding: 2px 6px;
-    font-size: 0.7rem;
-    font-weight: 600;
-    min-width: 18px;
-    height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.cart-total {
-    font-weight: 600;
-    font-size: 1.1rem;
-}
 
 .no-menu {
     text-align: center;
@@ -1060,11 +980,7 @@ onUnmounted(() => {
         font-size: 1.5rem;
     }
 
-    .cart-float-btn {
-        bottom: 20px;
-        right: 20px;
-        padding: 12px 20px;
-    }
+
 }
 
 @media (max-width: 480px) {

@@ -11,6 +11,7 @@ import Search from "@/views/Jimmy/Search.vue"
 import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
 import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
+import CartTest from '@/views/CartTest.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
@@ -53,6 +54,11 @@ const routes = [{
         path: '/Checkout',
         name: 'CheckoutCoupon',
         component: CheckoutCoupon
+    },
+    {
+        path: '/cart-test',
+        name: 'CartTest',
+        component: CartTest
     },
     {
         path: '/',
