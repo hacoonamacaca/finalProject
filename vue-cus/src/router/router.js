@@ -19,6 +19,7 @@ import EditUser from '@/views/Ivy/Edituser.vue'
 import {
     getRestaurantById
 } from "@/data/restaurants.js"
+import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
 
 const routes = [{
         path: "/",
@@ -97,6 +98,11 @@ const routes = [{
         path: '/profile',
         name: 'EditUser',
         component: EditUser
+    },
+    {
+        path: '/reservation-records',
+        name: 'ReservationRecords',
+        component: ReservationRecords
     },
 ];
 
