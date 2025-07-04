@@ -6,27 +6,24 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="open_hour")
-@Getter
-@Setter
+@Table(name = "open_hour")
+@Data
+@NoArgsConstructor
 public class OpenHourBean {
 	@Id
-	@Column(name="id")
-	private Integer  id	;
-	@Column(name="store_id")
-	private Integer storeId; 	 
-	@Column(name="day")
+	@Column(name = "id")
+	private Integer id;
+	@Column(name = "store_id")
+	private Integer storeId;
+	@Column(name = "day")
 	private Integer day;
-	@Column(name="open_time",columnDefinition = "TIME(0)")
-	private LocalTime  openTime;
-	@Column(name="close_time" ,columnDefinition = "TIME(0)")
+	@Column(name = "open_time", columnDefinition = "TIME(0)")
+	private LocalTime openTime;
+	@Column(name = "close_time", columnDefinition = "TIME(0)")
 	private LocalTime close_time;
-	
-	
-	
-	
+
 }

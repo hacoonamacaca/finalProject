@@ -7,30 +7,27 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
 @Entity
-@Table(name="special_hours")
+@Table(name = "special_hours")
+@NoArgsConstructor
 public class SpecialHoursBean {
-	
+
 	@Id
-	@Column(name="id")
+	@Column(name = "id")
 	private Integer id;
-	@Column(name="store_id")
-	private Integer storeId ;
-	@Column(name="date")
+	@Column(name = "store_id")
+	private Integer storeId;
+	@Column(name = "date")
 	private Date date;
-	@Column(name="open_time",columnDefinition = "Time(0)")
+	@Column(name = "open_time", columnDefinition = "Time(0)")
 	private LocalTime openTime;
-	@Column(name="close_time",columnDefinition = "Time(0)")
+	@Column(name = "close_time", columnDefinition = "Time(0)")
 	private LocalTime closeTime;
-	@Column(name="is_close")
+	@Column(name = "is_close")
 	private Boolean isClose;
-	
-	
-	
-	
+
 }
