@@ -1,10 +1,8 @@
 package tw.com.ispan.eeit.controller.comment;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.entity.comment.CommentBean;
-import tw.com.ispan.eeit.repository.comment.CommentService;
+import tw.com.ispan.eeit.service.comment.CommentService;
 
 @RestController
 @RequestMapping("/comment")
@@ -27,81 +25,42 @@ public class CommentController {
 
     // 創建評論
     @PostMapping
-    public ResponseEntity<CommentBean> create(@RequestBody CommentBean commentBean) {
-        try {
-            CommentBean savedComment = commentService.create(commentBean);
-            return new ResponseEntity<>(savedComment, HttpStatus.CREATED);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity<CommentBean> createComment(@RequestBody CommentBean comment) {
+        CommentBean savedComment = commentService.createComment(comment);
+        return ResponseEntity.ok(savedComment);
+    }
+
+    // 根據 ID 查找評論
+    @GetMapping("/{id}")
+    public ResponseEntity<CommentBean> getCommentById(@PathVariable Integer id) {
+        return commentService.findCommentById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 查找所有評論
+    @GetMapping
+    public ResponseEntity<List<CommentBean>> getAllComments() {
+        List<CommentBean> comments = commentService.findAll();
+        return ResponseEntity.ok(comments);
     }
 
     // 更新評論
     @PutMapping("/{id}")
-    public ResponseEntity<CommentBean> update(@PathVariable Integer id, @RequestBody CommentBean commentBean) {
-        try {
-            CommentBean updatedComment = commentService.update(id, commentBean);
-            return new ResponseEntity<>(updatedComment, HttpStatus.OK);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
+    public ResponseEntity<CommentBean> updateComment(@PathVariable Integer id, @RequestBody CommentBean comment) {
+        return commentService.updateComment(id, comment)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    // 根據 ID 查詢評論
-    @GetMapping("/{id}")
-    public ResponseEntity<CommentBean> getById(@PathVariable Integer id) {
-        Optional<CommentBean> comment = commentService.findById(id);
-        if (comment.isPresent()) {
-            return new ResponseEntity<>(comment.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // 查詢所有評論
-    @GetMapping
-    public ResponseEntity<List<CommentBean>> getAll() {
-        List<CommentBean> comments = commentService.findAll();
-        return new ResponseEntity<>(comments, HttpStatus.OK);
-    }
-
-    // 根據 orderId 查詢評論
-    @GetMapping("/order/{orderId}")
-    public ResponseEntity<List<CommentBean>> getByOrderId(@PathVariable Integer orderId) {
-        List<CommentBean> comments = commentService.findByOrderId(orderId);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
-    }
-
-    // 根據 userId 查詢評論
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<CommentBean>> getByUserId(@PathVariable Integer userId) {
-        List<CommentBean> comments = commentService.findByUserId(userId);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
-    }
-
-    // 根據 storeId 查詢評論
-    @GetMapping("/store/{storeId}")
-    public ResponseEntity<List<CommentBean>> getByStoreId(@PathVariable Integer storeId) {
-        List<CommentBean> comments = commentService.findByStoreId(storeId);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
-    }
-
-    // 根據 isHidden 查詢評論
-    @GetMapping("/hidden/{isHidden}")
-    public ResponseEntity<List<CommentBean>> getByIsHidden(@PathVariable Boolean isHidden) {
-        List<CommentBean> comments = commentService.findByIsHidden(isHidden);
-        return new ResponseEntity<>(comments, HttpStatus.OK);
-    }
-
-    // 刪除評論
+    // 刪除評論（邏輯刪除）
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteComment(@PathVariable Integer id) {
         try {
             commentService.deleteById(id);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
-
 }
