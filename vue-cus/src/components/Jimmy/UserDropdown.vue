@@ -140,17 +140,17 @@ onUnmounted(() => {
 }
 
 /* 游標滑到下拉式選單圖示會變色 */
-.dropdown-menu li:hover i {
+/* .dropdown-menu li:hover i {
 <<<<<<< HEAD
 =======
 <<<<<<< HEAD
 =======
 >>>>>>> main
   color: #ffba20;
-}
+} */
 
 /* 預設為黃色文字 */
-.dropdown-menu li:last-child {
+/* .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
 <<<<<<< HEAD
 =======
@@ -158,33 +158,33 @@ onUnmounted(() => {
 >>>>>>> main
   color: #ffba20;
   font-weight: 500;
-}
+} */
 
-<<<<<<< HEAD
+/* <<<<<<< HEAD
 =======
-<<<<<<< HEAD
+<<<<<<< HEAD */
 /* 預設為黃色文字 */
-.dropdown-menu li:last-child {
+/* .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
   background-color: #ffba20;
   color: #ffba20;
   /* 疑問 */
-  font-weight: 500;
-}
+  /* font-weight: 500;
+} */
 
-=======
+/* =======
 >>>>>>> yifan
->>>>>>> main
+>>>>>>> main */
 /* 滑鼠移上去時反轉背景與文字顏色 */
 .dropdown-menu li:last-child:hover {
   color: #5c3202;
 }
-<<<<<<< HEAD
+/* <<<<<<< HEAD
 =======
 <<<<<<< HEAD
-=======
+======= */
 
-
+/* 
 >>>>>>> yifan
->>>>>>> main
+>>>>>>> main */
 </style>
