@@ -16,6 +16,7 @@ import {
 } from "@/restaurant-module"
 import EditUser from '@/views/Ivy/EditUser.vue'
 import WebRecom from "@/views/Jimmy/WebRecom.vue"
+import ReportType from "@/views/Jimmy/ReportType.vue"
 
 
 const routes = [
@@ -82,6 +83,11 @@ const routes = [
         path: '/WebRecom',
         name: 'WebRecom',
         component: WebRecom
+    },
+    {
+        path: '/ReportType',
+        name: 'ReportType',
+        component: ReportType
     },
 ];
 

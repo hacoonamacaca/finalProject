@@ -22,12 +22,22 @@
     <table class="table table-striped">
         <thead>
         <tr>           
+            <th><button @click="saveSortOrder" class="p-button-success mt-2">確認排序</button></th>
             <th>標籤名稱</th>
             <th>操作</th>
         </tr>
         </thead>
         <tbody>
-        <tr v-for="tag in tags" :key="tag.id">            
+        <tr
+            v-for="tag in displayedTags"
+            :key="tag.id"
+            draggable="true"
+            @dragstart="onDragStart(tag)"
+            @dragover.prevent
+            @drop="onDrop(tag)"
+            @dragenter.prevent
+        >            
+            <td>{{ tag.prime }}</td>
             <td>{{ tag.tag }}</td>
             <td>
             <Button icon="pi pi-pencil" class="p-button-rounded p-button-warning mr-2" @click="editTag(tag)" />
@@ -41,79 +51,126 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 import InputText from 'primevue/inputtext';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 
 // API 基礎 URL
-const API_URL = 'http://localhost:8080/api/web-recom';
+const API_URL = import.meta.env.VITE_RECOM_URL;
 
 // 狀態管理
 const tags = ref([]);
 const newTag = ref({ tag: '' });
 const editMode = ref(false);
 const errorMessage = ref('');
+const draggedTag = ref(null);
+const tempOrder = ref([]);
+
+// 計算顯示的標籤（根據 tempOrder 或原始 tags 排序）
+const displayedTags = computed(() => {
+    if (tempOrder.value.length > 0) {
+        return tempOrder.value;
+    }
+    return tags.value.sort((a, b) => a.prime - b.prime);
+});
 
 // 獲取所有標籤
 const fetchTags = async () => {
-try {
-    const response = await axios.get(API_URL);
-    tags.value = response.data;
-} catch (error) {
-    errorMessage.value = '無法獲取標籤列表：' + error.message;
-}
+    try {
+        const response = await axios.get(API_URL);
+        tags.value = response.data;
+        tempOrder.value = []; // 重置臨時排序
+    } catch (error) {
+        errorMessage.value = '無法獲取標籤列表：' + error.message;
+    }
+};
+
+// 拖曳開始
+const onDragStart = (tag) => {
+    draggedTag.value = tag;
+    if (tempOrder.value.length === 0) {
+        tempOrder.value = [...tags.value].sort((a, b) => a.prime - b.prime);
+    }
+};
+
+// 拖曳放置
+const onDrop = (dropTag) => {
+    if (!draggedTag.value) return;
+    const fromIndex = tempOrder.value.findIndex(t => t.id === draggedTag.value.id);
+    const toIndex = tempOrder.value.findIndex(t => t.id === dropTag.id);
+    const newOrder = [...tempOrder.value];
+    newOrder.splice(fromIndex, 1);
+    newOrder.splice(toIndex, 0, draggedTag.value);
+    tempOrder.value = newOrder;
+    draggedTag.value = null;
+};
+
+// 保存排序
+const saveSortOrder = async () => {
+    try {
+        const updatedTags = tempOrder.value.map((tag, index) => ({
+            ...tag,
+            prime: index + 1
+        }));
+        await axios.post(`${API_URL}/batch-update`, updatedTags);
+        tags.value = updatedTags;
+        tempOrder.value = [];
+        errorMessage.value = '排序已保存';
+    } catch (error) {
+        errorMessage.value = `保存排序失敗：${error.response?.data?.message || error.message}`;
+    }
 };
 
 // 新增或更新標籤
 const saveTag = async () => {
-try {
-    if (editMode.value) {
-    // 更新標籤
-    await axios.put(`${API_URL}/${newTag.value.id}`, newTag.value);
-    } else {
-    // 新增標籤
-    await axios.post(API_URL, newTag.value);
+    try {
+        if (editMode.value) {
+            await axios.put(`${API_URL}/${newTag.value.id}`, newTag.value);
+        } else {
+            const maxPrime = Math.max(...tags.value.map(t => t.prime || 0), 0);
+            await axios.post(API_URL, { ...newTag.value, prime: maxPrime + 1 });
+        }
+        newTag.value = { tag: '' };
+        editMode.value = false;
+        await fetchTags();
+        errorMessage.value = '';
+    } catch (error) {
+        errorMessage.value = `操作失敗：${error.response?.data?.message || error.message}`;
     }
-    newTag.value = { tag: '' };
-    editMode.value = false;
-    await fetchTags();
-    errorMessage.value = '';
-} catch (error) {
-    errorMessage.value = `操作失敗：${error.response?.data?.message || error.message}`;
-}
 };
 
 // 編輯標籤
 const editTag = (tag) => {
-newTag.value = { ...tag };
-editMode.value = true;
+    newTag.value = { ...tag };
+    editMode.value = true;
 };
 
 // 取消編輯
 const cancelEdit = () => {
-newTag.value = { tag: '' };
-editMode.value = false;
-errorMessage.value = '';
+    newTag.value = { tag: '' };
+    editMode.value = false;
+    errorMessage.value = '';
 };
 
 // 刪除標籤
 const deleteTag = async (id) => {
-if (confirm('確定要刪除此標籤嗎？')) {
-    try {
-    await axios.delete(`${API_URL}/${id}`);
-    await fetchTags();
-    errorMessage.value = '';
-    } catch (error) {
-    errorMessage.value = `刪除失敗：${error.response?.data?.message || error.message}`;
+    if (confirm('確定要刪除此標籤嗎？')) {
+        try {
+            await axios.delete(`${API_URL}/${id}`);
+            await fetchTags();
+            errorMessage.value = '';
+        } catch (error) {
+            errorMessage.value = `刪除失敗：${error.response?.data?.message || error.message}`;
+        }
     }
-}
 };
 
 // 頁面加載時獲取標籤
 onMounted(fetchTags);
 </script>
+
 
 <style scoped>
 .table {

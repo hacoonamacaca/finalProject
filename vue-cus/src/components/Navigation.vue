@@ -56,10 +56,10 @@
           <button class="btn position-relative" style="background: transparent; border: none;" @click="goToCart"
             title="購物車">
             <i class="bi bi-cart4 text-white"></i>
-            <span v-if="cartCount > 0"
+            <!-- <span v-if="cartCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
               {{ cartCount }}
-            </span>
+            </span> -->
           </button>
         </div>
       </div>
@@ -259,7 +259,7 @@ const getLogin = () => {
 .navbar {
   background-color: #ffba20;
   color: white;
-  padding: 15px 20px;
+  padding: 5px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;

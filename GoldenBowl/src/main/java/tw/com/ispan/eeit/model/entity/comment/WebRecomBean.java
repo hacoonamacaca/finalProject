@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-
 @Table(name = "web_recom")
 @Data
 @NoArgsConstructor
@@ -23,4 +22,7 @@ public class WebRecomBean {
 
     @Column(name = "tag")
     private String tag;
+
+    @Column(name = "prime")
+    private Integer prime;
 }

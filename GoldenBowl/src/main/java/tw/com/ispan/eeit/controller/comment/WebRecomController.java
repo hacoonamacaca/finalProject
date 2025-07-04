@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.controller.comment;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -76,6 +77,19 @@ public class WebRecomController {
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    // 批量更新
+    @PostMapping("/batch-update")
+    public ResponseEntity<List<WebRecomBean>> batchUpdate(@RequestBody List<WebRecomBean> webRecomBeans) {
+        try {
+            List<WebRecomBean> updatedBeans = webRecomBeans.stream()
+                    .map(bean -> webRecomService.update(bean.getId(), bean))
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(updatedBeans);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
 }

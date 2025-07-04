@@ -23,4 +23,7 @@ public class ReportTypeBean {
 
     @Column(length = 100)
     private String description;
+
+    @Column(name = "prime")
+    private Integer prime;
 }
