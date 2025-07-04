@@ -1,10 +1,11 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'; // 導入 onMounted 函數
 import { apiService } from '../services/apiService.js'; // 導入 API 服務
-import MenuOverview from '../components/menu/MenuOverview.vue';
+import PageHeader from '../components/common/PageHeader.vue';
 import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';
 import EditItemModal from '../components/menu/EditItemModal.vue';
 import EditSpecModal from '../components/menu/EditSpecModal.vue';
+import MenuOverview from '../components/menu/MenuOverview.vue';
 
 // --- 響應式狀態 (State) ---
 
@@ -195,20 +196,17 @@ const handleDeleteItem = (itemId) => {
 
 <template>
     <div>
-        <div
-            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <div class="d-flex align-items-center">
-                <h2 class="h3 mb-0">菜單管理</h2> <!-- mb-0 移除 h3 預設的下邊距 -->                
-                <select class="form-select ms-3" v-model="selectedStore" style="width: auto; min-width: 180px;"> <!-- 切換店鋪下拉選單 -->
+        <!-- 使用新的公版 PageHeader 組件 -->
+        <PageHeader title="菜單管理">
+            <!-- 這是要 "塞" 進插槽的內容 -->
+            <template #actions>
+                <select class="form-select" v-model="selectedStore" style="width: auto; min-width: 180px;">  <!-- 切換店鋪下拉選單 -->
                     <option v-for="store in stores" :key="store.id" :value="store.id">
                         {{ store.name }}
                     </option>
-                </select>                
-            </div>
-            <div>
-            <!-- 未來的功能按鈕可以放這裡 -->
-            </div>
-        </div>
+                </select>
+            </template>
+        </PageHeader>
 
         <!-- 在列表區域的外面，加上 loading 和 error 的判斷 -->
         <div v-if="isLoading" class="text-center p-5">
