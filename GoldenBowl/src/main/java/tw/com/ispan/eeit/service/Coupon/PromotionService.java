@@ -67,6 +67,7 @@ public class PromotionService {
         p.setUserUsageLimit(newData.getUserUsageLimit());
         p.setStatus(newData.getStatus());
         p.setUpdatedTime(LocalDateTime.now());
+        p.setCreatedTime(null);
 
 	//儲存修改後的優惠券（會自動變成 UPDATE 語法）
         return promotionRepository.save(p);
