@@ -8,17 +8,19 @@ import Search from "@/views/Jimmy/Search.vue"
 import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
 import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
+import CartTest from '@/views/CartTest.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
+import EditUser from '@/views/Ivy/EditUser.vue'
 import {
     getRestaurantById
-} from "@/restaurant-module"
-import EditUser from '@/views/Ivy/EditUser.vue'
+} from "@/data/restaurants.js"
+import WebRecom from "@/views/Jimmy/WebRecom.vue"
+import ReportType from "@/views/Jimmy/ReportType.vue"
+import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
 
-
-const routes = [
-    {
+const routes = [{
         path: "/",
         component: Home,
         name: "home-link"
@@ -53,15 +55,30 @@ const routes = [
         name: 'CheckoutCoupon',
         component: CheckoutCoupon
     },
-    { path: '/', component: Home },
-    { path: '/register', component: Register },
-    { path: '/verify-pending', component: VerifyPending },
-    { path: '/register-profile', component: RegisterProfile },
+    {
+        path: '/cart-test',
+        name: 'CartTest',
+        component: CartTest
+    },
+    {   
+        path: '/register', 
+        component: Register 
+    },
+    {   
+        path: '/verify-pending', 
+        component: VerifyPending 
+    },
+    {   
+        path: '/register-profile', 
+        component: RegisterProfile 
+    },
     {
         path: '/resetPasswordEmail',
         name: 'ResetPasswordEmail',
         component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
-        props: router => ({ email: router.query.email })
+        props: router => ({ 
+            email: router.query.email 
+        })
     },
     {
         // 餐廳頁面路由
@@ -76,6 +93,21 @@ const routes = [
         path: '/profile',
         name: 'EditUser',
         component: EditUser
+    },
+    {
+        path: '/WebRecom',
+        name: 'WebRecom',
+        component: WebRecom
+    },
+    {
+        path: '/ReportType',
+        name: 'ReportType',
+        component: ReportType
+    },
+        {
+        path: '/reservation-records',
+        name: 'ReservationRecords',
+        component: ReservationRecords
     },
 ];
 
