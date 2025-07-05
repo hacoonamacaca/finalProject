@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.model.entity.promotion;
+package tw.com.ispan.eeit.model.entity.plan;
 
 import java.time.LocalDateTime;
 

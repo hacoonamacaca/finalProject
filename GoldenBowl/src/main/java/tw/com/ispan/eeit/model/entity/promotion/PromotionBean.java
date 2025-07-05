@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.food.TagBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
+import tw.com.ispan.eeit.model.entity.plan.PlanBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 @Data

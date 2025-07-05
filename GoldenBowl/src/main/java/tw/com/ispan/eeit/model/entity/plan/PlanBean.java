@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.model.entity.promotion;
+package tw.com.ispan.eeit.model.entity.plan;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -12,6 +12,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 
 @Data
 @NoArgsConstructor

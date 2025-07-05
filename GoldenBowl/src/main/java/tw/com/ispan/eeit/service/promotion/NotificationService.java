@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.service.Coupon;
+package tw.com.ispan.eeit.service.promotion;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import tw.com.ispan.eeit.model.entity.promotion.NotificationBean;
-import tw.com.ispan.eeit.repository.Coupon.NotificationRepository;
+import tw.com.ispan.eeit.repository.promotion.NotificationRepository;
 
 @Service
 public class NotificationService {
@@ -25,6 +25,12 @@ public class NotificationService {
 	//查詢某使用者的所有通知
 	public List<NotificationBean> findByUserId(Integer userId){
 		return notificationRepository.findByUserId(userId);
+	}
+	
+	// 查詢單筆通知
+	public NotificationBean findById(Integer id) {
+	    Optional<NotificationBean> optional = notificationRepository.findById(id);
+	    return optional.orElse(null); // 如果沒找到就回傳 null
 	}
 	
 	//新增一筆通知
