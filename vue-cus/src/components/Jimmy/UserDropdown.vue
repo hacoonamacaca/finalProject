@@ -154,11 +154,11 @@ onUnmounted(() => {
 } */
 
 /* 預設為黃色文字 */
-/* .dropdown-menu li:last-child {
+.dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
   color: #ffba20;
   font-weight: 500;
-} */
+}
 
 /* 滑鼠移上去時反轉背景與文字顏色 */
 .dropdown-menu li:last-child:hover {
