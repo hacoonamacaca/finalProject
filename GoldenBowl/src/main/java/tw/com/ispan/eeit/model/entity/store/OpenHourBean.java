@@ -21,7 +21,7 @@ public class OpenHourBean {
 	private Integer storeId;
 	@Column(name = "day")
 	private Integer day;
-	@Column(name = "open_time", columnDefinition = "TIME(0)")
+	@Column(name = "open_time", columnDefinition = "TIME(0)" )
 	private LocalTime openTime;
 	@Column(name = "close_time", columnDefinition = "TIME(0)")
 	private LocalTime close_time;
