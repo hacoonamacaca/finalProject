@@ -35,9 +35,23 @@ import { ref } from 'vue'
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'submit', 'back'])
 
-const email = ref('eattiy0715@gmail.com') // 測試用預設
-function onSubmit() {
-emit('submit', email.value)
+const email = ref('eattiy@msn.com') // 測試用預設
+
+async function onSubmit() {
+    // 呼叫後端API寄送驗證信
+    const res = await fetch('/api/send-verify-email', {
+        method: 'POST',
+        headers: {
+            'Content-Type':'application/x-www-form-urlencoded'
+        },
+        body: new URLSearchParams({
+            email: email.value })
+    })
+    const text = await res.text();
+    // 顯示回傳訊息(可改UI)
+    alert(text)
+    // 通知外層可進到下一步
+    emit('submit', email.value)   
 }
 </script>
 

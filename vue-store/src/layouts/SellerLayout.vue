@@ -119,6 +119,8 @@ import avataUrl from '../assets/avata.png';
     border-right: 1px solid #dee2e6;
     background-color: #f7f7f7;
     padding: 2rem;
+    position: relative; /* << 新增：讓它建立一個堆疊上下文 */
+    z-index: 20; /* << 新增：給它一個較高的層級，確保它在最上面 */
 }
 
 .sidebar-section {
@@ -191,8 +193,10 @@ import avataUrl from '../assets/avata.png';
 
 .main-content {
     flex-grow: 1;
-    overflow-y: auto;
+    /* overflow-y: auto; */
     background-color: white;
+    position: relative; /* << 新增：也建立堆疊上下文，成為子頁面絕對定位的基準 */
+    z-index: 10; /* << 新增：層級比 sidebar 低，但比預設高 */
 }
 
 

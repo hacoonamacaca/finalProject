@@ -22,6 +22,9 @@
         <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-journal-text"></i> 歷史訂單
         </li>
+        <li @click="navigateTo('reservation-records')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-calendar-check"></i> 訂位紀錄
+        </li>
         <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> 回首頁*
         </li>        
