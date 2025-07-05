@@ -49,9 +49,9 @@ public class StoreBean {
 
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
     private Point storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
-    
+
     private Double lng;
-    
+
     private Double lat;
 
     @Column(columnDefinition = "varchar(max)")

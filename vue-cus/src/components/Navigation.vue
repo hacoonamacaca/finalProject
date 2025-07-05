@@ -53,34 +53,26 @@
 
         <!-- 購物車按鈕 -->
         <div class="nav-item">
-          <button class="btn position-relative" style="background: transparent; border: none;" @click="goToCart"
+          <button class="btn position-relative" style="background: transparent; border: none;" @click="showCart"
             title="購物車">
             <i class="bi bi-cart4 text-white"></i>
-            <span v-if="cartCount > 0"
+            <!-- <span v-if="cartCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
               {{ cartCount }}
-            </span>
+            </span> -->
           </button>
         </div>
-
-        <!-- 購物車按鈕 -->
-        <button
-          class="btn position-relative"
-          style="background: transparent; border: none;"
-          @click="goToCart"
-          title="購物車"
-        >
-          <i class="bi bi-cart4 text-white fs-5"></i>
-          <span v-if="cartCount > 0"
-                class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
-            {{ cartCount }}
-          </span>
-        </button>
-      
       </div>
     </div>
   </header>
+
+  <!-- 購物車模態框 -->
+  <CartModal v-if="isCartVisible" :cartByRestaurant="cartByRestaurant" :totalAmount="totalAmount" @close="hideCart"
+    @update-quantity="updateQuantity" @remove-item="removeItem" @checkout-restaurant="handleCheckoutRestaurant"
+    @checkout-all="handleCheckoutAll" @clear-restaurant="clearRestaurant" />
   <section class="popout" v-if="showPopout">
+
+
     <div class="popout-content">
       <button class="close-btn" @click="showPopout = false">✕</button>
       <input type="text" placeholder="輸入您的地址" @focus="address = ''" v-model="address" />
@@ -93,7 +85,12 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
-import NotificationList from '@/components/Yifan/NotificationList.vue'
+import NotificationList from '@/components/Yifan/NotificationList.vue';
+import CartModal from '@/components/KTlu/CartModal.vue';
+import { useCartStore } from '@/stores/cart';
+
+// 購物車 store
+const cartStore = useCartStore();
 
 const isLoggedIn = ref(true); // 根據實際登入狀態設定
 const isMenuOpen = ref(false);
@@ -106,6 +103,38 @@ const coordinates = ref(null);
 const loading = ref(false);
 const error = ref('');
 
+// 購物車相關的計算屬性和方法
+const cartCount = computed(() => cartStore.cartCount);
+const cartByRestaurant = computed(() => cartStore.cartByRestaurant);
+const totalAmount = computed(() => cartStore.totalAmount);
+const isCartVisible = computed(() => cartStore.isCartVisible);
+
+const showCart = () => cartStore.showCart();
+const hideCart = () => cartStore.hideCart();
+const updateQuantity = (itemId, newQuantity, restaurantId) => cartStore.updateQuantity(itemId, newQuantity, restaurantId);
+const removeItem = (itemId, restaurantId) => cartStore.removeItem(itemId, restaurantId);
+const clearRestaurant = (restaurantId) => cartStore.clearRestaurantCart(restaurantId);
+
+const handleCheckoutRestaurant = (restaurantId) => {
+  const orderData = cartStore.checkoutSingleRestaurant(restaurantId);
+  if (orderData) {
+    console.log('單一餐廳結帳：', orderData);
+    cartStore.hideCart();
+    // 可以導航到結帳頁面
+    // router.push('/checkout', { state: { orderData } });
+  }
+};
+
+const handleCheckoutAll = () => {
+  const orders = cartStore.checkoutAllRestaurants();
+  if (orders.length > 0) {
+    console.log('全部餐廳結帳：', orders);
+    cartStore.hideCart();
+    // 可以導航到結帳頁面
+    // router.push('/checkout', { state: { orders } });
+  }
+};
+
 // 控制漢堡選單
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
@@ -116,6 +145,7 @@ const toggleRestaurantMenu = () => {
   isRestaurant.value = !isRestaurant.value;
   console.log("目前頁面餐廳為是/餐點為否:" + isRestaurant.value);
 };
+
 // 優惠通知邏輯
 const isNotificationOpen = ref(false)
 const toggleNotification = () => isNotificationOpen.value = !isNotificationOpen.value
@@ -270,18 +300,10 @@ const getLogin = () => {
   font-size: 1.5rem;
 }
 
-.notification-panel {
-  top: 60px; /* 根據你的 navbar 高度調整 */
-  right: 0px; /* 讓箭頭正對鈴鐺 */
-}
-.arrow-up {
-  right: 25px; /* 根據鈴鐺位置微調 */
-}
-
 .navbar {
   background-color: #ffba20;
   color: white;
-  padding: 15px 20px;
+  padding: 5px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -290,26 +312,10 @@ const getLogin = () => {
   z-index: 3000;
 }
 
-.navbar .logo {
-  font-size: 26px;
-  font-weight: bold;
-}
-
-.navbar .nav-links {
+.navbar-brand {
   display: flex;
   align-items: center;
-  gap: 20px;
-}
-
-.navbar .nav-links a {
-  display: block;
-  color: white;
-  font-size: 18px;
-  margin: 10px 0;
-  width: 100%;
-  text-align: left;
-  text-decoration: none;
-  font-size: 16px;
+  gap: 15px;
 }
 
 .location-btn {
@@ -317,12 +323,13 @@ const getLogin = () => {
   color: white;
   border: 1px solid #fff;
   padding: 8px 16px;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   display: flex;
   align-items: center;
   gap: 5px;
+  transition: background-color 0.3s ease;
 }
 
 .location-btn:hover {
@@ -345,7 +352,7 @@ const getLogin = () => {
 .popout-content {
   background: #fff;
   padding: 20px;
-  border-radius: 8px;
+  border-radius: 12px;
   width: 90%;
   max-width: 400px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
@@ -358,7 +365,7 @@ const getLogin = () => {
   padding: 10px;
   font-size: 16px;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 8px;
   margin-bottom: 15px;
 }
 
@@ -367,14 +374,15 @@ const getLogin = () => {
   background: #ffba20;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 16px;
   width: 100%;
+  transition: background-color 0.3s ease;
 }
 
 .search-btn:hover {
-  background: #ffba20;
+  background: #e0a518;
 }
 
 .close-btn {
@@ -409,7 +417,46 @@ const getLogin = () => {
   width: 100%;
   height: 3px;
   background: white;
+  border-radius: 2px;
   transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.nav-links .auth-section a,
+.nav-links .nav-item {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: color 0.3s ease;
+}
+
+.nav-links .nav-item i {
+  font-size: 20px;
+}
+
+.nav-links .nav-item:hover,
+.nav-links .auth-section a:hover {
+  color: #ffe082;
 }
 
 @media (max-width: 768px) {
@@ -418,26 +465,22 @@ const getLogin = () => {
   }
 
   .nav-links {
-    position: absolute;
-    border-radius: 10px;
-    top: 100%;
+    position: fixed;
+    top: 0;
     right: 0;
-    height: 300px;
-    width: 150px;
+    height: 100%;
+    width: 250px;
     background-color: #ffba20;
     flex-direction: column;
     align-items: flex-start;
     padding: 20px;
-    opacity: 0;
-    visibility: hidden;
-    display: none;
+    transform: translateX(100%);
+    box-shadow: -4px 0 8px rgba(0, 0, 0, 0.2);
     z-index: 2000;
   }
 
   .nav-links.active {
-    opacity: 1;
-    visibility: visible;
-    display: flex;
+    transform: translateX(0);
   }
 
   .nav-links .auth-section {
@@ -445,27 +488,23 @@ const getLogin = () => {
     flex-direction: column;
     align-items: flex-start;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 10px;
-    margin-bottom: 10px;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
     order: -1;
-    /* 確保置頂 */
-  }
-
-  .nav-links .auth-section .user-dropdown {
-    width: 100%;
-    text-align: left;
   }
 
   .nav-links .nav-items {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
+    gap: 15px;
   }
 
-  .nav-links .nav-items {
-    flex-direction: column;
-    align-items: flex-start;
+  .nav-links .nav-item,
+  .nav-links .auth-section a {
+    padding: 10px 0;
     width: 100%;
+    font-size: 18px;
   }
 
   .desktop-only {
@@ -483,17 +522,13 @@ const getLogin = () => {
     width: 100%;
     text-align: left;
     justify-content: space-between;
+    border-radius: 8px;
   }
 
   .navbar {
     flex-direction: column;
     align-items: flex-start;
     padding: 15px;
-  }
-
-  .navbar .logo {
-    width: 100%;
-    margin-bottom: 10px;
   }
 
   .hamburger {

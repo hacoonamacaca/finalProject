@@ -1,10 +1,11 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'; // 導入 onMounted 函數
 import { apiService } from '../services/apiService.js'; // 導入 API 服務
-import MenuOverview from './MenuOverview.vue';
-import CustomizationSpecs from './CustomizationSpecs.vue';
-import EditItemModal from '../components/EditItemModal.vue';
-import EditSpecModal from '../components/EditSpecModal.vue';
+import PageHeader from '../components/common/PageHeader.vue';
+import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';
+import EditItemModal from '../components/menu/EditItemModal.vue';
+import EditSpecModal from '../components/menu/EditSpecModal.vue';
+import MenuOverview from '../components/menu/MenuOverview.vue';
 
 // --- 響應式狀態 (State) ---
 
@@ -39,7 +40,13 @@ const categories = reactive([
 
 const items = reactive([
     // 模擬的菜單品項資料
-    // { id: 1, name: '經典拿鐵', price: 70, status: '供應中', stock: 50, img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600', categoryId: 'cat-1' },
+    // { id: 1, 
+    //   name: '經典拿鐵', 
+    //   price: 70, 
+    //   status: '供應中', 
+    //   stock: 50, 
+    //   img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600', 
+    //   categoryId: 'cat-1' },
 ]);
 
 
@@ -189,17 +196,18 @@ const handleDeleteItem = (itemId) => {
 
 <template>
     <div>
-        <div
-            class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h2 class="h3">菜單管理</h2>
-            <div class="btn-toolbar mb-2 mb-md-0">
-                <select class="form-select" v-model="selectedStore">
+        <!-- 使用新的公版 PageHeader 組件 -->
+        <PageHeader title="菜單管理">
+            <!-- 這是要 "塞" 進插槽的內容 -->
+            <template #actions>
+                <select class="form-select" v-model="selectedStore" style="width: auto; min-width: 180px;">  <!-- 切換店鋪下拉選單 -->
                     <option v-for="store in stores" :key="store.id" :value="store.id">
                         {{ store.name }}
                     </option>
                 </select>
-            </div>
-        </div>
+            </template>
+        </PageHeader>
+
         <!-- 在列表區域的外面，加上 loading 和 error 的判斷 -->
         <div v-if="isLoading" class="text-center p-5">
             <div class="spinner-border" role="status">
@@ -232,6 +240,7 @@ const handleDeleteItem = (itemId) => {
                     @edit-spec="openSpecModal" />
             </div>
         </div>
+
         <!-- Modals (不受佈局影響) -->
         <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" :categories="categories"
             @close="closeItemModal" @save="handleSaveItem" @delete="handleDeleteItem" />
