@@ -81,4 +81,9 @@ const handleUse = (promo) => {
   font-weight: bold;
   color: #4b80d0;
 }
+
+/* 無資料訊息 */
+.text-muted i {
+  font-size: 1.2rem;
+}
 </style>

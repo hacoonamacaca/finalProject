@@ -22,9 +22,18 @@
         <li @click="navigateTo('orderList')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-journal-text"></i> 歷史訂單
         </li>
+        <li @click="navigateTo('reservation-records')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-calendar-check"></i> 訂位紀錄
+        </li>
         <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> 回首頁*
         </li>        
+        <li @click="navigateTo('WebRecom')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-house-door"></i> WebRecom*
+        </li> 
+        <li @click="navigateTo('ReportType')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-house-door"></i> ReportType*
+        </li> 
         <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-box-arrow-right"></i> 登出
         </li>
@@ -142,14 +151,14 @@ onUnmounted(() => {
 /* 游標滑到下拉式選單圖示會變色 */
 .dropdown-menu li:hover i {
   color: #ffba20;
-}
+} */
 
 /* 預設為黃色文字 */
-.dropdown-menu li:last-child {
+/* .dropdown-menu li:last-child {
   border-top: 1px solid #ddd;
-  background-color: #ffba20;
+  color: #ffba20;
   font-weight: 500;
-}
+} */
 
 /* 滑鼠移上去時反轉背景與文字顏色 */
 .dropdown-menu li:last-child:hover {

@@ -1,61 +1,3 @@
-<script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import axios from 'axios'
-
-const discounts = ref([])
-const search = ref('')
-const type = ref('')
-
-function clearFilter() {
-    search.value = ''
-    type.value = ''
-}
-
-const fetchDiscounts = async () => {
-    try {
-        const res = await axios.get('http://localhost:8080/api/discounts')
-        discounts.value = res.data
-    } catch (err) {
-        discounts.value = []
-    }
-}
-
-// 分頁
-const page = ref(1)
-const pageSize = ref(10)
-const pageSizes = [10, 20, 30]
-
-// 搜尋與折扣類型過濾
-const filteredDiscounts = computed(() => {
-    return discounts.value.filter(d =>
-        (search.value === '' || d.title?.includes(search.value)) &&
-        (type.value === '' || d.type === type.value)
-    )
-})
-
-// 分頁後資料
-const pagedDiscounts = computed(() => {
-    const start = (page.value - 1) * pageSize.value
-    const end = start + pageSize.value
-    return filteredDiscounts.value.slice(start, end)
-})
-
-const totalPages = computed(() =>
-    Math.max(1, Math.ceil(filteredDiscounts.value.length / pageSize.value))
-)
-
-onMounted(fetchDiscounts)
-
-watch([page, pageSize], () => {
-    // 換頁或換每頁數時不保留勾選
-    // 無勾選欄位可省略
-})
-
-watch(pageSize, () => {
-    page.value = 1
-})
-</script>
-
 <template>
     <div class="container mt-4">
         <h2>優惠活動</h2>
@@ -147,3 +89,61 @@ watch(pageSize, () => {
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref, computed, watch, onMounted } from 'vue'
+import axios from 'axios'
+
+const discounts = ref([])
+const search = ref('')
+const type = ref('')
+
+function clearFilter() {
+    search.value = ''
+    type.value = ''
+}
+
+const fetchDiscounts = async () => {
+    try {
+        const res = await axios.get('http://localhost:8080/api/discounts')
+        discounts.value = res.data
+    } catch (err) {
+        discounts.value = []
+    }
+}
+
+// 分頁
+const page = ref(1)
+const pageSize = ref(10)
+const pageSizes = [10, 20, 30]
+
+// 搜尋與折扣類型過濾
+const filteredDiscounts = computed(() => {
+    return discounts.value.filter(d =>
+        (search.value === '' || d.title?.includes(search.value)) &&
+        (type.value === '' || d.type === type.value)
+    )
+})
+
+// 分頁後資料
+const pagedDiscounts = computed(() => {
+    const start = (page.value - 1) * pageSize.value
+    const end = start + pageSize.value
+    return filteredDiscounts.value.slice(start, end)
+})
+
+const totalPages = computed(() =>
+    Math.max(1, Math.ceil(filteredDiscounts.value.length / pageSize.value))
+)
+
+onMounted(fetchDiscounts)
+
+watch([page, pageSize], () => {
+    // 換頁或換每頁數時不保留勾選
+    // 無勾選欄位可省略
+})
+
+watch(pageSize, () => {
+    page.value = 1
+})
+</script>
