@@ -151,7 +151,7 @@ onUnmounted(() => {
 /* 游標滑到下拉式選單圖示會變色 */
 .dropdown-menu li:hover i {
   color: #ffba20;
-} */
+}
 
 /* 預設為黃色文字 */
 .dropdown-menu li:last-child {
