@@ -34,6 +34,9 @@
         <li @click="navigateTo('ReportType')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> ReportType*
         </li> 
+        <li @click="navigateTo('CC')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-house-door"></i> CC*
+        </li> 
         <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-box-arrow-right"></i> 登出
         </li>

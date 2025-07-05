@@ -28,6 +28,11 @@ public class CommentService {
         return commentRepository.findById(id);
     }
 
+    // 新增此方法以根據 storeId 查找評論列表
+    public List<CommentBean> findByStoreId(Integer storeId) {
+        return commentRepository.findByStoreId(storeId);
+    }
+
     // 查找所有評論
     public List<CommentBean> findAll() {
         return commentRepository.findAll();

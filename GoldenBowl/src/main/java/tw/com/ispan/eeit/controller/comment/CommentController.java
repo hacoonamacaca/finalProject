@@ -63,4 +63,14 @@ public class CommentController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // 新增此端點以根據 Store ID 查找評論列表
+    @GetMapping("/store/{storeId}") // 注意這裡的路徑變更為 /store/{storeId}
+    public ResponseEntity<List<CommentBean>> getCommentsByStoreId(@PathVariable Integer storeId) {
+        List<CommentBean> comments = commentService.findByStoreId(storeId);
+        if (comments.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 如果沒有找到評論，可以返回 204 No Content
+        }
+        return ResponseEntity.ok(comments);
+    }
 }

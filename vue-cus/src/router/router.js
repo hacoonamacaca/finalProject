@@ -19,6 +19,7 @@ import {
 import WebRecom from "@/views/Jimmy/WebRecom.vue"
 import ReportType from "@/views/Jimmy/ReportType.vue"
 import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
+import CC from "@/views/Jimmy/CC.vue"
 
 const routes = [{
         path: "/",
@@ -108,6 +109,11 @@ const routes = [{
         path: '/reservation-records',
         name: 'ReservationRecords',
         component: ReservationRecords
+    },
+    {
+        path: '/CC',
+        name: 'CC',
+        component: CC
     },
 ];
 
