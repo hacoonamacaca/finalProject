@@ -1,7 +1,4 @@
-import {
-    createRouter,
-    createWebHistory
-} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from "@/views/Jimmy/Home.vue"
 import NotFound from "@/views/NotFound.vue"
@@ -15,10 +12,12 @@ import CartTest from '@/views/CartTest.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
-import EditUser from '@/views/Ivy/Edituser.vue'
+import EditUser from '@/views/Ivy/EditUser.vue'
 import {
     getRestaurantById
 } from "@/data/restaurants.js"
+import WebRecom from "@/views/Jimmy/WebRecom.vue"
+import ReportType from "@/views/Jimmy/ReportType.vue"
 import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
 
 const routes = [{
@@ -61,28 +60,24 @@ const routes = [{
         name: 'CartTest',
         component: CartTest
     },
-    {
-        path: '/',
-        component: Home
+    {   
+        path: '/register', 
+        component: Register 
     },
-    {
-        path: '/register',
-        component: Register
+    {   
+        path: '/verify-pending', 
+        component: VerifyPending 
     },
-    {
-        path: '/verify-pending',
-        component: VerifyPending
-    },
-    {
-        path: '/register-profile',
-        component: RegisterProfile
+    {   
+        path: '/register-profile', 
+        component: RegisterProfile 
     },
     {
         path: '/resetPasswordEmail',
         name: 'ResetPasswordEmail',
         component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
-        props: router => ({
-            email: router.query.email
+        props: router => ({ 
+            email: router.query.email 
         })
     },
     {
@@ -100,6 +95,16 @@ const routes = [{
         component: EditUser
     },
     {
+        path: '/WebRecom',
+        name: 'WebRecom',
+        component: WebRecom
+    },
+    {
+        path: '/ReportType',
+        name: 'ReportType',
+        component: ReportType
+    },
+        {
         path: '/reservation-records',
         name: 'ReservationRecords',
         component: ReservationRecords

@@ -15,11 +15,11 @@
                             {{ category.name }}
                             <span class="tab-count">({{ getCategoryItems(category.name).length }})</span>
                         </a>
-                        <a :class="['nav-tab', { 'active': activeCategory === 'all' }]"
+                        <!-- <a :class="['nav-tab', { 'active': activeCategory === 'all' }]"
                             @click="onTabClick($event, { name: 'all', id: 'all' })">
                             全部菜單
                             <span class="tab-count">({{ allItemsCount }})</span>
-                        </a>
+                        </a> -->
                     </div>
 
                     <button v-if="showScrollButtons" @click="scrollTabs('right')"
@@ -144,6 +144,7 @@ const categories = ref([
     { id: 'winter-melon', name: '冬瓜 / 百香果系列', count: 3 },
     { id: 'milk-tea', name: '奶茶系列', count: 4 },
     { id: 'fresh-milk', name: '鮮奶拿鐵', count: 3 },
+    { id: 'specialty', name: '特調系列', count: 3 },
 ])
 
 const items = ref([
@@ -171,6 +172,10 @@ const items = ref([
     { id: 22, name: '藍莓司康餅', description: '酥脆司康、新鮮藍莓、奶油', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+22', originalPrice: 90, discountPrice: 75, category: '茗品系列', tags: ['烘焙'] },
     { id: 23, name: '榛果拿鐵', description: '榛果香氣、濃縮咖啡、蒸煮牛奶', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+23', originalPrice: 115, discountPrice: 95, category: '鮮奶拿鐵', tags: ['堅果'] },
     { id: 24, name: '芝麻奶茶', description: '香濃芝麻、經典奶茶、古早味', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+24', originalPrice: 85, discountPrice: 70, category: '奶茶系列', tags: ['古早味'] },
+    { id: 25, name: '芝麻奶茶', description: '香濃芝麻、經典奶茶、古早味', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+24', originalPrice: 85, discountPrice: 70, category: '特調系列', tags: ['古早味'] },
+    { id: 26, name: '芝麻奶茶', description: '香濃芝麻、經典奶茶、古早味', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+24', originalPrice: 85, discountPrice: 70, category: '特調系列', tags: ['古早味'] },
+    { id: 27, name: '芝麻奶茶', description: '香濃芝麻、經典奶茶、古早味', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+24', originalPrice: 85, discountPrice: 70, category: '特調系列', tags: ['古早味'] },
+
 ])
 
 // 計算屬性
@@ -663,7 +668,8 @@ onUnmounted(() => {
     background: rgba(255, 186, 32, 0.1);
     border-color: rgba(255, 186, 32, 0.3);
     color: var(--restaurant-primary, #ffba20);
-    transform: translateY(-2px);
+    transform: translateY(-2px); 
+    cursor: pointer;
 }
 
 .nav-tab.active {

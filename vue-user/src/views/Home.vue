@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import RegisterModal from '@/components/Ivy/RegisterModal.vue'

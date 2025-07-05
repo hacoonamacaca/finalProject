@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue';
-import GeneralHoursEditor from '../components/GeneralHoursEditor.vue';
-import SpecialHoursEditor from '../components/SpecialHoursEditor.vue';
+import GeneralHoursEditor from '../components/hours/GeneralHoursEditor.vue';
+import SpecialHoursEditor from '../components/hours/SpecialHoursEditor.vue';
 
 // 模態框/側邊欄的顯示狀態
 const isSidebarVisible = ref(false);

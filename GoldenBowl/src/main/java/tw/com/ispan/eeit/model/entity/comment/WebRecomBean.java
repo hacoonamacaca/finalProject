@@ -23,4 +23,7 @@ public class WebRecomBean {
 
     @Column(name = "tag")
     private String tag;
+
+    @Column(name = "prime")
+    private Integer prime;
 }

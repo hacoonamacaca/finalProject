@@ -56,10 +56,10 @@
           <button class="btn position-relative" style="background: transparent; border: none;" @click="showCart"
             title="購物車">
             <i class="bi bi-cart4 text-white"></i>
-            <span v-if="cartCount > 0"
+            <!-- <span v-if="cartCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
               {{ cartCount }}
-            </span>
+            </span> -->
           </button>
         </div>
       </div>
@@ -294,23 +294,22 @@ const getLogin = () => {
 </script>
 
 <style scoped>
+.brand-title {
+  color: #5c3203;
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
 .navbar {
   background-color: #ffba20;
   color: white;
-  padding: 5px 20px;
-  /* 將上下 padding 從 15px 縮減為 5px (15px * 1/3) */
+  padding: 5px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: sticky;
   top: 0;
   z-index: 3000;
-}
-
-.brand-title {
-  color: #5c3203;
-  font-weight: bold;
-  font-size: 1.5rem;
 }
 
 .navbar-brand {
@@ -529,14 +528,12 @@ const getLogin = () => {
   .navbar {
     flex-direction: column;
     align-items: flex-start;
-    padding: 5px 15px;
-    /* 行動版也調整上下 padding 為 5px */
+    padding: 15px;
   }
 
   .hamburger {
     position: absolute;
-    top: 5px;
-    /* 與縮減的 padding 對齊 */
+    top: 15px;
     right: 15px;
   }
 }
