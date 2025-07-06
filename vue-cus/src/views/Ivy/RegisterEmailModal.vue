@@ -35,7 +35,7 @@ import { ref } from 'vue'
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'submit', 'back'])
 
-const email = ref('eattiy@msn.com') // 測試用預設
+const email = ref('eattiy1986@gmail.com') // 測試用預設
 
 async function onSubmit() {
     // 呼叫後端API寄送驗證信

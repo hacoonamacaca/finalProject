@@ -16,7 +16,21 @@
             </div>
             <div class="mb-2 text-center">
                 <label class="form-label w-100 text-start">電子郵件</label>
+                <div class="input-group">
                 <input type="email" v-model="emailLocal" class="form-control rounded-pill" placeholder="請輸入 email" />
+                <button
+                v-if="!isEmailVerified"
+                class="btn btn-outline-warning ms-2"
+                type="button"
+                @click="handleResend"
+                >
+                重新驗證
+            </button>
+        </div>
+    </div>
+            <!-- 只有未驗證時才會顯示重新驗證按鈕 -->
+            <div v-if="verificationMsg" class="text-center my-2" :style="{ color: verificationMsgColor }">
+                {{ verificationMsg }}
             </div>
             <div class="d-flex align-items-center justify-content-center mb-3">
                 <i class="bi me-2"
@@ -25,7 +39,6 @@
                     {{ isEmailVerified ? '已驗證' : '未驗證' }}
                 </small>
             </div>
-            <!-- 合併一顆儲存按鈕 -->
             <button type="button" class="btn btn-primary rounded-pill px-4 d-block mx-auto mb-2" :disabled="!isDirty"
                 @click="handleSave">
                 儲存
@@ -39,10 +52,11 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute} from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 function goBack() {
@@ -54,14 +68,16 @@ const initial = reactive({
     lastName: '',
     phone: '',
     email: '',
-    isEmailVerified: true
+    isEmailVerified: false
 })
 
 const fullName = ref('')
 const phone = ref('')
 const emailLocal = ref('')
+const verificationMsg = ref('')
+const verificationMsgColor = ref('')
 
-onMounted(() => {
+onMounted(async() => {
     const storedName = localStorage.getItem('userFullName')
     if (storedName) {
         const [first, ...rest] = storedName.trim().split(' ')
@@ -78,6 +94,33 @@ onMounted(() => {
     if (storedPhone) {
         initial.phone = storedPhone
         phone.value = storedPhone
+    }
+
+// 從localStorage恢復email驗證狀態
+initial.isEmailVerified = localStorage.getItem('userEmailVerified') === 'true'
+
+//如果網址有token，則自動驗證
+const token = route.query.token
+if(token){
+    try{
+        const res = await fetch(`/api/verify-email?token=${token}`)
+        if(res.ok){
+            initial.isEmailVerified = true
+            localStorage.setItem('userEmailVerified', 'true')
+            verificationMsg.value = 'Email驗證成功'
+            verificationMsgColor.value = 'green'
+        }else{
+            initial.isEmailVerified = false
+            localStorage.setItem('userEmailVerified', 'false')
+            verificationMsg.value = 'Email驗證失敗或連結已過期'
+            verificationMsgColor.value = 'red'
+        }
+        }catch(e){
+            initial.isEmailVerified = false
+            localStorage.setItem('userEmailVerified', 'false')
+            verificationMsg.value = '驗證過程發生錯誤'
+            verificationMsgColor.value = 'red'
+        }
     }
 })
 
@@ -96,6 +139,27 @@ const isDirty = computed(() => {
 const isEmailVerified = computed(() =>
     emailLocal.value === initial.email && initial.isEmailVerified
 )
+
+async function handleResend() {
+    if (!emailLocal.value) {
+        verificationMsg.value = '請輸入電子郵件'
+        verificationMsgColor.value = 'red'
+        return
+    }
+    try {
+        const res = await fetch('/api/send-verify-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ email: emailLocal.value }),
+        })
+        const text = await res.text()
+        verificationMsg.value = text
+        verificationMsgColor.value = res.ok ? 'green' : 'red'
+    } catch (err) {
+        verificationMsg.value = '寄送失敗，請稍後再試'
+        verificationMsgColor.value = 'red'
+    }
+}
 
 function handleSave() {
     // 姓名+手機
@@ -122,6 +186,7 @@ function handleSave() {
         initial.email = emailLocal.value
         initial.isEmailVerified = false
         localStorage.setItem('userEmail', emailLocal.value)
+        localStorage.setItem('userEmailVerified', 'false')
     }
 }
 </script>

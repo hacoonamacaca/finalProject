@@ -26,7 +26,7 @@ public class UserTokenService {
         token.setVerifyCode(verifyCode);
         token.setExpiration(expiration);
         token.setUsed(false);
-
+        
         return userTokenRepository.save(token);
 
     }

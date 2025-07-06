@@ -14,8 +14,13 @@
     </div>
 
     <!-- 註冊第一步 -->
-    <RegisterModal :show="step === 'register'" @close="step = ''" @register="step = 'email'"
-        @login="step = 'loginEmail'" />
+    <RegisterModal
+        :show="step === 'register'"
+        @close="step = ''"
+        @register="step = 'email'"
+        @login="step = 'loginEmail'"
+        @google-login="onGoogleLogin"
+    />
     <!-- 第二步，Email 驗證步驟 -->
     <RegisterEmailModal :show="step === 'email'" @close="step = ''" @back="step = 'register'"
         @submit="handleRegisterEmail" />
@@ -114,6 +119,10 @@ function handleForgotSubmit(email) {
         path: '/resetPasswordEmail',
         query: (email)
     })
+}
+
+function onGoogleLogin() {
+    window.location.href = 'http://localhost:8080/oauth2/authorization/google'
 }
 
 //------------------------------

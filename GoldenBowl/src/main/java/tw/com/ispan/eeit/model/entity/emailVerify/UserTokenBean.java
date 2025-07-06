@@ -12,8 +12,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "user_token")
 @Data
+@Table(name = "user_token")
 @NoArgsConstructor
 public class UserTokenBean {
 	@Id
@@ -35,5 +35,4 @@ public class UserTokenBean {
 
 	@Column(name = "is_used")
 	private boolean used;
-
 }

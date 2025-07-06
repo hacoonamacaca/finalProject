@@ -70,7 +70,7 @@ update_time datetime,
 score float,
 is_active bit,
 stock int,
-img_resouce    varchar(500),
+img_resource varchar(500),
 foreign key (store_id) references store(id),
 );
 go
@@ -223,6 +223,8 @@ id int primary key identity(1,1),
 store_id int ,
 name nvarchar(100),
 sort int,
+min_select int,
+max_select int,
 foreign key (store_id) references store(id)
 );
 go
@@ -233,8 +235,6 @@ id int primary key identity(1,1),
 spec_group_id int,
 name nvarchar(100),
 price int,
-min_select int,
-max_select int,
 sort int,
 is_active bit default 1 ,
 foreign key (spec_group_id) references spec_group(id)
@@ -434,7 +434,7 @@ create table notification(
 id int primary key identity(1,1),
 user_id int,
 promotion_id int,
-created_time int,
+created_time DateTime ,
 is_read bit,
 read_time datetime,
 foreign key (user_id) references [user](id)
