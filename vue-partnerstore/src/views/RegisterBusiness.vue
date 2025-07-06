@@ -20,6 +20,7 @@
                 <!-- required  放在v-model後-->
                 <div class="mb-3">
                     <input type="email" class="form-control form-input" v-model="email" placeholder="電子郵件 *" />
+                    <div v-if="error" class="text-danger small mt-1">{{ error }}</div>
                 </div>
                 <!-- 設定密碼 -->
                 <!-- required  放在v-model後-->
@@ -57,16 +58,6 @@
                             <circle cx="12" cy="12" r="3" stroke="#ffba20" stroke-width="2" />
                         </svg>
                     </button>
-                    <div v-if="error" class="text-danger small mt-1">{{ error }}</div>
-                </div>
-                <!-- 商家種類 -->
-                <!-- required  放在v-model後-->
-                <div class="mb-3">
-                    <select class="form-select form-input" v-model="storeType">
-                        <option value="" disabled>商家種類 *</option>
-                        <option value="餐廳店家">餐廳店家</option>
-                        <option value="生鮮雜貨店家">生鮮雜貨店家</option>
-                    </select>
                 </div>
                 <!-- 電話 -->
                 <div class="mb-4 d-flex align-items-center">
@@ -89,18 +80,53 @@
 <script setup>
 import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 const storeName = ref('')
 const managerFullName = ref('')
 const email = ref('')
 const password = ref('')
 const passwordConfirm = ref('')
-const storeType = ref('')
 const phone = ref('')
 const error = ref('')
 const showPwd1 = ref(false)
 const showPwd2 = ref(false)
 const router = useRouter()
+
+async function onSubmit() {
+    if (password.value !== passwordConfirm.value) return
+    // 1. 檢查 email 是否已存在
+    try {
+        const res = await axios.post('/api/owner/check-email', { email: email.value })
+        if (res.data.exists) {
+            error.value = '此 Email 已註冊，請登入或用其他 Email'
+            return
+        }
+    // 通過就送註冊
+    const regRes = await axios.post('/api/owner/register', {
+            email: email.value,
+            password: password.value,
+            name: managerFullName.value,
+            phone: phone.value
+        });
+        // 註冊成功才跳下一步
+        if (regRes.data.success) {
+            // 這邊你可以記錄 ownerId、email 等資訊，傳遞到下一頁
+            router.push({
+                path: '/registerStoreInfo',
+                query: {
+                    ownerId: regRes.data.ownerId,   // 回傳 id 或 email 都可以
+                    storeName: storeName.value,
+                    phone: phone.value
+                }
+            });
+        } else {
+            error.value = regRes.data.message || '註冊失敗';
+        }
+    } catch (e) {
+        error.value = '伺服器錯誤，請稍後再試';
+    }
+}
 
 // 密碼一致性檢查
 watch([password, passwordConfirm], () => {
@@ -111,21 +137,7 @@ watch([password, passwordConfirm], () => {
     }
 })
 
-function onSubmit() {
-    if (password.value !== passwordConfirm.value) return
-    alert('已重新發送驗證信至 ' + email.value)
-    router.push({
-        path: '/registerVerify',
-        query: {
-            storeName: storeName.value,
-            managerFullName: managerFullName.value,
-            email: email.value,
-            password: password.value,
-            storeType: storeType.value,
-            phone: phone.value,
-        }
-    })
-}
+
 </script>
 
 <style scoped>

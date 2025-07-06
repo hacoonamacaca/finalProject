@@ -28,6 +28,7 @@
 <script setup>
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'google-login', 'login', 'register'])
+console.log('[RegisterModal loaded]')
 </script>
 
 <style scoped>

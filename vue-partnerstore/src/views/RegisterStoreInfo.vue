@@ -20,45 +20,12 @@
                         </svg>
                     </span>
                 </div>
-                <!-- 商家類型 -->
-                <!--required放在v-model -->
-                <div class="mb-3">
-                    <select class="form-select" v-model="storeType">
-                        <option value="" disabled>商家種類 *</option>
-                        <option value="餐廳店家">餐廳店家</option>
-                        <option value="生鮮雜貨店家">生鮮雜貨店家</option>
-                    </select>
-                </div>
-                <!-- 商家類型 -->
+                <!-- 選擇商家類型後才顯示 餐點類型 -->
                 <!--required放在v-model -->
                 <div class="mb-3">
                     <select class="form-select" v-model="storeCategory">
-                        <option value="" disabled>商家類型 *</option>
-                        <option value="實體餐廳">實體餐廳</option>
-                        <option value="雲端廚房/自宅出餐">雲端廚房/自宅出餐</option>
-                    </select>
-                </div>
-                <!-- 選擇商家類型後才顯示 餐點類型 -->
-                <!--required放在v-model -->
-                <div class="mb-3" v-if="storeCategory">
-                    <select class="form-select" v-model="mealType">
-                        <option value="" disabled>餐點類型 *</option>
-                        <option value="中式料理">中式料理</option>
-                        <option value="健康食品">健康食品</option>
-                        <option value="台式料理">台式料理</option>
-                        <option value="咖啡">咖啡</option>
-                        <option value="小吃">小吃</option>
-                        <option value="日式料理">日式料理</option>
-                        <option value="早餐">早餐</option>
-                        <option value="東南亞">東南亞</option>
-                        <option value="歐美料理">歐美料理</option>
-                        <option value="港式料理">港式料理</option>
-                        <option value="甜點">甜點</option>
-                        <option value="異國">異國</option>
-                        <option value="素食料理">素食料理</option>
-                        <option value="非酒精飲料">非酒精飲料</option>
-                        <option value="韓式料理">韓式料理</option>
-                        <!-- 其他餐點類型 -->
+                        <option value="" disabled>餐廳類型 *</option>
+                        <option v-for="c in categories" :key="c.id" :value="c.name">{{ c.name }}</option>
                     </select>
                 </div>
                 <!-- 電話 -->
@@ -90,20 +57,24 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useRoute } from 'vue-router'
+import { ref, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { useStoreRegister } from '@/stores/user.js'
+import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
+const regStore = useStoreRegister()
+
+console.log("ownerId=", route.query.ownerId) // ← 就寫這裡
 
 const storeName = ref(route.query.storeName || '')
-const storeType = ref(route.query.storeType || '')
 const storeCategory = ref('')
-const mealType = ref('')
 const phone = ref(route.query.phone || '')
 const storeIntro = ref(route.query.storeIntro || '')
 const files = ref(null);
+
+const categories = ref([])
 
 function onSaveDraft() {
     alert('已儲存草稿，返回主頁')
@@ -114,9 +85,27 @@ function onFileChange(event) {
     files.value = event.target.files;
 }
 
+onMounted(async () => {
+    console.log("ownerId=", route.query.ownerId) // ← 就寫這裡
+    try {
+        const res = await axios.get('/api/category/all')
+        categories.value = res.data
+    } catch (e) {
+        categories.value = []
+        console.error('載入分類失敗', e)
+    }
+})
+
 function onSubmit() {
-    // 送出後自動跳轉到下一步
-    router.push('/verifyAddress') // 請改成你要的下一步頁面
+    regStore.setBasicInfo({
+        ownerId: route.query.ownerId,
+        storeName: storeName.value,
+        storeCategory: storeCategory.value,
+        phone: phone.value,
+        storeIntro: storeIntro.value,
+        files: files.value,
+    })
+    router.push('/verifyAddress')
 }
 </script>
 

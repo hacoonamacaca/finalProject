@@ -3,14 +3,14 @@
         <h2 class="mb-4">歡迎光臨！</h2>
         <div class="d-grid gap-3 col-6 mx-auto position-relative">
             <!-- 沒有 firstName:顯示註冊二選一按鈕 -->
-            <button v-if="!userFirstName" class="btn btn-primary btn-lg" @click="showChoice = true">
+            <button v-if="!userFullName" class="btn btn-primary btn-lg" @click="showChoice = true">
                 註冊
             </button>
 
             <!-- 有 firstName:顯示名字 -->
             <div v-else class="dropdown-wrapper">
                 <button class="dropdown-btn" :class="{ open: showMenu }" @click="toggleMenu">
-                    <i class="bi bi-person-circle me-1"></i>{{ userFirstName }}
+                    <i class="bi bi-person-circle me-1"></i>{{ userFullName }}
                     <i class="bi ms-1" :class="showMenu ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
                 </button>
 
@@ -31,9 +31,11 @@
 
         <!-- 登入 Email Modal -->
         <LoginEmailModal 
-        :show="step === 'loginEmail'" @back="step = 'register'" 
-        @close="step = ''"
-        @submit="handleLoginEmail" />
+            :show="step === 'loginEmail'"
+            :error-msg="loginEmailError"
+            @back="step = 'register'"
+            @close="step = ''"
+            @submit="handleLoginEmail" />
         <!-- 登入密碼 Modal -->
         <LoginPasswordModal :show="step === 'loginPassword'" :email="userEmail" @close="step = ''"
             @forgot="step = 'forgotPassword'" @back="step = 'loginEmail'" @login="handlePasswordLogin" />
@@ -65,6 +67,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import axios from 'axios'
 
 import LoginEmailModal from '@/views/LoginEmailModal.vue'
 import LoginPasswordModal from '@/views/LoginPasswordModal.vue'
@@ -74,13 +77,17 @@ import ResetPasswordDialog from '@/views/ResetPasswordDialog.vue'
 const router = useRouter()
 const step = ref('')
 const userEmail = ref('')
-const userFirstName = ref('')
+const userFullName = ref('')
+const userPhone = ref('')
 const showMenu = ref(false)
 const showReset = ref(false)
 const showChoice = ref(false)
+const loginEmailError = ref('')
 
 onMounted(() => {
-    userFirstName.value = localStorage.getItem('userFirstName') || ''
+    userFullName.value = localStorage.getItem('userFullName') || ''
+    userEmail.value = localStorage.getItem('userEmail') || ''
+    userPhone.value = localStorage.getItem('userPhone') || ''
 })
 
 function toggleMenu() {
@@ -98,8 +105,12 @@ function goEditStore() {
 }
 
 function logout() {
-    localStorage.removeItem('userFirstName')
-    userFirstName.value = ''
+    localStorage.removeItem('userFullName')
+    localStorage.removeItem('storeName')
+    localStorage.removeItem('storeEmail')
+    localStorage.removeItem('storePhone')
+    userFullName.value = ''
+    userFullName.value = ''
     showMenu.value = false
 }
 
@@ -116,19 +127,41 @@ function goLoginEmail() {
 }
 
 // 登入 email
-function handleLoginEmail(email) {
+async function handleLoginEmail(email) {
     userEmail.value = email
-    step.value = 'loginPassword'
+    loginEmailError.value = ''
+    try {
+        // 請改成你的API路徑
+        const res = await axios.post('/api/store/check-email', { email })
+        if (res.data.exists) {
+            step.value = 'loginPassword'
+        } else {
+            loginEmailError.value = '查無此帳號，請確認Email或註冊新帳號'
+        }
+    } catch (e) {
+        loginEmailError.value = '伺服器錯誤，請稍後再試'
+    }
 }
 
 // 登入密碼
-function handlePasswordLogin({ email, password }) {
-    // 假設這裡呼叫 API 成功，並取回 firstName
-    alert(`登入成功：${email} / ${password}`)
-    const apiFirstName = '王小明'
-    localStorage.setItem('userFirstName', apiFirstName)
-    userFirstName.value = apiFirstName
-    step.value = ''
+async function handlePasswordLogin({ email, password }) {
+    try {
+        const res = await axios.post('/api/store/login', { email, password });
+        if (res.data.success) {
+            localStorage.setItem('userFullName', res.data.name)
+            localStorage.setItem('userEmail', res.data.email)
+            localStorage.setItem('userPhone', res.data.phone)
+            userFullName.value = res.data.name
+            userEmail.value = res.data.email
+            userPhone.value = res.data.phone
+            step.value = ''
+            router.push('/')
+        } else {
+            alert(res.data.message || '帳號或密碼錯誤');
+        }
+    } catch (e) {
+        alert('伺服器錯誤，請稍後再試');
+    }
 }
 
 // 忘記密碼
@@ -146,7 +179,7 @@ function onResetPassword(newPwd) {
     // 假設 API call 完成後
     router.replace({ path: '/', })
     // 再重新讀一次名字（通常你會從後端拿回名字再存）
-    userFirstName.value = localStorage.getItem('userFirstName') || ''
+    userFullName.value = localStorage.getItem('userFullName') || ''
 }
 </script>
 

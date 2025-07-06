@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('back')">
+                    <button class="btn nav-btn" @click="emit('register')">
                         <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                             <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
@@ -15,7 +15,7 @@
                     <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
                         class="email-img mb-3">
                     <div class="fw-bold title mb-1">你的<span class="highlight">email</span>是？</div>
-                    <div class="desc mb-4">我們將確認你是否已擁有帳戶</div>
+                    <div class="desc mb-4">請輸入登入 Email</div>
                     <form class="w-100" @submit.prevent="onSubmit">
                         <div class="mb-3 text-start w-100">
                             <label class="form-label label-strong">電子郵件</label>
@@ -29,29 +29,32 @@
         </div>
     </div>
 </template>
-
 <script setup>
 import { ref } from 'vue'
-const props = defineProps({ show: Boolean })
-const emit = defineEmits(['close', 'submit', 'back'])
-
-const email = ref('eattiy1986@gmail.com') // 測試用預設
+const props = defineProps({show: Boolean})
+const emit = defineEmits(['submit', 'register', 'close'])
+const email = ref('')
 
 async function onSubmit() {
-    // 呼叫後端API寄送驗證信
-    const res = await fetch('/api/send-verify-email', {
+    if (!email.value) {
+        alert('請輸入 email')
+        return
+    }
+    const res = await fetch('/api/check-email-exists', {
         method: 'POST',
-        headers: {
-            'Content-Type':'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-            email: email.value })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.value })
     })
-    const text = await res.text();
-    // 顯示回傳訊息(可改UI)
-    alert(text)
-    // 通知外層可進到下一步
-    emit('submit', email.value)   
+    const data = await res.json()
+    if (data.exists) {
+        // 有註冊 → 可以繼續登入
+        emit('submit', email.value)
+    } else {
+        // 沒註冊 → 請先註冊
+        alert('此 email 尚未註冊，請先註冊')
+        // 你也可以直接用這行自動切到註冊
+        // emit('register')
+    }
 }
 </script>
 
@@ -80,17 +83,6 @@ padding: 2.2rem 2rem 2rem 2rem;
 position: relative;
 }
 
-/* 返回箭頭按鈕 */
-.nav-btn {
-background: none;
-border: none;
-padding: 0;
-margin-left: -5px;
-margin-top: -5px;
-box-shadow: none;
-outline: none;
-}
-
 .close-btn {
 position: absolute;
 top: 14px;
@@ -108,6 +100,16 @@ justify-content: center;
 cursor: pointer;
 z-index: 10;
 transition: background 0.15s;
+}
+
+.nav-btn {
+background: none;
+border: none;
+padding: 0;
+margin-left: -5px;
+margin-top: -5px;
+box-shadow: none;
+outline: none;
 }
 
 .email-img {

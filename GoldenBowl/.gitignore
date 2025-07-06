@@ -6,6 +6,7 @@ target/
 
 
 emailToken.properties
+gmailLogin.txt
 
 ### STS ###
 .apt_generated

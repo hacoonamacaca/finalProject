@@ -61,8 +61,30 @@ const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'back', 'login'])
 const password = ref('')
 const showPassword = ref(false)
-function onSubmit() {
-emit('login', { email: props.email, password: password.value })
+
+async function onSubmit() {
+    if (!password.value) {
+        alert('請輸入密碼')
+        return
+    }
+    const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: props.email, password: password.value })
+    })
+    const data = await res.json()
+    if (data.success) {
+        alert('登入成功！')
+        emit('login', { 
+            email: props.email,
+            userFullName: data.userFullName,
+            userEmail: data.userEmail,
+            userPhone: data.userPhone}) // 通知父層登入成功
+        // 可以加 router.push 或 step = '' 關掉 modal
+    } else {
+        alert(data.message || '帳號或密碼錯誤')
+        // 可以加：password.value = ''
+    }
 }
 </script>
 

@@ -83,6 +83,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { cityDistrictMap } from '@/assets/cityDistrictMap.js'
+import { useStoreRegister } from '@/stores/user.js'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -96,6 +97,7 @@ const enAddress = ref('')
 const lat = ref('')
 const lon = ref('')
 let map, marker
+const regStore = useStoreRegister()
 
 // 全台城市/區域清單
 const cityList = cityDistrictMap
@@ -126,6 +128,16 @@ const googleUrl = computed(() =>
 
 // 建立 Leaflet 地圖
 onMounted(() => {
+    // 若之前已填過，帶回資料
+    if (regStore.city) city.value = regStore.city
+    if (regStore.district) district.value = regStore.district
+    if (regStore.zip) zip.value = regStore.zip
+    if (regStore.street) street.value = regStore.street
+    if (regStore.door) door.value = regStore.door
+    if (regStore.enAddress) enAddress.value = regStore.enAddress
+    if (regStore.lat) lat.value = regStore.lat
+    if (regStore.lon) lon.value = regStore.lon
+
     map = L.map('map', {
         zoomControl: false,
         dragging: false,
@@ -134,6 +146,12 @@ onMounted(() => {
         attributionControl: false,
     }).setView([25.0340, 121.5645], 13)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
+
+    if (lat.value && lon.value) {
+        const p = [parseFloat(lat.value), parseFloat(lon.value)]
+        marker = L.marker(p).addTo(map)
+        map.setView(p, 17)
+    }
 })
 
 // 只要四個欄位任一改變，就自動重新查位置
@@ -149,9 +167,10 @@ watch([door, street, city, district], () => {
 async function searchLocation() {
     if (!mainAddress.value) return
     try {
-        const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(mainAddress.value)}`
-        )
+        // 加 proxy
+        const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(mainAddress.value)}`
+        const proxy = 'https://corsproxy.io/?'
+        const res = await fetch(proxy + url)
         if (!res.ok) throw new Error()
         const data = await res.json()
         if (!data[0]) return
@@ -180,6 +199,16 @@ function clearCity() {
 }
 
 function goNext() {
+    regStore.setAddressInfo({
+        city: city.value,
+        district: district.value,
+        zip: zip.value,
+        street: street.value,
+        door: door.value,
+        enAddress: enAddress.value,
+        lat: lat.value,
+        lon: lon.value
+    })
     router.push('/verifyPending')
 }
 </script>
