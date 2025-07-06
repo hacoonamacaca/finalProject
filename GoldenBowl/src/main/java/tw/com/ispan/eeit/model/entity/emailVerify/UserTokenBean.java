@@ -8,11 +8,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Data
 @Table(name = "user_token")
 @NoArgsConstructor
 public class UserTokenBean {
@@ -22,7 +20,7 @@ public class UserTokenBean {
 	private Integer id;
 
 	@Column(name = "user_id")
-	private Integer userId;
+	private Integer userid;
 
 	@Column(name = "email")
 	private String email;

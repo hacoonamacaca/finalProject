@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -28,7 +30,7 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "[user]")
+@Table(name = "app_user")
 public class UserBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +64,7 @@ public class UserBean {
     private LocalDateTime hideUntil;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<OrderBean> orders;
 
     @OneToMany(mappedBy = "user")

@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.jts.geom.Point;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +39,7 @@ public class StoreBean {
 
     @ManyToOne
     @JoinColumn(name = "owner_id")
+    @JsonIgnore
     private OwnerBean owner;
 
     @Column(length = 50)
@@ -47,8 +48,8 @@ public class StoreBean {
     @Column(length = 50)
     private String address;
 
-    @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
-    private Point storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
+    @Column(name = "store_coords")
+    private String storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
 
     private Double lng;
 
@@ -75,25 +76,32 @@ public class StoreBean {
     private Boolean isActive;
 
     @OneToMany(mappedBy = "store")
+    @JsonIgnore
     private List<FoodBean> foods;
 
     @OneToMany(mappedBy = "store")
+    @JsonIgnore
     private List<OrderBean> orders;
 
     @ManyToMany
     @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    @JsonIgnore
     private List<CategoryBean> categories;
 
     @OneToMany(mappedBy = "store")
+    @JsonIgnore
     private List<CommentBean> comments;
 
     @OneToMany(mappedBy = "store")
+    @JsonIgnore
     private List<FoodClassBean> foodClasses;
 
     @OneToMany(mappedBy = "store")
+    @JsonIgnore
     private List<CategorySearchedBean> categorySearched;
 
     // 多對多關係：Store 與 User 通過 favorite_store 表格關聯
     @ManyToMany(mappedBy = "favoriteStores")
+    @JsonIgnore
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }
