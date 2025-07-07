@@ -1,5 +1,5 @@
 <template>
-    <div v-if="show" class="modal-overlay restaurant-theme" @click="closeModal">
+    <div v-if="show" class="modal-overlay goldenbowl-restaurant-theme" @click="closeModal">
         <div class="modal-content" @click.stop>
             <div class="modal-header">
                 <h4 class="modal-title">商品詳情</h4>
@@ -21,9 +21,46 @@
                         <span class="current-price">NT${{ item.discountPrice || item.price }}</span>
                     </div>
 
-                    <!-- 商品选项 (如果有的话) -->
+                    <!-- 冰量選項 -->
+                    <div v-if="hasIceOptions" class="option-group ice-options">
+                        <div class="option-header">
+                            <h6 class="option-title">冰量</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="iceOption in iceOptions" :key="iceOption.value" class="option-item">
+                                <input type="radio" :name="'iceLevel'" :value="iceOption.value"
+                                    v-model="selectedIceLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ iceOption.name }}</span>
+                                    <span v-if="iceOption.badge" class="option-badge">{{ iceOption.badge }}</span>
+                                </span>
+                                <span class="option-price">NT${{ iceOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 配料選項 -->
+                    <div v-if="hasToppingOptions" class="option-group topping-options">
+                        <div class="option-header">
+                            <h6 class="option-title">{{ toppingTitle }}</h6>
+                            <span class="option-limit">最多可選 {{ maxToppings }} 個</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="topping in toppingOptions" :key="topping.value" class="option-item">
+                                <input type="checkbox" :value="topping.value" v-model="selectedToppings"
+                                    :disabled="!canSelectMoreToppings && !selectedToppings.includes(topping.value)" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ topping.name }}</span>
+                                </span>
+                                <span class="option-price">+NT${{ topping.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 其他商品选项 -->
                     <div v-if="item.options && item.options.length > 0" class="item-options">
-                        <h5>選項</h5>
+                        <h5>其他選項</h5>
                         <div v-for="option in item.options" :key="option.id" class="option-group">
                             <label class="option-label">{{ option.name }}</label>
                             <div class="option-items">
@@ -92,13 +129,74 @@ const emit = defineEmits(['close', 'add-to-cart'])
 const quantity = ref(1)
 const selectedOptions = ref({})
 const notes = ref('')
+const selectedIceLevel = ref('normal')
+const selectedToppings = ref([])
+
+// 冰量選項
+const iceOptions = ref([
+    { value: 'more', name: '多冰', price: 0 },
+    { value: 'normal', name: '正常冰', price: 0 },
+    { value: 'less', name: '少冰', price: 0 },
+    { value: 'light', name: '微冰', price: 0, badge: '🔥 人氣精選 ✨' },
+    { value: 'none', name: '去冰', price: 0 }
+])
+
+// 配料選項
+const toppingOptions = ref([
+    { value: 'pearl', name: '珍珠', price: 10 },
+    { value: 'taro', name: '小芋圓', price: 15 },
+    { value: 'crystal', name: '寒天晶球', price: 15 },
+    { value: 'jelly', name: '金萱茶凍', price: 10 },
+    { value: 'grass', name: '仙草', price: 10 },
+    { value: 'pudding', name: '布丁', price: 10 }
+])
+
+// 計算屬性
+const hasIceOptions = computed(() => {
+    // 根據商品類型決定是否顯示冰量選項
+    return props.item.category && (
+        props.item.category.includes('奶茶') ||
+        props.item.category.includes('拿鐵') ||
+        props.item.category.includes('茶') ||
+        props.item.category.includes('飲品')
+    )
+})
+
+const hasToppingOptions = computed(() => {
+    // 根據商品類型決定是否顯示配料選項
+    return props.item.category && (
+        props.item.category.includes('奶茶') ||
+        props.item.category.includes('茶') ||
+        props.item.category.includes('飲品')
+    )
+})
+
+const toppingTitle = computed(() => {
+    return props.item.category && props.item.category.includes('茶') ? '冰茶有料' : '配料選擇'
+})
+
+const maxToppings = computed(() => {
+    return 2 // 最多可選2個配料
+})
+
+const canSelectMoreToppings = computed(() => {
+    return selectedToppings.value.length < maxToppings.value
+})
 
 // 计算总价
 const totalPrice = computed(() => {
     let basePrice = props.item.discountPrice || props.item.price
     let optionsPrice = 0
 
-    // 计算选项价格
+    // 计算配料价格
+    selectedToppings.value.forEach(toppingValue => {
+        const topping = toppingOptions.value.find(t => t.value === toppingValue)
+        if (topping) {
+            optionsPrice += topping.price
+        }
+    })
+
+    // 计算其他选项价格
     if (props.item.options) {
         props.item.options.forEach(option => {
             const selected = selectedOptions.value[option.id]
@@ -144,6 +242,8 @@ const addToCart = () => {
         image: props.item.image,
         quantity: quantity.value,
         selectedOptions: { ...selectedOptions.value },
+        selectedIceLevel: selectedIceLevel.value,
+        selectedToppings: [...selectedToppings.value],
         notes: notes.value,
         totalPrice: totalPrice.value
     }
@@ -153,6 +253,8 @@ const addToCart = () => {
     // 重置状态
     quantity.value = 1
     selectedOptions.value = {}
+    selectedIceLevel.value = 'normal'
+    selectedToppings.value = []
     notes.value = ''
 }
 
@@ -161,6 +263,8 @@ watch(() => props.show, (newVal) => {
     if (newVal) {
         quantity.value = 1
         selectedOptions.value = {}
+        selectedIceLevel.value = 'light' // 預設微冰
+        selectedToppings.value = []
         notes.value = ''
 
         // 初始化选项
@@ -199,7 +303,8 @@ watch(() => props.show, (newVal) => {
     width: 100%;
     max-width: 500px;
     max-height: 90vh;
-    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
     box-shadow: 0 12px 40px var(--restaurant-shadow-dark);
 }
 
@@ -210,6 +315,7 @@ watch(() => props.show, (newVal) => {
     padding: 1.5rem;
     border-bottom: 1px solid var(--restaurant-border-light);
     background: var(--restaurant-gradient-light);
+    flex-shrink: 0;
 }
 
 .modal-title {
@@ -241,6 +347,8 @@ watch(() => props.show, (newVal) => {
 }
 
 .modal-body {
+    flex: 1;
+    overflow-y: auto;
     padding: 1.5rem;
 }
 
@@ -249,7 +357,7 @@ watch(() => props.show, (newVal) => {
     height: 200px;
     border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .item-image img {
@@ -258,66 +366,87 @@ watch(() => props.show, (newVal) => {
     object-fit: cover;
 }
 
+.item-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
 .item-name {
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--restaurant-text-primary);
-    margin: 0 0 0.75rem 0;
+    margin: 0;
 }
 
 .item-description {
     color: var(--restaurant-text-secondary);
+    margin: 0;
     line-height: 1.5;
-    margin: 0 0 1.5rem 0;
 }
 
 .price-section {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--restaurant-bg-light);
-    border-radius: 8px;
-    border: 1px solid var(--restaurant-border-light);
+    gap: 0.5rem;
 }
 
 .original-price {
-    font-size: 1rem;
     color: var(--restaurant-text-muted);
     text-decoration: line-through;
+    font-size: 0.9rem;
 }
 
 .current-price {
+    color: var(--restaurant-primary-dark);
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--restaurant-primary-dark);
 }
 
-.item-options {
-    margin-bottom: 1.5rem;
+/* 選項組樣式 */
+.option-group {
+    border: 1px solid var(--restaurant-border-light);
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
 }
 
-.item-options h5 {
-    font-size: 1.1rem;
+.ice-options {
+    background: linear-gradient(135deg, #ffeef0 0%, #fff5f5 100%);
+}
+
+.topping-options {
+    background: var(--restaurant-bg-primary);
+}
+
+.option-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.option-title {
     font-weight: 600;
     color: var(--restaurant-text-primary);
-    margin: 0 0 1rem 0;
+    margin: 0;
 }
 
-.option-group {
-    margin-bottom: 1.5rem;
-    padding: 1rem;
-    background: var(--restaurant-bg-light);
-    border-radius: 8px;
-    border: 1px solid var(--restaurant-border-light);
-}
-
-.option-label {
-    display: block;
+.option-required {
+    background: var(--restaurant-primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
     font-weight: 500;
-    color: var(--restaurant-text-primary);
-    margin-bottom: 0.5rem;
+}
+
+.option-limit {
+    background: var(--restaurant-bg-secondary);
+    color: var(--restaurant-text-secondary);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
 }
 
 .option-items {
@@ -329,71 +458,92 @@ watch(() => props.show, (newVal) => {
 .option-item {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-    padding: 0.75rem;
+    gap: 0.75rem;
+    padding: 0.5rem;
     border-radius: 6px;
+    cursor: pointer;
     transition: all 0.2s ease;
-    background: var(--restaurant-bg-primary);
-    border: 1px solid var(--restaurant-border-medium);
 }
 
 .option-item:hover {
-    background: var(--restaurant-shadow-light);
-    border-color: var(--restaurant-primary-light);
+    background: var(--restaurant-bg-light);
+}
+
+.option-item input[type="radio"],
+.option-item input[type="checkbox"] {
+    margin: 0;
+}
+
+.option-label {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.option-name {
+    color: var(--restaurant-text-primary);
+    font-weight: 500;
+}
+
+.option-badge {
+    background: var(--restaurant-primary-light);
+    color: var(--restaurant-primary-dark);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
 }
 
 .option-price {
-    margin-left: auto;
     color: var(--restaurant-primary-dark);
     font-weight: 500;
+    font-size: 0.9rem;
 }
 
-.quantity-section,
-.notes-section {
-    margin-bottom: 1.5rem;
-}
-
-.quantity-label,
-.notes-label {
-    display: block;
-    font-weight: 500;
-    color: var(--restaurant-text-primary);
-    margin-bottom: 0.5rem;
-}
-
-.quantity-controls {
+/* 數量選擇 */
+.quantity-section {
     display: flex;
     align-items: center;
     gap: 1rem;
     padding: 1rem;
     background: var(--restaurant-bg-light);
     border-radius: 8px;
+}
+
+.quantity-label {
+    font-weight: 600;
+    color: var(--restaurant-text-primary);
+}
+
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--restaurant-bg-primary);
     border: 1px solid var(--restaurant-border-light);
+    border-radius: 6px;
+    padding: 0.25rem;
 }
 
 .quantity-btn {
-    width: 2.5rem;
-    height: 2.5rem;
-    border: 1px solid var(--restaurant-border-medium);
+    width: 2rem;
+    height: 2rem;
+    border: none;
     background: var(--restaurant-bg-primary);
-    border-radius: 6px;
+    border-radius: 4px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    font-size: 1rem;
     font-weight: 600;
-    transition: all 0.3s ease;
-    color: var(--restaurant-text-primary);
+    transition: all 0.2s ease;
 }
 
 .quantity-btn:hover:not(:disabled) {
-    background: var(--restaurant-gradient-primary);
-    color: var(--restaurant-text-primary);
-    border-color: var(--restaurant-primary);
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
+    background: var(--restaurant-primary);
+    color: white;
 }
 
 .quantity-btn:disabled {
@@ -402,23 +552,32 @@ watch(() => props.show, (newVal) => {
 }
 
 .quantity-display {
-    font-size: 1.2rem;
-    font-weight: 600;
     min-width: 2rem;
     text-align: center;
+    font-weight: 600;
+    color: var(--restaurant-text-primary);
+}
+
+/* 備註 */
+.notes-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.notes-label {
+    font-weight: 600;
     color: var(--restaurant-text-primary);
 }
 
 .notes-input {
-    width: 100%;
     padding: 0.75rem;
-    border: 1px solid var(--restaurant-border-medium);
-    background: var(--restaurant-bg-primary);
+    border: 1px solid var(--restaurant-border-light);
     border-radius: 6px;
     resize: vertical;
     font-family: inherit;
+    background: var(--restaurant-bg-primary);
     color: var(--restaurant-text-primary);
-    transition: all 0.2s ease;
 }
 
 .notes-input:focus {
@@ -434,11 +593,11 @@ watch(() => props.show, (newVal) => {
     padding: 1.5rem;
     border-top: 1px solid var(--restaurant-border-light);
     background: var(--restaurant-bg-secondary);
-    border-radius: 0 0 12px 12px;
+    flex-shrink: 0;
 }
 
 .total-price {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--restaurant-primary-dark);
 }
@@ -447,25 +606,25 @@ watch(() => props.show, (newVal) => {
     background: var(--restaurant-gradient-primary);
     color: var(--restaurant-text-primary);
     border: 1px solid var(--restaurant-primary-light);
-    padding: 0.75rem 2rem;
+    padding: 0.75rem 1.5rem;
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 2px 8px var(--restaurant-shadow-light);
 }
 
 .add-to-cart-btn:hover {
     background: var(--restaurant-primary-hover);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 16px var(--restaurant-shadow-medium);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--restaurant-shadow-medium);
 }
 
-/* 响应式设计 */
+/* 響應式設計 */
 @media (max-width: 768px) {
     .modal-content {
         margin: 0.5rem;
         max-width: none;
+        max-height: 95vh;
     }
 
     .modal-header,
@@ -474,14 +633,14 @@ watch(() => props.show, (newVal) => {
         padding: 1rem;
     }
 
-    .modal-footer {
+    .option-item {
         flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
+        align-items: flex-start;
+        gap: 0.5rem;
     }
 
-    .add-to-cart-btn {
-        width: 100%;
+    .option-price {
+        align-self: flex-end;
     }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-container restaurant-theme">
+    <div class="restaurant-container goldenbowl-restaurant-theme">
         <!-- 餐廳橫幅 -->
         <RestaurantBanner :restaurant="restaurant" />
 

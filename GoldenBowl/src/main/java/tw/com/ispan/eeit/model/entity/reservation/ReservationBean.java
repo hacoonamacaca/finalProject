@@ -15,10 +15,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.entity.UserBean;
+import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
 
 @Entity
@@ -26,21 +29,20 @@ import tw.com.ispan.eeit.model.enums.ReservationStatus;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class ReservationBean {
-    @ManyToMany
-    @JoinTable(name = "reservation_tables", joinColumns = @JoinColumn(name = "reservation_id"), inverseJoinColumns = @JoinColumn(name = "tables_id"))
-    private Set<TableBean> tables = new HashSet<>();
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    // 關聯到 User
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserBean user;
 
-    @Column(name = "store_id", nullable = false)
-    private Integer storeId;
+    // 關聯到 Store
+    @ManyToOne
+    @JoinColumn(name = "store_id", nullable = false)
+    private StoreBean store;
 
     @Column(name = "reserved_date", nullable = false)
     private LocalDate reservedDate;
@@ -66,4 +68,8 @@ public class ReservationBean {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @ManyToMany
+    @JoinTable(name = "reservation_tables", joinColumns = @JoinColumn(name = "reservation_id"), inverseJoinColumns = @JoinColumn(name = "tables_id"))
+    private Set<TableBean> tables = new HashSet<>();
 }

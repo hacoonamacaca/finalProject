@@ -27,6 +27,9 @@ import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
 import tw.com.ispan.eeit.model.entity.food.FoodClassBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
+import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
+import tw.com.ispan.eeit.model.entity.reservation.TableBean;
+import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 
 @Data
 @Entity
@@ -79,6 +82,15 @@ public class StoreBean {
 
     @OneToMany(mappedBy = "store")
     private List<OrderBean> orders;
+
+    @OneToMany(mappedBy = "store")
+    private List<ReservationBean> reservations;
+
+    @OneToMany(mappedBy = "store")
+    private List<TableBean> tables;
+
+    @OneToMany(mappedBy = "store")
+    private List<OpenHourBean> openHours;
 
     @ManyToMany
     @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))

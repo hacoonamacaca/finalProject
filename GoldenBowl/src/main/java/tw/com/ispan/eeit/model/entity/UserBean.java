@@ -23,12 +23,13 @@ import tw.com.ispan.eeit.model.entity.comment.LikedFoodBean;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
 import tw.com.ispan.eeit.model.entity.food.UserTagBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
+import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "[user]")
+@Table(name = "app_user")
 public class UserBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -75,6 +76,10 @@ public class UserBean {
 
     @OneToMany(mappedBy = "user")
     private List<CategorySearchedBean> categorySearched;
+
+    // 新增：用戶的訂位記錄
+    @OneToMany(mappedBy = "user")
+    private List<ReservationBean> reservations;
 
     // 多對多關係：User 與 Store 通過 favorite_store 表格關聯
     @ManyToMany

@@ -15,4 +15,5 @@ public class ReservationRequest {
     private Integer guests;
     private Integer duration;
     private List<Integer> tableIds;
+    private String content;
 }
