@@ -111,20 +111,27 @@ async function onSubmit() {
         });
         // 註冊成功才跳下一步
         if (regRes.data.success) {
-            // 這邊你可以記錄 ownerId、email 等資訊，傳遞到下一頁
+            // 記錄 ownerId, storeName, phone 到 localStorage，確保跳轉下一頁能取到
+            const ownerId = regRes.data.ownerId + ''
+            localStorage.setItem('registerOwnerId', ownerId)
+            localStorage.setItem('registerStoreName', storeName.value)
+            localStorage.setItem('registerPhone', phone.value)
+            // 推薦如果用 Pinia 也同步寫入
+
+            console.log("跳轉 ownerId:", ownerId)
             router.push({
                 path: '/registerStoreInfo',
                 query: {
-                    ownerId: regRes.data.ownerId,   // 回傳 id 或 email 都可以
+                    ownerId: ownerId,   // 跳轉時也帶 ownerId，確保 next page 能從 query 拿到
                     storeName: storeName.value,
                     phone: phone.value
                 }
-            });
+            })
         } else {
-            error.value = regRes.data.message || '註冊失敗';
+            error.value = regRes.data.message || '註冊失敗'
         }
     } catch (e) {
-        error.value = '伺服器錯誤，請稍後再試';
+        error.value = '伺服器錯誤，請稍後再試'
     }
 }
 
@@ -136,8 +143,6 @@ watch([password, passwordConfirm], () => {
         error.value = ''
     }
 })
-
-
 </script>
 
 <style scoped>

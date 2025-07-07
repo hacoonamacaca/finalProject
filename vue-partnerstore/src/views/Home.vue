@@ -132,7 +132,7 @@ async function handleLoginEmail(email) {
     loginEmailError.value = ''
     try {
         // 請改成你的API路徑
-        const res = await axios.post('/api/store/check-email', { email })
+        const res = await axios.post('/api/owner/check-email', { email })
         if (res.data.exists) {
             step.value = 'loginPassword'
         } else {
@@ -146,7 +146,7 @@ async function handleLoginEmail(email) {
 // 登入密碼
 async function handlePasswordLogin({ email, password }) {
     try {
-        const res = await axios.post('/api/store/login', { email, password });
+        const res = await axios.post('/api/owner/login', { email, password });
         if (res.data.success) {
             localStorage.setItem('userFullName', res.data.name)
             localStorage.setItem('userEmail', res.data.email)

@@ -63,7 +63,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 function goBack() {
-    router.push('/store')
+    router.push('/')
 }
 
 const initial = reactive({

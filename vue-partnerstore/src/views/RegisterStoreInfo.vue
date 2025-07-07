@@ -66,27 +66,37 @@ const route = useRoute()
 const router = useRouter()
 const regStore = useStoreRegister()
 
-console.log("ownerId=", route.query.ownerId) // ← 就寫這裡
-
-const storeName = ref(route.query.storeName || '')
+const storeName = ref('')
 const storeCategory = ref('')
-const phone = ref(route.query.phone || '')
-const storeIntro = ref(route.query.storeIntro || '')
+const phone = ref('')
+const storeIntro = ref('')
 const files = ref(null);
-
 const categories = ref([])
 
-function onSaveDraft() {
-    alert('已儲存草稿，返回主頁')
-    router.push('/') // 或其他頁面
-}
-
-function onFileChange(event) {
-    files.value = event.target.files;
-}
-
 onMounted(async () => {
-    console.log("ownerId=", route.query.ownerId) // ← 就寫這裡
+    // ownerId 優先順序：query > pinia > localStorage
+    let ownerId = route.query.ownerId || regStore.ownerId || localStorage.getItem('registerOwnerId');
+    if (!ownerId) {
+        alert('請先註冊或登入')
+        router.push('/')
+        return
+    }
+    // pinia 和 localStorage 都同步成字串
+    regStore.ownerId = ownerId + '';
+    localStorage.setItem('registerOwnerId', ownerId + '');
+
+    // 若有 storeId 也帶上
+    let storeId = route.query.storeId || regStore.storeId || localStorage.getItem('registerStoreId')
+    if (storeId) {
+        regStore.storeId = storeId + ''
+        localStorage.setItem('registerStoreId', storeId + '')
+    }
+
+    storeName.value = regStore.storeName || route.query.storeName || ''
+    phone.value = regStore.phone || route.query.phone || ''
+    storeIntro.value = regStore.storeIntro || route.query.storeIntro || ''
+    storeCategory.value = regStore.storeCategory || ''
+
     try {
         const res = await axios.get('/api/category/all')
         categories.value = res.data
@@ -96,16 +106,59 @@ onMounted(async () => {
     }
 })
 
-function onSubmit() {
+async function onSubmit() {
+    const ownerId = regStore.ownerId || localStorage.getItem('registerOwnerId');
+    if (!ownerId || !storeName.value || !storeCategory.value) {
+        alert('請完整填寫店名和類型')
+        return
+    }
+    const payload = {
+        ownerId: ownerId + '', // 保證是字串
+        name: storeName.value,
+        storeCategory: storeCategory.value,
+        storeIntro: storeIntro.value,
+        phone: phone.value,
+    }
+    try {
+        const res = await axios.post('/api/store/registerInfo', payload)
+        if (res.data.success) {
+            console.log('storeId:', res.data.storeId)
+            regStore.storeId = res.data.storeId + ''
+            localStorage.setItem('registerStoreId', res.data.storeId + '')
+            // 設定資料到 pinia，並且寫入 localStorage
+            regStore.setBasicInfo
+            regStore.setBasicInfo({
+                ownerId: ownerId + '',
+                storeName: storeName.value,
+                storeCategory: storeCategory.value,
+                phone: phone.value,
+                storeIntro: storeIntro.value
+            })
+            router.push({
+                path: '/verifyAddress',
+                query: { ownerId: ownerId + '',
+                    storeId: res.data.storeId + ''
+                }
+            })
+        } else {
+            alert(res.data.message || '商家資訊送出失敗')
+        }
+    } catch (e) {
+        alert('伺服器錯誤，請稍後再試')
+    }
+}
+
+function onSaveDraft() {
     regStore.setBasicInfo({
-        ownerId: route.query.ownerId,
+        ownerId: regStore.ownerId,
         storeName: storeName.value,
         storeCategory: storeCategory.value,
         phone: phone.value,
         storeIntro: storeIntro.value,
-        files: files.value,
+        files: files.value
     })
-    router.push('/verifyAddress')
+    alert('已儲存草稿，返回主頁')
+    router.push('/')
 }
 </script>
 

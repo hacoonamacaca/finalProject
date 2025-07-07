@@ -8,6 +8,7 @@ import java.util.Set;
 import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -47,6 +48,7 @@ public class StoreBean {
     @Column(length = 50)
     private String address;
 
+    @Convert(converter = tw.com.ispan.eeit.model.converter.PointToGeographyConverter.class)
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
     private Point storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
 
@@ -54,7 +56,7 @@ public class StoreBean {
 
     private Double lat;
 
-    @Column(columnDefinition = "varchar(max)")
+    @Column(name = "store_intro" , columnDefinition = "varchar(max)")
     private String storeIntro;
 
     @Column(columnDefinition = "varchar(max)")

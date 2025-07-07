@@ -58,7 +58,7 @@ async function onSubmit() {
     loading.value = true
     try {
         // 請改成你的API路徑
-        const res = await axios.post('/api/store/check-email', { email: email.value })
+        const res = await axios.post('/api/owner/check-email', { email: email.value })
         if (res.data.exists) {
             emit('submit', email.value) // 通知父元件可以進入密碼步驟
         } else {

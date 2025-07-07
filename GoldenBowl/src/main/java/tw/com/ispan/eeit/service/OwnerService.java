@@ -18,7 +18,12 @@ public class OwnerService {
 	}
 	
 	public OwnerBean findByEmailAndPassword(String email, String password) {
-		return ownerRepository.findByEmailAndPassword(email, password);
+		OwnerBean owner = ownerRepository.findByEmailAndPassword(email, password);
+		if(owner != null) {
+			owner.setLastLogin(LocalDateTime.now());
+			ownerRepository.save(owner);
+		}
+		return owner;
 	}
 	
 	public OwnerBean register(String email, String password, String name, String phone) {
