@@ -33,7 +33,7 @@ spring:
       #update 更新java entity時，也會創建
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-        #會自動捕捉entity讓你不用備註column
+        #會自動捕捉entity讓你不用備註column，會自動將命名轉為蛇行命名，但如果有下面的選項則會被覆蓋
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         #連結資料庫讓名稱與java相同
    

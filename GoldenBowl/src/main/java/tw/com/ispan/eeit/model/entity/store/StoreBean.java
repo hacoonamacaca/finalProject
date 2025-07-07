@@ -57,7 +57,7 @@ public class StoreBean {
 
     private Double lat;
 
-    @Column(columnDefinition = "varchar(max)")
+    @Column(name="sotre_intro",columnDefinition = "varchar(max)")
     private String storeIntro;
 
     @Column(columnDefinition = "varchar(max)")

@@ -43,8 +43,6 @@ public class OrderDetailBean {
 	@JsonBackReference
 	private FoodBean food;
 
-
-
 	private Integer quantity;
 
 	private Integer price;
@@ -55,7 +53,6 @@ public class OrderDetailBean {
 	private Integer total;
 
 	@OneToMany(mappedBy = "orderDetail",fetch = FetchType.LAZY)
-	
 	private Set<LikedFoodBean> likedFoods;
 	
 	@ManyToMany(fetch = FetchType.LAZY)

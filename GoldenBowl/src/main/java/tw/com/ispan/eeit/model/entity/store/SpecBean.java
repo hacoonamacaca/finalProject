@@ -47,7 +47,7 @@ public class SpecBean implements Serializable {
     @Column(name = "is_active", columnDefinition = "bit default 1") // 可以用 columnDefinition 確保預設值
     private Boolean isActive;
     
-    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "specs") 
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "specs")
     private List<OrderDetailBean> orderDetails; 
     // 指向 OrderDetailBean 中的 "specs" 屬性
     // 修正為 OrderDetailBean 的列表 ，表示OrderDetail指向specs

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,6 +19,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -36,7 +38,7 @@ public class FoodBean {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     private StoreBean store;
 
@@ -64,27 +66,27 @@ public class FoodBean {
     @Column(name = "img_resource", length = 500)
     private String imgResource;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnore
     @JoinTable(name = "food_tag", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<TagBean> tags;
 
-    @OneToMany(mappedBy = "food")
+    @OneToMany(mappedBy = "food",fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<OrderDetailBean> orderDetails;
 
-    @OneToMany(mappedBy = "food")
+    @OneToMany(mappedBy = "food",fetch = FetchType.LAZY)
     private List<LikedFoodBean> likedFoods;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "food_spec_group", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "spec_group_id"))
     private List<SpecGroupBean> specGroups;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "food_class_id", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
     private List<FoodClassBean> foodClasses;
 
     // 多對多關係：Food 與 User 通過 favorite_food 表格關聯
-    @ManyToMany(mappedBy = "favoriteFoods")
+    @ManyToMany(mappedBy = "favoriteFoods",fetch = FetchType.LAZY)
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

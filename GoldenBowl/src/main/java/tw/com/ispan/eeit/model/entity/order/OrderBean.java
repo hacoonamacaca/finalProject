@@ -3,9 +3,12 @@ package tw.com.ispan.eeit.model.entity.order;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.hibernate.Hibernate;
+
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,6 +17,9 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.NamedAttributeNode;
+import jakarta.persistence.NamedEntityGraph;
+import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -23,6 +29,8 @@ import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
+
+
 
 @Data
 @Entity
@@ -66,37 +74,37 @@ public class OrderBean {
 	@JsonManagedReference
 	private List<OrderDetailBean> orderDetails;
 
-	@OneToOne(mappedBy = "order",fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "order",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
 	@JsonManagedReference
-	private CommentBean comments;
+	private CommentBean comment;
 //	mappedBy="order" 是comments的屬性order
-//    @Override
-//    public String toString() {
-//        // 安全地獲取 ID，而不觸發懶加載
-//        Integer userId = (user != null) ? user.getId() : null;
-//        Integer storeId = (store != null) ? store.getId() : null;
-//        Integer promotionId = (promotion != null) ? promotion.getId() : null;
-//
-//        // 檢查集合是否已初始化，以避免 LazyInitializationException
-//        String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails)) ?
-//                                   "orderDetails.size=" + orderDetails.size() : "orderDetails=[Not Loaded]";
-//        String commentsInfo = (comments != null && Hibernate.isInitialized(comments)) ?
-//                              "comments.size=" + comments.size() : "comments=[Not Loaded]";
-//
-//        return "OrderBean ["
-//                + "id=" + id
-//                + ", userId=" + userId
-//                + ", storeId=" + storeId
-//                + ", promotionId=" + promotionId
-//                + ", total=" + total
-//                + ", status='" + status + "'"
-//                + ", createTime=" + createTime
-//                + ", content='" + content + "'"
-//                + ", pickupTime=" + pickupTime
-//                + ", " + orderDetailsInfo
-//                + ", " + commentsInfo
-//                + "]";
-//    }
+	
+    @Override
+    public String toString() {
+        // 安全地獲取 ID，而不觸發懶加載
+        Integer userId = (user != null) ? user.getId() : null;
+        Integer storeId = (store != null) ? store.getId() : null;
+        Integer promotionId = (promotion != null) ? promotion.getId() : null;
+
+        // 檢查集合是否已初始化，以避免 LazyInitializationException
+        String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails)) ?
+                                   "orderDetails.size=" + orderDetails.size() : "orderDetails=[Not Loaded]";
+        
+
+        return "OrderBean ["
+                + "id=" + id
+                + ", userId=" + userId
+                + ", storeId=" + storeId
+                + ", promotionId=" + promotionId
+                + ", total=" + total
+                + ", status='" + status + "'"
+                + ", createTime=" + createTime
+                + ", content='" + content + "'"
+                + ", pickupTime=" + pickupTime
+                + ", " + orderDetailsInfo
+                + ", " 
+                + "]";
+    }
 	
 	
 	

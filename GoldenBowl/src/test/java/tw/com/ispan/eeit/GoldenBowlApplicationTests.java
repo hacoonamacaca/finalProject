@@ -46,11 +46,11 @@ class GoldenBowlApplicationTests {
 			System.out.println(orderBean.toString());
 		} 
 		System.out.println("----------------------------------------");
-		orderList = orderRepository.findByUser_IdAndStatusNot(1,null);
-////	// 遍历orderList，打印每个订单的content
-		for (OrderBean orderBean : orderList) {
-			System.out.println(orderBean.toString());
-		}
+//		orderList = orderRepository.findByUser_IdAndStatusNot(1,null);
+//////	// 遍历orderList，打印每个订单的content
+//		for (OrderBean orderBean : orderList) {
+//			System.out.println(orderBean.toString());
+//		}
 		
 		// 打印"success"
 		System.out.println("success");

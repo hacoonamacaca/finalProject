@@ -29,15 +29,15 @@ public class CommentBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+//
+//    @Column(name = "order_id")
+//    private Integer orderId;
+//
+//    @Column(name = "user_id")
+//    private Integer userId;
 
-    @Column(name = "order_id")
-    private Integer orderId;
-
-    @Column(name = "user_id")
-    private Integer userId;
-
-    @Column(name = "store_id")
-    private Integer storeId;
+//    @Column(name = "store_id")
+//    private Integer storeId;
 
     @Column(length = 500)
     private String content;
@@ -57,17 +57,22 @@ public class CommentBean {
     private Boolean isHidden = false;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", insertable = false, updatable = false)
+    @JoinColumn(name = "order_id", unique = true, nullable = false)
     @JsonBackReference
     private OrderBean order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id",unique = true, nullable = false)
     @JsonIgnore
     private UserBean user;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", insertable = false, updatable = false)
+    @JoinColumn(name = "store_id",unique = true, nullable = false)
     @JsonIgnore
     private StoreBean store;
+    
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name = "store_id", insertable = false, updatable = false)
+//    @JsonIgnore
+//    private StoreBean store;
 }
