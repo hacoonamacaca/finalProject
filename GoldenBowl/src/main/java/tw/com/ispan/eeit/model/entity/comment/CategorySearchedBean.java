@@ -38,6 +38,7 @@ public class CategorySearchedBean {
 @Embeddable
 @Data
 class CategorySearchedId implements java.io.Serializable {
+	
     @Column(name = "user_id")
     private Integer userId;
 

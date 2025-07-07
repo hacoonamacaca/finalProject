@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.service.Coupon;
+package tw.com.ispan.eeit.service.coupon;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import tw.com.ispan.eeit.model.entity.promotion.NotificationBean;
-import tw.com.ispan.eeit.repository.Coupon.NotificationRepository;
+import tw.com.ispan.eeit.repository.coupon.NotificationRepository;
 
 @Service
 public class NotificationService {

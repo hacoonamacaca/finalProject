@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.repository.Plan;
+package tw.com.ispan.eeit.repository.plan;
 
 import java.util.List;
 

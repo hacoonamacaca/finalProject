@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.service.Plan;
+package tw.com.ispan.eeit.service.plan;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import tw.com.ispan.eeit.model.entity.promotion.SubRecordBean;
-import tw.com.ispan.eeit.repository.Plan.SubRecordRepository;
+import tw.com.ispan.eeit.repository.plan.SubRecordRepository;
 
 @Service
 public class SubRecordService {

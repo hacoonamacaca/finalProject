@@ -17,20 +17,32 @@ class GoldenBowlApplicationTests {
 
 	@Test
 	void contextLoads() {
+		// 创建一个OrderBean对象
 		OrderBean order = new OrderBean();
+		// 创建一个UserBean对象
 		UserBean user = new UserBean();
+		// 设置UserBean对象的id为1
 		user.setId(1);
-		order.setContent("test3");
+		System.out.println(user.toString());
+		// 设置OrderBean对象的content为"test3"
+//		order.setContent("test3");
+//
+//		// 设置OrderBean对象的total为95
+//		order.setTotal(95);
+//		// 设置OrderBean对象的user为user
+//		order.setUser(user);
 
-		order.setTotal(95);
-		order.setUser(user);
-
-		orderService.create(order);
-		List<OrderBean> orderList = orderService.findAllByUserId(1);
+		
+//		// 调用orderService的create方法，创建order对象
+//		orderService.create(order);
+		// 调用orderService的findAllByUserId方法，获取用户id为1的所有订单
+		List<OrderBean> orderList = orderService.findOrdersByUserId(1);
+////		// 遍历orderList，打印每个订单的content
 		for (OrderBean orderBean : orderList) {
 			System.out.println(orderBean.toString());
 		}
-
+		
+		// 打印"success"
 		System.out.println("success");
 	}
 

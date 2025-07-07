@@ -1,5 +1,5 @@
 //資料存取層
-package tw.com.ispan.eeit.repository.Coupon;
+package tw.com.ispan.eeit.repository.coupon;
 //引入 List，因為你在下面的自訂查詢方法會回傳 List<Promotion> 型別
 import java.util.List;
 

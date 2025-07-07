@@ -1,6 +1,7 @@
 package tw.com.ispan.eeit.model.entity.store;
 
 import java.io.Serializable;
+import java.util.List;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,11 +10,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
 
 @Data
 @NoArgsConstructor
@@ -43,4 +46,9 @@ public class SpecBean implements Serializable {
 
     @Column(name = "is_active", columnDefinition = "bit default 1") // 可以用 columnDefinition 確保預設值
     private Boolean isActive;
+    
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "specs") 
+    private List<OrderDetailBean> orderDetails; 
+    // 指向 OrderDetailBean 中的 "specs" 屬性
+    // 修正為 OrderDetailBean 的列表 ，表示OrderDetail指向specs
 }

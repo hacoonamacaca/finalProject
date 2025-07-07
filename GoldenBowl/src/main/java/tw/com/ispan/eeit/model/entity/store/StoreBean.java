@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,6 +18,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
@@ -37,7 +38,7 @@ public class StoreBean {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private OwnerBean owner;
 
@@ -48,8 +49,9 @@ public class StoreBean {
     private String address;
 
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
-    private Point storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
-
+    private String storeCoords; 
+    // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
+    
     private Double lng;
 
     private Double lat;
