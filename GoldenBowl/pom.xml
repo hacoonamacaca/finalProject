@@ -119,6 +119,11 @@
 		    <version>4.10.1</version>
 		</dependency>
 		
+		<!--解決Hibernate 回傳geography 二進位資料轉換成 Java 的 Point 物件時的辨識問題-->
+		<dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-spatial</artifactId>
+        </dependency>
 
 	</dependencies>
 
