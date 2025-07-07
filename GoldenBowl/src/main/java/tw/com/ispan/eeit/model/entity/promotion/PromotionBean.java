@@ -3,6 +3,9 @@ package tw.com.ispan.eeit.model.entity.promotion;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -79,6 +82,7 @@ public class PromotionBean {
 	private String status;
 
 	@OneToMany(mappedBy = "promotion")
+	@JsonManagedReference
 	private List<OrderBean> orders;
 
 	@OneToMany(mappedBy = "promotion")

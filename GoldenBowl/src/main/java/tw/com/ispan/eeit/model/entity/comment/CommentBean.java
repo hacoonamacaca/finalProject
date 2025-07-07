@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.entity.comment;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -54,9 +56,9 @@ public class CommentBean {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", insertable = false, updatable = false)
-    @JsonIgnore
+    @JsonBackReference
     private OrderBean order;
 
     @ManyToOne(fetch = FetchType.LAZY)

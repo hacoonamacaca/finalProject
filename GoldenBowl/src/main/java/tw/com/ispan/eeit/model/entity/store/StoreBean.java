@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -76,26 +77,22 @@ public class StoreBean {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<FoodBean> foods;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<OrderBean> orders;
 
-    @ManyToMany
-    @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<CategoryBean> categories;
+   
 
-    @OneToMany(mappedBy = "store")
-    private List<CommentBean> comments;
-
-    @OneToMany(mappedBy = "store")
-    private List<FoodClassBean> foodClasses;
-
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<CategorySearchedBean> categorySearched;
 
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private List<CategoryBean> categories;
     // 多對多關係：Store 與 User 通過 favorite_store 表格關聯
-    @ManyToMany(mappedBy = "favoriteStores")
+    @ManyToMany(mappedBy = "favoriteStores",fetch = FetchType.LAZY)
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

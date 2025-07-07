@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -62,10 +65,12 @@ public class FoodBean {
     private String imgResource;
 
     @ManyToMany
+    @JsonIgnore
     @JoinTable(name = "food_tag", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     private List<TagBean> tags;
 
     @OneToMany(mappedBy = "food")
+    @JsonManagedReference
     private List<OrderDetailBean> orderDetails;
 
     @OneToMany(mappedBy = "food")

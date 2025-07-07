@@ -1,6 +1,10 @@
 package tw.com.ispan.eeit.model.entity.order;
 
 import java.util.List;
+import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,14 +35,15 @@ public class OrderDetailBean {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "order_id")//SQLServer的名稱
+	@JsonBackReference
 	private OrderBean order;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "food_id")
+	@JsonBackReference
 	private FoodBean food;
 
-	@Column(length = 100)
-	private String name;
+
 
 	private Integer quantity;
 
@@ -50,9 +55,11 @@ public class OrderDetailBean {
 	private Integer total;
 
 	@OneToMany(mappedBy = "orderDetail",fetch = FetchType.LAZY)
-	private List<LikedFoodBean> likedFoods;
+	
+	private Set<LikedFoodBean> likedFoods;
 	
 	@ManyToMany(fetch = FetchType.LAZY)
+	@JsonIgnore
 	@JoinTable(
 			name="order_detail_spec",
 			joinColumns=@JoinColumn(name="order_detail_id"),

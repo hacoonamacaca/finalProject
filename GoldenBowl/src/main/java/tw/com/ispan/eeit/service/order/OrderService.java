@@ -85,6 +85,30 @@ public class OrderService {
     // 根據用戶 ID 查找訂單
     // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
     public List<OrderBean> findOrdersByUserId(Integer userId) {
-        return orderRepository.findByUser_Id(userId);
+    	if(userId!=null) {
+    		return orderRepository.findByUser_Id(userId);
+    	}
+    	return null;
     }
+    
+    // 根據用戶 ID 查找訂單
+    // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
+    public List<OrderBean> findOrdersUser_IdAndStatus(Integer userId,String status) {
+    	if(userId!=null&& !status.isEmpty() && status.length()>0) {
+
+    		return orderRepository.findByUser_IdAndStatus(userId,status);
+    	}
+    	return null;
+    }
+    // 根據用戶 ID 查找訂單
+    // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
+    public List<OrderBean> findOrdersByUser_IdAndStatusNot(Integer userId,String status) {
+        if(userId!=null&& !status.isEmpty() && status.length()>0) {
+        	return orderRepository.findByUser_IdAndStatusNot(userId,status);
+        }
+        return null;
+    }
+    
+    
+    
 }

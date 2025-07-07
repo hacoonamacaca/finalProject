@@ -3,7 +3,8 @@ package tw.com.ispan.eeit.model.entity.order;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.hibernate.Hibernate;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,13 +35,16 @@ public class OrderBean {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
+	@JsonBackReference
 	private UserBean user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonBackReference
 	@JoinColumn(name = "store_id")//customer_order表中的欄位
 	private StoreBean store;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonBackReference
 	@JoinColumn(name = "promotion_id")
 	private PromotionBean promotion; // 假設 Promotion Entity 存在
 
@@ -58,38 +63,40 @@ public class OrderBean {
 	private LocalDateTime pickupTime;
 
 	@OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<OrderDetailBean> orderDetails;
 
-	@OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
-	private List<CommentBean> comments;
+	@OneToOne(mappedBy = "order",fetch = FetchType.LAZY)
+	@JsonManagedReference
+	private CommentBean comments;
 //	mappedBy="order" 是comments的屬性order
-    @Override
-    public String toString() {
-        // 安全地獲取 ID，而不觸發懶加載
-        Integer userId = (user != null) ? user.getId() : null;
-        Integer storeId = (store != null) ? store.getId() : null;
-        Integer promotionId = (promotion != null) ? promotion.getId() : null;
-
-        // 檢查集合是否已初始化，以避免 LazyInitializationException
-        String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails)) ?
-                                   "orderDetails.size=" + orderDetails.size() : "orderDetails=[Not Loaded]";
-        String commentsInfo = (comments != null && Hibernate.isInitialized(comments)) ?
-                              "comments.size=" + comments.size() : "comments=[Not Loaded]";
-
-        return "OrderBean ["
-                + "id=" + id
-                + ", userId=" + userId
-                + ", storeId=" + storeId
-                + ", promotionId=" + promotionId
-                + ", total=" + total
-                + ", status='" + status + "'"
-                + ", createTime=" + createTime
-                + ", content='" + content + "'"
-                + ", pickupTime=" + pickupTime
-                + ", " + orderDetailsInfo
-                + ", " + commentsInfo
-                + "]";
-    }
+//    @Override
+//    public String toString() {
+//        // 安全地獲取 ID，而不觸發懶加載
+//        Integer userId = (user != null) ? user.getId() : null;
+//        Integer storeId = (store != null) ? store.getId() : null;
+//        Integer promotionId = (promotion != null) ? promotion.getId() : null;
+//
+//        // 檢查集合是否已初始化，以避免 LazyInitializationException
+//        String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails)) ?
+//                                   "orderDetails.size=" + orderDetails.size() : "orderDetails=[Not Loaded]";
+//        String commentsInfo = (comments != null && Hibernate.isInitialized(comments)) ?
+//                              "comments.size=" + comments.size() : "comments=[Not Loaded]";
+//
+//        return "OrderBean ["
+//                + "id=" + id
+//                + ", userId=" + userId
+//                + ", storeId=" + storeId
+//                + ", promotionId=" + promotionId
+//                + ", total=" + total
+//                + ", status='" + status + "'"
+//                + ", createTime=" + createTime
+//                + ", content='" + content + "'"
+//                + ", pickupTime=" + pickupTime
+//                + ", " + orderDetailsInfo
+//                + ", " + commentsInfo
+//                + "]";
+//    }
 	
 	
 	

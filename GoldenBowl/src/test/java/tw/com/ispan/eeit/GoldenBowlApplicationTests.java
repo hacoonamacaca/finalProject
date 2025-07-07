@@ -8,12 +8,15 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
+import tw.com.ispan.eeit.repository.order.OrderRepository;
 import tw.com.ispan.eeit.service.order.OrderService;
 
 @SpringBootTest
 class GoldenBowlApplicationTests {
 	@Autowired
 	OrderService orderService;
+	@Autowired
+	OrderRepository orderRepository;
 
 	@Test
 	void contextLoads() {
@@ -36,8 +39,15 @@ class GoldenBowlApplicationTests {
 //		// 调用orderService的create方法，创建order对象
 //		orderService.create(order);
 		// 调用orderService的findAllByUserId方法，获取用户id为1的所有订单
-		List<OrderBean> orderList = orderService.findOrdersByUserId(1);
+//		List<OrderBean> orderList = orderRepository.findByUser_Id(1);
+		List<OrderBean> orderList = orderRepository.findByUser_IdAndStatus(1,"PENDING");
 ////		// 遍历orderList，打印每个订单的content
+		for (OrderBean orderBean : orderList) {
+			System.out.println(orderBean.toString());
+		} 
+		System.out.println("----------------------------------------");
+		orderList = orderRepository.findByUser_IdAndStatusNot(1,null);
+////	// 遍历orderList，打印每个订单的content
 		for (OrderBean orderBean : orderList) {
 			System.out.println(orderBean.toString());
 		}

@@ -43,7 +43,6 @@ public class OrderDetailService {
         return orderDetailRepository.findById(id).map(detail -> {
             // detail.setOrder(updatedOrderDetail.getOrder()); // 通常不建議直接更新關聯
             detail.setFood(updatedOrderDetail.getFood());
-            detail.setName(updatedOrderDetail.getName());
             detail.setQuantity(updatedOrderDetail.getQuantity());
             detail.setPrice(updatedOrderDetail.getPrice());
             detail.setSubTotal(updatedOrderDetail.getSubTotal());
