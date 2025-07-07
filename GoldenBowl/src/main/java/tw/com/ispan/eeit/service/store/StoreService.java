@@ -34,7 +34,8 @@ public class StoreService {
             Integer ownerId,
             String name,
             String storeCategory,
-            String storeIntro
+            String storeIntro,
+            String photo
     ) {
         StoreBean store = new StoreBean();
         OwnerBean owner = ownerRepository.findById(ownerId)
@@ -42,13 +43,14 @@ public class StoreService {
         store.setOwner(owner);
         store.setName(name);
         store.setStoreIntro(storeIntro);
+        store.setPhoto(photo);
         store.setCreatedTime(LocalDateTime.now());
 
-        CategoryBean category = categoryRepository.findByName(storeCategory);
-        if (category == null) {
+        List<CategoryBean> categories = categoryRepository.findByName(storeCategory);
+        if (categories == null || categories.isEmpty()) {
             throw new RuntimeException("Category Not Found: " + storeCategory);
         }
-        store.setCategories(List.of(category));
+        store.setCategories(List.of(categories.get(0))); 
 
         StoreBean saved = storeRepository.save(store); 
         System.out.println("Store after save: " + saved.getId());
