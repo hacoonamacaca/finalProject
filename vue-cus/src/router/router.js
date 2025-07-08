@@ -20,6 +20,7 @@ import WebRecom from "@/views/Jimmy/WebRecom.vue"
 import ReportType from "@/views/Jimmy/ReportType.vue"
 import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
 import CC from "@/views/Jimmy/CC.vue"
+import TagCategoryManager from "@/views/Jimmy/TagCategoryManager.vue"
 
 const routes = [{
         path: "/",
@@ -114,6 +115,11 @@ const routes = [{
         path: '/CC',
         name: 'CC',
         component: CC
+    },
+    {
+        path: '/TagCategoryManager',
+        name: 'TagCategoryManager',
+        component: TagCategoryManager
     },
 ];
 
