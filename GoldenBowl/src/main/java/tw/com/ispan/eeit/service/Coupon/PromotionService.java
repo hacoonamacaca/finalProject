@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.repository.Coupon.PromotionRepository;
 
-@Service
+//@Service
 public class PromotionService {
-	@Autowired
+//	@Autowired
 	//注入PromotionRepository，讓Service可以使用
 	private PromotionRepository promotionRepository;
 	

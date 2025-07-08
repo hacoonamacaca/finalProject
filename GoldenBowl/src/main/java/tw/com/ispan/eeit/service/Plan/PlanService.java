@@ -10,11 +10,11 @@ import org.springframework.stereotype.Service;
 import tw.com.ispan.eeit.model.entity.promotion.PlanBean;
 import tw.com.ispan.eeit.repository.Plan.PlanRepository;
 
-@Service
+//@Service
 public class PlanService {
 
 	
-	@Autowired
+//	@Autowired
 	private PlanRepository planRepository;
 	
 	//查詢全部訂閱方案

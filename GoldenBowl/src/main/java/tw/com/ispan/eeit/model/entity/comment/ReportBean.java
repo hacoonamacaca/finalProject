@@ -31,7 +31,7 @@ public class ReportBean {
     @Column(name = "submitter_id")
     private Integer submitterId;
 
-    @Column(length = 50)
+    @Column(name = "submitter_type", length = 50)
     private String submitterType;
 
     @Column(length = 50)

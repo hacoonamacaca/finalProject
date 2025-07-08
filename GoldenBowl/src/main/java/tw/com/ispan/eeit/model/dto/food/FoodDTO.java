@@ -23,17 +23,7 @@ public class FoodDTO {
     private Integer storeId; 
     private String storeName; // 也可以考慮順便回傳店家名稱，增加方便性
     
- // 全參數建構子，給 JPQL 使用 (繞開store回傳錯誤測試用，可刪除)
-//    public FoodDTO(Integer id, String name, Integer price, String description, Float score, Boolean isActive, Integer stock, String imgResource, Integer storeId, String storeName) {
-//        this.id = id;
-//        this.name = name;
-//        this.price = price;
-//        this.description = description;
-//        this.score = score;
-//        this.isActive = isActive;
-//        this.stock = stock;
-//        this.imgResource = imgResource;
-//        this.storeId = storeId;
-//        this.storeName = storeName;
-//    }
+    private String categoryName;
+    private Integer categoryId;
+    
 }

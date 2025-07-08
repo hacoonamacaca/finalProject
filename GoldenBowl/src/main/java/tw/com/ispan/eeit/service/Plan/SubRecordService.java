@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 import tw.com.ispan.eeit.model.entity.promotion.SubRecordBean;
 import tw.com.ispan.eeit.repository.Plan.SubRecordRepository;
 
-@Service
+//@Service
 public class SubRecordService {
 
-    @Autowired
+//    @Autowired
     private SubRecordRepository subRecordRepository;
     // 查全部
     public List<SubRecordBean> findAll() {

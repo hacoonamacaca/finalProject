@@ -31,7 +31,7 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-		<!--
+	<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			
@@ -43,19 +43,12 @@
 		    <artifactId>jts-core</artifactId>
 		    <version>1.19.0</version> 
 	    </dependency>
-	    <!--地理位置-->
+		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-		
-		<dependency>
-		    <groupId>org.locationtech.jts</groupId>
-		    <artifactId>jts-core</artifactId>
-		    <version>1.19.0</version> 
-	    </dependency>
-	    <!--地理位置-->
 
 		<dependency>
 			<groupId>com.nimbusds</groupId>
@@ -78,10 +71,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
+		</dependency>		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -107,23 +102,27 @@
 			<scope>test</scope>
 		</dependency>
 		
-		
-		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
-		
 		<dependency>
 		    <groupId>com.sendgrid</groupId>
 		    <artifactId>sendgrid-java</artifactId>
 		    <version>4.10.1</version>
 		</dependency>
 		
-		<!--解決Hibernate 回傳geography 二進位資料轉換成 Java 的 Point 物件時的辨識問題-->
 		<dependency>
-            <groupId>org.hibernate.orm</groupId>
-            <artifactId>hibernate-spatial</artifactId>
-        </dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+		    <artifactId>hibernate-spatial</artifactId>
+		</dependency>
+	
 
 	</dependencies>
 

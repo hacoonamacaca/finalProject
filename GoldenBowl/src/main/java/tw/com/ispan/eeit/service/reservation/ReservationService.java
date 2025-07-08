@@ -13,13 +13,13 @@ import tw.com.ispan.eeit.model.entity.reservation.TableBean;
 import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 import tw.com.ispan.eeit.repository.reservation.TableRepository;
 
-@Service
+//@Service
 public class ReservationService {
 
-    @Autowired
+//    @Autowired
     private ReservationRepository reservationRepo;
 
-    @Autowired
+//    @Autowired
     private TableRepository tableRepo;
 
     public ReservationBean createReservation(ReservationBean reservation, List<Integer> tableIds) {
