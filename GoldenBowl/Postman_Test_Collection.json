@@ -1,0 +1,466 @@
+{
+	"info": {
+		"_postman_id": "goldenbowl-reservation-api",
+		"name": "GoldenBowl Reservation API",
+		"description": "GoldenBowl 餐廳預約系統 API 測試集合",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "測試 API",
+			"item": [
+				{
+					"name": "查詢所有用戶",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/test/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"users"
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢所有餐廳",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/test/stores",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"stores"
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢餐廳桌位",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/test/stores/1/tables?storeId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"stores",
+								"1",
+								"tables"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢餐廳時段",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/test/stores/1/time-slots?storeId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"stores",
+								"1",
+								"time-slots"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "測試建立訂位",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "userId",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "storeId",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "date",
+									"value": "2024-12-25",
+									"type": "text"
+								},
+								{
+									"key": "time",
+									"value": "18:00",
+									"type": "text"
+								},
+								{
+									"key": "guests",
+									"value": "4",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/test/create-reservation",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"create-reservation"
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢用戶訂位",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/test/users/1/reservations?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"users",
+								"1",
+								"reservations"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢餐廳訂位",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/test/stores/1/reservations?storeId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"stores",
+								"1",
+								"reservations"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "生成時段資料",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "storeId",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/test/generate-time-slots",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"generate-time-slots"
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢可用桌位",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/test/available-tables?storeId=1&startTime=2024-12-25T18:00:00&duration=120&minSeats=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"test",
+								"available-tables"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								},
+								{
+									"key": "startTime",
+									"value": "2024-12-25T18:00:00"
+								},
+								{
+									"key": "duration",
+									"value": "120"
+								},
+								{
+									"key": "minSeats",
+									"value": "4"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "預約 API",
+			"item": [
+				{
+					"name": "創建預約",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": 1,\n    \"storeId\": 1,\n    \"reservedDate\": \"2024-12-25\",\n    \"reservedTime\": \"18:00\",\n    \"guests\": 4,\n    \"duration\": 120,\n    \"content\": \"姓名: 張三, 電話: 0912345678, 備註: 靠窗座位\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reservation/create",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservation",
+								"create"
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢用戶預約記錄",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservation/user/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservation",
+								"user",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢餐廳預約記錄",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservation/store/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservation",
+								"store",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "更新預約狀態",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"CONFIRMED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reservation/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservation",
+								"1",
+								"status"
+							]
+						}
+					}
+				},
+				{
+					"name": "取消預約",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservation/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservation",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "查詢餐廳可用桌位",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservation/store/1/tables?minSeats=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservation",
+								"store",
+								"1",
+								"tables"
+							],
+							"query": [
+								{
+									"key": "minSeats",
+									"value": "4"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "檢查可用性",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservation/store/1/availability?date=2024-12-25&time=18:00&guests=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservation",
+								"store",
+								"1",
+								"availability"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-12-25"
+								},
+								{
+									"key": "time",
+									"value": "18:00"
+								},
+								{
+									"key": "guests",
+									"value": "4"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+} 

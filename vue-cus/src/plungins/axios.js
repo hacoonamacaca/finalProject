@@ -5,11 +5,11 @@ const instance = axios.create({
 });
 
 instance.interceptors.response.use(
-    function(response) {
+    function (response) {
         return response;
     },
-    function(error) {
-        if(error.response && error.response.status && error.response.status === 403) {
+    function (error) {
+        if (error.response && error.response.status && error.response.status === 403) {
             window.location.href = "/403";
         }
         return Promise.reject(error);

@@ -66,7 +66,7 @@ public class OpenHourController {
             @RequestParam(defaultValue = "true") boolean isOpen,
             @RequestParam(defaultValue = "30") Integer timeIntervalMinutes) {
         try {
-            OpenHourBean openHour = openHourService.setOpenHour(storeId, day, openTime, closeTime, isOpen,
+            OpenHourBean openHour = openHourService.setOpenHour(storeId, day, openTime, closeTime,
                     timeIntervalMinutes);
             return ResponseEntity.status(HttpStatus.CREATED).body(openHour);
         } catch (ResourceNotFoundException e) {
@@ -88,7 +88,7 @@ public class OpenHourController {
             @RequestParam(required = false) Boolean isOpen,
             @RequestParam(required = false) Integer timeIntervalMinutes) {
         try {
-            OpenHourBean openHour = openHourService.updateOpenHour(openHourId, openTime, closeTime, isOpen,
+            OpenHourBean openHour = openHourService.updateOpenHour(openHourId, openTime, closeTime,
                     timeIntervalMinutes);
             return ResponseEntity.ok(openHour);
         } catch (ResourceNotFoundException e) {

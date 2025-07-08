@@ -126,7 +126,7 @@ public class DatabaseInitializer implements CommandLineRunner {
             OpenHourBean openHour = new OpenHourBean();
             openHour.setStore(store);
             openHour.setDay(day);
-            openHour.setIsOpen(true);
+            // openHour.setIsOpen(true);
             openHour.setTimeIntervalMinutes(30);
 
             // 設定營業時間

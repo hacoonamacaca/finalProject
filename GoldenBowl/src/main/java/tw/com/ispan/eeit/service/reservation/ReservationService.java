@@ -3,11 +3,14 @@ package tw.com.ispan.eeit.service.reservation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.DayOfWeek;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,12 +19,17 @@ import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.entity.reservation.TableBean;
+import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
+import tw.com.ispan.eeit.model.entity.reservation.TimeSettingBean;
+import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
 import tw.com.ispan.eeit.repository.UserRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
 import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 import tw.com.ispan.eeit.repository.reservation.TableRepository;
-import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
+import tw.com.ispan.eeit.repository.reservation.TimeSlotRepository;
+import tw.com.ispan.eeit.repository.reservation.TimeSettingRepository;
+import tw.com.ispan.eeit.repository.store.OpenHourRepository;
 
 @Service
 public class ReservationService {
@@ -37,6 +45,15 @@ public class ReservationService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private TimeSlotRepository timeSlotRepository;
+
+    @Autowired
+    private TimeSettingRepository timeSettingRepository;
+
+    @Autowired
+    private OpenHourRepository openHourRepository;
 
     /**
      * 創建訂位
@@ -72,8 +89,8 @@ public class ReservationService {
 
         // 創建訂位
         ReservationBean reservation = new ReservationBean();
-        reservation.setUser(user);
-        reservation.setStore(store);
+        reservation.setUserId(userId);
+        reservation.setStoreId(storeId);
         reservation.setReservedDate(reservedDate);
         reservation.setReservedTime(reservedDateTime);
         reservation.setGuests(guests);
@@ -125,7 +142,7 @@ public class ReservationService {
                 .orElseThrow(() -> new RuntimeException("訂位不存在: " + reservationId));
 
         // 檢查是否為訂位者本人
-        if (!reservation.getUser().getId().equals(userId)) {
+        if (!reservation.getUserId().equals(userId)) {
             throw new RuntimeException("無權限取消此訂位");
         }
 
@@ -235,13 +252,13 @@ public class ReservationService {
     // 新增方法：創建訂位（重載版本）
     public ReservationBean createReservation(ReservationBean reservation, List<Integer> tableIds) {
         // 驗證用戶和餐廳
-        UserBean user = userRepository.findById(reservation.getUser().getId())
+        UserBean user = userRepository.findById(reservation.getUserId())
                 .orElseThrow(() -> new RuntimeException("用戶不存在"));
-        StoreBean store = storeRepository.findById(reservation.getStore().getId())
+        StoreBean store = storeRepository.findById(reservation.getStoreId())
                 .orElseThrow(() -> new RuntimeException("餐廳不存在"));
 
-        reservation.setUser(user);
-        reservation.setStore(store);
+        reservation.setUserId(user.getId());
+        reservation.setStoreId(store.getId());
         reservation.setStatus(ReservationStatus.PENDING);
         reservation.setCreatedAt(LocalDateTime.now());
         reservation.setUpdatedAt(LocalDateTime.now());
@@ -260,8 +277,79 @@ public class ReservationService {
 
     // 新增方法：生成時段資料
     public void generateTimeSlotsForRestaurant(Integer storeId, int days) {
-        // TODO: 實作時段生成邏輯
-        System.out.println("生成餐廳 " + storeId + " 的 " + days + " 天時段資料");
+        StoreBean store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("餐廳不存在: " + storeId));
+
+        TimeSettingBean setting = timeSettingRepository.findByStoreId(storeId)
+                .orElseThrow(() -> new RuntimeException("未設定餐廳營業參數: " + storeId));
+
+        Map<DayOfWeek, List<OpenHourBean>> businessHours = getBusinessHours(storeId); // 每週營業時段設定
+        int intervalMinutes = setting.getInterval();
+
+        LocalDate today = LocalDate.now();
+
+        for (int i = 0; i < days; i++) {
+            LocalDate date = today.plusDays(i);
+            DayOfWeek dayOfWeek = date.getDayOfWeek();
+
+            List<OpenHourBean> ranges = businessHours.get(dayOfWeek);
+            if (ranges == null || ranges.isEmpty())
+                continue;
+
+            for (OpenHourBean range : ranges) {
+                generateTimeSlotsForRange(store, date, range.getOpenTime(), range.getCloseTime(), intervalMinutes);
+            }
+        }
+
+        System.out.println("成功生成餐廳 " + storeId + " 的 " + days + " 天時段資料");
+    }
+
+    private void generateTimeSlotsForRange(StoreBean store, LocalDate date, LocalTime start, LocalTime end,
+            int intervalMinutes) {
+        for (LocalTime current = start; current.isBefore(end); current = current.plusMinutes(intervalMinutes)) {
+            LocalTime slotEnd = current.plusMinutes(intervalMinutes);
+            if (slotEnd.isAfter(end))
+                break;
+
+            boolean exists = timeSlotRepository.existsByStoreAndDayAndStartTime(store, date, current);
+            if (!exists) {
+                TimeSlot slot = new TimeSlot();
+                slot.setStore(store);
+                slot.setDay(date);
+                slot.setStartTime(current);
+                slot.setEndTime(slotEnd);
+                slot.setIsActive(true);
+                timeSlotRepository.save(slot);
+            }
+        }
+    }
+
+    /**
+     * 取得餐廳營業時段設定（從資料庫讀取）
+     */
+    private Map<DayOfWeek, List<OpenHourBean>> getBusinessHours(Integer storeId) {
+        Map<DayOfWeek, List<OpenHourBean>> map = new HashMap<>();
+
+        // 從資料庫讀取餐廳的營業時間設定
+        List<OpenHourBean> openHours = openHourRepository.findByStoreId(storeId);
+
+        // 如果沒有設定，使用預設值
+        if (openHours.isEmpty()) {
+            // 預設設定：週一休息，其它日開兩個時段
+            // 注意：這裡應該在資料庫中建立預設資料，而不是在程式碼中建立
+            System.out.println("警告：餐廳 " + storeId + " 沒有設定營業時間，請在資料庫中設定 open_hour 資料");
+            return map;
+        }
+
+        // 將資料庫資料按星期分組
+        for (OpenHourBean openHour : openHours) {
+            if (openHour.getOpenTime() != null && openHour.getCloseTime() != null) {
+                DayOfWeek day = openHour.getDay();
+                map.computeIfAbsent(day, k -> new ArrayList<>()).add(openHour);
+            }
+        }
+
+        return map;
     }
 
     // TimeSlot 相關方法

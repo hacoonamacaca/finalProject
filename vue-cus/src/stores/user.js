@@ -1,6 +1,10 @@
 // src/stores/user.js
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import {
+    defineStore
+} from 'pinia'
+import {
+    ref
+} from 'vue'
 
 export const useUserStore = defineStore('user', () => {
     // 初始值從 localStorage 取，但後續都用 pinia 狀態！
@@ -29,9 +33,13 @@ export const useUserStore = defineStore('user', () => {
     }
 
     return {
-        fullName, setFullName,
-        email, setEmail,
-        token, setToken,
-        isLogin, setLogin
+        fullName,
+        setFullName,
+        email,
+        setEmail,
+        token,
+        setToken,
+        isLogin,
+        setLogin
     }
 });

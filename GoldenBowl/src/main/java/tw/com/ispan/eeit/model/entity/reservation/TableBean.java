@@ -31,7 +31,7 @@ public class TableBean {
 
     // 關聯到 Store
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "FK_store_id", nullable = false)
+    @JoinColumn(name = "store_id", nullable = false)
     @JsonBackReference("store-tables")
     private StoreBean store;
 

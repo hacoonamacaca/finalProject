@@ -27,7 +27,7 @@ public class OpenHourService {
 	/**
 	 * 為餐廳設定營業時間
 	 */
-	public OpenHourBean setOpenHour(Integer storeId, DayOfWeek day, String openTime, String closeTime, boolean isOpen,
+	public OpenHourBean setOpenHour(Integer storeId, DayOfWeek day, String openTime, String closeTime,
 			Integer timeIntervalMinutes) {
 		StoreBean store = storeRepo.findById(storeId)
 				.orElseThrow(() -> new ResourceNotFoundException("Store not found"));
@@ -51,7 +51,6 @@ public class OpenHourService {
 		if (closeTime != null) {
 			openHour.setCloseTime(java.time.LocalTime.parse(closeTime));
 		}
-		openHour.setIsOpen(isOpen);
 		if (timeIntervalMinutes != null) {
 			openHour.setTimeIntervalMinutes(timeIntervalMinutes);
 		}
@@ -90,19 +89,19 @@ public class OpenHourService {
 		// 週一到週五：11:00-22:00
 		for (DayOfWeek day : List.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY,
 				DayOfWeek.FRIDAY)) {
-			setOpenHour(storeId, day, "11:00", "22:00", true, 30);
+			setOpenHour(storeId, day, "11:00", "22:00", 30);
 		}
 
 		// 週六週日：10:00-23:00
 		for (DayOfWeek day : List.of(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)) {
-			setOpenHour(storeId, day, "10:00", "23:00", true, 30);
+			setOpenHour(storeId, day, "10:00", "23:00", 30);
 		}
 	}
 
 	/**
 	 * 更新營業時間
 	 */
-	public OpenHourBean updateOpenHour(Integer openHourId, String openTime, String closeTime, boolean isOpen,
+	public OpenHourBean updateOpenHour(Integer openHourId, String openTime, String closeTime,
 			Integer timeIntervalMinutes) {
 		OpenHourBean openHour = openHourRepo.findById(openHourId)
 				.orElseThrow(() -> new ResourceNotFoundException("Open hour not found"));
@@ -113,7 +112,6 @@ public class OpenHourService {
 		if (closeTime != null) {
 			openHour.setCloseTime(java.time.LocalTime.parse(closeTime));
 		}
-		openHour.setIsOpen(isOpen);
 		if (timeIntervalMinutes != null) {
 			openHour.setTimeIntervalMinutes(timeIntervalMinutes);
 		}
@@ -137,10 +135,6 @@ public class OpenHourService {
 	public boolean isStoreOpen(Integer storeId, DayOfWeek day, java.time.LocalTime time) {
 		try {
 			OpenHourBean openHour = getOpenHourByStoreAndDay(storeId, day);
-
-			if (!openHour.getIsOpen()) {
-				return false;
-			}
 
 			return time.isAfter(openHour.getOpenTime()) && time.isBefore(openHour.getCloseTime());
 		} catch (ResourceNotFoundException e) {

@@ -42,8 +42,8 @@ public class OpenHourBean {
 	@Column(name = "close_time", columnDefinition = "TIME(0)")
 	private LocalTime closeTime;
 
-	@Column(name = "is_open", nullable = false)
-	private Boolean isOpen = true;
+	// @Column(name = "is_open", nullable = false)
+	// private Boolean isOpen = true;
 
 	@Column(name = "time_interval_minutes", nullable = false)
 	private Integer timeIntervalMinutes = 30; // 預設30分鐘一個時段
