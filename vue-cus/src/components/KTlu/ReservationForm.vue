@@ -1,5 +1,5 @@
 <template>
-    <div class="reservation-form-container restaurant-theme">
+    <div class="reservation-form-container goldenbowl-restaurant-theme">
         <div class="guest-date-section">
             <div class="guest-selection">
                 <label class="form-label">用餐人數</label>

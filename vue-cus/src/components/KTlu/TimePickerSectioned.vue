@@ -1,5 +1,5 @@
 <template>
-    <div class="time-picker-sectioned restaurant-theme">
+    <div class="time-picker-sectioned goldenbowl-restaurant-theme">
         <div v-for="section in sections" :key="section.label" class="time-section">
             <h6 class="section-label">{{ section.label }}</h6>
             <div class="time-slot-group">

@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.entity.reservation;
 
 import jakarta.persistence.*;
 import lombok.*;
+import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -18,8 +19,9 @@ public class TimeSlot {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "store_id")
-    private Integer storeId;
+    @ManyToOne
+    @JoinColumn(name = "store_id", nullable = false)
+    private StoreBean store;
 
     @Column(name = "day")
     private LocalDate day;

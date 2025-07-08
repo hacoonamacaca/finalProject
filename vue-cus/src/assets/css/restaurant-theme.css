@@ -1,99 +1,172 @@
-/* 餐廳模組 - 優雅配色主題 */
-:root {
-    /* 主色調 - 黃色系(減少使用) */
-    --restaurant-primary: #ffba20;
-    --restaurant-primary-hover: #e6a61d;
-    --restaurant-primary-light: #ffcd52;
-    --restaurant-primary-dark: #766C08;
-    --restaurant-primary-rgb: 255, 186, 32;
-    /* 添加RGB值用於透明度計算 */
+/* 餐廳模組 - 優雅配色主題 (GoldenBowl 專用) */
+
+/* ===== 主要變量定義區域 ===== */
+.goldenbowl-restaurant-theme {
+    /* 主色調 - 黃色系 */
+    --gb-restaurant-primary: #ffba20;
+    --gb-restaurant-primary-hover: #e6a61d;
+    --gb-restaurant-primary-light: #ffcd52;
+    --gb-restaurant-primary-dark: #766C08;
+    --gb-restaurant-primary-rgb: 255, 186, 32;
 
     /* 背景色系 - 加入灰色調 */
-    --restaurant-bg-primary: #ffffff;
-    --restaurant-bg-secondary: #E7E7E7;
-    --restaurant-bg-light: #f8f8f8;
-    --restaurant-bg-card: #ffffff;
-    --restaurant-bg-accent: #fafafa;
+    --gb-restaurant-bg-primary: #ffffff;
+    --gb-restaurant-bg-secondary: #E7E7E7;
+    --gb-restaurant-bg-light: #f8f8f8;
+    --gb-restaurant-bg-card: #ffffff;
+    --gb-restaurant-bg-accent: #fafafa;
 
     /* 文字色系 - 深色為主 */
-    --restaurant-text-primary: #333333;
-    --restaurant-text-secondary: #766C08;
-    --restaurant-text-muted: #888888;
-    --restaurant-text-light: #aaaaaa;
-    --restaurant-text-accent: #555555;
+    --gb-restaurant-text-primary: #333333;
+    --gb-restaurant-text-secondary: #766C08;
+    --gb-restaurant-text-muted: #888888;
+    --gb-restaurant-text-light: #aaaaaa;
+    --gb-restaurant-text-accent: #555555;
 
     /* 邊框色系 */
-    --restaurant-border-light: #E7E7E7;
-    --restaurant-border-medium: #cccccc;
-    --restaurant-border-dark: #999999;
-    --restaurant-border-accent: #766C08;
+    --gb-restaurant-border-light: #E7E7E7;
+    --gb-restaurant-border-medium: #cccccc;
+    --gb-restaurant-border-dark: #999999;
+    --gb-restaurant-border-accent: #766C08;
 
     /* 狀態色系 */
-    --restaurant-success: #4caf50;
-    --restaurant-warning: #ff9800;
-    --restaurant-error: #f44336;
-    --restaurant-info: #2196f3;
+    --gb-restaurant-success: #4caf50;
+    --gb-restaurant-warning: #ff9800;
+    --gb-restaurant-error: #f44336;
+    --gb-restaurant-info: #2196f3;
 
     /* 陰影色系 - 中性色調 */
-    --restaurant-shadow-light: rgba(118, 108, 8, 0.1);
-    --restaurant-shadow-medium: rgba(118, 108, 8, 0.15);
-    --restaurant-shadow-dark: rgba(118, 108, 8, 0.25);
-    --restaurant-shadow-neutral: rgba(0, 0, 0, 0.1);
+    --gb-restaurant-shadow-light: rgba(118, 108, 8, 0.1);
+    --gb-restaurant-shadow-medium: rgba(118, 108, 8, 0.15);
+    --gb-restaurant-shadow-dark: rgba(118, 108, 8, 0.25);
+    --gb-restaurant-shadow-neutral: rgba(0, 0, 0, 0.1);
 
     /* 漸變色系 - 更柔和 */
-    --restaurant-gradient-primary: linear-gradient(135deg, #ffba20 0%, #ffcd52 100%);
-    --restaurant-gradient-subtle: linear-gradient(135deg, #f8f8f8 0%, #ffffff 100%);
-    --restaurant-gradient-accent: linear-gradient(135deg, #E7E7E7 0%, #f0f0f0 100%);
+    --gb-restaurant-gradient-primary: linear-gradient(135deg, #ffba20 0%, #ffcd52 100%);
+    --gb-restaurant-gradient-subtle: linear-gradient(135deg, #f8f8f8 0%, #ffffff 100%);
+    --gb-restaurant-gradient-accent: linear-gradient(135deg, #E7E7E7 0%, #f0f0f0 100%);
+    --gb-restaurant-gradient-light: linear-gradient(135deg, #f8f8f8 0%, #ffffff 100%);
 }
 
-/* 餐廳模組專用類別 */
-.restaurant-theme {
+/* ===== 向後兼容區域 ===== */
+/* 為了保持向後兼容性，在相同類別內定義舊變量名稱 */
+.goldenbowl-restaurant-theme {
+    /* 舊變量名稱的映射 */
+    --restaurant-primary: var(--gb-restaurant-primary);
+    --restaurant-primary-hover: var(--gb-restaurant-primary-hover);
+    --restaurant-primary-light: var(--gb-restaurant-primary-light);
+    --restaurant-primary-dark: var(--gb-restaurant-primary-dark);
+    --restaurant-primary-rgb: var(--gb-restaurant-primary-rgb);
+
+    --restaurant-bg-primary: var(--gb-restaurant-bg-primary);
+    --restaurant-bg-secondary: var(--gb-restaurant-bg-secondary);
+    --restaurant-bg-light: var(--gb-restaurant-bg-light);
+    --restaurant-bg-card: var(--gb-restaurant-bg-card);
+    --restaurant-bg-accent: var(--gb-restaurant-bg-accent);
+
+    --restaurant-text-primary: var(--gb-restaurant-text-primary);
+    --restaurant-text-secondary: var(--gb-restaurant-text-secondary);
+    --restaurant-text-muted: var(--gb-restaurant-text-muted);
+    --restaurant-text-light: var(--gb-restaurant-text-light);
+    --restaurant-text-accent: var(--gb-restaurant-text-accent);
+
+    --restaurant-border-light: var(--gb-restaurant-border-light);
+    --restaurant-border-medium: var(--gb-restaurant-border-medium);
+    --restaurant-border-dark: var(--gb-restaurant-border-dark);
+    --restaurant-border-accent: var(--gb-restaurant-border-accent);
+
+    --restaurant-success: var(--gb-restaurant-success);
+    --restaurant-warning: var(--gb-restaurant-warning);
+    --restaurant-error: var(--gb-restaurant-error);
+    --restaurant-info: var(--gb-restaurant-info);
+
+    --restaurant-shadow-light: var(--gb-restaurant-shadow-light);
+    --restaurant-shadow-medium: var(--gb-restaurant-shadow-medium);
+    --restaurant-shadow-dark: var(--gb-restaurant-shadow-dark);
+    --restaurant-shadow-neutral: var(--gb-restaurant-shadow-neutral);
+
+    --restaurant-gradient-primary: var(--gb-restaurant-gradient-primary);
+    --restaurant-gradient-subtle: var(--gb-restaurant-gradient-subtle);
+    --restaurant-gradient-accent: var(--gb-restaurant-gradient-accent);
+    --restaurant-gradient-light: var(--gb-restaurant-gradient-light);
+}
+
+/* ===== 功能類別定義 ===== */
+/* 餐廳模組專用類別 - 使用新的命名空間 */
+.gb-restaurant-theme {
     /* 重置原有的主色變量 */
-    --primary-color: var(--restaurant-primary);
-    --primary-hover: var(--restaurant-primary-hover);
-    --text-primary: var(--restaurant-text-primary);
-    --text-secondary: var(--restaurant-text-secondary);
-    --text-muted: var(--restaurant-text-muted);
-    --price-color: var(--restaurant-primary-dark);
+    --primary-color: var(--gb-restaurant-primary);
+    --primary-hover: var(--gb-restaurant-primary-hover);
+    --text-primary: var(--gb-restaurant-text-primary);
+    --text-secondary: var(--gb-restaurant-text-secondary);
+    --text-muted: var(--gb-restaurant-text-muted);
+    --price-color: var(--gb-restaurant-primary-dark);
 }
 
 /* 黃色主題的特殊效果 */
-.restaurant-glow {
-    box-shadow: 0 0 20px var(--restaurant-shadow-medium);
+.gb-restaurant-glow {
+    box-shadow: 0 0 20px var(--gb-restaurant-shadow-medium);
 }
 
-.restaurant-gradient-bg {
-    background: var(--restaurant-gradient-primary);
+.gb-restaurant-gradient-bg {
+    background: var(--gb-restaurant-gradient-primary);
 }
 
-.restaurant-light-bg {
-    background: var(--restaurant-bg-secondary);
+.gb-restaurant-light-bg {
+    background: var(--gb-restaurant-bg-secondary);
 }
 
 /* 黃色主題的按鈕樣式 */
-.restaurant-btn-primary {
-    background: var(--restaurant-primary);
-    color: var(--restaurant-text-primary);
+.gb-restaurant-btn-primary {
+    background: var(--gb-restaurant-primary);
+    color: var(--gb-restaurant-text-primary);
     border: none;
     transition: all 0.3s ease;
 }
 
-.restaurant-btn-primary:hover {
-    background: var(--restaurant-primary-hover);
+.gb-restaurant-btn-primary:hover {
+    background: var(--gb-restaurant-primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px var(--restaurant-shadow-medium);
+    box-shadow: 0 4px 12px var(--gb-restaurant-shadow-medium);
 }
 
 /* 黃色主題的卡片樣式 */
-.restaurant-card {
-    background: var(--restaurant-bg-card);
-    border: 1px solid var(--restaurant-border-light);
+.gb-restaurant-card {
+    background: var(--gb-restaurant-bg-card);
+    border: 1px solid var(--gb-restaurant-border-light);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: all 0.3s ease;
 }
 
-.restaurant-card:hover {
-    box-shadow: 0 4px 16px var(--restaurant-shadow-light);
+.gb-restaurant-card:hover {
+    box-shadow: 0 4px 16px var(--gb-restaurant-shadow-light);
     transform: translateY(-2px);
+}
+
+/* ===== 向後兼容類別 ===== */
+/* 保留舊的類名，但映射到新的類名 */
+.restaurant-theme {
+    /* 繼承新類名的所有樣式 */
+    composes: gb-restaurant-theme;
+}
+
+.restaurant-glow {
+    composes: gb-restaurant-glow;
+}
+
+.restaurant-gradient-bg {
+    composes: gb-restaurant-gradient-bg;
+}
+
+.restaurant-light-bg {
+    composes: gb-restaurant-light-bg;
+}
+
+.restaurant-btn-primary {
+    composes: gb-restaurant-btn-primary;
+}
+
+.restaurant-card {
+    composes: gb-restaurant-card;
 }

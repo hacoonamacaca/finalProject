@@ -8,6 +8,7 @@ import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -27,6 +28,8 @@ import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
 import tw.com.ispan.eeit.model.entity.food.FoodClassBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
+import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
+import tw.com.ispan.eeit.model.entity.reservation.TableBean;
 
 @Data
 @Entity
@@ -55,7 +58,7 @@ public class StoreBean {
 
     private Double lat;
 
-    @Column(columnDefinition = "varchar(max)")
+    @Column(name = "store_intro", columnDefinition = "varchar(max)")
     private String storeIntro;
 
     @Column(columnDefinition = "varchar(max)")
@@ -82,6 +85,18 @@ public class StoreBean {
     @OneToMany(mappedBy = "store")
     @JsonIgnore
     private List<OrderBean> orders;
+
+    @OneToMany(mappedBy = "store")
+    @JsonManagedReference("store-reservations")
+    private List<ReservationBean> reservations;
+
+    @OneToMany(mappedBy = "store")
+    @JsonManagedReference("store-tables")
+    private List<TableBean> tables;
+
+    @OneToMany(mappedBy = "store")
+    @JsonManagedReference("store-openHours")
+    private List<OpenHourBean> openHours;
 
     @ManyToMany
     @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
