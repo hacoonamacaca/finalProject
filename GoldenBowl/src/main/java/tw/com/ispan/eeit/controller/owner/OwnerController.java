@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.controller.store;
+package tw.com.ispan.eeit.controller.owner;
 
 import java.util.Map;
 
@@ -9,15 +9,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.entity.OwnerBean;
-import tw.com.ispan.eeit.service.store.OwnerService;
+import tw.com.ispan.eeit.service.OwnerService;
 
 @RestController
 @RequestMapping("/api/owner")
 public class OwnerController {
-    @Autowired
-    private OwnerService ownerService;
-
-    @PostMapping("/check-email")
+	@Autowired
+	private OwnerService ownerService;
+	
+	@PostMapping("/check-email")
     public Map<String, Object> checkEmail(@RequestBody Map<String, String> map) {
         String email = map.get("email");
         boolean exists = ownerService.checkEmailExists(email);
@@ -36,7 +36,7 @@ public class OwnerController {
         }
         return Map.of("success", true, "ownerId", owner.getId());
     }
-
+    
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> map) {
         String email = map.get("email");
@@ -47,10 +47,11 @@ public class OwnerController {
         }
         // 把所需欄位全部回傳
         return Map.of(
-                "success", true,
-                "ownerId", owner.getId(),
-                "name", owner.getName(),
-                "email", owner.getEmail(),
-                "phone", owner.getPhone());
+            "success", true,
+            "ownerId", owner.getId(),
+            "name", owner.getName(),
+            "email", owner.getEmail(),
+            "phone", owner.getPhone()
+        );
     }
 }
