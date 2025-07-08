@@ -34,26 +34,26 @@ import { ref } from 'vue'
 const props = defineProps({show: Boolean})
 const emit = defineEmits(['submit', 'register', 'close'])
 const email = ref('')
+import axios from '@/plungins/axios.js'
 
 async function onSubmit() {
     if (!email.value) {
         alert('請輸入 email')
         return
     }
-    const res = await fetch('/api/check-email-exists', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.value })
-    })
-    const data = await res.json()
-    if (data.exists) {
-        // 有註冊 → 可以繼續登入
-        emit('submit', email.value)
-    } else {
-        // 沒註冊 → 請先註冊
-        alert('此 email 尚未註冊，請先註冊')
-        // 你也可以直接用這行自動切到註冊
-        // emit('register')
+    try {
+        // axios 寫法：第二個參數就是 body 物件
+        const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+        // 回傳的就是 json 物件，不用再 .json()
+        if (res.data.exists) {
+            emit('submit', email.value)
+        } else {
+            alert('此 email 尚未註冊，請先註冊')
+            // emit('register')
+        }
+    } catch (e) {
+        alert('檢查 email 時發生錯誤')
+        console.error(e)
     }
 }
 </script>

@@ -31,7 +31,7 @@
         <VerifyEmailModal :show="step === 'verifyEmail'" :email="userEmail" @close="step = ''" @back="step = 'email'"
             @send="handleSendVerification" />
         <!-- 登入 Email Modal -->
-        <LoginEmailModal :show="step === 'loginEmail'" @close="step = ''" @submit="handleLoginEmail"
+        <LoginEmailModal :show="step === 'loginEmail'" @close="step = ''" @submit="Email"
             @register="step = 'register'" />
         <!-- 登入密碼 -->
         <LoginPasswordModal :show="step === 'loginPassword'" :email="userEmail" @close="step = ''"
@@ -52,14 +52,14 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import RegisterModal from '@/components/Ivy/RegisterModal.vue'
-import LoginEmailModal from '@/views/Ivy/user/store/LoginEmailModal.vue'
-import RegisterEmailModal from '@/views/Ivy/user/store/RegisterEmailModal.vue'
-import VerifyEmailModal from '@/views/Ivy/user/store/VerifyEmailModal.vue'
-import LoginPasswordModal from '@/views/Ivy/user/store/LoginPasswordModal.vue'
-import ForgotPasswordModal from '@/views/Ivy/user/store/ForgotPasswordModal.vue'
-import ForgotPasswordSentModal from '@/views/Ivy/user/store/ForgotPasswordSentModal.vue'
-import ResetPasswordSentModal from '@/views/Ivy/user/store/ResetPasswordSentModal.vue'
-import ResetPasswordDialog from '@/views/Ivy/user/store/ResetPasswordDialog.vue'
+import LoginEmailModal from '@/views/Ivy/user/LoginEmailModal.vue'
+import RegisterEmailModal from '@/views/Ivy/user/RegisterEmailModal.vue'
+import VerifyEmailModal from '@/views/Ivy/user/VerifyEmailModal.vue'
+import LoginPasswordModal from '@/views/Ivy/user/LoginPasswordModal.vue'
+import ForgotPasswordModal from '@/views/Ivy/user/ForgotPasswordModal.vue'
+import ForgotPasswordSentModal from '@/views/Ivy/user/ForgotPasswordSentModal.vue'
+import ResetPasswordSentModal from '@/views/Ivy/user/ResetPasswordSentModal.vue'
+import ResetPasswordDialog from '@/views/Ivy/user/ResetPasswordDialog.vue'
 
 const router = useRouter()
 
@@ -105,7 +105,7 @@ function handleRegisterEmail(email) {
 //     }).then(r => r.json())
 
 // 登入流程（Email 輸入完後處理）
-function handleLoginEmail(email) {
+function Email(email) {
     userEmail.value = email;
     // 這裡你未來會用 fetch 查詢後端
     // 這裡直接假設有註冊

@@ -21,7 +21,7 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 @Data
 @Entity
-@Table(name = "[order]")
+@Table(name = "'customer_order")
 @NoArgsConstructor
 public class OrderBean {
 	@Id

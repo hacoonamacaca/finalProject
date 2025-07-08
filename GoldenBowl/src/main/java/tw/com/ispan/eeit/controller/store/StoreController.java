@@ -111,7 +111,7 @@ public class StoreController {
     // 照片存檔範例
     private String savePhoto(MultipartFile file) {
         try {
-            String folder = "uploads/photos/";
+            String folder = "uploads/photos";
             File dir = new File(folder);
             if (!dir.exists()) dir.mkdirs();
 
@@ -120,7 +120,7 @@ public class StoreController {
             file.transferTo(dest);
 
             // 回傳完整網址（這裡假設 domain 你自己決定）
-            String domain = "https://example.com"; // <-- 你要用你伺服器真實網址
+            String domain = "https://localhost:8080";
             return domain + "/photos/" + fileName;
         } catch (Exception e) {
             e.printStackTrace();

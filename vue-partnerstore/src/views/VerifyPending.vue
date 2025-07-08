@@ -15,47 +15,17 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
-import { useStoreRegister } from '@/stores/user.js'
-import axios from 'axios'
+import { ref } from 'vue'
+// import { useStoreRegister } from '@/stores/user.js'  // 不用再引入 storeRegister
+// import axios from 'axios'  // 不用再引入 axios
 
 const router = useRouter()
-const storeRegister = useStoreRegister()
+// 可依需求，預留訊息欄位（例如從其他頁 router.push 時可以帶 query 顯示）
 const errorMsg = ref('')
 const successMsg = ref('')
 
-onMounted(async () => {
-    // 只要進這頁，直接送一次資料
-    try {
-        // 你可以根據你的資料結構做調整
-        const res = await axios.post('/api/store/registerInfo', {
-            ownerId: storeRegister.ownerId,
-            name: storeRegister.storeName,
-            storeCategory: storeRegister.storeCategory,
-            phone: storeRegister.phone,
-            storeIntro: storeRegister.storeIntro,
-            address: [
-                storeRegister.zip,
-                storeRegister.city,
-                storeRegister.district,
-                storeRegister.street,
-                storeRegister.door
-            ].filter(Boolean).join(' '),
-            enAddress: storeRegister.enAddress,
-            lat: storeRegister.lat,
-            lon: storeRegister.lon
-            // 如有上傳圖片，也一併帶上
-        })
-        if (res.data.success) {
-            successMsg.value = '資料已送出，請等待審核通知！'
-        } else {
-            errorMsg.value = res.data.message || '送出失敗'
-        }
-    } catch (e) {
-        errorMsg.value = '伺服器錯誤，請稍後再試'
-    }
-})
-
+// onMounted 不需要了！
+// 只需要一個 goHome function
 function goHome() {
     router.push('/')
 }

@@ -12,7 +12,7 @@ import tw.com.ispan.eeit.model.dto.CategoryDTO;
 import tw.com.ispan.eeit.repository.store.CategoryRepository;
 
 @RestController
-@RequestMapping("/api/category")
+@RequestMapping("/api/categories")
 public class CategoryController {
 
     @Autowired

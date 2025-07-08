@@ -127,15 +127,33 @@ async function onSubmit() {
     formData.append('storeCategory', storeCategory.value)
     formData.append('storeIntro', storeIntro.value)
     formData.append('phone', phone.value)
-    
+
     if (files.value && files.value.length > 0) {
         for (let i = 0; i < files.value.length; i++) {
             formData.append('photos', files.value[i])
         }
     }
+    
+    // Debug 1: 印出formData實際內容
+    for (let pair of formData.entries()) {
+        console.log(pair[0] + ', ' + pair[1])
+    }
+    
+    // Debug 2: 印出檔案型別
+    if (files.value && files.value.length > 0) {
+        for (let i = 0; i < files.value.length; i++) {
+            console.log('檔案', i, files.value[i].name, files.value[i].type)
+        }
+    } else {
+        console.log('沒有檔案')
+    }
 
     try {
+        // Debug 3: axios預設不設 headers
         const res = await axios.post('/api/store/registerInfo', formData)
+        // Debug 4: 印response
+        console.log('後端回應', res.data)
+        
         if (res.data.success) {
             regStore.storeId = res.data.storeId + ''
             localStorage.setItem('registerStoreId', res.data.storeId + '')
@@ -154,7 +172,15 @@ async function onSubmit() {
             alert(res.data.message || '商家資訊送出失敗')
         }
     } catch (e) {
-        alert('伺服器錯誤，請稍後再試')
+        // Debug 5: 印錯誤訊息
+        if(e.response) {
+            // 回傳內容
+            console.error('錯誤response', e.response)
+            alert('伺服器錯誤 (HTTP ' + e.response.status + ')：' + (e.response.data?.message || ''))
+        } else {
+            console.error('發送失敗:', e)
+            alert('伺服器錯誤，請稍後再試')
+        }
     }
 }
 

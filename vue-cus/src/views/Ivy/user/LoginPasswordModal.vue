@@ -57,6 +57,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
+
 const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'back', 'login'])
 const password = ref('')
@@ -67,23 +69,30 @@ async function onSubmit() {
         alert('請輸入密碼')
         return
     }
-    const res = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: props.email, password: password.value })
-    })
-    const data = await res.json()
-    if (data.success) {
-        alert('登入成功！')
-        emit('login', { 
+    try {
+        // 路徑請和後端對應，如：/api/users/login
+        const res = await axios.post('/api/users/login', {
             email: props.email,
-            userFullName: data.userFullName,
-            userEmail: data.userEmail,
-            userPhone: data.userPhone}) // 通知父層登入成功
-        // 可以加 router.push 或 step = '' 關掉 modal
-    } else {
-        alert(data.message || '帳號或密碼錯誤')
-        // 可以加：password.value = ''
+            password: password.value
+        })
+        const data = res.data
+        if (data.success) {
+            alert('登入成功！')
+            emit('login', { 
+                email: props.email,
+                userFullName: data.userFullName,
+                userEmail: data.userEmail,
+                userPhone: data.userPhone // 如果有這欄位
+            })
+            // 你可以加 router.push(...) 或 emit('close') 關掉 modal
+        } else {
+            alert(data.message || '帳號或密碼錯誤')
+            password.value = ''
+        }
+    } catch (e) {
+        alert('登入發生錯誤，請稍後再試')
+        console.error(e)
+        password.value = ''
     }
 }
 </script>

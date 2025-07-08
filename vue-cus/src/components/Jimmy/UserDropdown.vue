@@ -71,7 +71,7 @@ const navigateTo = (path) => {
 const logout = () => {
   localStorage.removeItem('token');
   showDropdown.value = false;
-  router.push('/login');
+  router.push('/search');
 };
 
 // 點擊外部關閉下拉選單

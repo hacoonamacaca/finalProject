@@ -88,9 +88,9 @@ public class StoreBean {
 
     @OneToMany(mappedBy = "store")
     private List<CommentBean> comments;
-
-    @OneToMany(mappedBy = "store")
-    private List<FoodClassBean> foodClasses;
+//
+//    @OneToMany(mappedBy = "store")
+//    private List<FoodClassBean> foodClasses;
 
     @OneToMany(mappedBy = "store")
     private List<CategorySearchedBean> categorySearched;

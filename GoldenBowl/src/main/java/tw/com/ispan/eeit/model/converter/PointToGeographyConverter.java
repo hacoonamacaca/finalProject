@@ -12,7 +12,8 @@ public class PointToGeographyConverter implements AttributeConverter<Point, Stri
 
     @Override
     public String convertToDatabaseColumn(Point point) {
-        if (point == null) return null;
+        if (point == null)
+            return null;
         return new WKTWriter().write(point);
     }
 
@@ -45,7 +46,7 @@ public class PointToGeographyConverter implements AttributeConverter<Point, Stri
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
             data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                                + Character.digit(s.charAt(i+1), 16));
+                    + Character.digit(s.charAt(i + 1), 16));
         }
         return data;
     }

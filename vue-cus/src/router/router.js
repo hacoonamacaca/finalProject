@@ -10,9 +10,9 @@ import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
 import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
 import CartTest from '@/views/CartTest.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
-import VerifyPending from '@/views/Ivy/user/store/VerifyPending.vue'
-import RegisterProfile from '@/views/Ivy/user/store/RegisterProfile.vue'
-import EditUser from '@/views/Ivy/user/store/EditUser.vue'
+import VerifyPending from '@/views/Ivy/user/VerifyPending.vue'
+import RegisterProfile from '@/views/Ivy/user/RegisterProfile.vue'
+import EditUser from '@/views/Ivy/user/EditUser.vue'
 import {
     getRestaurantById
 } from "@/data/restaurants.js"
@@ -75,7 +75,7 @@ const routes = [{
     {
         path: '/resetPasswordEmail',
         name: 'ResetPasswordEmail',
-        component: () => import('@/views/Ivy/user/store/ResetPasswordEmail.vue'),
+        component: () => import('@/views/Ivy/user/ResetPasswordEmail.vue'),
         props: router => ({ 
             email: router.query.email 
         })

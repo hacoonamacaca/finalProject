@@ -17,28 +17,23 @@
             <div class="mb-2 text-center">
                 <label class="form-label w-100 text-start">電子郵件</label>
                 <div class="input-group">
-                <input type="email" v-model="emailLocal" class="form-control rounded-pill" placeholder="請輸入 email" />
-                <button
-                v-if="!isEmailVerified"
-                class="btn btn-outline-warning ms-2"
-                type="button"
-                @click="handleResend"
-                >
-                重新驗證
-            </button>
-        </div>
-    </div>
-            <!-- 只有未驗證時才會顯示重新驗證按鈕 -->
-            <div v-if="verificationMsg" class="text-center my-2" :style="{ color: verificationMsgColor }">
-                {{ verificationMsg }}
+                    <input type="email" v-model="emailLocal" class="form-control rounded-pill" placeholder="請輸入 email" />
+                    <button
+                    v-if="!isEmailExists"
+                    class="btn btn-outline-warning ms-2"
+                    type="button"
+                    @click="handleResend"
+                    >重新驗證</button>
+                </div>
             </div>
             <div class="d-flex align-items-center justify-content-center mb-3">
                 <i class="bi me-2"
-                    :class="isEmailVerified ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-warning'"></i>
+                    :class="isEmailExists ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-warning'"></i>
                 <small class="text-secondary">
-                    {{ isEmailVerified ? '已驗證' : '未驗證' }}
+                    {{ isEmailExists ? '已驗證' : '未驗證' }}
                 </small>
             </div>
+            <!-- 合併一顆儲存按鈕 -->
             <button type="button" class="btn btn-primary rounded-pill px-4 d-block mx-auto mb-2" :disabled="!isDirty"
                 @click="handleSave">
                 儲存
@@ -52,11 +47,11 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
-import { useRouter, useRoute} from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
+import axios from '@/plungins/axios.js'
 
 const router = useRouter()
-const route = useRoute()
 const userStore = useUserStore()
 
 function goBack() {
@@ -68,16 +63,16 @@ const initial = reactive({
     lastName: '',
     phone: '',
     email: '',
-    isEmailVerified: false
+    isEmailExists: false
 })
 
 const fullName = ref('')
 const phone = ref('')
 const emailLocal = ref('')
-const verificationMsg = ref('')
-const verificationMsgColor = ref('')
+const isEmailExists = ref(false)
 
 onMounted(async() => {
+    // 姓名
     const storedName = localStorage.getItem('userFullName')
     if (storedName) {
         const [first, ...rest] = storedName.trim().split(' ')
@@ -85,42 +80,28 @@ onMounted(async() => {
         initial.lastName = rest.join(' ')
         fullName.value = storedName
     }
+    // email
     const storedEmail = localStorage.getItem('userEmail')
     if (storedEmail) {
         initial.email = storedEmail
         emailLocal.value = storedEmail
+        try{
+        const res = await axios.post('/api/users/check-email-exists', { email: storedEmail })
+        const exists = res.data.exists
+        initial.isEmailExists = exists
+        isEmailExists.value = exists
+        localStorage.setItem('userEmailExists', exists ? 'true' : 'false')
+        } catch (e) {
+            initial.isEmailExists = false
+            isEmailExists.value = false
+            localStorage.setItem('userEmailExists', 'false')
+        }
     }
+    // 手機
     const storedPhone = localStorage.getItem('userPhone')
     if (storedPhone) {
         initial.phone = storedPhone
         phone.value = storedPhone
-    }
-
-// 從localStorage恢復email驗證狀態
-initial.isEmailVerified = localStorage.getItem('userEmailVerified') === 'true'
-
-//如果網址有token，則自動驗證
-const token = route.query.token
-if(token){
-    try{
-        const res = await fetch(`/api/verify-email?token=${token}`)
-        if(res.ok){
-            initial.isEmailVerified = true
-            localStorage.setItem('userEmailVerified', 'true')
-            verificationMsg.value = 'Email驗證成功'
-            verificationMsgColor.value = 'green'
-        }else{
-            initial.isEmailVerified = false
-            localStorage.setItem('userEmailVerified', 'false')
-            verificationMsg.value = 'Email驗證失敗或連結已過期'
-            verificationMsgColor.value = 'red'
-        }
-        }catch(e){
-            initial.isEmailVerified = false
-            localStorage.setItem('userEmailVerified', 'false')
-            verificationMsg.value = '驗證過程發生錯誤'
-            verificationMsgColor.value = 'red'
-        }
     }
 })
 
@@ -136,32 +117,7 @@ const isDirty = computed(() => {
     return dirtyBasic || dirtyEmail
 })
 
-const isEmailVerified = computed(() =>
-    emailLocal.value === initial.email && initial.isEmailVerified
-)
-
-async function handleResend() {
-    if (!emailLocal.value) {
-        verificationMsg.value = '請輸入電子郵件'
-        verificationMsgColor.value = 'red'
-        return
-    }
-    try {
-        const res = await fetch('/api/send-verify-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ email: emailLocal.value }),
-        })
-        const text = await res.text()
-        verificationMsg.value = text
-        verificationMsgColor.value = res.ok ? 'green' : 'red'
-    } catch (err) {
-        verificationMsg.value = '寄送失敗，請稍後再試'
-        verificationMsgColor.value = 'red'
-    }
-}
-
-function handleSave() {
+async function handleSave() {
     // 姓名+手機
     const [first, ...rest] = fullName.value.trim().split(' ')
     const last = rest.join(' ')
@@ -184,9 +140,21 @@ function handleSave() {
     const dirtyEmail = emailLocal.value !== initial.email
     if (dirtyEmail) {
         initial.email = emailLocal.value
-        initial.isEmailVerified = false
+        try{
+        const res = await axios.post('/api/users/check-email-exists', { email: emailLocal.value })
+        const exists = res.data.exists
+        initial.isEmailExists = exists
+        isEmailExists.value = exists
+        // 同步到LocalStorage
         localStorage.setItem('userEmail', emailLocal.value)
-        localStorage.setItem('userEmailVerified', 'false')
+        localStorage.setItem('userEmailExists', exists ? 'true' : 'false')
+        } catch (e) {
+            initial.isEmailExists = false
+            isEmailExists.value = false
+            localStorage.setItem('userEmail', emailLocal.value)
+            localStorage.setItem('userEmailExists', 'false')
+            alert('查詢 email 驗證狀態失敗')
+        }
     }
 }
 </script>
