@@ -1,371 +1,312 @@
 package tw.com.ispan.eeit.service.reservation;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashSet;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.entity.UserBean;
+import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.entity.reservation.TableBean;
-import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
-import tw.com.ispan.eeit.model.entity.store.StoreBean;
-import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
 import tw.com.ispan.eeit.repository.UserRepository;
+import tw.com.ispan.eeit.repository.store.StoreRepository;
 import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 import tw.com.ispan.eeit.repository.reservation.TableRepository;
-import tw.com.ispan.eeit.repository.reservation.TimeSlotRepository;
-import tw.com.ispan.eeit.repository.store.StoreRepository;
-import tw.com.ispan.eeit.repository.store.OpenHourRepository;
+import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
 
 @Service
-@Transactional
 public class ReservationService {
 
     @Autowired
-    private ReservationRepository reservationRepo;
+    private ReservationRepository reservationRepository;
 
     @Autowired
-    private TableRepository tableRepo;
+    private TableRepository tableRepository;
 
     @Autowired
-    private TimeSlotRepository timeSlotRepo;
+    private StoreRepository storeRepository;
 
     @Autowired
-    private UserRepository userRepo;
-
-    @Autowired
-    private StoreRepository storeRepo;
-
-    @Autowired
-    private OpenHourRepository openHourRepo;
+    private UserRepository userRepository;
 
     /**
-     * 建立訂位
+     * 創建訂位
      */
-    public ReservationBean createReservation(ReservationBean reservation, List<Integer> tableIds) {
+    public ReservationBean createReservation(
+            Integer userId,
+            Integer storeId,
+            LocalDate reservedDate,
+            LocalTime reservedTime,
+            Integer guests,
+            Integer duration,
+            String content) {
         // 驗證用戶和餐廳是否存在
-        UserBean user = userRepo.findById(reservation.getUser().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        UserBean user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("用戶不存在: " + userId));
 
-        StoreBean store = storeRepo.findById(reservation.getStore().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+        StoreBean store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("餐廳不存在: " + storeId));
 
-        // 設置關聯
-        reservation.setUser(user);
-        reservation.setStore(store);
-
-        // 設置桌位
-        if (tableIds != null && !tableIds.isEmpty()) {
-            List<TableBean> tables = tableRepo.findAllById(tableIds);
-            reservation.setTables(new HashSet<>(tables));
+        // 檢查餐廳是否營業
+        if (!store.getIsOpen()) {
+            throw new RuntimeException("餐廳目前不營業");
         }
 
-        // 設置預設值
+        // 組合日期和時間
+        LocalDateTime reservedDateTime = LocalDateTime.of(reservedDate, reservedTime);
+
+        // 檢查是否有足夠的桌位
+        List<TableBean> availableTables = tableRepository.findAvailableTablesByStoreAndMinSeats(storeId, guests);
+        if (availableTables.isEmpty()) {
+            throw new RuntimeException("沒有足夠的桌位");
+        }
+
+        // 創建訂位
+        ReservationBean reservation = new ReservationBean();
+        reservation.setUser(user);
+        reservation.setStore(store);
+        reservation.setReservedDate(reservedDate);
+        reservation.setReservedTime(reservedDateTime);
+        reservation.setGuests(guests);
+        reservation.setDuration(duration);
+        reservation.setContent(content);
         reservation.setStatus(ReservationStatus.PENDING);
         reservation.setCreatedAt(LocalDateTime.now());
         reservation.setUpdatedAt(LocalDateTime.now());
 
-        return reservationRepo.save(reservation);
+        // 分配桌位
+        Set<TableBean> tables = reservation.getTables();
+        tables.add(availableTables.get(0)); // 簡單分配第一個可用桌位
+        reservation.setTables(tables);
+
+        return reservationRepository.save(reservation);
     }
 
     /**
      * 查詢用戶的訂位記錄
      */
     public List<ReservationBean> getUserReservations(Integer userId) {
-        UserBean user = userRepo.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return reservationRepo.findByUser(user);
-    }
-
-    /**
-     * 查詢用戶的未來訂位
-     */
-    public List<ReservationBean> getUserUpcomingReservations(Integer userId) {
-        UserBean user = userRepo.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        return reservationRepo.findUpcomingReservationsByUser(user, LocalDate.now());
+        return reservationRepository.findByUserIdOrderByReservedDateDesc(userId);
     }
 
     /**
      * 查詢餐廳的訂位記錄
      */
     public List<ReservationBean> getStoreReservations(Integer storeId) {
-        StoreBean store = storeRepo.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-        return reservationRepo.findByStore(store);
-    }
-
-    /**
-     * 查詢餐廳的未來訂位
-     */
-    public List<ReservationBean> getStoreUpcomingReservations(Integer storeId) {
-        StoreBean store = storeRepo.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-        return reservationRepo.findUpcomingReservationsByStore(store, LocalDate.now());
-    }
-
-    /**
-     * 查詢特定日期的訂位
-     */
-    public List<ReservationBean> getReservationsByDate(Integer storeId, LocalDate date) {
-        StoreBean store = storeRepo.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-        return reservationRepo.findByStoreAndReservedDate(store, date);
-    }
-
-    /**
-     * 查詢可用的桌位
-     */
-    public List<TableBean> findAvailableTables(Integer storeId, LocalDateTime startTime, int duration, int minSeats) {
-        StoreBean store = storeRepo.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-
-        // 計算結束時間
-        LocalDateTime endTime = startTime.plusMinutes(duration);
-
-        // 查詢符合座位數要求的可用桌位
-        List<TableBean> availableTables = tableRepo.findAvailableTablesByStoreAndMinSeats(store, minSeats);
-
-        // 過濾掉在指定時段已被預約的桌位
-        List<TableBean> filteredTables = new ArrayList<>();
-        for (TableBean table : availableTables) {
-            if (!isTableReservedInTimeRange(table, startTime, endTime)) {
-                filteredTables.add(table);
-            }
-        }
-
-        return filteredTables;
-    }
-
-    /**
-     * 檢查桌位在指定時段是否已被預約
-     */
-    private boolean isTableReservedInTimeRange(TableBean table, LocalDateTime startTime, LocalDateTime endTime) {
-        LocalDate date = startTime.toLocalDate();
-
-        // 查詢該桌位在指定日期的所有訂位
-        List<ReservationBean> reservations = reservationRepo.findByStoreAndReservedDate(table.getStore(), date);
-
-        for (ReservationBean reservation : reservations) {
-            if (reservation.getTables().contains(table) &&
-                    reservation.getStatus() != ReservationStatus.CANCELLED &&
-                    reservation.getStatus() != ReservationStatus.COMPLETED) {
-
-                LocalDateTime reservationStart = reservation.getReservedTime();
-                LocalDateTime reservationEnd = reservationStart.plusMinutes(reservation.getDuration());
-
-                // 檢查時間重疊
-                if (!(endTime.isBefore(reservationStart) || startTime.isAfter(reservationEnd))) {
-                    return true; // 有重疊，桌位不可用
-                }
-            }
-        }
-
-        return false; // 沒有重疊，桌位可用
+        return reservationRepository.findByStoreIdOrderByReservedDateDesc(storeId);
     }
 
     /**
      * 更新訂位狀態
      */
     public ReservationBean updateReservationStatus(Integer reservationId, ReservationStatus status) {
-        ReservationBean reservation = reservationRepo.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
+        ReservationBean reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("訂位不存在: " + reservationId));
 
         reservation.setStatus(status);
         reservation.setUpdatedAt(LocalDateTime.now());
-
-        return reservationRepo.save(reservation);
+        return reservationRepository.save(reservation);
     }
 
     /**
      * 取消訂位
      */
-    public ReservationBean cancelReservation(Integer reservationId) {
-        return updateReservationStatus(reservationId, ReservationStatus.CANCELLED);
+    public boolean cancelReservation(Integer reservationId, Integer userId) {
+        ReservationBean reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new RuntimeException("訂位不存在: " + reservationId));
+
+        // 檢查是否為訂位者本人
+        if (!reservation.getUser().getId().equals(userId)) {
+            throw new RuntimeException("無權限取消此訂位");
+        }
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+        reservation.setUpdatedAt(LocalDateTime.now());
+        reservationRepository.save(reservation);
+        return true;
     }
 
     /**
-     * 完成訂位
+     * 查詢餐廳可用桌位
      */
-    public ReservationBean completeReservation(Integer reservationId) {
-        return updateReservationStatus(reservationId, ReservationStatus.COMPLETED);
+    public List<TableBean> getAvailableTables(Integer storeId, Integer minSeats) {
+        return tableRepository.findAvailableTablesByStoreAndMinSeats(storeId, minSeats);
     }
 
     /**
-     * 查詢餐廳的可用時段
+     * 檢查指定時間是否有可用桌位
      */
+    public boolean checkAvailability(Integer storeId, LocalDate date, LocalTime time, Integer guests) {
+        // 檢查該時間段是否有衝突的訂位
+        LocalDateTime startTime = LocalDateTime.of(date, time);
+        LocalDateTime endTime = startTime.plusHours(2); // 假設用餐時間2小時
+
+        List<ReservationBean> conflictingReservations = reservationRepository
+                .findConflictingReservations(storeId, date, startTime, endTime);
+
+        // 計算已使用的座位數
+        int usedSeats = conflictingReservations.stream()
+                .mapToInt(ReservationBean::getGuests)
+                .sum();
+
+        // 查詢餐廳總座位數
+        List<TableBean> allTables = tableRepository.findByStoreId(storeId);
+        int totalSeats = allTables.stream()
+                .mapToInt(TableBean::getSeats)
+                .sum();
+
+        return (totalSeats - usedSeats) >= guests;
+    }
+
+    public List<TableBean> getStoreTables(Integer storeId) {
+        return tableRepository.findByStoreId(storeId);
+    }
+
+    public List<TableBean> findAvailableTables(Integer storeId, LocalDateTime startTime, int duration, int minSeats) {
+        return tableRepository.findAvailableTablesByStoreAndMinSeats(storeId, minSeats);
+    }
+
+    public TableBean addTable(Integer storeId, Integer seats, Integer quantity, Boolean status) {
+        StoreBean store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("餐廳不存在: " + storeId));
+
+        TableBean table = new TableBean();
+        table.setStore(store);
+        table.setSeats(seats);
+        table.setQuantity(quantity);
+        table.setStatus(status);
+
+        return tableRepository.save(table);
+    }
+
+    public TableBean updateTable(Integer tableId, Integer seats, Integer quantity, Boolean status) {
+        TableBean table = tableRepository.findById(tableId)
+                .orElseThrow(() -> new RuntimeException("桌位不存在: " + tableId));
+
+        if (seats != null)
+            table.setSeats(seats);
+        if (quantity != null)
+            table.setQuantity(quantity);
+        if (status != null)
+            table.setStatus(status);
+
+        return tableRepository.save(table);
+    }
+
+    public void deleteTable(Integer tableId) {
+        if (!tableRepository.existsById(tableId)) {
+            throw new RuntimeException("桌位不存在: " + tableId);
+        }
+        tableRepository.deleteById(tableId);
+    }
+
+    public TableBean getTableById(Integer tableId) {
+        return tableRepository.findById(tableId)
+                .orElseThrow(() -> new RuntimeException("桌位不存在: " + tableId));
+    }
+
+    public boolean isTableAvailable(Integer tableId, LocalDateTime startTime, int duration) {
+        TableBean table = getTableById(tableId);
+        if (!table.getStatus())
+            return false;
+
+        LocalDateTime endTime = startTime.plusMinutes(duration);
+        List<ReservationBean> conflictingReservations = reservationRepository
+                .findConflictingReservations(table.getStore().getId(), startTime.toLocalDate(), startTime, endTime);
+
+        return conflictingReservations.isEmpty();
+    }
+
+    // 新增方法：取得可用時段
     public List<TimeSlot> getAvailableTimeSlots(Integer storeId) {
-        StoreBean store = storeRepo.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-        return timeSlotRepo.findAvailableTimeSlotsByStore(store);
+        // TODO: 實作時段查詢邏輯
+        return new ArrayList<>();
     }
 
-    /**
-     * 查詢餐廳在特定日期的可用時段
-     */
+    // 新增方法：創建訂位（重載版本）
+    public ReservationBean createReservation(ReservationBean reservation, List<Integer> tableIds) {
+        // 驗證用戶和餐廳
+        UserBean user = userRepository.findById(reservation.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("用戶不存在"));
+        StoreBean store = storeRepository.findById(reservation.getStore().getId())
+                .orElseThrow(() -> new RuntimeException("餐廳不存在"));
+
+        reservation.setUser(user);
+        reservation.setStore(store);
+        reservation.setStatus(ReservationStatus.PENDING);
+        reservation.setCreatedAt(LocalDateTime.now());
+        reservation.setUpdatedAt(LocalDateTime.now());
+
+        // 設置桌位
+        Set<TableBean> tables = new HashSet<>();
+        for (Integer tableId : tableIds) {
+            TableBean table = tableRepository.findById(tableId)
+                    .orElseThrow(() -> new RuntimeException("桌位不存在: " + tableId));
+            tables.add(table);
+        }
+        reservation.setTables(tables);
+
+        return reservationRepository.save(reservation);
+    }
+
+    // 新增方法：生成時段資料
+    public void generateTimeSlotsForRestaurant(Integer storeId, int days) {
+        // TODO: 實作時段生成邏輯
+        System.out.println("生成餐廳 " + storeId + " 的 " + days + " 天時段資料");
+    }
+
+    // TimeSlot 相關方法
     public List<TimeSlot> getAvailableTimeSlotsByDate(Integer storeId, LocalDate date) {
-        StoreBean store = storeRepo.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-        return timeSlotRepo.findByStoreAndDayAndIsActive(store, date, true);
+        // TODO: 實作按日期查詢時段邏輯
+        return new ArrayList<>();
     }
 
-    /**
-     * 根據ID查詢訂位
-     */
-    public ReservationBean getReservationById(Integer reservationId) {
-        return reservationRepo.findById(reservationId)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation not found"));
+    public List<TimeSlot> getTimeSlotsByDateRange(Integer storeId, LocalDate startDate, LocalDate endDate) {
+        // TODO: 實作按日期範圍查詢時段邏輯
+        return new ArrayList<>();
     }
 
-    /**
-     * 為餐廳生成未來30天的時段資料
-     */
-    public void generateTimeSlotsForRestaurant(Integer storeId, int daysAhead) {
-        StoreBean store = storeRepo.findById(storeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-
-        LocalDate today = LocalDate.now();
-
-        for (LocalDate date = today; date.isBefore(today.plusDays(daysAhead)); date = date.plusDays(1)) {
-            // 在生成前檢查是否已存在
-            if (!timeSlotRepo.findByStoreAndDay(store, date).isEmpty()) {
-                continue; // 跳過已存在的日期
-            }
-
-            // 檢查是否為營業日
-            if (isBusinessDay(store, date)) {
-                // 取得營業時間
-                LocalTime startTime = getOpenTime(store, date.getDayOfWeek());
-                LocalTime endTime = getCloseTime(store, date.getDayOfWeek());
-                int interval = getTimeInterval(store); // 預設30分鐘
-
-                // 生成時段
-                for (LocalTime time = startTime; time.isBefore(endTime); time = time.plusMinutes(interval)) {
-                    TimeSlot timeSlot = new TimeSlot();
-                    timeSlot.setStore(store);
-                    timeSlot.setDay(date);
-                    timeSlot.setStartTime(time);
-                    timeSlot.setEndTime(time.plusMinutes(interval));
-                    timeSlot.setIsActive(true);
-
-                    timeSlotRepo.save(timeSlot);
-                }
-            }
-        }
+    public TimeSlot addTimeSlot(Integer storeId, LocalDate day, String startTime, String endTime, Boolean isActive) {
+        // TODO: 實作新增時段邏輯
+        TimeSlot timeSlot = new TimeSlot();
+        // 設置基本屬性
+        return timeSlot;
     }
 
-    /**
-     * 檢查是否為營業日
-     */
-    private boolean isBusinessDay(StoreBean store, LocalDate date) {
-        DayOfWeek dayOfWeek = date.getDayOfWeek();
-
-        // 查詢該餐廳在該星期的營業時間設定
-        Optional<OpenHourBean> openHour = openHourRepo.findByStoreAndDay(store, dayOfWeek);
-
-        // 如果沒有設定，預設為營業
-        if (openHour.isEmpty()) {
-            return true;
-        }
-
-        // 根據設定判斷是否營業
-        return openHour.get().getIsOpen();
+    public TimeSlot updateTimeSlot(Integer timeSlotId, String startTime, String endTime, Boolean isActive) {
+        // TODO: 實作更新時段邏輯
+        TimeSlot timeSlot = new TimeSlot();
+        // 更新屬性
+        return timeSlot;
     }
 
-    /**
-     * 取得營業開始時間
-     */
-    private LocalTime getOpenTime(StoreBean store, DayOfWeek dayOfWeek) {
-        // 查詢該餐廳在該星期的營業時間設定
-        Optional<OpenHourBean> openHour = openHourRepo.findByStoreAndDay(store, dayOfWeek);
-
-        // 如果有設定，使用設定的時間
-        if (openHour.isPresent() && openHour.get().getIsOpen()) {
-            return openHour.get().getOpenTime();
-        }
-
-        // 預設營業時間
-        switch (dayOfWeek) {
-            case MONDAY:
-            case TUESDAY:
-            case WEDNESDAY:
-            case THURSDAY:
-            case FRIDAY:
-                return LocalTime.of(11, 0); // 週一到週五 11:00
-            case SATURDAY:
-            case SUNDAY:
-                return LocalTime.of(10, 0); // 週六週日 10:00
-            default:
-                return LocalTime.of(11, 0);
-        }
+    public void deleteTimeSlot(Integer timeSlotId) {
+        // TODO: 實作刪除時段邏輯
+        System.out.println("刪除時段: " + timeSlotId);
     }
 
-    /**
-     * 取得營業結束時間
-     */
-    private LocalTime getCloseTime(StoreBean store, DayOfWeek dayOfWeek) {
-        // 查詢該餐廳在該星期的營業時間設定
-        Optional<OpenHourBean> openHour = openHourRepo.findByStoreAndDay(store, dayOfWeek);
-
-        // 如果有設定，使用設定的時間
-        if (openHour.isPresent() && openHour.get().getIsOpen()) {
-            return openHour.get().getCloseTime();
-        }
-
-        // 預設營業時間
-        switch (dayOfWeek) {
-            case MONDAY:
-            case TUESDAY:
-            case WEDNESDAY:
-            case THURSDAY:
-            case FRIDAY:
-                return LocalTime.of(22, 0); // 週一到週五 22:00
-            case SATURDAY:
-            case SUNDAY:
-                return LocalTime.of(23, 0); // 週六週日 23:00
-            default:
-                return LocalTime.of(22, 0);
-        }
+    public TimeSlot getTimeSlotById(Integer timeSlotId) {
+        // TODO: 實作查詢時段詳情邏輯
+        TimeSlot timeSlot = new TimeSlot();
+        return timeSlot;
     }
 
-    /**
-     * 取得時間間隔
-     */
-    private int getTimeInterval(StoreBean store) {
-        // 查詢該餐廳的營業時間設定
-        List<OpenHourBean> openHours = openHourRepo.findByStore(store);
-
-        // 如果有設定，使用第一個設定的間隔
-        if (!openHours.isEmpty()) {
-            return openHours.get(0).getTimeIntervalMinutes();
-        }
-
-        // 預設30分鐘
-        return 30;
+    public int disableTimeSlotsByDate(Integer storeId, LocalDate date) {
+        // TODO: 實作停用時段邏輯
+        return 0;
     }
 
-    /**
-     * 為所有餐廳生成時段資料
-     */
-    public void generateTimeSlotsForAllRestaurants(int daysAhead) {
-        List<StoreBean> allStores = storeRepo.findAll();
-
-        for (StoreBean store : allStores) {
-            if (store.getIsActive()) { // 只為營業中的餐廳生成
-                generateTimeSlotsForRestaurant(store.getId(), daysAhead);
-            }
-        }
+    public int enableTimeSlotsByDate(Integer storeId, LocalDate date) {
+        // TODO: 實作啟用時段邏輯
+        return 0;
     }
 }

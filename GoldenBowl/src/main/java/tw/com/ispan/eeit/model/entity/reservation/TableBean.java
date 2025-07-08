@@ -16,6 +16,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity
 @Table(name = "tables")
@@ -30,6 +31,7 @@ public class TableBean {
     // 關聯到 Store
     @ManyToOne
     @JoinColumn(name = "FK_store_id", nullable = false)
+    @JsonBackReference("store-tables")
     private StoreBean store;
 
     @Column(name = "quantity")
@@ -42,5 +44,6 @@ public class TableBean {
     private Boolean status; // 桌位狀態
 
     @ManyToMany(mappedBy = "tables")
+    @JsonBackReference("reservation-tables")
     private Set<ReservationBean> reservations = new HashSet<>();
 }

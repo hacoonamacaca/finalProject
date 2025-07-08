@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -37,11 +40,13 @@ public class ReservationBean {
     // 關聯到 User
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference("user-reservations")
     private UserBean user;
 
     // 關聯到 Store
     @ManyToOne
     @JoinColumn(name = "store_id", nullable = false)
+    @JsonBackReference("store-reservations")
     private StoreBean store;
 
     @Column(name = "reserved_date", nullable = false)
@@ -71,5 +76,6 @@ public class ReservationBean {
 
     @ManyToMany
     @JoinTable(name = "reservation_tables", joinColumns = @JoinColumn(name = "reservation_id"), inverseJoinColumns = @JoinColumn(name = "tables_id"))
+    @JsonManagedReference("reservation-tables")
     private Set<TableBean> tables = new HashSet<>();
 }

@@ -3,6 +3,8 @@ package tw.com.ispan.eeit.model.entity.order;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,10 +32,12 @@ public class OrderBean {
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")
+	@JsonBackReference("user-orders")
 	private UserBean user;
 
 	@ManyToOne
 	@JoinColumn(name = "store_id")
+	@JsonBackReference("store-orders")
 	private StoreBean store;
 
 	@ManyToOne

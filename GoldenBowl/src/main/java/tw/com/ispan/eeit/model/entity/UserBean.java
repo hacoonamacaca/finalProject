@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -63,22 +65,28 @@ public class UserBean {
     private LocalDateTime hideUntil;
 
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference("user-orders")
     private List<OrderBean> orders;
 
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference("user-userTags")
     private List<UserTagBean> userTags;
 
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference("user-likedFoods")
     private List<LikedFoodBean> likedFoods;
 
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference("user-comments")
     private List<CommentBean> comments;
 
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference("user-categorySearched")
     private List<CategorySearchedBean> categorySearched;
 
     // 新增：用戶的訂位記錄
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference("user-reservations")
     private List<ReservationBean> reservations;
 
     // 多對多關係：User 與 Store 通過 favorite_store 表格關聯
