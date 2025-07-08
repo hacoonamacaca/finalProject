@@ -53,6 +53,26 @@
                                         <span class="spec-value">{{ formatIceLevel(item.selectedIceLevel) }}</span>
                                     </div>
 
+                                    <!-- 显示甜度 -->
+                                    <div v-if="item.selectedSweetnessLevel" class="item-specification">
+                                        <span class="spec-label">甜度：</span>
+                                        <span class="spec-value">{{ formatSweetnessLevel(item.selectedSweetnessLevel)
+                                        }}</span>
+                                    </div>
+
+                                    <!-- 显示尺寸 -->
+                                    <div v-if="item.selectedSizeLevel" class="item-specification">
+                                        <span class="spec-label">尺寸：</span>
+                                        <span class="spec-value">{{ formatSizeLevel(item.selectedSizeLevel) }}</span>
+                                    </div>
+
+                                    <!-- 显示溫度 -->
+                                    <div v-if="item.selectedTemperatureLevel" class="item-specification">
+                                        <span class="spec-label">溫度：</span>
+                                        <span class="spec-value">{{
+                                            formatTemperatureLevel(item.selectedTemperatureLevel) }}</span>
+                                    </div>
+
                                     <!-- 显示配料 -->
                                     <div v-if="item.selectedToppings && item.selectedToppings.length > 0"
                                         class="item-specification">
@@ -133,9 +153,6 @@
                     <button class="continue-shopping-btn" @click="closeModal">
                         繼續購物
                     </button>
-                    <button class="checkout-all-btn" @click="checkoutAllRestaurants">
-                        全部結帳 (NT${{ totalAmount + deliveryFee }})
-                    </button>
                 </div>
             </div>
         </div>
@@ -157,7 +174,7 @@ const props = defineProps({
     }
 })
 
-const emit = defineEmits(['close', 'update-quantity', 'remove-item', 'checkout-restaurant', 'checkout-all', 'clear-restaurant'])
+const emit = defineEmits(['close', 'update-quantity', 'remove-item', 'checkout-restaurant', 'clear-restaurant'])
 
 // 计算属性
 const totalItems = computed(() => {
@@ -190,10 +207,6 @@ const removeItem = (itemId, restaurantId) => {
 
 const checkoutRestaurant = (restaurantId) => {
     emit('checkout-restaurant', restaurantId)
-}
-
-const checkoutAllRestaurants = () => {
-    emit('checkout-all')
 }
 
 const clearRestaurant = (restaurantId) => {
@@ -235,6 +248,36 @@ const formatIceLevel = (iceLevel) => {
         'none': '去冰'
     }
     return iceLevelMap[iceLevel] || iceLevel
+}
+
+const formatSweetnessLevel = (sweetnessLevel) => {
+    const sweetnessMap = {
+        'less': '少糖',
+        'normal': '正常糖',
+        'more': '多糖',
+        'extra': '加糖'
+    }
+    return sweetnessMap[sweetnessLevel] || sweetnessLevel
+}
+
+const formatSizeLevel = (sizeLevel) => {
+    const sizeMap = {
+        'small': '小杯',
+        'medium': '中杯',
+        'large': '大杯',
+        'extra': '特大杯'
+    }
+    return sizeMap[sizeLevel] || sizeLevel
+}
+
+const formatTemperatureLevel = (temperatureLevel) => {
+    const temperatureMap = {
+        'hot': '熱',
+        'warm': '溫',
+        'cold': '冰',
+        'extra': '常溫'
+    }
+    return temperatureMap[temperatureLevel] || temperatureLevel
 }
 
 const formatToppings = (toppings) => {

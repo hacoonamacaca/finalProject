@@ -104,13 +104,8 @@ public class TestController {
 
             // 建立訂位
             ReservationBean reservation = new ReservationBean();
-            UserBean user = new UserBean();
-            user.setId(userId);
-            reservation.setUser(user);
-
-            StoreBean store = new StoreBean();
-            store.setId(storeId);
-            reservation.setStore(store);
+            reservation.setUserId(userId);
+            reservation.setStoreId(storeId);
 
             reservation.setReservedDate(request.getReservedDate());
             reservation

@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.entity.comment;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -12,6 +13,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,15 +29,6 @@ public class CommentBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
-    @Column(name = "order_id")
-    private Integer orderId;
-
-    @Column(name = "user_id")
-    private Integer userId;
-
-    @Column(name = "store_id")
-    private Integer storeId;
 
     @Column(length = 500)
     private String content;
@@ -54,18 +47,18 @@ public class CommentBean {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", insertable = false, updatable = false)
-    @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", unique = true, nullable = false)
+    @JsonBackReference
     private OrderBean order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", unique = true, nullable = false)
     @JsonIgnore
     private UserBean user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", insertable = false, updatable = false)
+    @JoinColumn(name = "store_id", unique = true, nullable = false)
     @JsonIgnore
     private StoreBean store;
 }

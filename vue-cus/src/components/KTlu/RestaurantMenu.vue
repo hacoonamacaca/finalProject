@@ -145,15 +145,102 @@ const categories = ref([
 ])
 
 const items = ref([
-    { id: 1, name: '武樓全牌鹽水雞沙拉', description: '字樣示意描述：雞肉、玉米、青菜、辣粉', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+1', originalPrice: 379, discountPrice: 296, category: '人氣精選', tags: ['熱銷', '推薦'] },
-    { id: 2, name: '檸香法式丹麥Sunny舒肥雞', description: '檸香舒肥雞、歐姆蛋、麵包等', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+2', originalPrice: 480, discountPrice: 384, category: '新品上市', tags: ['新品'] },
-    { id: 3, name: '招牌起司牛肉堡', description: '經典牛肉、濃郁起司、新鮮蔬菜', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+3', originalPrice: 250, discountPrice: 200, category: '店長推薦', tags: ['招牌'] },
-    { id: 4, name: '香煎鮭魚排', description: '鮮嫩鮭魚、時蔬、特製醬汁', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+4', originalPrice: 350, discountPrice: 280, category: '人氣精選', tags: ['健康'] },
-    { id: 5, name: '義式肉醬麵', description: '經典肉醬、Q彈義大利麵', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+5', originalPrice: 180, discountPrice: 150, category: '茗品系列' },
+    {
+        id: 1, name: '武樓全牌鹽水雞沙拉', description: '字樣示意描述：雞肉、玉米、青菜、辣粉', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+1', originalPrice: 379, discountPrice: 296, category: '人氣精選', tags: ['熱銷', '推薦'],
+        options: [
+            {
+                id: 'size', name: '尺寸', type: 'radio', items: [
+                    { id: 'small', name: '小份', price: 0 },
+                    { id: 'medium', name: '中份', price: 50 },
+                    { id: 'large', name: '大份', price: 100 }
+                ]
+            },
+            {
+                id: 'spice', name: '辣度', type: 'radio', items: [
+                    { id: 'mild', name: '微辣', price: 0 },
+                    { id: 'medium', name: '中辣', price: 0 },
+                    { id: 'hot', name: '大辣', price: 0 }
+                ]
+            }
+        ]
+    },
+    {
+        id: 2, name: '檸香法式丹麥Sunny舒肥雞', description: '檸香舒肥雞、歐姆蛋、麵包等', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+2', originalPrice: 480, discountPrice: 384, category: '新品上市', tags: ['新品'],
+        options: [
+            {
+                id: 'bread', name: '麵包選擇', type: 'radio', items: [
+                    { id: 'white', name: '白麵包', price: 0 },
+                    { id: 'whole', name: '全麥麵包', price: 10 },
+                    { id: 'croissant', name: '可頌', price: 20 }
+                ]
+            }
+        ]
+    },
+    {
+        id: 3, name: '招牌起司牛肉堡', description: '經典牛肉、濃郁起司、新鮮蔬菜', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+3', originalPrice: 250, discountPrice: 200, category: '店長推薦', tags: ['招牌'],
+        options: [
+            {
+                id: 'cheese', name: '起司選擇', type: 'radio', items: [
+                    { id: 'cheddar', name: '切達起司', price: 0 },
+                    { id: 'mozzarella', name: '莫札瑞拉起司', price: 15 },
+                    { id: 'blue', name: '藍紋起司', price: 25 }
+                ]
+            },
+            {
+                id: 'sauce', name: '醬料', type: 'checkbox', items: [
+                    { id: 'ketchup', name: '番茄醬', price: 0 },
+                    { id: 'mustard', name: '芥末醬', price: 0 },
+                    { id: 'mayo', name: '美乃滋', price: 0 },
+                    { id: 'bbq', name: 'BBQ醬', price: 10 }
+                ]
+            }
+        ]
+    },
+    {
+        id: 4, name: '香煎鮭魚排', description: '鮮嫩鮭魚、時蔬、特製醬汁', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+4', originalPrice: 350, discountPrice: 280, category: '人氣精選', tags: ['健康'],
+        options: [
+            {
+                id: 'cooking', name: '烹調方式', type: 'radio', items: [
+                    { id: 'medium', name: '五分熟', price: 0 },
+                    { id: 'well', name: '全熟', price: 0 }
+                ]
+            },
+            {
+                id: 'sauce', name: '醬汁', type: 'radio', items: [
+                    { id: 'lemon', name: '檸檬奶油醬', price: 0 },
+                    { id: 'teriyaki', name: '照燒醬', price: 10 },
+                    { id: 'herb', name: '香草醬', price: 15 }
+                ]
+            }
+        ]
+    },
+    {
+        id: 5, name: '義式肉醬麵', description: '經典肉醬、Q彈義大利麵', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+5', originalPrice: 180, discountPrice: 150, category: '茗品系列',
+        options: [
+            {
+                id: 'pasta', name: '麵條選擇', type: 'radio', items: [
+                    { id: 'spaghetti', name: '義大利麵', price: 0 },
+                    { id: 'penne', name: '筆管麵', price: 0 },
+                    { id: 'fettuccine', name: '寬麵', price: 10 }
+                ]
+            }
+        ]
+    },
     { id: 6, name: '特調水果茶', description: '多種新鮮水果、清爽茶底', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+6', originalPrice: 120, discountPrice: 100, category: '優多系列', tags: ['清爽'] },
     { id: 7, name: '黑糖珍珠鮮奶', description: '香濃黑糖、Q彈珍珠、新鮮牛奶', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+7', originalPrice: 90, discountPrice: 75, category: '奶茶系列', tags: ['經典'] },
     { id: 8, name: '經典美式咖啡', description: '嚴選咖啡豆、香醇濃郁', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+8', originalPrice: 70, discountPrice: 60, category: '冬瓜 / 百香果系列' },
-    { id: 9, name: '酥炸雞米花', description: '外酥內嫩、香辣可口', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+9', originalPrice: 100, discountPrice: 85, category: '人氣精選', tags: ['酥脆'] },
+    {
+        id: 9, name: '酥炸雞米花', description: '外酥內嫩、香辣可口', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+9', originalPrice: 100, discountPrice: 85, category: '人氣精選', tags: ['酥脆'],
+        options: [
+            {
+                id: 'sauce', name: '沾醬', type: 'checkbox', items: [
+                    { id: 'ketchup', name: '番茄醬', price: 0 },
+                    { id: 'ranch', name: '牧場醬', price: 0 },
+                    { id: 'honey', name: '蜂蜜芥末', price: 10 }
+                ]
+            }
+        ]
+    },
     { id: 10, name: '抹茶拿鐵', description: '日式抹茶、香醇牛奶', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product:10', originalPrice: 110, discountPrice: 90, category: '奶茶系列', tags: ['日式'] },
     { id: 11, name: '綜合水果優格', description: '新鮮水果、低脂優格', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+11', originalPrice: 150, discountPrice: 120, category: '優多系列', tags: ['健康', '低脂'] },
     { id: 12, name: '香草冰淇淋', description: '濃郁香草、清涼消暑', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+12', originalPrice: 80, discountPrice: 70, category: '店長推薦', tags: ['甜品'] },
@@ -172,7 +259,6 @@ const items = ref([
     { id: 25, name: '芝麻奶茶', description: '香濃芝麻、經典奶茶、古早味', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+24', originalPrice: 85, discountPrice: 70, category: '特調系列', tags: ['古早味'] },
     { id: 26, name: '芝麻奶茶', description: '香濃芝麻、經典奶茶、古早味', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+24', originalPrice: 85, discountPrice: 70, category: '特調系列', tags: ['古早味'] },
     { id: 27, name: '芝麻奶茶', description: '香濃芝麻、經典奶茶、古早味', image: 'https://placehold.co/400x300/E7E7E7/333333?text=Product+24', originalPrice: 85, discountPrice: 70, category: '特調系列', tags: ['古早味'] },
-
 ])
 
 // 計算屬性

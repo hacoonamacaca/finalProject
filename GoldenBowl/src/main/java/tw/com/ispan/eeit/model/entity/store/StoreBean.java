@@ -7,12 +7,11 @@ import java.util.Set;
 
 import org.locationtech.jts.geom.Point;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,12 +26,8 @@ import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.CategorySearchedBean;
-import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
-import tw.com.ispan.eeit.model.entity.food.FoodClassBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
-import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
-import tw.com.ispan.eeit.model.entity.reservation.TableBean;
 
 @Data
 @Entity
@@ -43,9 +38,8 @@ public class StoreBean {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
-    @JsonBackReference("owner-stores")
     private OwnerBean owner;
 
     @Column(length = 50)
@@ -53,15 +47,16 @@ public class StoreBean {
 
     @Column(length = 50)
     private String address;
-    @Convert(converter = tw.com.ispan.eeit.model.converter.PointToGeographyConverter.class)
+
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
-    private Point storeCoords; // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
+    private Point storeCoords;
+    // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
 
     private Double lng;
 
     private Double lat;
 
-    @Column(name = "store_intro", columnDefinition = "varchar(max)")
+    @Column(name = "sotre_intro", columnDefinition = "varchar(max)")
     private String storeIntro;
 
     @Column(columnDefinition = "varchar(max)")
@@ -81,43 +76,21 @@ public class StoreBean {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-foods")
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     private List<FoodBean> foods;
 
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-orders")
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<OrderBean> orders;
 
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-reservations")
-    private List<ReservationBean> reservations;
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private List<CategorySearchedBean> categorySearched;
 
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-tables")
-    private List<TableBean> tables;
-
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-openHours")
-    private List<OpenHourBean> openHours;
-
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<CategoryBean> categories;
 
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-comments")
-    private List<CommentBean> comments;
-
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-foodClasses")
-    private List<FoodClassBean> foodClasses;
-
-    @OneToMany(mappedBy = "store")
-    @JsonManagedReference("store-categorySearched")
-    private List<CategorySearchedBean> categorySearched;
-
     // 多對多關係：Store 與 User 通過 favorite_store 表格關聯
-    @ManyToMany(mappedBy = "favoriteStores")
+    @ManyToMany(mappedBy = "favoriteStores", fetch = FetchType.LAZY)
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

@@ -40,6 +40,65 @@
                         </div>
                     </div>
 
+                    <!-- 甜度選項 -->
+                    <div v-if="hasSweetnessOptions" class="option-group sweetness-options">
+                        <div class="option-header">
+                            <h6 class="option-title">甜度</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="sweetnessOption in sweetnessOptions" :key="sweetnessOption.value"
+                                class="option-item">
+                                <input type="radio" :name="'sweetnessLevel'" :value="sweetnessOption.value"
+                                    v-model="selectedSweetnessLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ sweetnessOption.name }}</span>
+                                    <span v-if="sweetnessOption.badge" class="option-badge">{{ sweetnessOption.badge
+                                        }}</span>
+                                </span>
+                                <span class="option-price">NT${{ sweetnessOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 尺寸選項 -->
+                    <div v-if="hasSizeOptions" class="option-group size-options">
+                        <div class="option-header">
+                            <h6 class="option-title">尺寸</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="sizeOption in sizeOptions" :key="sizeOption.value" class="option-item">
+                                <input type="radio" :name="'sizeLevel'" :value="sizeOption.value"
+                                    v-model="selectedSizeLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ sizeOption.name }}</span>
+                                    <span v-if="sizeOption.badge" class="option-badge">{{ sizeOption.badge }}</span>
+                                </span>
+                                <span class="option-price">NT${{ sizeOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 溫度選項 -->
+                    <div v-if="hasTemperatureOptions" class="option-group temperature-options">
+                        <div class="option-header">
+                            <h6 class="option-title">溫度</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="tempOption in temperatureOptions" :key="tempOption.value" class="option-item">
+                                <input type="radio" :name="'temperatureLevel'" :value="tempOption.value"
+                                    v-model="selectedTemperatureLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ tempOption.name }}</span>
+                                    <span v-if="tempOption.badge" class="option-badge">{{ tempOption.badge }}</span>
+                                </span>
+                                <span class="option-price">NT${{ tempOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- 配料選項 -->
                     <div v-if="hasToppingOptions" class="option-group topping-options">
                         <div class="option-header">
@@ -130,6 +189,9 @@ const quantity = ref(1)
 const selectedOptions = ref({})
 const notes = ref('')
 const selectedIceLevel = ref('normal')
+const selectedSweetnessLevel = ref('normal')
+const selectedSizeLevel = ref('normal')
+const selectedTemperatureLevel = ref('normal')
 const selectedToppings = ref([])
 
 // 冰量選項
@@ -139,6 +201,30 @@ const iceOptions = ref([
     { value: 'less', name: '少冰', price: 0 },
     { value: 'light', name: '微冰', price: 0, badge: '🔥 人氣精選 ✨' },
     { value: 'none', name: '去冰', price: 0 }
+])
+
+// 甜度選項
+const sweetnessOptions = ref([
+    { value: 'less', name: '少糖', price: 0 },
+    { value: 'normal', name: '正常甜', price: 0 },
+    { value: 'more', name: '多糖', price: 0 },
+    { value: 'extra', name: '加糖', price: 0 }
+])
+
+// 尺寸選項
+const sizeOptions = ref([
+    { value: 'small', name: '小杯', price: 0 },
+    { value: 'normal', name: '中杯', price: 0 },
+    { value: 'large', name: '大杯', price: 0 },
+    { value: 'extra', name: '超大杯', price: 0 }
+])
+
+// 溫度選項
+const temperatureOptions = ref([
+    { value: 'hot', name: '熱', price: 0 },
+    { value: 'normal', name: '正常', price: 0 },
+    { value: 'cold', name: '冰', price: 0 },
+    { value: 'extra', name: '超冰', price: 0 }
 ])
 
 // 配料選項
@@ -157,6 +243,30 @@ const hasIceOptions = computed(() => {
     return props.item.category && (
         props.item.category.includes('奶茶') ||
         props.item.category.includes('拿鐵') ||
+        props.item.category.includes('茶') ||
+        props.item.category.includes('飲品')
+    )
+})
+
+const hasSweetnessOptions = computed(() => {
+    return props.item.category && (
+        props.item.category.includes('奶茶') ||
+        props.item.category.includes('茶') ||
+        props.item.category.includes('飲品')
+    )
+})
+
+const hasSizeOptions = computed(() => {
+    return props.item.category && (
+        props.item.category.includes('奶茶') ||
+        props.item.category.includes('茶') ||
+        props.item.category.includes('飲品')
+    )
+})
+
+const hasTemperatureOptions = computed(() => {
+    return props.item.category && (
+        props.item.category.includes('奶茶') ||
         props.item.category.includes('茶') ||
         props.item.category.includes('飲品')
     )
@@ -187,6 +297,38 @@ const canSelectMoreToppings = computed(() => {
 const totalPrice = computed(() => {
     let basePrice = props.item.discountPrice || props.item.price
     let optionsPrice = 0
+
+    // 计算冰量价格
+    if (hasIceOptions.value) {
+        const iceOption = iceOptions.value.find(option => option.value === selectedIceLevel.value)
+        if (iceOption) {
+            optionsPrice += iceOption.price
+        }
+    }
+
+    // 计算甜度价格
+    if (hasSweetnessOptions.value) {
+        const sweetnessOption = sweetnessOptions.value.find(option => option.value === selectedSweetnessLevel.value)
+        if (sweetnessOption) {
+            optionsPrice += sweetnessOption.price
+        }
+    }
+
+    // 计算尺寸价格
+    if (hasSizeOptions.value) {
+        const sizeOption = sizeOptions.value.find(option => option.value === selectedSizeLevel.value)
+        if (sizeOption) {
+            optionsPrice += sizeOption.price
+        }
+    }
+
+    // 计算溫度价格
+    if (hasTemperatureOptions.value) {
+        const tempOption = temperatureOptions.value.find(option => option.value === selectedTemperatureLevel.value)
+        if (tempOption) {
+            optionsPrice += tempOption.price
+        }
+    }
 
     // 计算配料价格
     selectedToppings.value.forEach(toppingValue => {
@@ -235,14 +377,20 @@ const decreaseQuantity = () => {
 }
 
 const addToCart = () => {
+    // 計算單件商品的總價（包含所有選項）
+    const singleItemPrice = totalPrice.value / quantity.value
+
     const cartItem = {
         id: props.item.id,
         name: props.item.name,
-        price: props.item.discountPrice || props.item.price,
+        price: singleItemPrice, // 使用包含選項的單件價格
         image: props.item.image,
         quantity: quantity.value,
         selectedOptions: { ...selectedOptions.value },
         selectedIceLevel: selectedIceLevel.value,
+        selectedSweetnessLevel: selectedSweetnessLevel.value,
+        selectedSizeLevel: selectedSizeLevel.value,
+        selectedTemperatureLevel: selectedTemperatureLevel.value,
         selectedToppings: [...selectedToppings.value],
         notes: notes.value,
         totalPrice: totalPrice.value
@@ -254,6 +402,9 @@ const addToCart = () => {
     quantity.value = 1
     selectedOptions.value = {}
     selectedIceLevel.value = 'normal'
+    selectedSweetnessLevel.value = 'normal'
+    selectedSizeLevel.value = 'normal'
+    selectedTemperatureLevel.value = 'normal'
     selectedToppings.value = []
     notes.value = ''
 }
@@ -264,6 +415,9 @@ watch(() => props.show, (newVal) => {
         quantity.value = 1
         selectedOptions.value = {}
         selectedIceLevel.value = 'light' // 預設微冰
+        selectedSweetnessLevel.value = 'normal'
+        selectedSizeLevel.value = 'normal'
+        selectedTemperatureLevel.value = 'normal'
         selectedToppings.value = []
         notes.value = ''
 
@@ -413,6 +567,18 @@ watch(() => props.show, (newVal) => {
 
 .ice-options {
     background: linear-gradient(135deg, #ffeef0 0%, #fff5f5 100%);
+}
+
+.sweetness-options {
+    background: linear-gradient(135deg, #e0f7fa 0%, #e0f7fa 100%);
+}
+
+.size-options {
+    background: linear-gradient(135deg, #e8f5e9 0%, #e8f5e9 100%);
+}
+
+.temperature-options {
+    background: linear-gradient(135deg, #f3e5f5 0%, #f3e5f5 100%);
 }
 
 .topping-options {
