@@ -30,8 +30,6 @@ import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
-
-
 @Data
 @Entity
 @Table(name = "customer_order")
@@ -48,7 +46,7 @@ public class OrderBean {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JsonBackReference
-	@JoinColumn(name = "store_id")//customer_order表中的欄位
+	@JoinColumn(name = "store_id") // customer_order表中的欄位
 	private StoreBean store;
 
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -70,44 +68,40 @@ public class OrderBean {
 	@Column(name = "pickup_time")
 	private LocalDateTime pickupTime;
 
-	@OneToMany(mappedBy = "order",fetch = FetchType.LAZY)
+	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<OrderDetailBean> orderDetails;
-
-	@OneToOne(mappedBy = "order",fetch = FetchType.LAZY,cascade = CascadeType.ALL)
+	// mappedBy的是java物件名稱
+	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private CommentBean comment;
-//	mappedBy="order" 是comments的屬性order
-	
-    @Override
-    public String toString() {
-        // 安全地獲取 ID，而不觸發懶加載
-        Integer userId = (user != null) ? user.getId() : null;
-        Integer storeId = (store != null) ? store.getId() : null;
-        Integer promotionId = (promotion != null) ? promotion.getId() : null;
+	// mappedBy="order" 是comment的java屬性order
 
-        // 檢查集合是否已初始化，以避免 LazyInitializationException
-        String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails)) ?
-                                   "orderDetails.size=" + orderDetails.size() : "orderDetails=[Not Loaded]";
-        
+	@Override
+	public String toString() {
+		// 安全地獲取 ID，而不觸發懶加載
+		Integer userId = (user != null) ? user.getId() : null;
+		Integer storeId = (store != null) ? store.getId() : null;
+		Integer promotionId = (promotion != null) ? promotion.getId() : null;
 
-        return "OrderBean ["
-                + "id=" + id
-                + ", userId=" + userId
-                + ", storeId=" + storeId
-                + ", promotionId=" + promotionId
-                + ", total=" + total
-                + ", status='" + status + "'"
-                + ", createTime=" + createTime
-                + ", content='" + content + "'"
-                + ", pickupTime=" + pickupTime
-                + ", " + orderDetailsInfo
-                + ", " 
-                + "]";
-    }
-	
-	
-	
-	
-	
+		// 檢查集合是否已初始化，以避免 LazyInitializationException
+		String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails))
+				? "orderDetails.size=" + orderDetails.size()
+				: "orderDetails=[Not Loaded]";
+
+		return "OrderBean ["
+				+ "id=" + id
+				+ ", userId=" + userId
+				+ ", storeId=" + storeId
+				+ ", promotionId=" + promotionId
+				+ ", total=" + total
+				+ ", status='" + status + "'"
+				+ ", createTime=" + createTime
+				+ ", content='" + content + "'"
+				+ ", pickupTime=" + pickupTime
+				+ ", " + orderDetailsInfo
+				+ ", "
+				+ "]";
+	}
+
 }

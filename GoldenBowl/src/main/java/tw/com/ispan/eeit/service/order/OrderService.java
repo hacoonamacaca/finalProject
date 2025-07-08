@@ -95,8 +95,12 @@ public class OrderService {
     		List<OrderBean> orderBeans = 
     				 orderRepository.findByUser_Id(userId);
     		return orderBeans.stream()
-	               .map(this::convertToOrderDto)
+	               .map(OrderDto::fromEntity)
 	               .collect(Collectors.toList());
+    		//.map(orderBean -> OrderDto.fromEntity(orderBean))
+    		//最終，map 操作會產生一個包含 orderDto1、orderDto2、orderDto3 的新 Stream。
+    		//最後的 .collect(Collectors.toList()) 則會將這個 Stream 中的所有 OrderDto 物件收集起來，
+    		//形成一個 List<OrderDto>。
     	}
     	return null;
     }
@@ -119,81 +123,6 @@ public class OrderService {
         return null;
     }
     
-    private OrderDto convertToOrderDto(OrderBean orderBean) {
-        OrderDto orderDto = new OrderDto();
-        orderDto.setId(orderBean.getId());
-        orderDto.setTotal(orderBean.getTotal());
-        orderDto.setStatus(orderBean.getStatus());
-        orderDto.setCreateTime(orderBean.getCreateTime());
-        orderDto.setContent(orderBean.getContent());
-        orderDto.setPickupTime(orderBean.getPickupTime());
-
-        // 複製 User 資訊
-        // 檢查關聯是否已初始化且不為 null，避免 LazyInitializationException
-        if (orderBean.getUser() != null && 
-        		org.hibernate.Hibernate.isInitialized(orderBean.getUser())) {
-            orderDto.setUserId(orderBean.getUser().getId());
-            // 如果 OrderDto 包含嵌套的 UserDto，可以這樣做：
-            // OrderDto.OrderUserDto userDto = new OrderDto.OrderUserDto();
-            // userDto.setId(orderBean.getUser().getId());
-            // userDto.setName(orderBean.getUser().getName());
-            // orderDto.setUser(userDto);
-        }
-
-        // 複製 Comment 資訊
-        // 檢查關聯是否已初始化且不為 null
-        if (orderBean.getComment() != null && org.hibernate.Hibernate.isInitialized(orderBean.getComment())) {
-            OrderDto.OrderCommentDto commentDto = new OrderDto.OrderCommentDto();
-            commentDto.setId(orderBean.getComment().getId());
-            commentDto.setContent(orderBean.getComment().getContent());
-            commentDto.setScore(orderBean.getComment().getScore());
-            // ... 複製其他評論屬性
-            orderDto.setComment(commentDto);
-        }
-
-        // 複製 OrderDetails 及其子關聯 (Food, LikedFoods)
-        // 檢查集合是否已初始化且不為 null
-//     	isInitialized在觸發初始化之前，安全地檢查一個物件或集合是否已經初始化，從而避免 LazyInitializationException
-        if (orderBean.getOrderDetails() != null && org.hibernate.Hibernate.isInitialized(orderBean.getOrderDetails())) {
-            List<OrderDetailDto> orderDetailDtos = orderBean.getOrderDetails().stream()
-                .map(orderDetail -> {
-                    OrderDetailDto odDto = new OrderDetailDto();
-                    odDto.setId(orderDetail.getId());
-                    odDto.setQuantity(orderDetail.getQuantity());
-                    odDto.setPrice(orderDetail.getPrice());
-                    odDto.setSubTotal(orderDetail.getSubTotal());
-
-                    // 複製 Food 資訊
-                    if (orderDetail.getFood() != null && org.hibernate.Hibernate.isInitialized(orderDetail.getFood())) {
-                    	FoodDto foodDto = new FoodDto();
-                        foodDto.setId(orderDetail.getFood().getId());
-                        foodDto.setName(orderDetail.getFood().getName());
-                        foodDto.setPrice(orderDetail.getFood().getPrice());
-                        foodDto.setScore(orderDetail.getFood().getScore());
-                        // ... 複製其他食物屬性
-                        odDto.setFood(foodDto);
-                    }
-
-                    // 複製 LikedFoods 資訊
-                    // 檢查集合是否已初始化且不為 null
-//                    if (orderDetail.getLikedFoods() != null && org.hibernate.Hibernate.isInitialized(orderDetail.getLikedFoods())) {
-//                        List<LikedFoodDto> likedFoodDtos = orderDetail.getLikedFoods().stream()
-//                            .map(likedFood -> {
-//                                LikedFoodDto lfDto = new LikedFoodDto();
-//                                lfDto.setId(likedFood.getId());
-//                                lfDto.setIsLiked(likedFood.getIsLiked());
-//                                // ... 複製其他 LikedFood 屬性 (例如 UserId)
-//                                return lfDto;
-//                            }).collect(Collectors.toList());
-//                        odDto.setLikedFoods(likedFoodDtos);
-//                    }
-
-                    return odDto;
-                }).collect(Collectors.toList());
-            orderDto.setOrderDetails(orderDetailDtos);
-        }
-
-        return orderDto;
-    }
+ 
     
 }

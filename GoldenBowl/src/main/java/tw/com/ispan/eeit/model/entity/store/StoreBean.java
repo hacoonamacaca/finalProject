@@ -84,7 +84,8 @@ public class StoreBean {
     @JsonManagedReference
     private List<OrderBean> orders;
 
-   
+    @OneToMany(mappedBy = "store")
+    private List<CommentBean> comments;
 
     @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<CategorySearchedBean> categorySearched;

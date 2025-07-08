@@ -1,3 +1,4 @@
+<!-- 歷史訂單 -->
 <script setup>
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
@@ -74,9 +75,11 @@ onMounted(() => {
 function findorder(id) {
   axios.get(`/api/orders/user/${id.value}`)
     .then(function (response) {
-      console.log("response")
-      console.log(response.data)
-      orders.value=response.data
+      console.log("response1")
+      console.log(response)
+      console.log("orders")
+      orders.value = response.data
+      console.log(orders.value)
       // response.data.forEach(element => {
       //   console.log(element)
       //   orders.value.push(element);
@@ -113,10 +116,10 @@ const reorder = (order) => {
       <div class="flex-grow-1">
         <div class="d-flex w-100 justify-content-between align-items-center mb-2">
           <h5 class="mb-0 text-primary">
-            {{ order.store }}
+            {{ order.store }}店家名稱
           </h5>
           <h4 class="mb-0 text-danger fw-bold">
-            ${{ order.price }}
+            ${{ order.price }}訂單總價
           </h4>
         </div>
         <p class="mb-2 text-muted small">

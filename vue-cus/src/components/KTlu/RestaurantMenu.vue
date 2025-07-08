@@ -93,9 +93,8 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import ItemDetailModal from './ItemDetailModal.vue'
 import CartModal from './CartModal.vue'
-import { useCartStore } from '@/stores/cart'
+import { useCartStore } from '@/stores/cart.js'
 import '@/assets/css/restaurant-theme.css'
-import axios from '@/plugins/axios.js';
 
 const props = defineProps({
     restaurant: {

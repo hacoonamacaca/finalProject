@@ -4,9 +4,7 @@ package tw.com.ispan.eeit.model.dto.food;
 
 
 import lombok.Data;
-import java.math.BigDecimal; // 假設 price 是 BigDecimal
-
-import jakarta.persistence.Column;
+import tw.com.ispan.eeit.model.entity.food.FoodBean;
 
 @Data
 public class FoodDto {
@@ -17,4 +15,17 @@ public class FoodDto {
  private String imgResource;
  private String description;
  // ... 其他食物屬性
+ 	public static FoodDto fromEntity(FoodBean foodBean) {
+ 		FoodDto foodDto = new FoodDto();
+ 		foodDto.setId(foodBean.getId());
+ 		foodDto.setName(foodBean.getName());
+ 		foodDto.setPrice(foodBean.getPrice());
+ 		foodDto.setScore(foodBean.getScore());
+ 		foodDto.setImgResource(foodBean.getImgResource());
+ 		foodDto.setDescription(foodBean.getDescription());
+ 		return foodDto;
+ 	}
+ 
+ 
+ 
 }
