@@ -5,11 +5,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -87,10 +86,13 @@ public class FoodBean {
     @JoinTable(name = "food_spec_group", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "spec_group_id"))
     private List<SpecGroupBean> specGroups;
 
-    @ManyToMany
-    @JoinTable(name = "food_class_id", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
-    @JsonBackReference
-    private List<FoodClassBean> foodClasses;
+//    @ManyToMany
+//    @JoinTable(name = "food_class_id", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
+//    @JsonBackReference
+//    private List<FoodClassBean> foodClasses;
+    
+    @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true) 
+    private Set<FoodClassificationBean> classifications = new HashSet<>();
 
     // 多對多關係：Food 與 User 通過 favorite_food 表格關聯
     @ManyToMany(mappedBy = "favoriteFoods")

@@ -1,5 +1,7 @@
 package tw.com.ispan.eeit.model.dto.food;
 
+import java.util.List;
+
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
@@ -19,21 +21,25 @@ public class FoodDTO {
 	private String description;
 	private String storeName;
 	private Integer storeId;
+
 	private List<String> tagNames;
 
+	//新增food資料需要的映射 by kinan
+	private Boolean isActive;
+    private Integer stock;
 	private String categoryName;
 	private Integer categoryId;
 
-	// ... 其他食物屬性
-	public static FoodDTO fromEntity(FoodBean foodBean) {
-		FoodDTO foodDto = new FoodDTO();
-		foodDto.setId(foodBean.getId());
-		foodDto.setName(foodBean.getName());
-		foodDto.setPrice(foodBean.getPrice());
-		foodDto.setScore(foodBean.getScore());
-		foodDto.setImgResource(foodBean.getImgResource());
-		foodDto.setDescription(foodBean.getDescription());
-		return foodDto;
-	}
+	// ... 其他食物屬性 (已不需要)
+//	public static FoodDTO fromEntity(FoodBean foodBean) {
+//		FoodDTO foodDto = new FoodDTO();
+//		foodDto.setId(foodBean.getId());
+//		foodDto.setName(foodBean.getName());
+//		foodDto.setPrice(foodBean.getPrice());
+//		foodDto.setScore(foodBean.getScore());
+//		foodDto.setImgResource(foodBean.getImgResource());
+//		foodDto.setDescription(foodBean.getDescription());
+//		return foodDto;
+//	}
 
 }

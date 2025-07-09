@@ -2,7 +2,6 @@ package tw.com.ispan.eeit.service.food;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +13,7 @@ import tw.com.ispan.eeit.model.dto.food.FoodDTO;
 import tw.com.ispan.eeit.model.dto.food.FoodRequest;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
 import tw.com.ispan.eeit.model.entity.food.FoodClassBean;
-import tw.com.ispan.eeit.model.entity.food.TagBean;
+import tw.com.ispan.eeit.model.entity.food.FoodClassificationBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.repository.food.FoodClassRepository;
 import tw.com.ispan.eeit.repository.food.FoodRepository;
@@ -48,8 +47,15 @@ public class FoodService {
         newFood.setDescription(request.getDescription());
         newFood.setStock(request.getStock());
         newFood.setImgResource(request.getImgResource());
-        newFood.setFoodClasses(foodClasses); // 設定多對多關聯
-
+        
+        // 【核心修正：使用新的中間表 Entity】
+        newFood.getClassifications().clear(); // 清理（對新增來說是多餘的，但好習慣）
+        for (FoodClassBean foodClass : foodClasses) {
+            // 假設 sort 預設為 0
+            newFood.getClassifications().add(new FoodClassificationBean(newFood, foodClass, store, 0));
+        }
+                
+//        newFood.setFoodClasses(foodClasses); // 設定多對多關聯
         newFood.setCreateTime(LocalDateTime.now());
         newFood.setUpdateTime(LocalDateTime.now());
         newFood.setIsActive(true);
@@ -97,7 +103,15 @@ public class FoodService {
         existingFood.setDescription(request.getDescription());
         existingFood.setStock(request.getStock());
         existingFood.setImgResource(request.getImgResource());
-        existingFood.setFoodClasses(foodClasses);
+//        existingFood.setFoodClasses(foodClasses);
+        existingFood.setUpdateTime(LocalDateTime.now());
+
+        existingFood.getClassifications().clear(); // 清理掉所有舊的關聯
+        for (FoodClassBean foodClass : foodClasses) {
+            // 假設 sort 預設為 0
+            existingFood.getClassifications().add(new FoodClassificationBean(existingFood, foodClass, existingFood.getStore(), 0));
+        }
+        
         existingFood.setUpdateTime(LocalDateTime.now());
 
         FoodBean updatedFood = foodRepository.save(existingFood);
@@ -130,11 +144,11 @@ public class FoodService {
             dto.setStoreName(foodBean.getStore().getName());
         }
 
-        if (foodBean.getFoodClasses() != null && !foodBean.getFoodClasses().isEmpty()) {
+        if (foodBean.getClassifications() != null && !foodBean.getClassifications().isEmpty()) {
             // 為了簡化，DTO 只顯示第一個分類的資訊
-            FoodClassBean primaryClass = foodBean.getFoodClasses().get(0);
-            dto.setCategoryName(primaryClass.getName());
-            dto.setCategoryId(primaryClass.getId());
+            FoodClassificationBean primaryClassification = foodBean.getClassifications().iterator().next();
+            dto.setCategoryName(primaryClassification.getFoodClass().getName());
+            dto.setCategoryId(primaryClassification.getFoodClass().getId());
         }
 
         return dto;
