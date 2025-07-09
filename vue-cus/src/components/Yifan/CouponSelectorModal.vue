@@ -30,7 +30,7 @@
                   :class="{ active: activeTab === tab.value }"
                   @click="activeTab = tab.value"
                 >
-                  {{ tab.icon }} {{ tab.label }}
+                  <i :class="tab.iconClass" class="me-2"></i>{{ tab.label }}
                 </button>
               </li>
             </ul>
@@ -41,7 +41,7 @@
                 v-for="promotion in filteredPromotions"
                 :key="promotion.id"
                 class="card mb-2 shadow-sm voucher-card"
-                :class="{ 'opacity-50': promotion.min_spend > cartAmount }"
+                :class="{ 'opacity-50': promotion.minSpend > cartAmount }"
               >
                 <div class="card-body d-flex align-items-center">
                   <!-- 左圖 -->
@@ -52,10 +52,13 @@
                   <!-- 中間文字 -->
                   <div class="voucher-content flex-grow-1">
                     <h5>{{ promotion.title }}</h5>
-                    <p>滿 {{ promotion.min_spend }} 折 {{ promotion.discount_value }}</p>
-                    <p>有效期限：{{ promotion.start_time }} ~ {{ promotion.end_time }}</p>
-                    <p>{{ promotion.description }}</p>
-                    <small v-if="promotion.min_spend > cartAmount" class="text-danger">
+                    <p>{{ getDiscountText(promotion) }}</p>
+                    <p>
+                      有效期限：
+                      {{ formatDate(promotion.startTime) }} ~ {{ formatDate(promotion.endTime) }}
+                    </p>
+                    <p class="small text-muted">{{ promotion.description }}</p>
+                    <small v-if="promotion.minSpend > cartAmount" class="text-danger">
                       未達到最低消費門檻
                     </small>
                   </div>
@@ -64,7 +67,7 @@
                   <div class="d-flex align-items-center ms-3">
                     <button
                       class="btn btn-success"
-                      :disabled="promotion.min_spend > cartAmount"
+                      :disabled="promotion.minSpend > cartAmount"
                       @click="selectPromotion(promotion)"
                     >
                       使用
@@ -95,12 +98,30 @@ const props = defineProps({
 const emits = defineEmits(['update:show', 'selected', 'applyCode'])
 
 const tabs = [
-  { label: '全部', value: 'all', icon: '📂' },
-  { label: '全平台', value: 'global', icon: '🌐' },
-  { label: '餐廳限定', value: 'restaurant', icon: '🍽️' },
-  { label: '餐點限定', value: 'food', icon: '🍔' },
-  { label: '會員限定', value: 'member', icon: '👑' }
+  { label: '全部', value: 'all', iconClass: 'fas fa-folder-open' },
+  { label: '全平台', value: 'global', iconClass: 'fas fa-globe' },
+  { label: '餐廳限定', value: 'restaurant', iconClass: 'fas fa-utensils' },
+  { label: '餐點限定', value: 'food', iconClass: 'fas fa-hamburger' },
+  { label: '會員限定', value: 'member', iconClass: 'fas fa-crown' }
 ]
+//折扣條件判斷(%或金額)
+const getDiscountText = (p) => {
+  if (p.discountType === 'amount') {
+    return `滿 $ ${p.minSpend} 折 ${p.discountValue} 元`
+  }
+  if (p.discountType === 'percent') {
+    return `滿 $ ${p.minSpend} 打 ${p.discountValue} 折`
+  }
+  return '優惠活動'
+}
+
+//時間格式
+const formatDate = (datetimeStr) => {
+  if (!datetimeStr) return '未知'
+  const date = new Date(datetimeStr)
+  if (isNaN(date)) return '格式錯誤'
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`
+}
 
 const activeTab = ref('all')
 const selectedPromotion = ref(null)
@@ -108,16 +129,9 @@ const manualCode = ref('')
 
 const filteredPromotions = computed(() => {
   if (activeTab.value === 'all') return props.promotions
-  return props.promotions.filter((p) => {
-    switch (activeTab.value) {
-      case 'global': return !p.restaurant_id && !p.food_category_id && !p.plan_id
-      case 'restaurant': return p.restaurant_id !== null
-      case 'food': return p.food_category_id !== null
-      case 'member': return p.plan_id !== null
-      default: return false
-    }
-  })
+  return props.promotions.filter(p => p.type === activeTab.value)
 })
+
 
 watch(
   () => props.show,
