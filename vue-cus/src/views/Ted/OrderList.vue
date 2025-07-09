@@ -75,8 +75,7 @@ onMounted(() => {
 function findorder(id) {
   axios.get(`/api/orders/user/${id.value}`)
     .then(function (response) {
-      console.log("response1")
-      console.log(response)
+
       console.log("orders")
       orders.value = response.data
       console.log(orders.value)
@@ -108,7 +107,7 @@ const reorder = (order) => {
       class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
     >
       <img
-        :src="order.img"
+        :src="order.store.photo"
         alt="店家圖片"
         class="me-3 rounded-circle border border-light"
         style="width: 70px; height: 70px; object-fit: cover;"
@@ -116,20 +115,20 @@ const reorder = (order) => {
       <div class="flex-grow-1">
         <div class="d-flex w-100 justify-content-between align-items-center mb-2">
           <h5 class="mb-0 text-primary">
-            {{ order.store }}店家名稱
+            {{ order.store.name }}<!--店家名稱-->
           </h5>
           <h4 class="mb-0 text-danger fw-bold">
-            ${{ order.price }}訂單總價
+            ${{ order.total }}<!--訂單總價-->
           </h4>
         </div>
         <p class="mb-2 text-muted small">
-          訂購時間: {{ order.time }}
+          訂購時間: {{ order.createTime }}
         </p>
 
         <div class="mb-3">
-          <p v-for="food in order.foods" :key="food.name + order.id" class="mb-1 fw-medium">
-            <span class="text-dark">{{ food.name }} x{{ food.quantity }}</span>
-            <span v-if="food.spec" class="text-secondary small"> ({{ food.spec }})</span>
+          <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
+            <span class="text-dark">{{ detail.food.name }}  x  {{ detail.quantity }}</span>
+            <!-- <span v-if="food.spec" class="text-secondary small"> ({{  }})</span> -->
           </p>
         </div>
 
