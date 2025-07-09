@@ -14,8 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import tw.com.ispan.eeit.model.dto.order.OrderDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
-import tw.com.ispan.eeit.service.ordrer.OrderService;
+import tw.com.ispan.eeit.service.order.OrderService;
 
 @RestController
 @RequestMapping("/api/orders") // 建議使用 /api/ 作為 RESTful API 前綴
@@ -51,8 +52,8 @@ public class OrderController {
 
     // 根據用戶 ID 獲取訂單列表 (示例)
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<OrderBean>> getOrdersByUserId(@PathVariable Integer userId) {
-        List<OrderBean> orders = orderService.findOrdersByUserId(userId);
+    public ResponseEntity<List<OrderDTO>> getOrdersByUserId(@PathVariable Integer userId) {
+        List<OrderDTO> orders = orderService.findOrdersByUserId(userId);
         if (orders.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

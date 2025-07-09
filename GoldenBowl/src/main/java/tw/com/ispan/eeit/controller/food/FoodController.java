@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +27,7 @@ public class FoodController {
     @Autowired
     private FoodService foodService;
 
- // --- Create ---
+    // --- Create ---
     @PostMapping
     public ResponseEntity<FoodDTO> createFood(@Valid @RequestBody FoodRequest request) {
         FoodDTO createdFood = foodService.createFood(request);
@@ -40,7 +41,7 @@ public class FoodController {
         FoodDTO food = foodService.findFoodById(id);
         return ResponseEntity.ok(food);
     }
-    
+
     // --- Read (List by Store) ---
     @GetMapping("/store/{storeId}")
     public ResponseEntity<List<FoodDTO>> getFoodsByStoreId(@PathVariable Integer storeId) {

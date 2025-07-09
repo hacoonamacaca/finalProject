@@ -12,13 +12,12 @@ import CartTest from '@/views/CartTest.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
-// import EditUser from '@/views/Ivy/EditUser.vue'
-// import {
-//     getRestaurantById
-// } from "@/data/restaurants.js"
+import EditUser from '@/views/Ivy/EditUser.vue'
 import WebRecom from "@/views/Jimmy/WebRecom.vue"
 import ReportType from "@/views/Jimmy/ReportType.vue"
 import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
+import CC from "@/views/Jimmy/CC.vue"
+import TagCategoryManager from "@/views/Jimmy/TagCategoryManager.vue"
 
 const routes = [{
     path: "/",
@@ -107,6 +106,16 @@ const routes = [{
     path: '/reservation-records',
     name: 'ReservationRecords',
     component: ReservationRecords
+},
+{
+    path: '/CC',
+    name: 'CC',
+    component: CC
+},
+{
+    path: '/TagCategoryManager',
+    name: 'TagCategoryManager',
+    component: TagCategoryManager
 },
 ];
 

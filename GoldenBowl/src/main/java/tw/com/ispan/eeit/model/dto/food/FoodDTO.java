@@ -2,28 +2,38 @@ package tw.com.ispan.eeit.model.dto.food;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.entity.food.FoodBean;
 
 // DTO: Data Transfer Object
 // 這個類別專門用來在 Controller 和前端之間傳遞 Food 的簡化資訊
 
 @Data
-@NoArgsConstructor 
+@NoArgsConstructor
 public class FoodDTO {
-    // 我們只挑選前端列表頁面需要的欄位
-    private Integer id;
-    private String name;
-    private Integer price;
-    private String description;
-    private Float score;
-    private Boolean isActive;
-    private Integer stock;
-    private String imgResource;
-    
-    // 對於關聯物件，我們通常只回傳它的 ID
-    private Integer storeId; 
-    private String storeName; // 也可以考慮順便回傳店家名稱，增加方便性
-    
-    private String categoryName;
-    private Integer categoryId;
-    
+	// 我們只挑選前端列表頁面需要的欄位
+	private Integer id;
+	private String name;
+	private Integer price;
+	private Float score;
+	private String imgResource;
+	private String description;
+	private String storeName;
+	private Integer storeId;
+	private List<String> tagNames;
+
+	private String categoryName;
+	private Integer categoryId;
+
+	// ... 其他食物屬性
+	public static FoodDTO fromEntity(FoodBean foodBean) {
+		FoodDTO foodDto = new FoodDTO();
+		foodDto.setId(foodBean.getId());
+		foodDto.setName(foodBean.getName());
+		foodDto.setPrice(foodBean.getPrice());
+		foodDto.setScore(foodBean.getScore());
+		foodDto.setImgResource(foodBean.getImgResource());
+		foodDto.setDescription(foodBean.getDescription());
+		return foodDto;
+	}
+
 }

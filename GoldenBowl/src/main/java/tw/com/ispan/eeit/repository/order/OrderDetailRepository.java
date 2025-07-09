@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
 
 public interface OrderDetailRepository extends JpaRepository<OrderDetailBean, Integer> {
-    // 根據訂單ID查找所有訂單明細
-    List<OrderDetailBean> findByOrder_Id(Integer orderId);
+
+  public List<OrderDetailBean> findByOrder_Id(Integer orderId);
 
 }

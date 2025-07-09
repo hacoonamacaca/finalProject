@@ -10,5 +10,5 @@ import tw.com.ispan.eeit.model.entity.food.FoodBean;
 @Repository
 public interface FoodRepository extends JpaRepository<FoodBean, Integer> {
     // 根據店家 ID 查詢所有食物
-     List<FoodBean> findByStoreId(Integer storeId);
+    List<FoodBean> findByStoreId(Integer storeId);
 }

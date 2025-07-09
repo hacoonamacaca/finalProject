@@ -3,7 +3,10 @@ package tw.com.ispan.eeit.model.entity.order;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.hibernate.Hibernate;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -15,6 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -26,7 +30,7 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 @Data
 @Entity
-@Table(name = "customer_order") // 您可能需要將此表名改為非保留字，例如 "customer_orders"
+@Table(name = "customer_order")
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id") // <--- 在這裡加上這一行
 public class OrderBean {
@@ -36,18 +40,8 @@ public class OrderBean {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
-	@JsonIgnore
+	@JsonBackReference
 	private UserBean user;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "store_id")
-	@JsonIgnore
-	private StoreBean store;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "promotion_id")
-	@JsonIgnore
-	private PromotionBean promotion;
 
 	private Integer total;
 
@@ -62,12 +56,54 @@ public class OrderBean {
 
 	@Column(name = "pickup_time")
 	private LocalDateTime pickupTime;
+	// ------------comment資料夾-----------------------------------
+	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@JsonManagedReference
+	private CommentBean comment;
+	// mappedBy="order" 是comment的java屬性order
 
-	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-	@JsonIgnore
+	// ------------order 資料夾-----------------------------------
+	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<OrderDetailBean> orderDetails;
+	// mappedBy的是java物件名稱
 
-	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL) // 評論通常不應該因為訂單刪除而刪除，請根據業務邏輯調整 cascade
-	@JsonIgnore
-	private List<CommentBean> comments; // 這裡還是 List，如果 `CommentBean` 也需要正確的 `equals`/`hashCode`，並且這個 List 被轉換為 Set，則需注意
+	// ------------promotion資料夾---------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "promotion_id")
+	@JsonBackReference
+	private PromotionBean promotion; // 假設 Promotion Entity 存在
+	// ------------store 資料夾-----------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id") // customer_order表中的欄位
+	@JsonBackReference
+	private StoreBean store;
+
+	@Override
+	public String toString() {
+		// 安全地獲取 ID，而不觸發懶加載
+		Integer userId = (user != null) ? user.getId() : null;
+		Integer storeId = (store != null) ? store.getId() : null;
+		Integer promotionId = (promotion != null) ? promotion.getId() : null;
+
+		// 檢查集合是否已初始化，以避免 LazyInitializationException
+		String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails))
+				? "orderDetails.size=" + orderDetails.size()
+				: "orderDetails=[Not Loaded]";
+
+		return "OrderBean ["
+				+ "id=" + id
+				+ ", userId=" + userId
+				+ ", storeId=" + storeId
+				+ ", promotionId=" + promotionId
+				+ ", total=" + total
+				+ ", status='" + status + "'"
+				+ ", createTime=" + createTime
+				+ ", content='" + content + "'"
+				+ ", pickupTime=" + pickupTime
+				+ ", " + orderDetailsInfo
+				+ ", "
+				+ "]";
+	}
+
 }

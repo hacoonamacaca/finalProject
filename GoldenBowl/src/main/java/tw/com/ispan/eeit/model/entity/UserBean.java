@@ -1,14 +1,16 @@
 package tw.com.ispan.eeit.model.entity;
 
+//0709核對
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -32,7 +34,6 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @NoArgsConstructor
 @Entity
 @Table(name = "app_user")
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -66,29 +67,38 @@ public class UserBean {
     @Column(name = "hide_until")
     private LocalDateTime hideUntil;
 
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private List<OrderBean> orders;
-
-    @OneToMany(mappedBy = "user")
-    private List<UserTagBean> userTags;
-
-    @OneToMany(mappedBy = "user")
-    private List<LikedFoodBean> likedFoods;
-
-    @OneToMany(mappedBy = "user")
-    private List<CommentBean> comments;
-
-    @OneToMany(mappedBy = "user")
+    // ------------comment資料夾-----------------------------------
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<CategorySearchedBean> categorySearched;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<CommentBean> comments;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<LikedFoodBean> likedFoods;
+    // ------------food 資料夾-----------------------------------
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<UserTagBean> userTags;
+    // ------------order 資料夾-----------------------------------
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<OrderBean> orders;
+
+    // ------------多對多關聯表------------------------------------
     // 多對多關係：User 與 Store 通過 favorite_store 表格關聯
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "favorite_store", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "store_id"))
+    @JsonManagedReference
     private Set<StoreBean> favoriteStores = new HashSet<>();
 
     // 多對多關係：User 與 Food 通過 favorite_food 表格關聯
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "favorite_food", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "food_id"))
+    @JsonManagedReference
     private Set<FoodBean> favoriteFoods = new HashSet<>();
 }
