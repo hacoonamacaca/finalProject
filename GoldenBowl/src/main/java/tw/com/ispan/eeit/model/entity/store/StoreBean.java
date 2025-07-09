@@ -8,6 +8,7 @@ import java.util.Set;
 import org.locationtech.jts.geom.Point;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -49,8 +50,8 @@ public class StoreBean {
     private String address;
 
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
+    @JsonIgnore // 忽略這個欄位的 JSON 序列化，避免 JTS Point 的無限遞歸
     private Point storeCoords;
-    // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
 
     private Double lng;
 

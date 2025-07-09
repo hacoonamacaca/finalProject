@@ -41,7 +41,7 @@ public class TableBean {
     @Column(name = "seats")
     private Integer seats; // 座位數量
 
-    @Column(name = "isActive")
+    @Column(name = "is_active")
     private Boolean status; // 桌位狀態
 
     @ManyToMany(mappedBy = "tables")

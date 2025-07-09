@@ -1,6 +1,7 @@
 package tw.com.ispan.eeit.controller.store;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
+import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.service.store.OpenHourService;
 
 @RestController
@@ -63,11 +65,9 @@ public class OpenHourController {
             @RequestParam DayOfWeek day,
             @RequestParam String openTime,
             @RequestParam String closeTime,
-            @RequestParam(defaultValue = "true") boolean isOpen,
-            @RequestParam(defaultValue = "30") Integer timeIntervalMinutes) {
+            @RequestParam(defaultValue = "true") boolean isOpen) {
         try {
-            OpenHourBean openHour = openHourService.setOpenHour(storeId, day, openTime, closeTime,
-                    timeIntervalMinutes);
+            OpenHourBean openHour = openHourService.setOpenHour(storeId, day, openTime, closeTime);
             return ResponseEntity.status(HttpStatus.CREATED).body(openHour);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -85,11 +85,9 @@ public class OpenHourController {
             @PathVariable Integer openHourId,
             @RequestParam(required = false) String openTime,
             @RequestParam(required = false) String closeTime,
-            @RequestParam(required = false) Boolean isOpen,
-            @RequestParam(required = false) Integer timeIntervalMinutes) {
+            @RequestParam(required = false) Boolean isOpen) {
         try {
-            OpenHourBean openHour = openHourService.updateOpenHour(openHourId, openTime, closeTime,
-                    timeIntervalMinutes);
+            OpenHourBean openHour = openHourService.updateOpenHour(openHourId, openTime, closeTime);
             return ResponseEntity.ok(openHour);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -130,7 +128,7 @@ public class OpenHourController {
     }
 
     /**
-     * 檢查餐廳在指定時間是否營業
+     * 檢查餐廳在指定時間是否營業（使用當前日期）
      */
     @GetMapping("/check")
     public ResponseEntity<Boolean> isStoreOpen(
@@ -143,6 +141,76 @@ public class OpenHourController {
             return ResponseEntity.ok(isOpen);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    /**
+     * 檢查餐廳在指定日期和時間是否營業（包含特殊營業時間判定）
+     */
+    @GetMapping("/check-date")
+    public ResponseEntity<Boolean> isStoreOpenByDate(
+            @PathVariable Integer storeId,
+            @RequestParam String date,
+            @RequestParam String time) {
+        try {
+            LocalDate localDate = LocalDate.parse(date);
+            java.time.LocalTime localTime = java.time.LocalTime.parse(time);
+            boolean isOpen = openHourService.isStoreOpen(storeId, localDate, localTime);
+            return ResponseEntity.ok(isOpen);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    // ========== 特殊營業時間相關 API ==========
+
+    /**
+     * 取得餐廳的特殊營業時間設定
+     */
+    @GetMapping("/special")
+    public ResponseEntity<List<SpecialHoursBean>> getSpecialHours(@PathVariable Integer storeId) {
+        try {
+            List<SpecialHoursBean> specialHours = openHourService.getSpecialHoursByStore(storeId);
+            return ResponseEntity.ok(specialHours);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * 設定特殊營業時間
+     */
+    @PostMapping("/special")
+    public ResponseEntity<SpecialHoursBean> setSpecialHours(
+            @PathVariable Integer storeId,
+            @RequestParam String date,
+            @RequestParam(required = false) String openTime,
+            @RequestParam(required = false) String closeTime,
+            @RequestParam(required = false) Boolean isClose) {
+        try {
+            LocalDate localDate = LocalDate.parse(date);
+            SpecialHoursBean specialHours = openHourService.setSpecialHours(storeId, localDate, openTime, closeTime,
+                    isClose);
+            return ResponseEntity.status(HttpStatus.CREATED).body(specialHours);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    /**
+     * 刪除特殊營業時間設定
+     */
+    @DeleteMapping("/special/{specialHoursId}")
+    public ResponseEntity<Void> deleteSpecialHours(
+            @PathVariable Integer storeId,
+            @PathVariable Integer specialHoursId) {
+        try {
+            openHourService.deleteSpecialHours(specialHoursId);
+            return ResponseEntity.noContent().build();
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
         }
     }
 }

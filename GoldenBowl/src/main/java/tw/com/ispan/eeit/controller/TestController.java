@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -65,18 +66,43 @@ public class TestController {
      * 測試查詢餐廳桌位
      */
     @GetMapping("/stores/{storeId}/tables")
-    public ResponseEntity<List<TableBean>> getStoreTables(@RequestParam Integer storeId) {
-        List<TableBean> tables = reservationService.getStoreTables(storeId);
-        return ResponseEntity.ok(tables);
+    public ResponseEntity<List<TableBean>> getStoreTables(@PathVariable Integer storeId) {
+        try {
+            List<TableBean> tables = tableRepository.findByStoreId(storeId);
+            return ResponseEntity.ok(tables);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
-     * 測試查詢餐廳時段
+     * 測試查詢餐廳時段（直接查詢，避免無限迴圈）
      */
     @GetMapping("/stores/{storeId}/time-slots")
-    public ResponseEntity<List<TimeSlot>> getStoreTimeSlots(@RequestParam Integer storeId) {
-        List<TimeSlot> timeSlots = reservationService.getAvailableTimeSlots(storeId);
-        return ResponseEntity.ok(timeSlots);
+    public ResponseEntity<List<TimeSlot>> getStoreTimeSlots(@PathVariable Integer storeId) {
+        try {
+            StoreBean store = storeRepository.findById(storeId).orElse(null);
+            if (store == null) {
+                return ResponseEntity.notFound().build();
+            }
+            List<TimeSlot> timeSlots = timeSlotRepository.findByStore(store);
+            return ResponseEntity.ok(timeSlots);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    /**
+     * 測試查詢餐廳可用桌位（未被預訂的桌位）
+     */
+    @GetMapping("/stores/{storeId}/available-tables")
+    public ResponseEntity<List<TableBean>> getStoreAvailableTables(@PathVariable Integer storeId) {
+        try {
+            List<TableBean> tables = tableRepository.findByStoreId(storeId);
+            return ResponseEntity.ok(tables);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     /**
@@ -125,7 +151,7 @@ public class TestController {
      * 測試查詢用戶訂位
      */
     @GetMapping("/users/{userId}/reservations")
-    public ResponseEntity<List<ReservationBean>> getUserReservations(@RequestParam Integer userId) {
+    public ResponseEntity<List<ReservationBean>> getUserReservations(@PathVariable Integer userId) {
         try {
             List<ReservationBean> reservations = reservationService.getUserReservations(userId);
             return ResponseEntity.ok(reservations);
@@ -138,7 +164,7 @@ public class TestController {
      * 測試查詢餐廳訂位
      */
     @GetMapping("/stores/{storeId}/reservations")
-    public ResponseEntity<List<ReservationBean>> getStoreReservations(@RequestParam Integer storeId) {
+    public ResponseEntity<List<ReservationBean>> getStoreReservations(@PathVariable Integer storeId) {
         try {
             List<ReservationBean> reservations = reservationService.getStoreReservations(storeId);
             return ResponseEntity.ok(reservations);

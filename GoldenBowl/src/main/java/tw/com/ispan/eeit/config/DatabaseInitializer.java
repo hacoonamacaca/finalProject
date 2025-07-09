@@ -125,9 +125,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         for (DayOfWeek day : weekdays) {
             OpenHourBean openHour = new OpenHourBean();
             openHour.setStore(store);
-            openHour.setDay(day);
+            openHour.setDayOfWeek(day);
             // openHour.setIsOpen(true);
-            openHour.setTimeIntervalMinutes(30);
 
             // 設定營業時間
             if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {

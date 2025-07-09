@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.controller.reservation;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -28,12 +29,12 @@ public class TimeSlotController {
     private ReservationService reservationService;
 
     /**
-     * 取得餐廳的所有可用時段
+     * 取得餐廳的所有可用時段（簡化版本，只包含必要資訊）
      */
     @GetMapping
-    public ResponseEntity<List<TimeSlot>> getStoreTimeSlots(@PathVariable Integer storeId) {
+    public ResponseEntity<List<Map<String, Object>>> getStoreTimeSlots(@PathVariable Integer storeId) {
         try {
-            List<TimeSlot> timeSlots = reservationService.getAvailableTimeSlots(storeId);
+            List<Map<String, Object>> timeSlots = reservationService.getAvailableTimeSlotsSimple(storeId);
             return ResponseEntity.ok(timeSlots);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();

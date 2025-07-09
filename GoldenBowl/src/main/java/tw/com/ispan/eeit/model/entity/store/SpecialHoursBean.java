@@ -1,7 +1,7 @@
 package tw.com.ispan.eeit.model.entity.store;
 
+import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Date;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,13 +21,12 @@ public class SpecialHoursBean {
 	private Integer id;
 	@Column(name = "store_id")
 	private Integer storeId;
-	@Column(name = "date")
-	private Date date;
-	@Column(name = "open_time", columnDefinition = "Time(0)")
+	@Column(name = "date", columnDefinition = "datetime2(6)")
+	private LocalDate date;
+	@Column(name = "open_time", columnDefinition = "time(0)")
 	private LocalTime openTime;
-	@Column(name = "close_time", columnDefinition = "Time(0)")
+	@Column(name = "close_time", columnDefinition = "time(0)")
 	private LocalTime closeTime;
 	@Column(name = "is_close")
 	private Boolean isClose;
-
 }

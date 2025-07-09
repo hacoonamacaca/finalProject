@@ -71,10 +71,16 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Integer> {
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
-        // 檢查特定日期和時間是否已有時段
-        @Query("SELECT COUNT(ts) > 0 FROM TimeSlot ts WHERE ts.store = :store AND ts.day = :day AND ts.startTime = :startTime")
-        Boolean existsByStoreAndDayAndStartTime(
-                        @Param("store") StoreBean store,
+        // 檢查特定日期和時間是否已有時段（使用原生 SQL）
+        @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM time_slots WHERE store_id = :storeId AND day = :day AND start_time = :startTime", nativeQuery = true)
+        Integer existsByStoreAndDayAndStartTime(
+                        @Param("storeId") Integer storeId,
                         @Param("day") LocalDate day,
-                        @Param("startTime") LocalTime startTime);
+                        @Param("startTime") String startTime);
+
+        // 呼叫 SQL 儲存程序來大宗生成時段
+        @Query(value = "EXEC sp_generate_time_slots @store_id = :storeId, @days_ahead = :daysAhead", nativeQuery = true)
+        Integer generateTimeSlotsUsingSP(
+                        @Param("storeId") Integer storeId,
+                        @Param("daysAhead") Integer daysAhead);
 }
