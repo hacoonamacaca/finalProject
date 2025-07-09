@@ -9,6 +9,7 @@ import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -37,7 +38,7 @@ public class StoreBean {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private OwnerBean owner;
 
@@ -74,26 +75,26 @@ public class StoreBean {
     @Column(name = "is_active")
     private Boolean isActive;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<FoodBean> foods;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<OrderBean> orders;
 
     @ManyToMany
     @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<CategoryBean> categories;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<CommentBean> comments;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<FoodClassBean> foodClasses;
 
-    @OneToMany(mappedBy = "store")
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     private List<CategorySearchedBean> categorySearched;
 
     // 多對多關係：Store 與 User 通過 favorite_store 表格關聯
-    @ManyToMany(mappedBy = "favoriteStores")
+    @ManyToMany(mappedBy = "favoriteStores",fetch = FetchType.LAZY)
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

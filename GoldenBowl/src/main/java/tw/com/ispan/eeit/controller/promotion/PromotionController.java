@@ -11,8 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import tw.com.ispan.eeit.model.dto.promotion.PromotionDTO;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.service.promotion.PromotionService;
 
@@ -32,7 +34,7 @@ public class PromotionController {
     
     // 查單筆
     @GetMapping("/{id}")
-    public PromotionBean findById(@PathVariable Integer id) {
+    public PromotionDTO findById(@PathVariable Integer id) {
         return promotionService.findById(id);
     }
 
@@ -64,6 +66,16 @@ public class PromotionController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         promotionService.deleteById(id);
+    }
+    
+ // 查詢符合條件的可用優惠券（回傳 DTO）
+    @GetMapping("/available")
+    public List<PromotionBean> getAvailablePromotions(
+        @RequestParam Integer userId,
+        @RequestParam Integer storeId,
+        @RequestParam Integer amount
+    ) {
+        return promotionService.getAvailablePromotions(userId, storeId, amount);
     }
 }
 
