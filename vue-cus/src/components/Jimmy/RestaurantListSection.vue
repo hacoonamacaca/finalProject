@@ -80,7 +80,7 @@ const openComment = (storeId) => {
     overflow: hidden;
     box-shadow: 0 2px 8px rgba;
     transition: transform 0.2s;
-    height: 300px;
+    height: 320px;
   }
 
   .restaurant-list .restaurant-card:hover {

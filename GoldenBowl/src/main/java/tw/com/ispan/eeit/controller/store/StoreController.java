@@ -33,11 +33,16 @@ public class StoreController {
     private StoreService storeService;
 
     @GetMapping
-    public ResponseEntity<List<StoreDTO>> getAllStores() {
-        // 確保 storeService.getAllStores() 會預先載入 categories, comments, foods, tags
-        // 這可能需要在 StoreRepository 中使用 @EntityGraph 或 JOIN FETCH
-        // 因為 DTO 的建構子會訪問這些集合
-        List<StoreBean> stores = storeService.getAllStores();
+    public ResponseEntity<List<StoreDTO>> getAllStores(@RequestParam(required = false) String search) {
+        List<StoreBean> stores;
+        if (search != null && !search.trim().isEmpty()) {
+            // 如果提供了搜尋參數，則呼叫搜尋方法
+            stores = storeService.searchStores(search.trim());
+        } else {
+            // 否則，獲取所有商店
+            stores = storeService.getAllStores();
+        }
+
         List<StoreDTO> storeDTOs = stores.stream()
                 .map(StoreDTO::new) // 將 StoreBean 轉換為 StoreDTO
                 .collect(Collectors.toList());
@@ -112,16 +117,15 @@ public class StoreController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    
- // 支援多張照片的註冊
+
+    // 支援多張照片的註冊
     @PostMapping(value = "/registerInfo", consumes = "multipart/form-data")
     public Map<String, Object> register(
-        @RequestParam("ownerId") Integer ownerId,
-        @RequestParam("name") String name,
-        @RequestParam("storeCategory") String storeCategory,
-        @RequestParam("storeIntro") String intro,
-        @RequestPart(value = "photos", required = false) List<MultipartFile> photos
-    ) {
+            @RequestParam("ownerId") Integer ownerId,
+            @RequestParam("name") String name,
+            @RequestParam("storeCategory") String storeCategory,
+            @RequestParam("storeIntro") String intro,
+            @RequestPart(value = "photos", required = false) List<MultipartFile> photos) {
         // 驗證必填
         if (ownerId == null) {
             return Map.of("success", false, "message", "ownerId 不可為空");
@@ -144,7 +148,7 @@ public class StoreController {
             }
         }
         // 去掉最後一個分號
-        String photoPathStr = photoPaths.length() > 0 ? photoPaths.substring(0, photoPaths.length()-1) : "";
+        String photoPathStr = photoPaths.length() > 0 ? photoPaths.substring(0, photoPaths.length() - 1) : "";
 
         // 呼叫 Service
         StoreBean store = storeService.registerStore(ownerId, name, storeCategory, intro, photoPathStr);
@@ -187,7 +191,8 @@ public class StoreController {
         try {
             String folder = "uploads/photos";
             File dir = new File(folder);
-            if (!dir.exists()) dir.mkdirs();
+            if (!dir.exists())
+                dir.mkdirs();
 
             String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
             File dest = new File(folder + fileName);

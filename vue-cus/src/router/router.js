@@ -1,7 +1,4 @@
-import {
-    createRouter,
-    createWebHistory
-} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 import Home from "@/views/Jimmy/Home.vue"
 import NotFound from "@/views/NotFound.vue"
@@ -12,11 +9,10 @@ import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
 import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
 import CartTest from '@/views/CartTest.vue'
-import Cart from '@/views/KTlu/Cart.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
-import EditUser from '@/views/Ivy/Edituser.vue'
+import EditUser from '@/views/Ivy/EditUser.vue'
 import {
     getRestaurantById
 } from "@/data/restaurants.js"
@@ -66,29 +62,24 @@ const routes = [{
         name: 'CartTest',
         component: CartTest
     },
-    {
-        path: '/cart',
-        name: 'Cart',
-        component: Cart
+    {   
+        path: '/register', 
+        component: Register 
     },
-    {
-        path: '/register',
-        component: Register
+    {   
+        path: '/verify-pending', 
+        component: VerifyPending 
     },
-    {
-        path: '/verify-pending',
-        component: VerifyPending
-    },
-    {
-        path: '/register-profile',
-        component: RegisterProfile
+    {   
+        path: '/register-profile', 
+        component: RegisterProfile 
     },
     {
         path: '/resetPasswordEmail',
         name: 'ResetPasswordEmail',
         component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
-        props: router => ({
-            email: router.query.email
+        props: router => ({ 
+            email: router.query.email 
         })
     },
     {
@@ -115,7 +106,7 @@ const routes = [{
         name: 'ReportType',
         component: ReportType
     },
-    {
+        {
         path: '/reservation-records',
         name: 'ReservationRecords',
         component: ReservationRecords

@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
-import tw.com.ispan.eeit.service.ordrer.OrderDetailService;
+import tw.com.ispan.eeit.service.order.OrderDetailService;
 
 @RestController
 @RequestMapping("/api/order-details") // 建議使用 /api/ 作為 RESTful API 前綴

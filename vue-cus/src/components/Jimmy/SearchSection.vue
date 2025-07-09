@@ -105,18 +105,23 @@ const saveSearchHistory = () => {
   localStorage.setItem('searchHistory', JSON.stringify(searchHistory.value));
 };
 
-// 處理搜索
+// 處理搜索 - 將搜尋詞發送給父組件
 const handleSearch = () => {
   if (searched.value.trim()) {
-    if (!searchHistory.value.includes(searched.value)) {
-      searchHistory.value.unshift(searched.value);
+    const searchTerm = searched.value.trim();
+    if (!searchHistory.value.includes(searchTerm)) {
+      searchHistory.value.unshift(searchTerm);
       if (searchHistory.value.length > 5) {
         searchHistory.value.pop();
       }
       saveSearchHistory();
     }
-    emit('search', searched.value);
+    emit('search', searchTerm); // 觸發 'search' 事件並傳遞搜尋詞
     showDropdown.value = false; // 搜尋後關閉下拉選單
+  } else {
+    // 如果搜尋框為空，也觸發搜尋事件，讓父組件重置列表
+    emit('search', '');
+    showDropdown.value = false;
   }
 };
 
@@ -124,7 +129,7 @@ const handleSearch = () => {
 const selectSuggestion = (item) => {
   searched.value = item;
   preventBlur = true; // **設定旗標，阻止 input 的 blur 事件立即隱藏下拉選單**
-  showDropdown.value = false; // **手動關閉下拉選單**
+  // showDropdown.value = false; // **手動關閉下拉選單**
   handleSearch(); // 執行搜尋
 };
 

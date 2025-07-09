@@ -4,7 +4,7 @@
   <PopularRestaurants :address="address" :restaurants="filteredRestaurants" />
 
   <!-- 搜尋與位置區域 -->
-  <SearchSection v-model:search="searched" @search="handleSearch" />
+  <SearchSection v-model:initialSearch="searched" @search="updateSearchQuery" />
 
   <div class="filter-toggle" @click="toggleSidebar">篩選條件</div>
   <!-- 篩選與排序（頂部） -->
@@ -29,7 +29,7 @@
         :availableCategories="uniqueCategoryNames" />
     </aside>
 
-    <RestaurantListSection :restaurants="filteredRestaurants" /> 
+    <RestaurantListSection :restaurants="filteredRestaurants" />
   </div>
 
   <!-- 頁腳 -->
@@ -64,7 +64,7 @@ onMounted(() => {
   if (route.query.address) {
     address.value = route.query.address;
   }
-  fetchStores();
+  fetchStores(searchQuery.value);
 });
 
 // 監聽路由查詢參數的變化
@@ -86,9 +86,14 @@ const toggleSidebar = () => {
 };
 
 // 搜索相關
-const searched = ref('');
-const handleSearch = (searchTerm) => {
-  console.log('搜尋內容:', searchTerm);
+const searched = ref(''); // 用於與 SearchSection 的 v-model 綁定
+const searchQuery = ref(''); // 新增：實際用於觸發後端搜尋的查詢詞
+
+// 處理來自 SearchSection 的搜尋事件
+const updateSearchQuery = (searchTerm) => {
+  console.log('Search.vue 收到搜尋內容:', searchTerm);
+  searchQuery.value = searchTerm;
+  fetchStores(searchTerm); // 當搜尋詞改變時，重新從後端獲取資料
 };
 
 
@@ -98,14 +103,22 @@ const handleSearch = (searchTerm) => {
 const allStores = ref([]); // 存放從後端取得的原始 Store 數據
 
 // 異步函數：從後端獲取 Store 數據
-const fetchStores = async () => {
+// <-- **重要修改：添加 searchTerm 參數**
+const fetchStores = async (searchTerm = '') => { 
   try {
-    const response = await axios.get(`${API_URL}/api/stores`);
-    allStores.value = response.data;
-    console.log("從後端取得的商店資料:", allStores.value);
-  } catch (error) {
-    console.error('獲取商店資料失敗:', error);
-  }
+      // 根據 searchTerm 是否存在來構建 URL
+      const url = searchTerm
+        ? `${API_URL}/api/stores?search=${encodeURIComponent(searchTerm)}`
+        : `${API_URL}/api/stores`;
+
+      console.log("Fetching stores from URL:", url); // 添加日誌確認 URL
+
+      const response = await axios.get(url); // <-- **使用構建好的 URL**
+      allStores.value = response.data;
+      console.log("從後端取得的商店資料:", allStores.value);
+      } catch (error) {
+      console.error('獲取商店資料失敗:', error);
+    }
 };
 
 
@@ -124,11 +137,12 @@ const uniqueCategoryNames = computed(() => {
 const filteredRestaurants = computed(() => {
   let filtered = [...allStores.value];
 
+  // 第一步：根據篩選條件進行過濾
   if (filters.value.category.length > 0) {
-  filtered = filtered.filter((store) =>
-    store.categoryNames && store.categoryNames.some(catName => filters.value.category.includes(catName))
-  );
-}
+    filtered = filtered.filter((store) =>
+      store.categoryNames && store.categoryNames.some(catName => filters.value.category.includes(catName))
+    );
+  }
 
   filtered = filtered.filter((store) => (store.score || 0) >= filters.value.minscore);
 
@@ -136,32 +150,31 @@ const filteredRestaurants = computed(() => {
     filtered = filtered.filter((store) => store.isOpen === true);
   }
 
+  // 第二步：應用排序
   if (sortOption.value === '評分最高') {
     filtered = filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
   } else if (sortOption.value === '距離最近' || sortOption.value === '最快送達') {
+    // 假設 deliveryTime 已經在後端計算好並返回
     filtered = filtered.sort((a, b) => a.deliveryTime - b.deliveryTime);
   }
 
+  // 第三步：將處理後的 StoreDTO 轉換為 RestaurantListSection 需要的格式
+  // 注意：模糊搜尋應該已經在 `fetchStores` (後端) 完成，這裡不再做二次搜尋過濾
   return filtered.map(store => ({
     id: store.id,
     name: store.name,
-    // 直接使用後端提供的 categoryNames 陣列
     categoryNames: store.categoryNames || [],
-    deliveryTime: 20, // 假設這是一個固定值，或從 store 獲取
+    deliveryTime: store.deliveryTime || 20, // 使用後端提供的 deliveryTime
     score: store.score || 0,
     comments: store.comments || [],
     // 聚合食物標籤 (保持不變)
-    tags: store.foods ? [...new Set(store.foods.flatMap(food => food.tags ? food.tags.map(tag => tag.name) : []))] : [],
-    // 使用後端提供的 photo 屬性作為圖片來源
+    tags: store.foods ? [...new Set(store.foods.flatMap(food => food.tagNames || []))] : [],
     image: store.photo,
-    promo: '',
-    popularityScore: store.score != null ? parseFloat(store.score) * 10 : 0,
-    isOpen: store.isOpen // 傳遞原始布林值
+    promo: '', // 如果後端有提供促銷資訊，可以在這裡映射
+    popularityScore: store.popularityScore != null ? store.popularityScore : (store.score != null ? parseFloat(store.score) * 10 : 0),
+    isOpen: store.isOpen
   }));
 });
-
-
-
 
 
 

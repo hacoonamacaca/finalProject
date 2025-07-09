@@ -1,5 +1,5 @@
 <template>
-    <footer class="restaurant-footer goldenbowl-restaurant-theme">
+    <footer class="restaurant-footer restaurant-theme">
         {{ restaurant.copyrightText || '© 2021 Restaurant All Rights Reserved' }}
     </footer>
 </template>

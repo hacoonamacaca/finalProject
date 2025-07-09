@@ -1,5 +1,5 @@
 <template>
-    <div class="cart-modal-overlay goldenbowl-restaurant-theme" @click="closeModal">
+    <div class="cart-modal-overlay restaurant-theme" @click="closeModal">
         <div class="cart-modal-content" @click.stop>
             <div class="cart-header">
                 <h4 class="cart-title">購物車 ({{ totalItems }})</h4>
@@ -47,20 +47,7 @@
                                 <div class="item-details">
                                     <h5 class="item-name">{{ item.name }}</h5>
 
-                                    <!-- 显示冰量 -->
-                                    <div v-if="item.selectedIceLevel" class="item-specification">
-                                        <span class="spec-label">冰量：</span>
-                                        <span class="spec-value">{{ formatIceLevel(item.selectedIceLevel) }}</span>
-                                    </div>
-
-                                    <!-- 显示配料 -->
-                                    <div v-if="item.selectedToppings && item.selectedToppings.length > 0"
-                                        class="item-specification">
-                                        <span class="spec-label">配料：</span>
-                                        <span class="spec-value">{{ formatToppings(item.selectedToppings) }}</span>
-                                    </div>
-
-                                    <!-- 显示其他选项 -->
+                                    <!-- 显示选项 -->
                                     <div v-if="item.selectedOptions && hasSelectedOptions(item.selectedOptions)"
                                         class="item-options">
                                         <div v-for="(optionValue, optionId) in item.selectedOptions" :key="optionId">
@@ -226,34 +213,10 @@ const formatOptions = (optionValue) => {
     return optionValue
 }
 
-const formatIceLevel = (iceLevel) => {
-    const iceLevelMap = {
-        'more': '多冰',
-        'normal': '正常冰',
-        'less': '少冰',
-        'light': '微冰',
-        'none': '去冰'
-    }
-    return iceLevelMap[iceLevel] || iceLevel
-}
-
-const formatToppings = (toppings) => {
-    const toppingMap = {
-        'pearl': '珍珠',
-        'taro': '小芋圓',
-        'crystal': '寒天晶球',
-        'jelly': '金萱茶凍',
-        'grass': '仙草',
-        'pudding': '布丁'
-    }
-    return toppings.map(topping => toppingMap[topping] || topping).join('、')
-}
-
 </script>
 
 <style scoped>
 @import '../../assets/css/restaurant-theme.css';
-
 .cart-modal-overlay {
     position: fixed;
     top: 0;
@@ -493,26 +456,6 @@ const formatToppings = (toppings) => {
     background: var(--restaurant-bg-secondary);
     border-radius: 4px;
     border: 1px solid var(--restaurant-border-light);
-}
-
-.item-specification {
-    font-size: 0.85rem;
-    color: var(--restaurant-text-secondary);
-    margin-bottom: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    background: var(--restaurant-bg-secondary);
-    border-radius: 4px;
-    border: 1px solid var(--restaurant-border-light);
-}
-
-.spec-label {
-    font-weight: 500;
-    color: var(--restaurant-text-primary);
-}
-
-.spec-value {
-    color: var(--restaurant-primary-dark);
-    font-weight: 500;
 }
 
 .item-notes {

@@ -2,7 +2,7 @@ package tw.com.ispan.eeit.model.entity.comment;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -55,16 +55,16 @@ public class CommentBean {
     // 如果您刪除重複的 ID 字段，則無需 insertable = false, updatable = false
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id") // 移除 insertable = false, updatable = false 測試
-    @JsonIgnore
+    @JsonBackReference
     private OrderBean order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // 移除 insertable = false, updatable = false 測試
-    // @JsonIgnore
+    @JsonBackReference
     private UserBean user;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id") // 移除 insertable = false, updatable = false 測試
-    @JsonIgnore
+    @JsonBackReference
     private StoreBean store;
 }

@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-menu goldenbowl-restaurant-theme">
+    <div class="restaurant-menu restaurant-theme">
         <div class="menu-container" id="all-categories">
             <nav class="sticky-nav" ref="stickyNav">
                 <div class="sticky-nav-container">
@@ -64,7 +64,7 @@
                                         </div>
                                     </div>
                                     <div class="item-actions">
-                                        <span class="pi pi-cart-plus add-to-cart-btn" @click.stop="openItemDetail(item)"
+                                        <span class="pi pi-cart-plus add-to-cart-btn" @click.stop="quickAddToCart(item)"
                                             title="加入購物車"></span>
                                     </div>
                                 </div>
@@ -83,13 +83,16 @@
         <ItemDetailModal v-if="showItemDetail" :item="selectedItem" :show="showItemDetail" @close="closeItemDetail"
             @add-to-cart="handleAddToCart" />
 
-
+        <!-- <CartModal v-if="cartStore.isCartVisible" :cartItems="cartStore.cartItems" :totalAmount="cartStore.totalAmount"
+            @close="cartStore.hideCart" @update-quantity="updateCartItemQuantity" @remove-item="removeCartItem"
+            @checkout="checkout" /> -->
     </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import ItemDetailModal from './ItemDetailModal.vue'
+import CartModal from './CartModal.vue'
 import { useCartStore } from '@/stores/cart'
 import '@/assets/css/restaurant-theme.css'
 
@@ -218,6 +221,11 @@ const handleAddToCart = (itemToAdd) => {
 
     if (showItemDetail.value) {
         closeItemDetail()
+    }
+
+    // 只在購物車未開啟時才開啟
+    if (!cartStore.isCartVisible) {
+        cartStore.showCart()
     }
 }
 
@@ -660,7 +668,7 @@ onUnmounted(() => {
     background: rgba(255, 186, 32, 0.1);
     border-color: rgba(255, 186, 32, 0.3);
     color: var(--restaurant-primary, #ffba20);
-    transform: translateY(-2px);
+    transform: translateY(-2px); 
     cursor: pointer;
 }
 

@@ -1,20 +1,26 @@
-package tw.com.ispan.eeit.model.entity.promotion;
+package tw.com.ispan.eeit.model.entity.plan;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties("plan") // 避免反向循環
 @Entity
 @Table(name = "plans")
 public class PlanBean {
@@ -22,7 +28,7 @@ public class PlanBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@Column(length = 50)
+	@Column(columnDefinition = "NVARCHAR(50)")
 	private String name;
 
 	private Integer price;
@@ -36,9 +42,9 @@ public class PlanBean {
 	@Column(name = "update_time")
 	private LocalDateTime updateTime;
 
-	@OneToMany(mappedBy = "plan")
-	private List<PromotionBean> promotions;
+	@OneToOne(mappedBy = "plan",fetch = FetchType.LAZY) //對應到 promotionbean 中的 java 屬性名稱
+	private PromotionBean promotion;
 
-	@OneToMany(mappedBy = "plan")
+	@OneToMany(mappedBy = "plan",fetch = FetchType.LAZY)
 	private List<SubRecordBean> subRecords;
 }

@@ -10,7 +10,8 @@ export const useCartStore = defineStore('cart', () => {
     // 購物車結構：{ restaurantId: { restaurant, items } }
     const cartByRestaurant = ref({})
 
-
+    // 購物車是否可見
+    const isCartVisible = ref(false)
 
     // 計算屬性
     const cartCount = computed(() => {
@@ -55,31 +56,15 @@ export const useCartStore = defineStore('cart', () => {
         }
 
         const restaurantCart = cartByRestaurant.value[restaurantId]
-
-        // 創建唯一的商品ID，包含規格信息
-        const itemKey = generateItemKey(item)
-        const existingItemIndex = restaurantCart.items.findIndex(cartItem => generateItemKey(cartItem) === itemKey)
+        const existingItemIndex = restaurantCart.items.findIndex(cartItem => cartItem.id === item.id)
 
         if (existingItemIndex > -1) {
-            // 如果找到相同規格的商品，增加數量
             restaurantCart.items[existingItemIndex].quantity += item.quantity
         } else {
-            // 如果沒有找到相同規格的商品，添加新項目
             restaurantCart.items.push({
                 ...item
             })
         }
-    }
-
-    // 生成商品唯一鍵，包含規格信息
-    const generateItemKey = (item) => {
-        const baseKey = `${item.id}`
-        const iceLevel = item.selectedIceLevel || ''
-        const toppings = (item.selectedToppings || []).sort().join(',')
-        const options = item.selectedOptions ? JSON.stringify(item.selectedOptions) : ''
-        const notes = item.notes || ''
-
-        return `${baseKey}_${iceLevel}_${toppings}_${options}_${notes}`
     }
 
     const updateQuantity = (itemId, newQuantity, restaurantId) => {
@@ -133,7 +118,17 @@ export const useCartStore = defineStore('cart', () => {
         return restaurantCart.items.reduce((sum, item) => sum + item.quantity, 0)
     }
 
+    const toggleCartVisibility = () => {
+        isCartVisible.value = !isCartVisible.value
+    }
 
+    const showCart = () => {
+        isCartVisible.value = true
+    }
+
+    const hideCart = () => {
+        isCartVisible.value = false
+    }
 
     // 結帳相關方法
     const checkoutSingleRestaurant = (restaurantId) => {
@@ -169,6 +164,7 @@ export const useCartStore = defineStore('cart', () => {
     return {
         // 狀態
         cartByRestaurant,
+        isCartVisible,
 
         // 計算屬性
         cartCount,
@@ -186,6 +182,9 @@ export const useCartStore = defineStore('cart', () => {
         getRestaurantCart,
         getRestaurantTotal,
         getRestaurantItemCount,
+        toggleCartVisibility,
+        showCart,
+        hideCart,
 
         // 結帳方法
         checkoutSingleRestaurant,

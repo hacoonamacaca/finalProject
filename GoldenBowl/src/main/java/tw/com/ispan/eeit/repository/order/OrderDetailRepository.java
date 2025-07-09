@@ -3,11 +3,13 @@ package tw.com.ispan.eeit.repository.order;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
 
+@Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetailBean, Integer> {
-    // 根據訂單ID查找所有訂單明細
-    List<OrderDetailBean> findByOrder_Id(Integer orderId);
+
+  public List<OrderDetailBean> findByOrder_Id(Integer orderId);
 
 }

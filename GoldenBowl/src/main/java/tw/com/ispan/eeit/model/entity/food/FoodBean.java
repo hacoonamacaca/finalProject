@@ -5,10 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -68,13 +70,15 @@ public class FoodBean {
 
     @ManyToMany
     @JoinTable(name = "food_tag", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JsonBackReference
     private List<TagBean> tags;
 
-    @OneToMany(mappedBy = "food")
-    @JsonIgnore
+    @OneToMany(mappedBy = "food", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<OrderDetailBean> orderDetails;
 
-    @OneToMany(mappedBy = "food")
+    @OneToMany(mappedBy = "food", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<LikedFoodBean> likedFoods;
 
     @ManyToMany
@@ -83,6 +87,7 @@ public class FoodBean {
 
     @ManyToMany
     @JoinTable(name = "food_class_id", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
+    @JsonBackReference
     private List<FoodClassBean> foodClasses;
 
     // 多對多關係：Food 與 User 通過 favorite_food 表格關聯

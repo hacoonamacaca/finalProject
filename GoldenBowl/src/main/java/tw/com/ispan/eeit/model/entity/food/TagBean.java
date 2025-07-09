@@ -2,6 +2,8 @@ package tw.com.ispan.eeit.model.entity.food;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +28,7 @@ public class TagBean {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
+    @JsonManagedReference
     private List<FoodBean> foods;
 
     @OneToMany(mappedBy = "tag")

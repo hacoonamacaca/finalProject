@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-info goldenbowl-restaurant-theme">
+    <div class="restaurant-info restaurant-theme">
         <h3 class="info-title">餐廳資訊</h3>
         <ul class="info-list">
             <li class="info-item">

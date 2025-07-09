@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-map goldenbowl-restaurant-theme">
+    <div class="restaurant-map restaurant-theme">
         <h4 class="map-title">地圖</h4>
         <div class="map-container">
             <iframe :src="mapUrl" allowfullscreen :title="restaurant.name + '地圖'" class="map-frame"></iframe>
