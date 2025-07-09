@@ -29,6 +29,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
+
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'submit', 'back'])
 const email = ref('eattiy1986@gmail.com') // 測試用預設
@@ -39,18 +41,18 @@ async function submitEmail() {
         alert('請輸入 email')
         return
     }
-    const res = await fetch('/api/check-email-exists', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.value })
-    })
-    const data = await res.json()
-    if (!data.exists) {
-        // 「沒被註冊」才進下一步
-        emit('submit', email.value)
-    } else {
-        // 「已經註冊」要提示、不能進下一步
-        alert('此 email 已註冊，請用其他 email')
+    loading.value = true
+    try {
+    const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+    if (!res.data.verified) {
+            emit('submit', email.value)
+        } else {
+            alert('此 email 已註冊，請用其他 email')
+        }
+    } catch (err) {
+        alert('伺服器錯誤或網路異常，請稍後再試')
+    } finally {
+        loading.value = false
     }
 }
 </script>

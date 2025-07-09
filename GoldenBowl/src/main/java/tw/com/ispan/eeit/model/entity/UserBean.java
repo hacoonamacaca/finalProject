@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -16,6 +18,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.comment.CategorySearchedBean;
 import tw.com.ispan.eeit.model.entity.comment.CommentBean;
@@ -29,9 +32,11 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @NoArgsConstructor
 @Entity
 @Table(name = "app_user")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Integer id;
 
     @Column(nullable = false, unique = true, length = 50)
@@ -62,6 +67,7 @@ public class UserBean {
     private LocalDateTime hideUntil;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<OrderBean> orders;
 
     @OneToMany(mappedBy = "user")

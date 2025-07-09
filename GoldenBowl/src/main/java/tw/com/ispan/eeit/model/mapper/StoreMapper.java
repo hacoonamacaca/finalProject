@@ -1,13 +1,13 @@
 package tw.com.ispan.eeit.model.mapper;
 
-import tw.com.ispan.eeit.model.dto.StoreDto;
+import tw.com.ispan.eeit.model.dto.store.StoreDTO;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 public class StoreMapper {
 
-    public static StoreDto toDto(StoreBean bean) {
+    public static StoreDTO toDto(StoreBean bean) {
         if (bean == null) return null;
-        StoreDto dto = new StoreDto();
+        StoreDTO dto = new StoreDTO();
         dto.setId(bean.getId());
         dto.setName(bean.getName());
         dto.setAddress(bean.getAddress());

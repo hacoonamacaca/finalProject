@@ -4,41 +4,61 @@
             <h3 class="d-inline-block">我的帳戶</h3>
             <i class="bi bi-info-circle text-secondary ms-2"></i>
         </div>
-        <!-- 姓名+手機 -->
         <div class="mx-auto" style="max-width: 360px;">
+            <!-- 姓名 -->
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">姓名</label>
                 <input v-model="fullName" type="text" class="form-control rounded-pill" placeholder="請輸入姓名" />
             </div>
+            <!-- 手機號碼 -->
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">手機號碼</label>
                 <input v-model="phone" class="form-control rounded-pill" placeholder="0912345678" />
             </div>
+            <!-- 電子郵件 + 驗證 -->
             <div class="mb-2 text-center">
                 <label class="form-label w-100 text-start">電子郵件</label>
-                <div class="input-group">
-                    <input type="email" v-model="emailLocal" class="form-control rounded-pill" placeholder="請輸入 email" />
+                <div class="input-group align-items-center">
+                    <input
+                        type="email"
+                        v-model="emailLocal"
+                        @change="onEmailChange"
+                        :disabled="emailChecking"
+                        class="form-control rounded-pill"
+                        placeholder="請輸入 email"
+                    />
                     <button
-                    v-if="!isEmailExists"
-                    class="btn btn-outline-warning ms-2"
-                    type="button"
-                    @click="handleResend"
-                    >重新驗證</button>
+                        v-if="!isVerified && emailLocal"
+                        class="btn btn-outline-warning ms-2"
+                        type="button"
+                        @click="handleResend"
+                        :disabled="emailChecking || resendLoading"
+                    >
+                        {{ resendLoading ? "發送中..." : "重新驗證" }}
+                    </button>
                 </div>
             </div>
             <div class="d-flex align-items-center justify-content-center mb-3">
                 <i class="bi me-2"
-                    :class="isEmailExists ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-warning'"></i>
+                    :class="isVerified ? 'bi-check-circle-fill text-success' : 'bi-exclamation-circle-fill text-warning'"></i>
                 <small class="text-secondary">
-                    {{ isEmailExists ? '已驗證' : '未驗證' }}
+                    {{ isVerified ? '已驗證' : '未驗證' }}
+                    <span v-if="emailChecking" class="ms-2 text-primary">檢查中...</span>
                 </small>
             </div>
-            <!-- 合併一顆儲存按鈕 -->
-            <button type="button" class="btn btn-primary rounded-pill px-4 d-block mx-auto mb-2" :disabled="!isDirty"
-                @click="handleSave">
-                儲存
+            <button
+                type="button"
+                class="btn btn-primary rounded-pill px-4 d-block mx-auto mb-2"
+                :disabled="!isDirty || saveLoading"
+                @click="handleSave"
+            >
+                {{ saveLoading ? "儲存中..." : "儲存" }}
             </button>
-            <button type="button" class="btn btn-primary rounded-pill px-4 d-block mx-auto mt-2 mb-4" @click="goBack">
+            <button
+                type="button"
+                class="btn btn-primary rounded-pill px-4 d-block mx-auto mt-2 mb-4"
+                @click="goBack"
+            >
                 返回
             </button>
         </div>
@@ -48,12 +68,9 @@
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
 
 const router = useRouter()
-const userStore = useUserStore()
-
 function goBack() {
     router.back()
 }
@@ -63,47 +80,96 @@ const initial = reactive({
     lastName: '',
     phone: '',
     email: '',
-    isEmailExists: false
+    isVerified: false
 })
 
 const fullName = ref('')
 const phone = ref('')
 const emailLocal = ref('')
-const isEmailExists = ref(false)
+const isVerified = ref(false)
+const userId = ref(null)
 
-onMounted(async() => {
-    // 姓名
-    const storedName = localStorage.getItem('userFullName')
-    if (storedName) {
-        const [first, ...rest] = storedName.trim().split(' ')
-        initial.firstName = first
-        initial.lastName = rest.join(' ')
-        fullName.value = storedName
-    }
-    // email
+// loading狀態
+const emailChecking = ref(false)
+const saveLoading = ref(false)
+const resendLoading = ref(false)
+
+onMounted(async () => {
+    // 從 localStorage 拿到 email（作為查詢 key）
     const storedEmail = localStorage.getItem('userEmail')
     if (storedEmail) {
-        initial.email = storedEmail
-        emailLocal.value = storedEmail
-        try{
-        const res = await axios.post('/api/users/check-email-exists', { email: storedEmail })
-        const exists = res.data.exists
-        initial.isEmailExists = exists
-        isEmailExists.value = exists
-        localStorage.setItem('userEmailExists', exists ? 'true' : 'false')
-        } catch (e) {
-            initial.isEmailExists = false
-            isEmailExists.value = false
-            localStorage.setItem('userEmailExists', 'false')
+        try {
+            // 直接用 email 向後端查詢完整會員資料
+            const res = await axios.get('/api/users/profile', {
+                params: { email: storedEmail }
+            })
+            const user = res.data
+            if (user) {
+                //存userId
+                userId.value = user.id
+                // 1. 同步畫面顯示
+                phone.value = user.phone || ''
+                fullName.value = user.name || ''
+                emailLocal.value = user.email || ''
+                isVerified.value = user.isVerify || false
+
+                // 2. 同步 initial 參考值
+                initial.phone = user.phone || ''
+                initial.firstName = user.name?.split(' ')[0] || ''
+                initial.lastName = user.name?.split(' ').slice(1).join(' ') || ''
+                initial.email = user.email || ''
+                initial.isVerified = user.isVerify || false
+
+                // 3. 也同步 localStorage（讓你原本其它流程還能用）
+                localStorage.setItem('userFullName', user.name || '')
+                localStorage.setItem('userPhone', user.phone || '')
+                localStorage.setItem('userEmail', user.email || '')
+                localStorage.setItem('userEmailVerified', user.isVerify ? 'true' : 'false')
+                localStorage.setItem('userId', user.id)
+            }
+        } catch {
+            // 查無會員，全部清空
+            phone.value = ''
+            fullName.value = ''
+            emailLocal.value = storedEmail
+            isVerified.value = false
+
+            initial.phone = ''
+            initial.firstName = ''
+            initial.lastName = ''
+            initial.email = storedEmail
+            initial.isVerified = false
+
+            // localStorage 也同步清空
+            localStorage.setItem('userFullName', '')
+            localStorage.setItem('userPhone', '')
+            localStorage.setItem('userEmailVerified', 'false')
         }
     }
-    // 手機
-    const storedPhone = localStorage.getItem('userPhone')
-    if (storedPhone) {
-        initial.phone = storedPhone
-        phone.value = storedPhone
-    }
 })
+
+// Email異動時自動檢查
+async function onEmailChange() {
+    const email = emailLocal.value?.trim()
+    if (!email) {
+        isVerified.value = false
+        return
+    }
+    emailChecking.value = true
+    try {
+        const res = await axios.get('/api/users/profile', { params: { email } })
+        const user = res.data
+        if (user) {
+            isVerified.value = !!user.isVerify
+        } else {
+            isVerified.value = false
+        }
+    } catch {
+        isVerified.value = false
+    } finally {
+        emailChecking.value = false
+    }
+}
 
 const isDirty = computed(() => {
     const [first, ...rest] = fullName.value.trim().split(' ')
@@ -117,44 +183,41 @@ const isDirty = computed(() => {
     return dirtyBasic || dirtyEmail
 })
 
+// 儲存
 async function handleSave() {
-    // 姓名+手機
     const [first, ...rest] = fullName.value.trim().split(' ')
     const last = rest.join(' ')
-    const dirtyBasic = (
-        first !== initial.firstName ||
-        last !== initial.lastName ||
-        phone.value !== initial.phone
-    )
-    if (dirtyBasic) {
-        Object.assign(initial, {
-            firstName: first,
-            lastName: last,
-            phone: phone.value
-        })
-        userStore.setFullName(fullName.value.trim())
-        localStorage.setItem('userPhone', phone.value)
+    if (!userId.value) {
+        alert('找不到會員ID 無法更新')
+        return
     }
-
-    // Email
-    const dirtyEmail = emailLocal.value !== initial.email
-    if (dirtyEmail) {
-        initial.email = emailLocal.value
-        try{
-        const res = await axios.post('/api/users/check-email-exists', { email: emailLocal.value })
-        const exists = res.data.exists
-        initial.isEmailExists = exists
-        isEmailExists.value = exists
-        // 同步到LocalStorage
-        localStorage.setItem('userEmail', emailLocal.value)
-        localStorage.setItem('userEmailExists', exists ? 'true' : 'false')
-        } catch (e) {
-            initial.isEmailExists = false
-            isEmailExists.value = false
-            localStorage.setItem('userEmail', emailLocal.value)
-            localStorage.setItem('userEmailExists', 'false')
-            alert('查詢 email 驗證狀態失敗')
+    saveLoading.value = true
+    try {
+        const updateUser = {
+            id: userId.value,
+            name: fullName.value.trim(),
+            phone: phone.value,
+            email: emailLocal.value
         }
+        const res = await axios.put(`/api/users/${userId.value}`, updateUser)
+        const user = res.data
+        fullName.value = user.name || ''
+        phone.value = user.phone || ''
+        emailLocal.value = user.email || ''
+        // 同步 initial
+        initial.firstName = user.name?.split(' ')[0] || ''
+        initial.lastName = user.name?.split(' ').slice(1).join(' ') || ''
+        initial.phone = user.phone || ''
+        initial.email = user.email || ''
+        // 不同步驗證狀態（保持 onEmailChange 統一來源）
+        localStorage.setItem('userFullName', fullName.value.trim())
+        localStorage.setItem('userPhone', phone.value)
+        localStorage.setItem('userEmail', emailLocal.value)
+        alert('更新成功')
+    } catch {
+        alert('更新失敗')
+    } finally {
+        saveLoading.value = false
     }
 }
 </script>

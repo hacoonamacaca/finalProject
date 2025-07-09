@@ -31,6 +31,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
+
 const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'send', 'back'])
 
@@ -43,18 +45,12 @@ async function sendVerifyEmail() {
     }
     loading.value = true
     try {
-        const res = await fetch('/api/send-verify-email', {
-            method: 'POST',
-            headers: {
-                'Content-Type':'application/x-www-form-urlencoded'
-            },
-            body: new URLSearchParams({
-                email: props.email
-            })
-        })
-        const text = await res.text()
-        alert(text)
-        emit('send', props.email) // 通知父層"寄送成功"，父層可切到下一步
+    // 建議用 URLSearchParams，因為後端是 @RequestParam String email
+        const params = new URLSearchParams();
+        params.append('email', props.email.trim());
+        await axios.post('/api/send-verify-email', params);
+        alert('驗證信已寄出，請至信箱查收')
+        emit('send')
     } catch (e) {
         alert('寄送失敗，請稍後再試')
     } finally {

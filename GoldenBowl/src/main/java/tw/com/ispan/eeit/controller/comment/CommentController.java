@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import tw.com.ispan.eeit.model.dto.comment.CommentResponseDTO;
 import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.service.comment.CommentService;
 
@@ -30,18 +31,18 @@ public class CommentController {
         return ResponseEntity.ok(savedComment);
     }
 
-    // 根據 ID 查找評論
+    // 根據 ID 查找評論 (返回 DTO)
     @GetMapping("/{id}")
-    public ResponseEntity<CommentBean> getCommentById(@PathVariable Integer id) {
-        return commentService.findCommentById(id)
+    public ResponseEntity<CommentResponseDTO> getCommentById(@PathVariable Integer id) {
+        return commentService.findCommentDtoById(id) // 調用返回 DTO 的方法
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // 查找所有評論
+    // 查找所有評論 (返回 DTO 列表)
     @GetMapping
-    public ResponseEntity<List<CommentBean>> getAllComments() {
-        List<CommentBean> comments = commentService.findAll();
+    public ResponseEntity<List<CommentResponseDTO>> getAllComments() {
+        List<CommentResponseDTO> comments = commentService.findAllAsDto(); // 調用返回 DTO 列表的方法
         return ResponseEntity.ok(comments);
     }
 
@@ -62,5 +63,15 @@ public class CommentController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    // 根據 Store ID 查找評論列表 (返回 DTO 列表)
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<CommentResponseDTO>> getCommentsByStoreId(@PathVariable Integer storeId) {
+        List<CommentResponseDTO> comments = commentService.findByStoreIdAsDto(storeId); // 調用返回 DTO 列表的方法
+        if (comments.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(comments);
     }
 }
