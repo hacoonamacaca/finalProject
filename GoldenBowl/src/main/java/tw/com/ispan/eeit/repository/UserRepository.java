@@ -13,6 +13,10 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 	
 	//用Email查詢(最常用於登入/驗證)
 	Optional<UserBean> findByEmail(String email);
+	
+	// 用 Email + Password 查詢（for 登入）
+	Optional<UserBean> findByEmailAndPassword(String email, String password);
+
 	//名字模糊查詢
 	List<UserBean> findByNameContaining(String keyword);
 	//查詢是否存在指定email

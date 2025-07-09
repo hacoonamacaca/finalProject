@@ -10,6 +10,6 @@ import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
 @Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetailBean, Integer> {
 
-  public List<OrderDetailBean> findByOrderId(Integer orderId);
+  public List<OrderDetailBean> findByOrder_Id(Integer orderId);
 
 }

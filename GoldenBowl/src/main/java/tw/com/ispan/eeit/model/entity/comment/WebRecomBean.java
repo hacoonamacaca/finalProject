@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-
 @Table(name = "web_recom")
 @Data
 @NoArgsConstructor

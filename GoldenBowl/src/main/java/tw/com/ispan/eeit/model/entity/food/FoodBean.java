@@ -5,8 +5,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,6 +21,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.LikedFoodBean;
@@ -28,9 +33,11 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Entity
 @Table(name = "food")
 @NoArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class FoodBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     private Integer id;
 
     @ManyToOne
@@ -63,12 +70,15 @@ public class FoodBean {
 
     @ManyToMany
     @JoinTable(name = "food_tag", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JsonBackReference
     private List<TagBean> tags;
 
-    @OneToMany(mappedBy = "food")
+    @OneToMany(mappedBy = "food", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<OrderDetailBean> orderDetails;
 
-    @OneToMany(mappedBy = "food")
+    @OneToMany(mappedBy = "food", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<LikedFoodBean> likedFoods;
 
     @ManyToMany
@@ -77,6 +87,7 @@ public class FoodBean {
 
     @ManyToMany
     @JoinTable(name = "food_class_id", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
+    @JsonBackReference
     private List<FoodClassBean> foodClasses;
 
     // 多對多關係：Food 與 User 通過 favorite_food 表格關聯

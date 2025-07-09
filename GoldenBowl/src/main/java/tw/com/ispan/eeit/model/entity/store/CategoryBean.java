@@ -2,6 +2,8 @@ package tw.com.ispan.eeit.model.entity.store;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,5 +27,6 @@ public class CategoryBean {
     private String name;
 
     @ManyToMany(mappedBy = "categories")
+    @JsonBackReference
     private List<StoreBean> stores;
 }

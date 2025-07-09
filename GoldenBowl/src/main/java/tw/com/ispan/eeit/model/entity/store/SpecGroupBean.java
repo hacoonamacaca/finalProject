@@ -3,6 +3,9 @@ package tw.com.ispan.eeit.model.entity.store;
 import java.io.Serializable;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -31,6 +34,7 @@ public class SpecGroupBean implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
+    @JsonBackReference
     private StoreBean store;
 
     @Column(length = 100, nullable = false)
@@ -47,9 +51,11 @@ public class SpecGroupBean implements Serializable {
 
     // 一對多：一個規格群組 -> 多個規格選項
     @OneToMany(mappedBy = "specGroup", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<SpecBean> specs;
 
     // 多對多：一個規格群組 -> 被多個品項使用
-    @ManyToMany(mappedBy = "specGroups")
+    @ManyToMany(mappedBy = "specGroups",fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<FoodBean> foods;
 }
