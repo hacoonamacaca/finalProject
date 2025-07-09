@@ -86,7 +86,7 @@ public class OrderService {
 
     // 根據用戶 ID 查找訂單
     // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
-    @Transactional(readOnly = true) // 確保在一個讀取事務中
+    
     public List<OrderDTO> findOrdersByUserId(Integer userId) {
         if (userId != null) {
             // orderRepository.findByUser_Id(userId);

@@ -38,21 +38,21 @@ public class OrderDetailBean {
 	@Column(name = "sub_total")
 	private Integer subTotal;
 
-	private Integer total; // 在 OrderDetail 層面，通常是 subTotal
+	private Integer total;
 
 	// ------------comment資料夾--------------------------------~---
-	@OneToOne(mappedBy = "orderDetail", fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "orderDetail")
 	@JsonManagedReference
 	private LikedFoodBean likedFood;
 	// 0709 OneToMany修正成OneToOne
 	// ------------food 資料夾-----------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "food_id")
 	@JsonBackReference
 	private FoodBean food;
 
 	// ------------order 資料夾-----------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "order_id") // SQLServer的名稱
 	@JsonBackReference
 	private OrderBean order;

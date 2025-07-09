@@ -27,7 +27,11 @@ public class OrderController {
 
     // 創建新訂單
     @PostMapping
-    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean order) {
+    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orders) {
+    	System.out.println(orders.getTotal());
+//    	JSONObject obj = new JSONObject(body);
+//    	OrderBean order = new OrderBean();
+    	OrderBean order = new OrderBean();
         OrderBean createdOrder = orderService.createOrder(order);
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }

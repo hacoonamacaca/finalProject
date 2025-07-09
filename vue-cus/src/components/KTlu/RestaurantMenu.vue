@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-menu restaurant-theme">
+    <div class="restaurant-menu restaurant-theme rounded-3">
         <div class="menu-container" id="all-categories">
             <nav class="sticky-nav" ref="stickyNav">
                 <div class="sticky-nav-container">
@@ -92,7 +92,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import apiClient from '../../plungins/axios.js'; // 導入 apiClient
 import ItemDetailModal from './ItemDetailModal.vue'
 import CartModal from './CartModal.vue'
-import { useCartStore } from '@/stores/cart'
+import { useCartStore } from '@/stores/cart.js'
 import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
@@ -560,7 +560,7 @@ onUnmounted(() => {
 .restaurant-menu {
     background: #f8f9fa;
     min-height: 100vh;
-    padding: 20px 0;
+    padding: 20px 0; 
 }
 
 .menu-container {

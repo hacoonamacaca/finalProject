@@ -8,6 +8,8 @@ import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -68,40 +70,37 @@ public class UserBean {
     @Column(name = "hide_until")
     private LocalDateTime hideUntil;
 
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private List<OrderBean> orders;
 
+
+// ------------comment資料夾-----------------------------------
+    @OneToMany(mappedBy = "user",fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<CommentBean> comments;
+    
     @OneToMany(mappedBy = "user")
+    @JsonManagedReference
     private List<UserTagBean> userTags;
 
-    @OneToMany(mappedBy = "user")
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<LikedFoodBean> likedFoods;
+// ------------food 資料夾-----------------------------------
+
+
+
+// ------------order 資料夾-----------------------------------
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<OrderBean> orders;
+
+
+// ------------store 資料夾-----------------------------------
 
     @OneToMany(mappedBy = "user")
-    private List<CommentBean> comments;
-
-    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
     private List<CategorySearchedBean> categorySearched;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<CommentBean> comments;
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<LikedFoodBean> likedFoods;
-    // ------------food 資料夾-----------------------------------
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<UserTagBean> userTags;
-    // ------------order 資料夾-----------------------------------
-
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<OrderBean> orders;
-
-    // ------------多對多關聯表------------------------------------
+// ------------多對多關聯表------------------------------------
     // 多對多關係：User 與 Store 通過 favorite_store 表格關聯
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "favorite_store", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "store_id"))

@@ -48,7 +48,7 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Taipei
 
-#設定google登入
+  #設定google登入
   security:
     oauth2:
       client:

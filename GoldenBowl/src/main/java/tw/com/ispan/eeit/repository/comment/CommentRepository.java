@@ -18,6 +18,5 @@ public interface CommentRepository extends JpaRepository<CommentBean, Integer> {
 
     // // 根據 isHidden 查詢評論
     // List<CommentBean> findByIsHidden(Boolean isHidden);
-    List<CommentBean> findByStoreId(Integer storeId);
 
 }

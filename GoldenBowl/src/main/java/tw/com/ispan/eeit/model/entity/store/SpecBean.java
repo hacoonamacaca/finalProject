@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,7 +31,7 @@ public class SpecBean implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     // LAZY 查詢 SpecBean 時，JPA 不會立刻去查詢關聯的SpecGroupBean。
     // 只有當第一次在程式碼中實際呼叫specBean.getSpecGroup() 時，才會發送第二條SQL 去查詢SpecGroup。
     // 可避免不必要的資料庫查詢。
