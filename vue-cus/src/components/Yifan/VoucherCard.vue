@@ -24,14 +24,14 @@
           :disabled="promotion.min_spend > cartAmount || promotion.used"
           @click="$emit('use', promotion)"
         >
-          使用
+          使用1
         </button>
       </div>
 
       <!-- 優惠券資訊 -->
-      <p class="mb-1 text-secondary">{{ getDiscountText(promotion) }}</p>
+      <p class="mb-1 text-secondary">滿 {{ promotion.min_spend }} 折 {{ promotion.discount_value }}</p>
       <p class="mb-1 text-muted">
-        有效期限：{{ formatDate(promotion.startTime) }} ~ {{ formatDate(promotion.endTime) }}
+        有效期限：{{ promotion.start_time }} ~ {{ promotion.end_time }}
       </p>
       <small class="text-muted">{{ promotion.description }}</small>
     </div>
@@ -45,24 +45,6 @@ const props = defineProps({
   cartAmount: Number,
 })
 const emit = defineEmits(['use'])
-
-//折扣類型判別(%或金額)
-const getDiscountText = (p) => {
-  if (p.discountType === 'amount') {
-    return `滿 $ ${p.minSpend} 折 ${p.discountValue} 元`
-  }
-  if (p.discountType === 'percent') {
-    return `滿 $ ${p.minSpend} 打 ${p.discountValue} 折`
-  }
-  return '優惠活動'
-}
-
-// 格式化日期顯示
-const formatDate = (dateStr) => {
-  const date = new Date(dateStr)
-  return date.toLocaleDateString('zh-TW') // 顯示為 2025/7/6
-}
-
 </script>
 
 <style scoped>
@@ -139,23 +121,5 @@ const formatDate = (dateStr) => {
   color: #888;
   cursor: not-allowed;
   box-shadow: none;
-}
-.nav-link {
-    display: flex;
-    align-items: center;
-    font-size: 15px;
-    color: #6c757d;
-    background-color: transparent;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    transform: translateX(0); 
-}
-
-.nav-link:hover {
-    background-color: #fcebc1;
-    color: #eca300;
-    transform: translateX(4px);
 }
 </style>
