@@ -1,4 +1,4 @@
-package tw.com.ispan.eeit.repository.coupon;
+package tw.com.ispan.eeit.repository.promotion;
 
 import java.util.List;
 

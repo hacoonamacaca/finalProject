@@ -28,11 +28,10 @@ public class TagBean {
     @Column(length = 50)
     private String name;
 
-    @ManyToMany(mappedBy = "tags",fetch = FetchType.LAZY )
+    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<FoodBean> foods;
 
-    @OneToMany(mappedBy = "tag",fetch = FetchType.LAZY )
-    @JsonManagedReference
+    @OneToMany(mappedBy = "tag", fetch = FetchType.LAZY)
     private List<UserTagBean> userTags;
 }

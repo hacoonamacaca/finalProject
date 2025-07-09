@@ -17,9 +17,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.NamedAttributeNode;
-import jakarta.persistence.NamedEntityGraph;
-import jakarta.persistence.NamedSubgraph;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
@@ -44,10 +41,6 @@ public class OrderBean {
 	@JsonBackReference
 	private UserBean user;
 
-
-
-
-
 	private Integer total;
 
 	@Column(length = 10)
@@ -61,30 +54,28 @@ public class OrderBean {
 
 	@Column(name = "pickup_time")
 	private LocalDateTime pickupTime;
-//------------comment資料夾-----------------------------------
+	// ------------comment資料夾-----------------------------------
 	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private CommentBean comment;
 	// mappedBy="order" 是comment的java屬性order
-	
-//------------order  資料夾-----------------------------------
+
+	// ------------order 資料夾-----------------------------------
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private List<OrderDetailBean> orderDetails;
 	// mappedBy的是java物件名稱
 
-//------------promotion資料夾---------------------------------
+	// ------------promotion資料夾---------------------------------
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "promotion_id")
 	@JsonBackReference
 	private PromotionBean promotion; // 假設 Promotion Entity 存在
-//------------store  資料夾-----------------------------------
+	// ------------store 資料夾-----------------------------------
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "store_id") // customer_order表中的欄位
 	@JsonBackReference
 	private StoreBean store;
-	
-	
 
 	@Override
 	public String toString() {

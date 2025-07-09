@@ -1,7 +1,5 @@
 package tw.com.ispan.eeit.model.entity.food;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
@@ -23,16 +21,14 @@ public class UserTagBean {
     @EmbeddedId
     private UserTagId id;
 
-    @ManyToOne(fetch = FetchType.LAZY )
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
     @JoinColumn(name = "user_id")
-    @JsonBackReference
     private UserBean user;
 
-    @ManyToOne(fetch = FetchType.LAZY )
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("tagId")
     @JoinColumn(name = "tag_id")
-    @JsonBackReference
     private TagBean tag;
 
     @Column

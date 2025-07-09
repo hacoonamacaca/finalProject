@@ -9,8 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import tw.com.ispan.eeit.model.dto.food.FoodDTO;
-import tw.com.ispan.eeit.model.dto.order.OrderDetailDTO;
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
@@ -90,39 +88,37 @@ public class OrderService {
     // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
     @Transactional(readOnly = true) // 確保在一個讀取事務中
     public List<OrderDTO> findOrdersByUserId(Integer userId) {
-    	if(userId!=null) {
-//    		 orderRepository.findByUser_Id(userId);
-    		List<OrderBean> orderBeans = 
-    				 orderRepository.findByUser_Id(userId);
-    		return orderBeans.stream()
-	               .map(OrderDTO::fromEntity)
-	               .collect(Collectors.toList());
-    		//.map(orderBean -> OrderDto.fromEntity(orderBean))
-    		//最終，map 操作會產生一個包含 orderDto1、orderDto2、orderDto3 的新 Stream。
-    		//最後的 .collect(Collectors.toList()) 則會將這個 Stream 中的所有 OrderDto 物件收集起來，
-    		//形成一個 List<OrderDto>。
-    	}
-    	return null;
-    }
-    
-    // 根據用戶 ID 查找訂單
-    // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
-    public List<OrderBean> findOrdersUser_IdAndStatus(Integer userId,String status) {
-    	if(userId!=null&& !status.isEmpty() && status.length()>0) {
-
-    		return orderRepository.findByUser_IdAndStatus(userId,status);
-    	}
-    	return null;
-    }
-    // 根據用戶 ID 查找訂單
-    // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
-    public List<OrderBean> findOrdersByUser_IdAndStatusNot(Integer userId,String status) {
-        if(userId!=null&& !status.isEmpty() && status.length()>0) {
-        	return orderRepository.findByUser_IdAndStatusNot(userId,status);
+        if (userId != null) {
+            // orderRepository.findByUser_Id(userId);
+            List<OrderBean> orderBeans = orderRepository.findByUser_Id(userId);
+            return orderBeans.stream()
+                    .map(OrderDTO::fromEntity)
+                    .collect(Collectors.toList());
+            // .map(orderBean -> OrderDto.fromEntity(orderBean))
+            // 最終，map 操作會產生一個包含 orderDto1、orderDto2、orderDto3 的新 Stream。
+            // 最後的 .collect(Collectors.toList()) 則會將這個 Stream 中的所有 OrderDto 物件收集起來，
+            // 形成一個 List<OrderDto>。
         }
         return null;
     }
-    
- 
-    
+
+    // 根據用戶 ID 查找訂單
+    // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
+    public List<OrderBean> findOrdersUser_IdAndStatus(Integer userId, String status) {
+        if (userId != null && !status.isEmpty() && status.length() > 0) {
+
+            return orderRepository.findByUser_IdAndStatus(userId, status);
+        }
+        return null;
+    }
+
+    // 根據用戶 ID 查找訂單
+    // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
+    public List<OrderBean> findOrdersByUser_IdAndStatusNot(Integer userId, String status) {
+        if (userId != null && !status.isEmpty() && status.length() > 0) {
+            return orderRepository.findByUser_IdAndStatusNot(userId, status);
+        }
+        return null;
+    }
+
 }

@@ -28,18 +28,26 @@ public class StoreService {
 
     @Autowired
     private OwnerRepository ownerRepository;
-    
+
     @Autowired
     private CategoryRepository categoryRepository;
 
     private GeometryFactory geometryFactory = new GeometryFactory();
-    
+
+    public List<StoreBean> searchStores(String searchTerm) {
+        // 實作模糊搜尋邏輯
+        // 這裡需要調用 StoreRepository 中新的查詢方法
+        // 這是最關鍵的部分，查詢需要涵蓋 store 的 name, address, categoryName, food 的 name, food 的
+        // tagName
+        return storeRepository.findStoresBySearchTerm(searchTerm);
+    }
+
     public List<StoreBean> getAllStores() {
         return storeRepository.findAll();
     }
 
     public Optional<StoreBean> getStoreById(Integer id) {
-    	return storeRepository.findById(id);
+        return storeRepository.findById(id);
     }
 
     public StoreBean createStore(StoreBean store) {
@@ -53,14 +61,13 @@ public class StoreService {
         }
         return storeRepository.save(store);
     }
-    
+
     public StoreBean registerStore(
             Integer ownerId,
             String name,
             String storeCategory,
             String storeIntro,
-            String photo
-    ) {
+            String photo) {
         StoreBean store = new StoreBean();
         store.setName(name);
         store.setStoreIntro(storeIntro);
@@ -68,7 +75,7 @@ public class StoreService {
 
         // 設定 owner
         OwnerBean owner = ownerRepository.findById(ownerId)
-            .orElseThrow(() -> new RuntimeException("Owner not found: " + ownerId));
+                .orElseThrow(() -> new RuntimeException("Owner not found: " + ownerId));
         store.setOwner(owner);
 
         // 設定 category
@@ -77,10 +84,10 @@ public class StoreService {
             throw new RuntimeException("Category Not Found: " + storeCategory);
         }
         store.setCategories(Set.of(categories.get(0)));
-        
+
         // 其他欄位 createStore 會幫你補齊
         return createStore(store);
-    }    
+    }
 
     public StoreBean updateStore(Integer id, StoreBean storeDetails) {
         Optional<StoreBean> optionalStore = storeRepository.findById(id);
@@ -110,16 +117,16 @@ public class StoreService {
         }
         return false;
     }
-    
+
     public boolean updateAddress(
             Integer storeId,
             String address,
             Double lat,
-            Double lng
-    ) {
+            Double lng) {
         StoreBean store = storeRepository.findById(storeId)
                 .orElse(null);
-        if (store == null) return false;
+        if (store == null)
+            return false;
 
         store.setAddress(address);
         store.setLat(lat);
@@ -141,6 +148,6 @@ public class StoreService {
             // 可以選擇 return false; 讓外面知道失敗
             return false;
         }
-        	return true;
+        return true;
     }
 }

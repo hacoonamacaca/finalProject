@@ -34,17 +34,12 @@ public class FoodClassBean {
     @Column(length = 100)
     private String description;
 
-    private Integer sort;
-
-//------------food   資料夾-----------------------------------
-    @ManyToMany(mappedBy = "foodClasses",fetch = FetchType.LAZY )
-    @JsonManagedReference
-    private List<FoodBean> foods;
-    
-//------------order  資料夾-----------------------------------
-    @ManyToOne(fetch = FetchType.LAZY )
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     @JsonBackReference
     private StoreBean store;
-    
+
+    @ManyToMany(mappedBy = "foodClasses", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<FoodBean> foods;
 }

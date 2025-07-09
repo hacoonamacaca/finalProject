@@ -2,7 +2,7 @@ package tw.com.ispan.eeit.model.entity.promotion;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +19,7 @@ import tw.com.ispan.eeit.model.entity.UserBean;
 
 @Data
 @NoArgsConstructor
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler", "orders", "notifications" }) // 雙向關聯，所以加上去
 @Entity
 @Table(name = "notification")
 public class NotificationBean {
@@ -28,8 +29,11 @@ public class NotificationBean {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
-	@JsonBackReference
 	private UserBean user;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "promotion_id")
+	private PromotionBean promotion;
 
 	@Column(name = "created_time")
 	private LocalDateTime createdTime;
@@ -39,10 +43,4 @@ public class NotificationBean {
 
 	@Column(name = "read_time")
 	private LocalDateTime readTime;
-//------------promotion資料夾---------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "promotion_id")
-	@JsonBackReference
-	private PromotionBean promotion;
-
 }

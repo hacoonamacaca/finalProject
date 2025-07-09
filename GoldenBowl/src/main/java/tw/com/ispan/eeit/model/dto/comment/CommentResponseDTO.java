@@ -28,7 +28,6 @@ public class CommentResponseDTO {
     // 如果前端需要，可以加入其他關聯實體的簡單資訊，例如：
     private Integer storeId;
     private String storeName;
-    
 
     /**
      * 静态方法，将 CommentBean 转换为 CommentResponseDTO。
@@ -50,7 +49,7 @@ public class CommentResponseDTO {
         dto.setReply(commentBean.getReply());
         dto.setReplyUpdateTime(commentBean.getReplyUpdateTime());
         dto.setIsHidden(commentBean.getIsHidden());
-       
+
         // 处理 UserBean 信息
         UserBean user = commentBean.getUser();
         if (user != null) {
@@ -61,8 +60,8 @@ public class CommentResponseDTO {
         // 处理 StoreBean 信息
         StoreBean store = commentBean.getStore();
         if (store != null) {
-        	dto.setStoreId(store.getId());
-        	dto.setStoreName(store.getName()); // 假设 StoreBean 有一个 getName() 方法
+            dto.setStoreId(store.getId());
+            dto.setStoreName(store.getName()); // 假设 StoreBean 有一个 getName() 方法
         }
 
         // 注意：OrderBean 的信息目前没有在 CommentResponseDTO 中定义字段，

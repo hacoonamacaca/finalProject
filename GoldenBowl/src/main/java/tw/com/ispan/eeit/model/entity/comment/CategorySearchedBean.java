@@ -23,29 +23,25 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 public class CategorySearchedBean {
     @EmbeddedId
     private CategorySearchedId id;
-    
-    @Column
-    private Integer counter;
-    
-    @ManyToOne(fetch = FetchType.LAZY )
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId")
     @JoinColumn(name = "user_id")
-    @JsonBackReference
     private UserBean user;
 
-    @ManyToOne(fetch = FetchType.LAZY  )
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("storeId")
     @JoinColumn(name = "store_id")
     @JsonBackReference
     private StoreBean store;
 
-
+    @Column
+    private Integer counter;
 }
 
 @Embeddable
 @Data
 class CategorySearchedId implements java.io.Serializable {
-	
     @Column(name = "user_id")
     private Integer userId;
 

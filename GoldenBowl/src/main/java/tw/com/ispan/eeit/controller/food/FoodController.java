@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import tw.com.ispan.eeit.model.dto.food.FoodDTO;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
 import tw.com.ispan.eeit.service.food.FoodService;
 
@@ -26,14 +27,14 @@ public class FoodController {
     private FoodService foodService;
 
     @GetMapping
-    public ResponseEntity<List<FoodBean>> getAllFoods() {
-        List<FoodBean> foods = foodService.getAllFoods();
+    public ResponseEntity<List<FoodDTO>> getAllFoods() { // 修改返回類型
+        List<FoodDTO> foods = foodService.getAllFoodsDTO(); // 調用新的 Service 方法
         return new ResponseEntity<>(foods, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<FoodBean> getFoodById(@PathVariable Integer id) {
-        Optional<FoodBean> food = foodService.getFoodById(id);
+    public ResponseEntity<FoodDTO> getFoodById(@PathVariable Integer id) { // 修改返回類型
+        Optional<FoodDTO> food = foodService.getFoodDTOById(id); // 調用新的 Service 方法
         return food.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
