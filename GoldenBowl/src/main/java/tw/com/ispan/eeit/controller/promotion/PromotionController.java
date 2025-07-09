@@ -26,13 +26,13 @@ public class PromotionController {
     @Autowired
     private PromotionService promotionService;
 
-    // 查全部（後台管理用，回傳 Entity）
+    // 查全部
     @GetMapping
     public List<PromotionBean> findAll() {
         return promotionService.findAll();
     }
-
-    // 查單筆（回傳 DTO）
+    
+    // 查單筆
     @GetMapping("/{id}")
     public PromotionDTO findById(@PathVariable Integer id) {
         return promotionService.findById(id);
@@ -67,37 +67,15 @@ public class PromotionController {
     public void delete(@PathVariable Integer id) {
         promotionService.deleteById(id);
     }
-
-    // // 查詢符合條件的可用優惠券（回傳 DTO）
-    // @GetMapping("/available")
-    // public List<PromotionBean> getAvailablePromotions(
-    // @RequestParam Integer userId,
-    // @RequestParam Integer storeId,
-    // @RequestParam Integer amount
-    // ) {
-    // return promotionService.getAvailablePromotions(userId, storeId, amount);
-    // }
-
-    // ✅ 查詢目前所有有效未使用的優惠券（給優惠券清單頁面用）
-    @GetMapping("/all-available")
-    public List<PromotionDTO> findAllAvailable() {
-        return promotionService.findAllAvailable();
-    }
-
-    // ✅ 回傳 DTO，查可用優惠券，條件：userId + storeId + 金額（可用於結帳）
+    
+ // 查詢符合條件的可用優惠券（回傳 DTO）
     @GetMapping("/available")
-    public List<PromotionDTO> getAvailablePromotions(
-            @RequestParam Integer userId,
-            @RequestParam Integer storeId,
-            @RequestParam Integer amount) {
+    public List<PromotionBean> getAvailablePromotions(
+        @RequestParam Integer userId,
+        @RequestParam Integer storeId,
+        @RequestParam Integer amount
+    ) {
         return promotionService.getAvailablePromotions(userId, storeId, amount);
     }
-
-    // ✅ 根據分類 type 回傳優惠券列表，前端 tab 分類用
-    // 範例：/promotions/by-type?type=global
-    @GetMapping("/by-type")
-    public List<PromotionDTO> findByType(@RequestParam String type) {
-        return promotionService.findByType(type);
-    }
-
 }
+
