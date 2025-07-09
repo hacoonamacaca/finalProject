@@ -51,8 +51,9 @@ public class FoodService {
         // 【核心修正：使用新的中間表 Entity】
         newFood.getClassifications().clear(); // 清理（對新增來說是多餘的，但好習慣）
         for (FoodClassBean foodClass : foodClasses) {
-            // 假設 sort 預設為 0
-            newFood.getClassifications().add(new FoodClassificationBean(newFood, foodClass, store, 0));
+            
+            newFood.getClassifications().add(
+            new FoodClassificationBean(newFood, foodClass, store, foodClass.getSort()));
         }
                 
 //        newFood.setFoodClasses(foodClasses); // 設定多對多關聯
@@ -108,8 +109,9 @@ public class FoodService {
 
         existingFood.getClassifications().clear(); // 清理掉所有舊的關聯
         for (FoodClassBean foodClass : foodClasses) {
-            // 假設 sort 預設為 0
-            existingFood.getClassifications().add(new FoodClassificationBean(existingFood, foodClass, existingFood.getStore(), 0));
+            
+            existingFood.getClassifications().add(
+            new FoodClassificationBean(existingFood, foodClass, existingFood.getStore(), foodClass.getSort()));
         }
         
         existingFood.setUpdateTime(LocalDateTime.now());
