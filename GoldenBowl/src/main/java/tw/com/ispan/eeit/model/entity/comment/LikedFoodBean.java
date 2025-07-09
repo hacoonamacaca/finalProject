@@ -38,7 +38,7 @@ public class LikedFoodBean {
     @JsonBackReference
     private FoodBean food;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne
     @JoinColumn(name = "order_detail_id")
     @JsonBackReference
     private OrderDetailBean orderDetail;
