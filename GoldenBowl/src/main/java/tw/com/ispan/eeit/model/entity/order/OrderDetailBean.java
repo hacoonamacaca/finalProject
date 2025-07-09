@@ -31,35 +31,33 @@ public class OrderDetailBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-
 	private Integer quantity;
 
-	private Integer price;
+	private Integer price; // 這個字段通常是 redundant 的，因為 food bean 已經有 price 了。同上。
 
 	@Column(name = "sub_total")
 	private Integer subTotal;
 
-	private Integer total;
+	private Integer total; // 在 OrderDetail 層面，通常是 subTotal
 
-//------------comment資料夾--------------------------------~---
-	@OneToOne(mappedBy = "orderDetail",fetch = FetchType.LAZY)
+	// ------------comment資料夾--------------------------------~---
+	@OneToOne(mappedBy = "orderDetail", fetch = FetchType.LAZY)
 	@JsonManagedReference
 	private LikedFoodBean likedFood;
-//	0709 OneToMany修正成OneToOne
-//------------food   資料夾-----------------------------------
+	// 0709 OneToMany修正成OneToOne
+	// ------------food 資料夾-----------------------------------
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "food_id")
 	@JsonBackReference
 	private FoodBean food;
-	
-//------------order  資料夾-----------------------------------
+
+	// ------------order 資料夾-----------------------------------
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id")//SQLServer的名稱
+	@JoinColumn(name = "order_id") // SQLServer的名稱
 	@JsonBackReference
 	private OrderBean order;
-	
 
-//------------多對多關聯表--------------------------------------
+	// ------------多對多關聯表--------------------------------------
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "orderDetails")
 	@JsonManagedReference
 	private List<SpecBean> specs;

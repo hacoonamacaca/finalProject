@@ -21,6 +21,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.CommentBean;
@@ -31,6 +32,7 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Entity
 @Table(name = "customer_order")
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id") // <--- 在這裡加上這一行
 public class OrderBean {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

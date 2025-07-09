@@ -1,9 +1,9 @@
 package tw.com.ispan.eeit.model.entity.food;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,8 +12,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,13 +33,18 @@ public class FoodClassBean {
 
     @Column(length = 100)
     private String description;
+    
+    private Integer sort;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
     @JsonBackReference
     private StoreBean store;
 
-    @ManyToMany(mappedBy = "foodClasses", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<FoodBean> foods;
+//    @ManyToMany(mappedBy = "foodClasses", fetch = FetchType.LAZY)
+//    @JsonManagedReference
+//    private List<FoodBean> foods;
+    
+    @OneToMany(mappedBy = "foodClass") 
+    private Set<FoodClassificationBean> classifications = new HashSet<>();
 }

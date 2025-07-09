@@ -12,7 +12,7 @@ import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
 import tw.com.ispan.eeit.service.reservation.ReservationService;
 
-@RestController
+//@RestController
 @RequestMapping("/api/reservations")
 public class ReservationController {
 
