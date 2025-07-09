@@ -35,3 +35,62 @@ export const useUserStore = defineStore('user', () => {
         isLogin, setLogin
     }
 });
+
+export const useStoreRegister = defineStore('storeRegister', {
+    state: () => ({
+        ownerId: null,
+        storeName: '',
+        storeCategory: '',
+        phone: '',
+        storeIntro: '',
+        files: null,
+        address: '',      // 完整地址字串
+        city: '',
+        district: '',
+        zip: '',
+        street: '',
+        door: '',
+        enAddress: '',
+        lat: '',
+        lon: '',
+    }),
+    actions: {
+        setBasicInfo({ ownerId, storeName, storeCategory, phone, storeIntro, files }) {
+            this.ownerId = ownerId
+            this.storeName = storeName
+            this.storeCategory = storeCategory
+            this.phone = phone
+            this.storeIntro = storeIntro
+            this.files = files
+        },
+        setAddressInfo({ city, district, zip, street, door, enAddress, lat, lon }) {
+            this.city = city
+            this.district = district
+            this.zip = zip
+            this.street = street
+            this.door = door
+            this.enAddress = enAddress
+            this.lat = lat
+            this.lon = lon
+            // 組一個完整地址方便用
+            this.address = [zip, city, district, street, door].filter(Boolean).join(' ')
+        },
+        clear() {
+            this.ownerId = null
+            this.storeName = ''
+            this.storeCategory = ''
+            this.phone = ''
+            this.storeIntro = ''
+            this.files = null
+            this.address = ''
+            this.city = ''
+            this.district = ''
+            this.zip = ''
+            this.street = ''
+            this.door = ''
+            this.enAddress = ''
+            this.lat = ''
+            this.lon = ''
+        }
+    }
+})

@@ -8,7 +8,7 @@
         <div class="mx-auto" style="max-width: 360px;">
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">姓名</label>
-                <input v-model="fullName" type="text" class="form-control rounded-pill" placeholder="請輸入姓名" />
+                <input v-model="userFullName" type="text" class="form-control rounded-pill" placeholder="請輸入姓名" />
             </div>
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">手機號碼</label>
@@ -46,51 +46,38 @@ const router = useRouter()
 const userStore = useUserStore()
 
 function goBack() {
-    router.push('/store')
+    router.push('/')
 }
 
+// 改這裡：只用 userFullName
+const userFullName = ref('')
+const phone = ref('')
+const emailLocal = ref('')
+
 const initial = reactive({
-    firstName: '',
-    lastName: '',
+    userFullName: '',
     phone: '',
     email: '',
     isEmailVerified: true
 })
 
-const fullName = ref('')
-const phone = ref('')
-const emailLocal = ref('')
-
 onMounted(() => {
-    const storedName = localStorage.getItem('userFullName')
-    if (storedName) {
-        const [first, ...rest] = storedName.trim().split(' ')
-        initial.firstName = first
-        initial.lastName = rest.join(' ')
-        fullName.value = storedName
-    }
-    const storedEmail = localStorage.getItem('userEmail')
-    if (storedEmail) {
-        initial.email = storedEmail
-        emailLocal.value = storedEmail
-    }
-    const storedPhone = localStorage.getItem('userPhone')
-    if (storedPhone) {
-        initial.phone = storedPhone
-        phone.value = storedPhone
-    }
+    initial.userFullName = localStorage.getItem('userFullName') || ''
+    userFullName.value = initial.userFullName
+
+    initial.email = localStorage.getItem('userEmail') || ''
+    emailLocal.value = initial.email
+
+    initial.phone = localStorage.getItem('userPhone') || ''
+    phone.value = initial.phone
 })
 
 const isDirty = computed(() => {
-    const [first, ...rest] = fullName.value.trim().split(' ')
-    const last = rest.join(' ')
-    const dirtyBasic = (
-        first !== initial.firstName ||
-        last !== initial.lastName ||
-        phone.value !== initial.phone
+    return (
+        userFullName.value !== initial.userFullName ||
+        phone.value !== initial.phone ||
+        emailLocal.value !== initial.email
     )
-    const dirtyEmail = emailLocal.value !== initial.email
-    return dirtyBasic || dirtyEmail
 })
 
 const isEmailVerified = computed(() =>
@@ -98,27 +85,17 @@ const isEmailVerified = computed(() =>
 )
 
 function handleSave() {
-    // 姓名+手機
-    const [first, ...rest] = fullName.value.trim().split(' ')
-    const last = rest.join(' ')
-    const dirtyBasic = (
-        first !== initial.firstName ||
-        last !== initial.lastName ||
-        phone.value !== initial.phone
-    )
-    if (dirtyBasic) {
-        Object.assign(initial, {
-            firstName: first,
-            lastName: last,
-            phone: phone.value
-        })
-        userStore.setFullName(fullName.value.trim())
+    // 只要有改就存
+    if (userFullName.value !== initial.userFullName) {
+        initial.userFullName = userFullName.value
+        userStore.setFullName(userFullName.value)
+        localStorage.setItem('userFullName', userFullName.value)
+    }
+    if (phone.value !== initial.phone) {
+        initial.phone = phone.value
         localStorage.setItem('userPhone', phone.value)
     }
-
-    // Email
-    const dirtyEmail = emailLocal.value !== initial.email
-    if (dirtyEmail) {
+    if (emailLocal.value !== initial.email) {
         initial.email = emailLocal.value
         initial.isEmailVerified = false
         localStorage.setItem('userEmail', emailLocal.value)

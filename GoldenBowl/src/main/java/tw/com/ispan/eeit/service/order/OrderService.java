@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.transaction.Transactional;
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;

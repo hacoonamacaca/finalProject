@@ -34,6 +34,7 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @NoArgsConstructor
 @Entity
 @Table(name = "app_user")
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class UserBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -67,9 +68,20 @@ public class UserBean {
     @Column(name = "hide_until")
     private LocalDateTime hideUntil;
 
-    // ------------comment資料夾-----------------------------------
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "user")
+    @JsonIgnore
+    private List<OrderBean> orders;
+
+    @OneToMany(mappedBy = "user")
+    private List<UserTagBean> userTags;
+
+    @OneToMany(mappedBy = "user")
+    private List<LikedFoodBean> likedFoods;
+
+    @OneToMany(mappedBy = "user")
+    private List<CommentBean> comments;
+
+    @OneToMany(mappedBy = "user")
     private List<CategorySearchedBean> categorySearched;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)

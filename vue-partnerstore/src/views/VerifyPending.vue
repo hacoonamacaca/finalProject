@@ -1,34 +1,33 @@
-    <template>
-        <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 80vh;">
-            <h2 class="mb-4">註冊資料待審核</h2>
-            <div class="mb-3 text-secondary">
-                嗨，感謝您的註冊待審核後通知
-            </div>
-            <hr class="w-100" />
-            <button class="btn btn-main my-4 px-5" @click="handleVerify">
-                返回首頁
-            </button>
-            <!-- <div class="mt-5 text-end w-100" style="max-width: 350px;">
-            謝謝，<br>
-            <span style="color: #ffba20; font-weight: bold;">您的 foodpanda 團隊</span>
-        </div> -->
+<template>
+    <div class="d-flex flex-column align-items-center justify-content-center" style="min-height: 80vh;">
+        <h2 class="mb-4">註冊資料待審核</h2>
+        <div class="mb-3 text-secondary">
+            嗨，感謝您的註冊，待審核後會通知您。
         </div>
-    </template>
+        <hr class="w-100" />
+        <button class="btn btn-main my-4 px-5" @click="goHome">
+            返回首頁
+        </button>
+        <div v-if="errorMsg" class="text-danger mt-2">{{ errorMsg }}</div>
+        <div v-if="successMsg" class="text-success mt-2">{{ successMsg }}</div>
+    </div>
+</template>
 
 <script setup>
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+// import { useStoreRegister } from '@/stores/user.js'  // 不用再引入 storeRegister
+// import axios from 'axios'  // 不用再引入 axios
+
 const router = useRouter()
-const route = useRoute()
+// 可依需求，預留訊息欄位（例如從其他頁 router.push 時可以帶 query 顯示）
+const errorMsg = ref('')
+const successMsg = ref('')
 
-// email 建議用 query 傳過來
-const email = route.query.email || ''
-
-function handleVerify() {
-    // 這裡可以呼叫 API 查驗證狀態，成功就導頁
-    router.push({
-        path: '/',
-        query: { email }
-    })
+// onMounted 不需要了！
+// 只需要一個 goHome function
+function goHome() {
+    router.push('/')
 }
 </script>
 
