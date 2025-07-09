@@ -12,103 +12,102 @@ import CartTest from '@/views/CartTest.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
-import EditUser from '@/views/Ivy/EditUser.vue'
-import {
-    getRestaurantById
-} from "@/data/restaurants.js"
+// import EditUser from '@/views/Ivy/EditUser.vue'
+// import {
+//     getRestaurantById
+// } from "@/data/restaurants.js"
 import WebRecom from "@/views/Jimmy/WebRecom.vue"
 import ReportType from "@/views/Jimmy/ReportType.vue"
 import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
 
 const routes = [{
-        path: "/",
-        component: Home,
-        name: "home-link"
-    },
-    {
-        path: "/:pathMatch(.*)*",
-        component: NotFound,
-        name: "404-link"
-    },
-    {
-        path: "/403",
-        component: Forbidden,
-        name: "403-link"
-    },
-    {
-        path: "/search",
-        component: Search,
-        name: "search-link"
-    },
-    {
-        path: "/OrderList",
-        component: OrderList,
-        name: "OrderList-link"
-    },
-    {
-        path: "/VoucherWallet",
-        component: VoucherWallet,
-        name: "VoucherWallet-link"
-    },
-    {
-        path: '/Checkout',
-        name: 'CheckoutCoupon',
-        component: CheckoutCoupon
-    },
-    {
-        path: '/cart-test',
-        name: 'CartTest',
-        component: CartTest
-    },
-    {   
-        path: '/register', 
-        component: Register 
-    },
-    {   
-        path: '/verify-pending', 
-        component: VerifyPending 
-    },
-    {   
-        path: '/register-profile', 
-        component: RegisterProfile 
-    },
-    {
-        path: '/resetPasswordEmail',
-        name: 'ResetPasswordEmail',
-        component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
-        props: router => ({ 
-            email: router.query.email 
-        })
-    },
-    {
-        // 餐廳頁面路由
-        path: "/restaurant/:id",
-        name: "Restaurant",
-        component: () => import("@/views/KTlu/RestaurantPage.vue"),
-        props: (route) => ({
-            restaurant: getRestaurantById(parseInt(route.params.id)),
-        }),
-    },
-    {
-        path: '/profile',
-        name: 'EditUser',
-        component: EditUser
-    },
-    {
-        path: '/WebRecom',
-        name: 'WebRecom',
-        component: WebRecom
-    },
-    {
-        path: '/ReportType',
-        name: 'ReportType',
-        component: ReportType
-    },
-        {
-        path: '/reservation-records',
-        name: 'ReservationRecords',
-        component: ReservationRecords
-    },
+    path: "/",
+    component: Home,
+    name: "home-link"
+},
+{
+    path: "/:pathMatch(.*)*",
+    component: NotFound,
+    name: "404-link"
+},
+{
+    path: "/403",
+    component: Forbidden,
+    name: "403-link"
+},
+{
+    path: "/search",
+    component: Search,
+    name: "search-link"
+},
+{
+    path: "/OrderList",
+    component: OrderList,
+    name: "OrderList-link"
+},
+{
+    path: "/VoucherWallet",
+    component: VoucherWallet,
+    name: "VoucherWallet-link"
+},
+{
+    path: '/Checkout',
+    name: 'CheckoutCoupon',
+    component: CheckoutCoupon
+},
+{
+    path: '/cart-test',
+    name: 'CartTest',
+    component: CartTest
+},
+{
+    path: '/register',
+    component: Register
+},
+{
+    path: '/verify-pending',
+    component: VerifyPending
+},
+{
+    path: '/register-profile',
+    component: RegisterProfile
+},
+{
+    path: '/resetPasswordEmail',
+    name: 'ResetPasswordEmail',
+    component: () => import('@/views/Ivy/ResetPasswordEmail.vue'),
+    props: router => ({
+        email: router.query.email
+    })
+},
+{
+    // 餐廳頁面路由
+    path: "/restaurant/:id",
+    name: "Restaurant",
+    component: () => import("@/views/KTlu/RestaurantPage.vue"),
+    // 【核心修改】讓 props: true，這會自動把 URL 中的 :id 作為 prop 傳遞下去
+    props: true,
+},
+{
+    path: '/profile',
+    name: 'EditUser',
+    component: EditUser
+},
+{
+    path: '/WebRecom',
+    name: 'WebRecom',
+    component: WebRecom
+},
+{
+    path: '/ReportType',
+    name: 'ReportType',
+    component: ReportType
+},
+{
+    path: '/reservation-records',
+    name: 'ReservationRecords',
+    component: ReservationRecords
+},
 ];
 
 const router = createRouter({
