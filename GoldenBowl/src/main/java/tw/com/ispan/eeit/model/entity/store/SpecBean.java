@@ -51,11 +51,7 @@ public class SpecBean implements Serializable {
     @Column(name = "is_active", columnDefinition = "bit default 1") // 可以用 columnDefinition 確保預設值
     private Boolean isActive;
     
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-			name="order_detail_spec",
-			joinColumns=@JoinColumn(name="order_detail_id"),
-			inverseJoinColumns =@JoinColumn(name="spec_id"))
+    @ManyToMany(mappedBy = "specs",fetch = FetchType.LAZY)
     @JsonBackReference
     private List<OrderDetailBean> orderDetails; 
     // 指向 OrderDetailBean 中的 "specs" 屬性
