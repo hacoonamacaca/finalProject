@@ -1,85 +1,226 @@
-// ✅ VoucherWallet.vue
 <template>
-  <div class="container my-5">
-    <h2 class="mb-4 fw-bold text-center">我的優惠券</h2>
+  <div class="voucher-container container my-5 p-4 shadow-sm bg-white rounded-4">
+    <h2 class="mb-4 fw-bold text-center">
+      <i class="bi bi-ticket-perforated me-3 text-warning"></i>我的優惠券
+    </h2>
 
-    <!-- 📌 Tabs 切換分類 -->
-    <ul class="nav nav-tabs justify-content-center mb-4">
+    <!-- 📌 Tabs -->
+    <ul class="nav nav-tabs justify-content-center mb-4 border-bottom-yellow">
       <li class="nav-item" v-for="tab in tabs" :key="tab.value">
-        <button class="nav-link" :class="{ active: activeTab === tab.value }" @click="activeTab = tab.value">
-          {{ tab.icon }} {{ tab.label }}
+        <button
+          class="nav-link tab-btn px-4 py-2 mx-1"
+          :class="{ active: activeTab === tab.value }"
+          @click="activeTab = tab.value"
+        >
+          <i :class="tab.icon" class="me-2"></i>{{ tab.label }}
         </button>
       </li>
     </ul>
 
-    <!-- 📌 優惠券清單 -->
-    <div v-if="filteredPromotions.length > 0" class="d-flex flex-column gap-3">
-      <VoucherCard v-for="promotion in filteredPromotions" :key="promotion.id" :promotion="promotion"
-        :cartAmount="cartAmount" @use="handleUse" />
+    <!-- 📌 列表區：直接顯示 promotionList -->
+    <div v-if="promotionList.length > 0" class="d-flex flex-column gap-3">
+      <VoucherCard
+        v-for="promotion in promotionList"
+        :key="promotion.id"
+        :promotion="promotion"
+        :cartAmount="cartAmount"
+        @use="handleUse"
+      />
     </div>
-    <div v-else class="text-muted text-center mt-4">
+    <div v-else class="text-muted text-center mt-5 fs-5">
+      <i class="fas fa-ticket-alt me-2 text-warning"></i>
       此分類目前沒有可用優惠券
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import VoucherCard from '@/components/Yifan/VoucherCard.vue'
+//引入 axios 並撰寫 API 請求
+import axios from '@/plungins/axios.js'
+import { onMounted, ref, watch } from 'vue'
+
+//引入優惠券圖片
 import globalImg from '@/assets/vouchers/global.png'
 import restaurantImg from '@/assets/vouchers/restaurant.png'
 import foodImg from '@/assets/vouchers/food.png'
 import memberImg from '@/assets/vouchers/member.png'
 
+//初始資料
 const cartAmount = ref(500)
 const activeTab = ref('all')
 
+//分類 tabs 資料
 const tabs = [
-  { label: '全部', value: 'all', icon: '📂' },
-  { label: '全平台', value: 'global', icon: '🌐' },
-  { label: '餐廳限定', value: 'restaurant', icon: '🍽️' },
-  { label: '餐點限定', value: 'food', icon: '🍔' },
-  { label: '會員限定', value: 'member', icon: '👑' },
-  { label: '歷史紀錄', value: 'history', icon: '🕓' }
+  { label: '全部', value: 'all', icon: 'fas fa-folder-open' },
+  { label: '全平台', value: 'global', icon: 'fas fa-globe' },
+  { label: '餐廳限定', value: 'restaurant', icon: 'fas fa-utensils' },
+  { label: '餐點限定', value: 'food', icon: 'fas fa-drumstick-bite' },
+  { label: '會員限定', value: 'member', icon: 'fas fa-crown' },
+  { label: '歷史紀錄', value: 'history', icon: 'fas fa-clock' }
 ]
 
-// 📌 假資料，含 used 狀態
-const promotionList = ref([
-  { id: 1, title: '全平台券 - 滿 500 折 50', imageUrl: globalImg, restaurant_id: null, food_category_id: null, plan_id: null, min_spend: 500, discount_value: 50, start_time: '2025-06-01', end_time: '2025-06-30', description: '全站可使用', used: false },
-  { id: 2, title: '餐廳限定券 - 滿 800 折 100', imageUrl: restaurantImg, restaurant_id: 2, food_category_id: null, plan_id: null, min_spend: 800, discount_value: 100, start_time: '2025-06-01', end_time: '2025-06-30', description: '僅限餐廳 ID 2', used: false },
-  { id: 3, title: '餐點限定券 - 炸雞類折 30', imageUrl: foodImg, restaurant_id: null, food_category_id: 5, plan_id: null, min_spend: 300, discount_value: 30, start_time: '2025-06-01', end_time: '2025-06-30', description: '僅限分類 ID 5', used: true },
-  { id: 4, title: '會員限定券 - VIP 9 折', imageUrl: memberImg, restaurant_id: null, food_category_id: null, plan_id: 1, min_spend: 0, discount_value: 10, start_time: '2025-06-01', end_time: '2025-06-30', description: 'VIP 會員專用', used: true }
-])
+//優惠券資料
+const promotionList = ref([]) //改連後端資料庫
+// const filteredPromotions = computed(() => {
+//   const current = activeTab.value
+//   return promotionList.value.filter(p => {
+//     if (current === 'history') return p.used
+//     if (current === 'all') return !p.used
+//     if (p.used) return false
+//     return p.type === current
+//   })
+// })
 
-// 📌 篩選資料
-const filteredPromotions = computed(() => {
-  const current = activeTab.value
-  return promotionList.value.filter(p => {
-    if (current === 'history') return p.used
-    if (current === 'all') return !p.used
-    if (p.used) return false
-    if (current === 'global') return !p.restaurant_id && !p.food_category_id && !p.plan_id
-    if (current === 'restaurant') return !!p.restaurant_id
-    if (current === 'food') return !!p.food_category_id
-    if (current === 'member') return !!p.plan_id
-    return false
-  })
+
+// ✅ 點選 tab 時重新載入分類資料
+watch(activeTab, async (tab) => {
+  await loadPromotions(tab)
 })
 
+// ✅ 頁面載入時載入預設資料（全部可用券）
+onMounted(async () => {
+  await loadPromotions('all')
+})
+
+// ✅ 根據 tab 取得分類資料
+const loadPromotions = async (tab) => {
+  try {
+    let url = ''
+
+    if (tab === 'all') {
+      url = '/promotions/all-available' // ✅ 顯示所有有效券（不是結帳篩選用）
+    } else if (tab === 'history') {
+      promotionList.value = [] // ✅ 尚未串 /used 資料，預設空清單
+      return
+    } else {
+      url = `/promotions/by-type?type=${tab}` // ✅ 類型分類券
+    }
+
+    const response = await axios.get(url)
+
+
+    // 將回傳的優惠券加上圖示與圖片（根據 type）
+    promotionList.value = response.data.map(item => {
+      let imageUrl = globalImg
+      let iconClass = 'fas fa-globe'
+
+      if (item.type === 'restaurant') {
+        imageUrl = restaurantImg
+        iconClass = 'fas fa-utensils'
+      } else if (item.type === 'food') {
+        imageUrl = foodImg
+        iconClass = 'fas fa-hamburger'
+      } else if (item.type === 'member') {
+        imageUrl = memberImg
+        iconClass = 'fas fa-crown'
+      }
+
+      return {
+        ...item,
+        iconClass,
+        imageUrl,
+      }
+    })
+  } catch (error) {
+    console.error('載入優惠券失敗', error)
+  }
+}
+
+
+
+
+
+
+
+
+
+//使用優惠券
 const handleUse = (promo) => {
   console.log('使用優惠券：', promo.title)
 }
+
+// onMounted(async () => { //載入優惠券資料
+//   try {
+//     const response = await axios.get('/promotions/available') //先取得全部「可使用」的優惠券
+//     console.log('載入優惠券成功', response)
+//     promotionList.value = response.data.map(item => {
+//       let imageUrl = globalImg
+//       let iconClass = 'fas fa-globe'
+//       let type = 'global'
+
+//       if (item.store?.id) {
+//         imageUrl = restaurantImg
+//         iconClass = 'fas fa-utensils'
+//         type = 'restaurant'
+//       } else if (item.tag?.id) {
+//         imageUrl = foodImg
+//         iconClass = 'fas fa-hamburger'
+//         type = 'food'
+//       } else if (item.plan?.id) {
+//         imageUrl = memberImg
+//         iconClass = 'fas fa-crown'
+//         type = 'member'
+//       }
+
+//       return {
+//         ...item,
+//         iconClass,
+//         imageUrl,
+//         type,
+//       }
+//     })
+//   } catch (error) {
+//     console.error('載入優惠券失敗', error)
+//   }
+// })
+
+
 </script>
 
 <style scoped>
-/* ✅ 統一 hover 效果 */
-.nav-link {
-  cursor: pointer;
+h2 {
+  font-size: 1.8rem;
+  letter-spacing: 1px;
 }
 
-.nav-link.active {
+/* 主容器美化 */
+.voucher-container {
+  background-color: #fffbea;
+}
+
+/* Tabs 樣式 */
+.nav-tabs {
+  border-bottom: 2px solid #ffc94d;
+}
+
+.nav-tabs .nav-link {
+  border-radius: 0; /* 去掉圓角 */
+  color: #555;
+  font-weight: 500;
+  padding: 10px 20px;
+}
+
+
+.tab-btn {
+  background-color: transparent;
+  color: #666;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  border-radius: 0 !important;
+}
+
+.tab-btn:hover {
+  background-color: #fff3cd;
+  color: #d48806;
+  border-color: #ffe58f;
+}
+
+.tab-btn.active {
+  background-color: #ffc94d;
+  color: white;
   font-weight: bold;
-  color: #4b80d0;
+  border-color: #ffc94d;
 }
 
 /* 無資料訊息 */
