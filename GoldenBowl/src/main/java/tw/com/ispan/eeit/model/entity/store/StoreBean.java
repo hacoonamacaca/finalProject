@@ -1,13 +1,19 @@
 package tw.com.ispan.eeit.model.entity.store;
-
+//07/09核對過 增加specialHours,specGroup
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.hibernate.annotations.BatchSize;
+import org.locationtech.jts.geom.Point;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -19,7 +25,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
@@ -39,19 +44,15 @@ public class StoreBean {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
-    private OwnerBean owner;
-
     @Column(length = 50)
     private String name;
 
     @Column(length = 50)
     private String address;
 
+    @Convert(converter = tw.com.ispan.eeit.model.converter.PointToGeographyConverter.class)
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
-    private String storeCoords; 
-    // 假設 geography 欄位用 String，實際需依 SQL Server 空間資料類型調整
+    private Point storeCoords;
     
     private Double lng;
 
@@ -76,24 +77,58 @@ public class StoreBean {
 
     @Column(name = "is_active")
     private Boolean isActive;
-
+    
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    @JsonBackReference
+    private OwnerBean owner;
+//------------comment資料夾-----------------------------------
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
+    @BatchSize(size = 25)
+    @JsonManagedReference
+    private Set<CommentBean> comments;
+    
     @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
-    private List<FoodBean> foods;
+    @JsonManagedReference
+    private List<CategorySearchedBean> categorySearched;
+    
+//------------food   資料夾-----------------------------------
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Set<FoodBean> foods;
 
     @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
     @JsonManagedReference
+    private List<FoodClassBean> foodClasses; // 如果這裡不是 Set，要特別注意
+    
+//------------order  資料夾-----------------------------------
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<OrderBean> orders;
+    
+//------------store  資料夾-----------------------------------
 
-    @OneToMany(mappedBy = "store")
-    private List<CommentBean> comments;
+    @ManyToMany(mappedBy = "stores",fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Set<CategoryBean> categories;
+    // 多對多關係：Store 與 User 通過 favorite_store 表格關聯
+    
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<OpenHourBean> OpenHours;
+    
+    @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private List<SpecGroupBean> specGroups;
 
     @OneToMany(mappedBy = "store",fetch = FetchType.LAZY)
-    private List<CategorySearchedBean> categorySearched;
-
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-    private List<CategoryBean> categories;
-    // 多對多關係：Store 與 User 通過 favorite_store 表格關聯
+    @JsonManagedReference
+    private List<SpecialHoursBean> specialHours;
+    
+    
+    //------------多對多關聯表--------------------------------------
     @ManyToMany(mappedBy = "favoriteStores",fetch = FetchType.LAZY)
+    @JsonBackReference
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

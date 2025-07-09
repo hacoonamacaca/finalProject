@@ -1,10 +1,13 @@
 package tw.com.ispan.eeit.model.entity;
-
+//0709核對
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,7 +49,8 @@ public class OwnerBean {
 
     @Column(name = "is_verify")
     private Boolean isVerify;
-
-    @OneToMany(mappedBy = "owner")
+//------------store  資料夾-----------------------------------
+    @OneToMany(mappedBy = "owner",fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<StoreBean> stores;
 }

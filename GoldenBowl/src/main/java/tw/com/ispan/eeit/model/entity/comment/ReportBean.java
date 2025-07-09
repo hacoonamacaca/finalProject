@@ -2,8 +2,11 @@ package tw.com.ispan.eeit.model.entity.comment;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -41,11 +44,13 @@ public class ReportBean {
     private LocalDateTime reportDate;
 
     // 外鍵關係
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY )
     @JoinColumn(name = "report_type_id", insertable = false, updatable = false)
+    @JsonBackReference
     private ReportTypeBean reportType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY )
     @JoinColumn(name = "comment_id", insertable = false, updatable = false)
+    @JsonBackReference
     private CommentBean comment;
 }

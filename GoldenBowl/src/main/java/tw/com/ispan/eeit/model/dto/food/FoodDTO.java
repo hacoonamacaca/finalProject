@@ -7,7 +7,7 @@ import lombok.Data;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
 
 @Data
-public class FoodDto {
+public class FoodDTO {
  private Integer id;
  private String name;
  private Integer price;
@@ -15,8 +15,8 @@ public class FoodDto {
  private String imgResource;
  private String description;
  // ... 其他食物屬性
- 	public static FoodDto fromEntity(FoodBean foodBean) {
- 		FoodDto foodDto = new FoodDto();
+ 	public static FoodDTO fromEntity(FoodBean foodBean) {
+ 		FoodDTO foodDto = new FoodDTO();
  		foodDto.setId(foodBean.getId());
  		foodDto.setName(foodBean.getName());
  		foodDto.setPrice(foodBean.getPrice());

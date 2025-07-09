@@ -56,21 +56,25 @@ public class CommentBean {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id",unique = true, nullable = false)
+    @JsonBackReference
+    private UserBean user;
+    
+//------------order  資料夾-----------------------------------
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", unique = true, nullable = false)
     @JsonBackReference
     private OrderBean order;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id",unique = true, nullable = false)
-    @JsonIgnore
-    private UserBean user;
     
+//------------store  資料夾-----------------------------------
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id",unique = true, nullable = false)
-    @JsonIgnore
+    @JsonBackReference
     private StoreBean store;
     
+
 //    @ManyToOne(fetch = FetchType.LAZY)
 //    @JoinColumn(name = "store_id", insertable = false, updatable = false)
 //    @JsonIgnore

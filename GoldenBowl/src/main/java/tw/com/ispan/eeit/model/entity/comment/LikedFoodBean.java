@@ -2,6 +2,8 @@ package tw.com.ispan.eeit.model.entity.comment;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,22 +28,36 @@ public class LikedFoodBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private UserBean user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "food_id")
-    private FoodBean food;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_detail_id")
-    private OrderDetailBean orderDetail;
 
     @Column(name = "is_liked")
     private Boolean isLiked;
 
     @Column(name = "updated_time")
     private LocalDateTime updatedTime;
+//------------comment資料夾-----------------------------------
+//------------food   資料夾-----------------------------------
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "food_id")
+    @JsonBackReference
+    private FoodBean food;
+//------------order  資料夾-----------------------------------
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_detail_id")
+    @JsonBackReference
+    private OrderDetailBean orderDetail;
+
+//------------promotion資料夾---------------------------------
+//------------store  資料夾-----------------------------------
+//------------多對多關聯表--------------------------------------
+
+
+
+
+
+
 }

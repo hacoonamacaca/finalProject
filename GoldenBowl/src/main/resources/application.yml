@@ -12,8 +12,8 @@ spring:
       enabled: always
 
   #設定profile
-#  profiles:
-#    active: "@xxx@" 
+  # profiles:
+  #   active: "@xxx@" 
 
   #設定資料庫執行環境
   datasource:
@@ -33,10 +33,9 @@ spring:
       #update 更新java entity時，也會創建
       naming:
         implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
-        #會自動捕捉entity讓你不用備註column，會自動將命名轉為蛇行命名，但如果有下面的選項則會被覆蓋
+        #會自動捕捉entity讓你不用備註column
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
         #連結資料庫讓名稱與java相同
-   
 #mogodb的設定
 #  data:
 #    mongodb:
@@ -48,3 +47,15 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Taipei
+
+  #設定google登入
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile

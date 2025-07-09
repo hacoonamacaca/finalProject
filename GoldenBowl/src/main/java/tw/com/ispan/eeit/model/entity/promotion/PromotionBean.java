@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,18 +30,6 @@ public class PromotionBean {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
-
-	@ManyToOne
-	@JoinColumn(name = "plan_id")
-	private PlanBean plan;
-
-	@ManyToOne
-	@JoinColumn(name = "store_id")
-	private StoreBean store;
-
-	@ManyToOne
-	@JoinColumn(name = "tag_id")
-	private TagBean tag;
 
 	@Column
 	private String title;
@@ -80,11 +69,38 @@ public class PromotionBean {
 
 	@Column(length = 20)
 	private String status;
+	
+	@ManyToOne
+	@JoinColumn(name = "plan_id")
+	private PlanBean plan;
 
+
+
+//------------comment資料夾-----------------------------------
+	
+//------------food   資料夾-----------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tag_id")
+	@JsonBackReference
+	private TagBean tag;
+	
+//------------order  資料夾-----------------------------------
 	@OneToMany(mappedBy = "promotion")
 	@JsonManagedReference
 	private List<OrderBean> orders;
-
-	@OneToMany(mappedBy = "promotion")
+	
+//------------promotion資料夾---------------------------------
+	@OneToMany(mappedBy = "promotion",fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private List<NotificationBean> notifications;
+	
+//------------store  資料夾-----------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id")
+	@JsonBackReference
+	private StoreBean store;
+	
+//------------多對多關聯表------------------------------------
+
+	
 }

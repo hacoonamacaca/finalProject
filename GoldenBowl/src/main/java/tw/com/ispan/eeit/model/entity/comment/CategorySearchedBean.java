@@ -1,9 +1,12 @@
 package tw.com.ispan.eeit.model.entity.comment;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -20,19 +23,23 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 public class CategorySearchedBean {
     @EmbeddedId
     private CategorySearchedId id;
-
-    @ManyToOne
-    @MapsId("userId")
-    @JoinColumn(name = "user_id")
-    private UserBean user;
-
-    @ManyToOne
-    @MapsId("storeId")
-    @JoinColumn(name = "store_id")
-    private StoreBean store;
-
+    
     @Column
     private Integer counter;
+    
+    @ManyToOne(fetch = FetchType.LAZY )
+    @MapsId("userId")
+    @JoinColumn(name = "user_id")
+    @JsonBackReference
+    private UserBean user;
+
+    @ManyToOne(fetch = FetchType.LAZY  )
+    @MapsId("storeId")
+    @JoinColumn(name = "store_id")
+    @JsonBackReference
+    private StoreBean store;
+
+
 }
 
 @Embeddable

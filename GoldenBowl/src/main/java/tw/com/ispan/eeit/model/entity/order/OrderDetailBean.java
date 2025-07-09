@@ -1,10 +1,9 @@
 package tw.com.ispan.eeit.model.entity.order;
 
 import java.util.List;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,10 +12,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,15 +31,6 @@ public class OrderDetailBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id")//SQLServer的名稱
-	@JsonBackReference
-	private OrderBean order;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "food_id")
-	@JsonBackReference
-	private FoodBean food;
 
 	private Integer quantity;
 
@@ -52,14 +41,26 @@ public class OrderDetailBean {
 
 	private Integer total;
 
-	@OneToMany(mappedBy = "orderDetail",fetch = FetchType.LAZY)
-	private Set<LikedFoodBean> likedFoods;
+//------------comment資料夾--------------------------------~---
+	@OneToOne(mappedBy = "orderDetail",fetch = FetchType.LAZY)
+	@JsonManagedReference
+	private LikedFoodBean likedFood;
+//	0709 OneToMany修正成OneToOne
+//------------food   資料夾-----------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "food_id")
+	@JsonBackReference
+	private FoodBean food;
 	
-	@ManyToMany(fetch = FetchType.LAZY)
-	@JsonIgnore
-	@JoinTable(
-			name="order_detail_spec",
-			joinColumns=@JoinColumn(name="order_detail_id"),
-			inverseJoinColumns =@JoinColumn(name="spec_id"))
+//------------order  資料夾-----------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "order_id")//SQLServer的名稱
+	@JsonBackReference
+	private OrderBean order;
+	
+
+//------------多對多關聯表--------------------------------------
+	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "orderDetails")
+	@JsonManagedReference
 	private List<SpecBean> specs;
 }

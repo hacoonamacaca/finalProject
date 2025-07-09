@@ -44,15 +44,9 @@ public class OrderBean {
 	@JsonBackReference
 	private UserBean user;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JsonBackReference
-	@JoinColumn(name = "store_id") // customer_order表中的欄位
-	private StoreBean store;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JsonBackReference
-	@JoinColumn(name = "promotion_id")
-	private PromotionBean promotion; // 假設 Promotion Entity 存在
+
+
 
 	private Integer total;
 
@@ -67,15 +61,30 @@ public class OrderBean {
 
 	@Column(name = "pickup_time")
 	private LocalDateTime pickupTime;
-
-	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
-	@JsonManagedReference
-	private List<OrderDetailBean> orderDetails;
-	// mappedBy的是java物件名稱
+//------------comment資料夾-----------------------------------
 	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private CommentBean comment;
 	// mappedBy="order" 是comment的java屬性order
+	
+//------------order  資料夾-----------------------------------
+	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+	@JsonManagedReference
+	private List<OrderDetailBean> orderDetails;
+	// mappedBy的是java物件名稱
+
+//------------promotion資料夾---------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "promotion_id")
+	@JsonBackReference
+	private PromotionBean promotion; // 假設 Promotion Entity 存在
+//------------store  資料夾-----------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id") // customer_order表中的欄位
+	@JsonBackReference
+	private StoreBean store;
+	
+	
 
 	@Override
 	public String toString() {

@@ -2,8 +2,11 @@ package tw.com.ispan.eeit.model.entity.promotion;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,13 +26,10 @@ public class NotificationBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
+	@JsonBackReference
 	private UserBean user;
-
-	@ManyToOne
-	@JoinColumn(name = "promotion_id")
-	private PromotionBean promotion;
 
 	@Column(name = "created_time")
 	private LocalDateTime createdTime;
@@ -39,4 +39,10 @@ public class NotificationBean {
 
 	@Column(name = "read_time")
 	private LocalDateTime readTime;
+//------------promotion資料夾---------------------------------
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "promotion_id")
+	@JsonBackReference
+	private PromotionBean promotion;
+
 }
