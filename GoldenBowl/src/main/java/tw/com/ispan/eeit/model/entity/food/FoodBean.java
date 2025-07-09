@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
@@ -40,7 +41,7 @@ public class FoodBean {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "store_id")
     private StoreBean store;
 
@@ -92,5 +93,6 @@ public class FoodBean {
 
     // 多對多關係：Food 與 User 通過 favorite_food 表格關聯
     @ManyToMany(mappedBy = "favoriteFoods")
+    @JsonIgnore
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

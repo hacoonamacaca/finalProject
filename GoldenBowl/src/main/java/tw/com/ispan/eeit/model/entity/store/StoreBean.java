@@ -47,7 +47,7 @@ public class StoreBean {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY) // 建議對 ManyToOne 關聯設置 LAZY
+    @ManyToOne // 建議對 ManyToOne 關聯設置 LAZY
     @JoinColumn(name = "owner_id")
     @JsonIgnore
     private OwnerBean owner;
@@ -86,6 +86,7 @@ public class StoreBean {
     @Column(name = "is_active")
     private Boolean isActive;
 
+    // -------------------------------------------------------------------
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<FoodBean> foods;
@@ -104,7 +105,6 @@ public class StoreBean {
     private Set<CategoryBean> categories; // 您已經改為 Set，這是好的
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY, cascade = CascadeType.ALL) // 評論通常不應該因為 Store 刪除而刪除，請根據業務邏輯調整
-                                                                                      // cascade
     @BatchSize(size = 25)
     @JsonManagedReference
     private Set<CommentBean> comments; // 您已經改為 Set，這是好的

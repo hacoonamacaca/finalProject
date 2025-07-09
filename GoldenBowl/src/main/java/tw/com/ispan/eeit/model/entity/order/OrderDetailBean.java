@@ -31,7 +31,6 @@ public class OrderDetailBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-
 	private Integer quantity;
 
 	private Integer price;
@@ -41,25 +40,24 @@ public class OrderDetailBean {
 
 	private Integer total;
 
-//------------comment資料夾--------------------------------~---
-	@OneToOne(mappedBy = "orderDetail",fetch = FetchType.LAZY)
+	// ------------comment資料夾--------------------------------~---
+	@OneToOne(mappedBy = "orderDetail")
 	@JsonManagedReference
 	private LikedFoodBean likedFood;
-//	0709 OneToMany修正成OneToOne
-//------------food   資料夾-----------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
+	// 0709 OneToMany修正成OneToOne
+	// ------------food 資料夾-----------------------------------
+	@ManyToOne
 	@JoinColumn(name = "food_id")
 	@JsonBackReference
 	private FoodBean food;
-	
-//------------order  資料夾-----------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id")//SQLServer的名稱
+
+	// ------------order 資料夾-----------------------------------
+	@ManyToOne
+	@JoinColumn(name = "order_id") // SQLServer的名稱
 	@JsonBackReference
 	private OrderBean order;
-	
 
-//------------多對多關聯表--------------------------------------
+	// ------------多對多關聯表--------------------------------------
 	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "orderDetails")
 	@JsonManagedReference
 	private List<SpecBean> specs;

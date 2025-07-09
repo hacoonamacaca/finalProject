@@ -29,7 +29,7 @@ public class CommentImgBean {
 
     private Integer sort;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "comment_id", insertable = false, updatable = false)
     private CommentBean comment;
 }

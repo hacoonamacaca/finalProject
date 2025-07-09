@@ -36,7 +36,8 @@ public class ReportService {
         reportBean.setStatus("PENDING"); // 預設狀態為 PENDING
 
         // 由於 ReportBean 中的 reportTypeId 和 commentId 是直接映射的，
-        // 且 @ManyToOne 設置了 insertable = false, updatable = false，
+        // 且 @ManyToOne 設置了 insertable = false, updatable =
+        // false，
         // Spring Data JPA 會自動處理這些 ID 的保存。
 
         ReportBean savedReport = reportRepository.save(reportBean);

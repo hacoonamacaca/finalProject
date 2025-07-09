@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.controller.order;
 
 import java.util.List;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +28,11 @@ public class OrderController {
 
     // 創建新訂單
     @PostMapping
-    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean order) {
+    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orders) {
+    	System.out.println(orders.getTotal());
+//    	JSONObject obj = new JSONObject(body);
+//    	OrderBean order = new OrderBean();
+    	OrderBean order = new OrderBean();
         OrderBean createdOrder = orderService.createOrder(order);
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }

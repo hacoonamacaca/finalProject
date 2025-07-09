@@ -26,7 +26,7 @@ public class SpecialHoursBean {
 	@Column(name = "id")
 	private Integer id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "store_id")
 	@JsonBackReference
 	private StoreBean store;

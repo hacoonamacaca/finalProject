@@ -1,5 +1,7 @@
 package tw.com.ispan.eeit.model.entity.food;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.EmbeddedId;
@@ -21,14 +23,16 @@ public class UserTagBean {
     @EmbeddedId
     private UserTagId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private UserBean user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("tagId")
     @JoinColumn(name = "tag_id")
+    @JsonIgnore
     private TagBean tag;
 
     @Column

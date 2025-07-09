@@ -3,6 +3,8 @@ package tw.com.ispan.eeit.model.entity.promotion;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,16 +32,19 @@ public class PromotionBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne
 	@JoinColumn(name = "plan_id") // sql當中的promotion table FK
+	@JsonIgnore
 	private PlanBean plan;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "store_id")
+	@JsonIgnore
 	private StoreBean store;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "tag_id")
+	@JsonIgnore
 	private TagBean tag;
 
 	@Column(columnDefinition = "NVARCHAR(50)")
@@ -82,8 +87,10 @@ public class PromotionBean {
 	private String status;
 
 	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
+	@JsonIgnore
 	private List<OrderBean> orders;
 
 	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
+	@JsonIgnore
 	private List<NotificationBean> notifications;
 }

@@ -34,7 +34,7 @@ public class FoodClassBean {
     @Column(length = 100)
     private String description;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "store_id")
     @JsonBackReference
     private StoreBean store;

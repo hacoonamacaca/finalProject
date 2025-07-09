@@ -2,6 +2,9 @@ package tw.com.ispan.eeit.model.entity.reservation;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,6 +24,7 @@ import lombok.NonNull;
 @AllArgsConstructor
 public class TableBean {
     @ManyToMany(mappedBy = "tables")
+    @JsonIgnore
     private Set<ReservationBean> reservations = new HashSet<>();
 
     @Id
@@ -28,7 +32,7 @@ public class TableBean {
     private Integer id;
 
     @NonNull
-    @Column(name = "FK_store_id")
+    @Column(name = "store_id")
     private Integer storeId;
 
     @Column(name = "quantity")
@@ -37,6 +41,7 @@ public class TableBean {
     @Column(name = "seats")
     private Integer seats; // 座位數量
 
-    @Column(name = "isActive")
+    @Column(name = "is_active")
     private Boolean status; // 桌位狀態
+
 }

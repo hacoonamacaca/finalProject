@@ -42,11 +42,11 @@ public class ReportBean {
     private LocalDateTime reportDate;
 
     // 外鍵關係
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "report_type_id", insertable = false, updatable = false)
     private ReportTypeBean reportType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "comment_id", insertable = false, updatable = false)
     private CommentBean comment;
 }

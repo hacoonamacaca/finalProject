@@ -30,7 +30,7 @@ public class OpenHourBean {
 	@Column(name = "close_time", columnDefinition = "TIME(0)")
 	private LocalTime close_time;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "store_id")
 	@JsonBackReference
 	private StoreBean store;
