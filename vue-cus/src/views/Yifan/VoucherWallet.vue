@@ -17,10 +17,10 @@
       </li>
     </ul>
 
-    <!-- 📌 列表區 -->
-    <div v-if="filteredPromotions.length > 0" class="d-flex flex-column gap-3">
+    <!-- 📌 列表區：直接顯示 promotionList -->
+    <div v-if="promotionList.length > 0" class="d-flex flex-column gap-3">
       <VoucherCard
-        v-for="promotion in filteredPromotions"
+        v-for="promotion in promotionList"
         :key="promotion.id"
         :promotion="promotion"
         :cartAmount="cartAmount"
@@ -38,17 +38,19 @@
 import VoucherCard from '@/components/Yifan/VoucherCard.vue'
 //引入 axios 並撰寫 API 請求
 import axios from '@/plungins/axios.js'
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+
 //引入優惠券圖片
 import globalImg from '@/assets/vouchers/global.png'
 import restaurantImg from '@/assets/vouchers/restaurant.png'
 import foodImg from '@/assets/vouchers/food.png'
 import memberImg from '@/assets/vouchers/member.png'
 
-
+//初始資料
 const cartAmount = ref(500)
 const activeTab = ref('all')
 
+//分類 tabs 資料
 const tabs = [
   { label: '全部', value: 'all', icon: 'fas fa-folder-open' },
   { label: '全平台', value: 'global', icon: 'fas fa-globe' },
@@ -58,55 +60,120 @@ const tabs = [
   { label: '歷史紀錄', value: 'history', icon: 'fas fa-clock' }
 ]
 
+//優惠券資料
 const promotionList = ref([]) //改連後端資料庫
-const filteredPromotions = computed(() => {
-  const current = activeTab.value
-  return promotionList.value.filter(p => {
-    if (current === 'history') return p.used
-    if (current === 'all') return !p.used
-    if (p.used) return false
-    return p.type === current
-  })
+// const filteredPromotions = computed(() => {
+//   const current = activeTab.value
+//   return promotionList.value.filter(p => {
+//     if (current === 'history') return p.used
+//     if (current === 'all') return !p.used
+//     if (p.used) return false
+//     return p.type === current
+//   })
+// })
+
+
+// ✅ 點選 tab 時重新載入分類資料
+watch(activeTab, async (tab) => {
+  await loadPromotions(tab)
 })
 
-const handleUse = (promo) => {
-  console.log('使用優惠券：', promo.title)
-}
+// ✅ 頁面載入時載入預設資料（全部可用券）
+onMounted(async () => {
+  await loadPromotions('all')
+})
 
-onMounted(async () => { //載入優惠券資料
+// ✅ 根據 tab 取得分類資料
+const loadPromotions = async (tab) => {
   try {
-    const response = await axios.get('/promotions')
-    console.log('載入優惠券成功', response)
+    let url = ''
+
+    if (tab === 'all') {
+      url = '/promotions/all-available' // ✅ 顯示所有有效券（不是結帳篩選用）
+    } else if (tab === 'history') {
+      promotionList.value = [] // ✅ 尚未串 /used 資料，預設空清單
+      return
+    } else {
+      url = `/promotions/by-type?type=${tab}` // ✅ 類型分類券
+    }
+
+    const response = await axios.get(url)
+
+
+    // 將回傳的優惠券加上圖示與圖片（根據 type）
     promotionList.value = response.data.map(item => {
       let imageUrl = globalImg
       let iconClass = 'fas fa-globe'
-      let type = 'global'
 
-      if (item.store?.id) {
+      if (item.type === 'restaurant') {
         imageUrl = restaurantImg
         iconClass = 'fas fa-utensils'
-        type = 'restaurant'
-      } else if (item.tag?.id) {
+      } else if (item.type === 'food') {
         imageUrl = foodImg
         iconClass = 'fas fa-hamburger'
-        type = 'food'
-      } else if (item.plan?.id) {
+      } else if (item.type === 'member') {
         imageUrl = memberImg
         iconClass = 'fas fa-crown'
-        type = 'member'
       }
 
       return {
         ...item,
         iconClass,
         imageUrl,
-        type,
       }
     })
   } catch (error) {
     console.error('載入優惠券失敗', error)
   }
-})
+}
+
+
+
+
+
+
+
+
+
+//使用優惠券
+const handleUse = (promo) => {
+  console.log('使用優惠券：', promo.title)
+}
+
+// onMounted(async () => { //載入優惠券資料
+//   try {
+//     const response = await axios.get('/promotions/available') //先取得全部「可使用」的優惠券
+//     console.log('載入優惠券成功', response)
+//     promotionList.value = response.data.map(item => {
+//       let imageUrl = globalImg
+//       let iconClass = 'fas fa-globe'
+//       let type = 'global'
+
+//       if (item.store?.id) {
+//         imageUrl = restaurantImg
+//         iconClass = 'fas fa-utensils'
+//         type = 'restaurant'
+//       } else if (item.tag?.id) {
+//         imageUrl = foodImg
+//         iconClass = 'fas fa-hamburger'
+//         type = 'food'
+//       } else if (item.plan?.id) {
+//         imageUrl = memberImg
+//         iconClass = 'fas fa-crown'
+//         type = 'member'
+//       }
+
+//       return {
+//         ...item,
+//         iconClass,
+//         imageUrl,
+//         type,
+//       }
+//     })
+//   } catch (error) {
+//     console.error('載入優惠券失敗', error)
+//   }
+// })
 
 
 </script>
