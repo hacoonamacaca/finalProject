@@ -28,8 +28,8 @@ public class PromotionController {
 
     // 查全部（後台管理用，回傳 Entity）
     @GetMapping
-    public List<PromotionBean> findAll() {
-        return promotionService.findAll();
+    public List<PromotionDTO> findAll() {
+    	return promotionService.findAll().stream().map(promotionService::toDTO).toList(); // ✅
     }
     
     // 查單筆（回傳 DTO）
@@ -40,14 +40,14 @@ public class PromotionController {
 
     // 查某方案的優惠券
     @GetMapping("/plan/{planId}")
-    public List<PromotionBean> findByPlanId(@PathVariable Integer planId) {
-        return promotionService.findByPlanId(planId);
+    public List<PromotionDTO> findByPlanId(@PathVariable Integer planId) {
+        return promotionService.findByPlanId(planId).stream().map(promotionService::toDTO).toList(); // ✅
     }
 
     // 查某商店的優惠券
     @GetMapping("/store/{storeId}")
-    public List<PromotionBean> findByStoreId(@PathVariable Integer storeId) {
-        return promotionService.findByStoreId(storeId);
+    public List<PromotionDTO> findByStoreId(@PathVariable Integer storeId) {
+        return promotionService.findByStoreId(storeId).stream().map(promotionService::toDTO).toList(); // ✅
     }
 
     // 新增優惠券
@@ -58,8 +58,9 @@ public class PromotionController {
 
     // 修改優惠券
     @PutMapping("/{id}")
-    public PromotionBean update(@PathVariable Integer id, @RequestBody PromotionBean newData) {
-        return promotionService.update(id, newData);
+    public PromotionDTO update(@PathVariable Integer id, @RequestBody PromotionBean newData) {
+        PromotionBean updated = promotionService.update(id, newData);
+        return promotionService.toDTO(updated); // ⭐ 將更新後的 Entity 轉成 DTO 回傳
     }
 
     // 刪除優惠券
@@ -100,7 +101,5 @@ public class PromotionController {
     public List<PromotionDTO> findByType(@RequestParam String type) {
         return promotionService.findByType(type);
     }
-
-
 }
 

@@ -23,10 +23,10 @@ public interface PromotionRepository extends JpaRepository<PromotionBean, Intege
     @Query("""
         SELECT p
         FROM PromotionBean p
-        WHERE p.status = 'active'
-          AND CURRENT_TIMESTAMP BETWEEN p.startTime AND p.endTime
-          AND p.minSpend <= :amount
-          AND (p.store IS NULL OR p.store.id = :storeId)
+        WHERE p.status = 'active'             
+          AND CURRENT_TIMESTAMP BETWEEN p.startTime AND p.endTime 
+          AND p.minSpend <= :amount           
+          AND (p.store IS NULL OR p.store.id = :storeId)           
           AND (
             p.plan IS NULL OR EXISTS (
               SELECT 1 FROM SubRecordBean sr

@@ -2,7 +2,8 @@
   <div class="container my-5">
     <h2>結帳頁</h2>
 
-    <button class="btn btn-primary mb-3" @click="show = true">
+    <!-- <button class="btn btn-primary mb-3" @click="show = true"> -->
+    <button class="btn btn-primary mb-3" @click="openCouponModal()">
       選擇優惠券
     </button>
 
@@ -19,7 +20,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+
+// 💡 模擬登入使用者與購物車商店
+const currentUser = { id: 2 }
+const currentStore = { id: 3 }
+
+import { ref } from 'vue'
 import axios from '@/plungins/axios.js'
 import CouponSelectorModal from '@/components/Yifan/CouponSelectorModal.vue'
 import globalImg from '@/assets/vouchers/global.png'
@@ -100,11 +106,17 @@ const cartAmount = ref(500)
 // 優惠券列表（從後端載入）
 const promotionList = ref([])
 
-// 載入優惠券資料
-const loadPromotions = async () => {
+
+const openCouponModal = async () => {
   try {
-    const response = await axios.get('/promotions')
-    // 如果需要補上 image/icon，可以在這邊轉換資料格式
+    const response = await axios.get('/promotions/available', {
+  params: {
+    userId: currentUser.id,
+    storeId: currentStore.id,
+    amount: cartAmount.value
+  }
+})
+
     promotionList.value = response.data.map(item => {
       let imageUrl = globalImg
       let iconClass = 'fas fa-globe'
@@ -131,14 +143,14 @@ const loadPromotions = async () => {
         type
       }
     })
+
+    show.value = true
   } catch (error) {
-    console.error('載入優惠券失敗', error)
+    console.error('載入結帳可用優惠券失敗', error)
   }
 }
 
-onMounted(() => {
-  loadPromotions()
-})
+
 
 const handleSelected = (promotion) => {
   selected.value = promotion
