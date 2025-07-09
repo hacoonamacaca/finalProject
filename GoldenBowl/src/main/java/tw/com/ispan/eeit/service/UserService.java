@@ -30,7 +30,8 @@ public class UserService {
 
     // 新增會員
     public UserBean createUser(UserBean user) {
-        // 設定創建日期和最後登入日期
+    	System.out.println("[DEBUG] 註冊參數：" + user);
+    	// 設定創建日期和最後登入日期
         user.setSignupDate(LocalDateTime.now());
         user.setLastLogin(LocalDateTime.now());
         // 預設 active 和 verify 狀態
@@ -129,6 +130,7 @@ public class UserService {
         user.setSignupDate(dto.getSignupDate());
         user.setLastLogin(dto.getLastLogin());
         user.setHideUntil(dto.getHideUntil());
+        user.setPassword(dto.getPassword());
         return user;
     }
 }

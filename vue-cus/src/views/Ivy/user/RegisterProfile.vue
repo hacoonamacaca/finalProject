@@ -114,6 +114,9 @@ const fullName = ref('')
 const password = ref('')
 const showPassword = ref(false)
 
+const message = ref('')
+const messageType = ref('Info')
+
 // 密碼規則檢查
 const hasLen = computed(() => password.value.length >= 8)
 const hasLower = computed(() => /[a-z]/.test(password.value))
@@ -140,19 +143,16 @@ function togglePassword() {
 async function onSubmit() {
     if(!canSubmit.value) return
     try {
-        // 送出註冊資料到後端
-        const res = await axios.post('api/users/register', {
-            fullName: fullName.value.trim(),
+        const res = await axios.post('/api/users', {
+            name: fullName.value.trim(), // 和後端 UserDTO 欄位一致
             email: email.value,
             password: password.value
         })
-        // 假設後端成功回傳
-        // 可以把資料寫進LocalStorage
         localStorage.setItem('userFullName', fullName.value.trim())
         localStorage.setItem('userEmail', email.value)
         router.push('/search')
     } catch (e) {
-        message.value = e.response?.data || '註冊失敗，請稍後再試'
+        message.value = e.response?.data?.message || '註冊失敗，請稍後再試'
         messageType.value = 'error'
     }
 }
