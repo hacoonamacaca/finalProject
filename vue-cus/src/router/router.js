@@ -121,6 +121,11 @@ const routes = [{
     name: 'TagCategoryManager',
     component: TagCategoryManager
 },
+{
+    path: '/store',
+    name: 'StoreHome',
+    component: () => import('@/views/store/StoreHome.vue')
+}
 ];
 
 const router = createRouter({

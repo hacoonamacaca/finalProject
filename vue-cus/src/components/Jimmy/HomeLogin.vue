@@ -10,7 +10,7 @@
         <div class="dropdown-menu" v-if="showDropdown">
             <ul>
                 <li @click="step = 'register'">會員*</li>
-                <li @click="navigateTo('store')">餐廳方*</li>
+                <li @click="toStore">餐廳方*</li>
                 <li @click="navigateTo('admin')">管理者*</li>
                 <li @click="logout">登出</li>
             </ul>
@@ -203,6 +203,11 @@ watch(isLoggedIn, (newValue) => {
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);
 });
+
+function toStore() {
+    router.push('/store')
+}
+
 </script>
 
 <style scoped>
