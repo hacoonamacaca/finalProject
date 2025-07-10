@@ -22,7 +22,7 @@ import tw.com.ispan.eeit.service.store.SpecialHoursService;
 import tw.com.ispan.eeit.service.store.SpecialHoursService.SpecialHoursSummary;
 
 @RestController
-@RequestMapping("/api/stores/{storeId}/special-hours")
+@RequestMapping("/api/stores/{storeId}/special")
 public class SpecialHoursController {
 
     @Autowired
@@ -30,7 +30,6 @@ public class SpecialHoursController {
 
     /**
      * 設定特殊休假日
-     * POST /api/stores/1/special-hours/holiday?date=2024-01-15&reason=國定假日
      */
     @PostMapping("/holiday")
     public ResponseEntity<SpecialHoursBean> setSpecialHoliday(
@@ -48,8 +47,6 @@ public class SpecialHoursController {
 
     /**
      * 設定特殊營業時間
-     * POST
-     * /api/stores/1/special-hours/business?date=2024-01-15&openTime=10:00&closeTime=22:00&reason=延長營業
      */
     @PostMapping("/business")
     public ResponseEntity<SpecialHoursBean> setSpecialBusinessHours(
@@ -70,8 +67,6 @@ public class SpecialHoursController {
 
     /**
      * 批量設定特殊休假日
-     * POST
-     * /api/stores/1/special-hours/holidays?dates=2024-01-15,2024-01-16,2024-01-17&reason=連續假期
      */
     @PostMapping("/holidays")
     public ResponseEntity<List<SpecialHoursBean>> setMultipleHolidays(
@@ -92,7 +87,6 @@ public class SpecialHoursController {
 
     /**
      * 查詢餐廳所有特殊設定
-     * GET /api/stores/1/special-hours
      */
     @GetMapping
     public ResponseEntity<List<SpecialHoursBean>> getStoreSpecialHours(@PathVariable Integer storeId) {
@@ -102,7 +96,6 @@ public class SpecialHoursController {
 
     /**
      * 查詢日期範圍內的特殊設定
-     * GET /api/stores/1/special-hours/range?startDate=2024-01-01&endDate=2024-01-31
      */
     @GetMapping("/range")
     public ResponseEntity<List<SpecialHoursBean>> getSpecialHoursByDateRange(
@@ -117,12 +110,11 @@ public class SpecialHoursController {
 
     /**
      * 查詢特定日期的特殊設定
-     * GET /api/stores/1/special-hours/date?date=2024-01-15
      */
-    @GetMapping("/date")
+    @GetMapping("/{date}")
     public ResponseEntity<SpecialHoursBean> getSpecialHoursByDate(
             @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         Optional<SpecialHoursBean> specialHours = specialHoursService.getSpecialHoursByDate(storeId, date);
         return specialHours.map(ResponseEntity::ok)
@@ -131,12 +123,11 @@ public class SpecialHoursController {
 
     /**
      * 取消特殊設定
-     * DELETE /api/stores/1/special-hours/date?date=2024-01-15
      */
-    @DeleteMapping("/date")
+    @DeleteMapping("/{date}")
     public ResponseEntity<String> cancelSpecialSetting(
             @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         boolean success = specialHoursService.cancelSpecialSetting(storeId, date);
         if (success) {
@@ -148,12 +139,11 @@ public class SpecialHoursController {
 
     /**
      * 檢查是否為特殊休假日
-     * GET /api/stores/1/special-hours/is-holiday?date=2024-01-15
      */
-    @GetMapping("/is-holiday")
+    @GetMapping("/holiday/{date}")
     public ResponseEntity<Boolean> isSpecialHoliday(
             @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         boolean isHoliday = specialHoursService.isSpecialHoliday(storeId, date);
         return ResponseEntity.ok(isHoliday);
@@ -161,12 +151,11 @@ public class SpecialHoursController {
 
     /**
      * 檢查是否有特殊營業時間
-     * GET /api/stores/1/special-hours/has-special-business?date=2024-01-15
      */
-    @GetMapping("/has-special-business")
+    @GetMapping("/business/{date}")
     public ResponseEntity<Boolean> hasSpecialBusinessHours(
             @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         boolean hasSpecial = specialHoursService.hasSpecialBusinessHours(storeId, date);
         return ResponseEntity.ok(hasSpecial);
@@ -174,8 +163,6 @@ public class SpecialHoursController {
 
     /**
      * 取得特殊設定摘要
-     * GET
-     * /api/stores/1/special-hours/summary?startDate=2024-01-01&endDate=2024-01-31
      */
     @GetMapping("/summary")
     public ResponseEntity<SpecialHoursSummary> getSpecialHoursSummary(

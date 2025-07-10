@@ -3,6 +3,7 @@ package tw.com.ispan.eeit.controller.reservation;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,22 +20,23 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
+import tw.com.ispan.eeit.model.dto.reservation.TimeSlotSimpleDTO;
 import tw.com.ispan.eeit.service.reservation.ReservationService;
 
 @RestController
-@RequestMapping("/api/stores/{storeId}/time-slots")
+@RequestMapping("/api/stores/{storeId}/timeslots")
 public class TimeSlotController {
 
     @Autowired
     private ReservationService reservationService;
 
     /**
-     * 取得餐廳的所有可用時段（簡化版本，只包含必要資訊）
+     * 取得餐廳的所有可用時段
      */
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getStoreTimeSlots(@PathVariable Integer storeId) {
+    public ResponseEntity<List<TimeSlotSimpleDTO>> getTimeSlots(@PathVariable Integer storeId) {
         try {
-            List<Map<String, Object>> timeSlots = reservationService.getAvailableTimeSlotsSimple(storeId);
+            List<TimeSlotSimpleDTO> timeSlots = reservationService.getAvailableTimeSlotsSimple(storeId);
             return ResponseEntity.ok(timeSlots);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -42,14 +44,14 @@ public class TimeSlotController {
     }
 
     /**
-     * 取得餐廳在特定日期的可用時段
+     * 取得特定日期的可用時段
      */
-    @GetMapping("/date")
-    public ResponseEntity<List<TimeSlot>> getTimeSlotsByDate(
+    @GetMapping("/date/{date}")
+    public ResponseEntity<List<TimeSlotSimpleDTO>> getTimeSlotsByDate(
             @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         try {
-            List<TimeSlot> timeSlots = reservationService.getAvailableTimeSlotsByDate(storeId, date);
+            List<TimeSlotSimpleDTO> timeSlots = reservationService.getAvailableTimeSlotsByDate(storeId, date);
             return ResponseEntity.ok(timeSlots);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -57,15 +59,15 @@ public class TimeSlotController {
     }
 
     /**
-     * 取得餐廳在日期範圍內的可用時段
+     * 取得日期範圍內的可用時段
      */
-    @GetMapping("/date-range")
-    public ResponseEntity<List<TimeSlot>> getTimeSlotsByDateRange(
+    @GetMapping("/range")
+    public ResponseEntity<List<TimeSlotSimpleDTO>> getTimeSlotsByDateRange(
             @PathVariable Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
         try {
-            List<TimeSlot> timeSlots = reservationService.getTimeSlotsByDateRange(storeId, startDate, endDate);
+            List<TimeSlotSimpleDTO> timeSlots = reservationService.getTimeSlotsByDateRange(storeId, startDate, endDate);
             return ResponseEntity.ok(timeSlots);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -76,15 +78,30 @@ public class TimeSlotController {
      * 新增時段
      */
     @PostMapping
-    public ResponseEntity<TimeSlot> addTimeSlot(
+    public ResponseEntity<TimeSlotSimpleDTO> addTimeSlot(
             @PathVariable Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day,
             @RequestParam String startTime,
             @RequestParam String endTime,
             @RequestParam(defaultValue = "true") Boolean isActive) {
         try {
-            TimeSlot timeSlot = reservationService.addTimeSlot(storeId, day, startTime, endTime, isActive);
+            TimeSlotSimpleDTO timeSlot = reservationService.addTimeSlot(storeId, day, startTime, endTime, isActive);
             return ResponseEntity.status(HttpStatus.CREATED).body(timeSlot);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * 取得時段詳情
+     */
+    @GetMapping("/{timeSlotId}")
+    public ResponseEntity<TimeSlotSimpleDTO> getTimeSlotById(
+            @PathVariable Integer storeId,
+            @PathVariable Integer timeSlotId) {
+        try {
+            TimeSlotSimpleDTO timeSlot = reservationService.getTimeSlotById(timeSlotId);
+            return ResponseEntity.ok(timeSlot);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
@@ -94,14 +111,14 @@ public class TimeSlotController {
      * 更新時段
      */
     @PutMapping("/{timeSlotId}")
-    public ResponseEntity<TimeSlot> updateTimeSlot(
+    public ResponseEntity<TimeSlotSimpleDTO> updateTimeSlot(
             @PathVariable Integer storeId,
             @PathVariable Integer timeSlotId,
             @RequestParam(required = false) String startTime,
             @RequestParam(required = false) String endTime,
             @RequestParam(required = false) Boolean isActive) {
         try {
-            TimeSlot timeSlot = reservationService.updateTimeSlot(timeSlotId, startTime, endTime, isActive);
+            TimeSlotSimpleDTO timeSlot = reservationService.updateTimeSlot(timeSlotId, startTime, endTime, isActive);
             return ResponseEntity.ok(timeSlot);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -118,21 +135,6 @@ public class TimeSlotController {
         try {
             reservationService.deleteTimeSlot(timeSlotId);
             return ResponseEntity.noContent().build();
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    /**
-     * 取得時段詳情
-     */
-    @GetMapping("/{timeSlotId}")
-    public ResponseEntity<TimeSlot> getTimeSlotById(
-            @PathVariable Integer storeId,
-            @PathVariable Integer timeSlotId) {
-        try {
-            TimeSlot timeSlot = reservationService.getTimeSlotById(timeSlotId);
-            return ResponseEntity.ok(timeSlot);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
@@ -159,10 +161,10 @@ public class TimeSlotController {
     /**
      * 停用特定日期的時段
      */
-    @PutMapping("/disable-date")
+    @PutMapping("/disable/{date}")
     public ResponseEntity<String> disableTimeSlotsByDate(
             @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         try {
             int disabledCount = reservationService.disableTimeSlotsByDate(storeId, date);
             return ResponseEntity.ok("成功停用 " + disabledCount + " 個時段");
@@ -174,15 +176,37 @@ public class TimeSlotController {
     /**
      * 啟用特定日期的時段
      */
-    @PutMapping("/enable-date")
+    @PutMapping("/enable/{date}")
     public ResponseEntity<String> enableTimeSlotsByDate(
             @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         try {
             int enabledCount = reservationService.enableTimeSlotsByDate(storeId, date);
             return ResponseEntity.ok("成功啟用 " + enabledCount + " 個時段");
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * 測試 CONVERT 函數功能
+     */
+    @GetMapping("/test-convert")
+    public ResponseEntity<Map<String, Object>> testConvertFunctions(
+            @PathVariable Integer storeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        try {
+            if (date == null) {
+                date = LocalDate.now();
+            }
+
+            Map<String, Object> testResults = reservationService.testConvertFunctions(storeId, date);
+            return ResponseEntity.ok(testResults);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "測試 CONVERT 函數時發生錯誤: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 }

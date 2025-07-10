@@ -1,0 +1,1449 @@
+{
+	"info": {
+		"_postman_id": "golden-bowl-api-collection",
+		"name": "Golden Bowl Restaurant API Collection",
+		"description": "Complete API collection for Golden Bowl restaurant reservation system with CONVERT function optimizations",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "golden-bowl-2024"
+	},
+	"item": [
+		{
+			"name": "Reservations",
+			"item": [
+				{
+					"name": "Create Reservation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"storeId\": 1,\n  \"reservedDate\": \"2024-01-15\",\n  \"reservedTime\": \"18:30\",\n  \"guests\": 4,\n  \"duration\": 120,\n  \"content\": \"生日聚餐\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations"
+							]
+						}
+					}
+				},
+				{
+					"name": "Cancel Reservation",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/1?userId=1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"1"
+							],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Reservation Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"CONFIRMED\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/1/status",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"1",
+								"status"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User Reservations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/user/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"user",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Store Reservations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/store/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"store",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/availability?storeId=1&date=2024-01-15&time=18:30&guests=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"availability"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								},
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "time",
+									"value": "18:30"
+								},
+								{
+									"key": "guests",
+									"value": "4"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Available Tables",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/reservations/tables?storeId=1&minSeats=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"reservations",
+								"tables"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								},
+								{
+									"key": "minSeats",
+									"value": "4"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Booking Availability",
+			"item": [
+				{
+					"name": "Check Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/booking/check?storeId=1&date=2024-01-15&time=18:30&guests=4&duration=120",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"booking",
+								"check"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								},
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "time",
+									"value": "18:30"
+								},
+								{
+									"key": "guests",
+									"value": "4"
+								},
+								{
+									"key": "duration",
+									"value": "120"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Batch Check Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/booking/batch-check?storeId=1&date=2024-01-15&times=18:00,18:30,19:00&guests=4&duration=120",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"booking",
+								"batch-check"
+							],
+							"query": [
+								{
+									"key": "storeId",
+									"value": "1"
+								},
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "times",
+									"value": "18:00,18:30,19:00"
+								},
+								{
+									"key": "guests",
+									"value": "4"
+								},
+								{
+									"key": "duration",
+									"value": "120"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Available Time Slots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/booking/slots/1?date=2024-01-15&guests=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"booking",
+								"slots",
+								"1"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "guests",
+									"value": "4"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Time Slots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/booking/all-slots/1?date=2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"booking",
+								"all-slots",
+								"1"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Store Management",
+			"item": [
+				{
+					"name": "Search Stores",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/search?keyword=火鍋&category=中式&isOpen=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"search"
+							],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "火鍋"
+								},
+								{
+									"key": "category",
+									"value": "中式"
+								},
+								{
+									"key": "isOpen",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Store Info",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Store Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/availability?date=2024-01-15&time=18:30&guests=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"availability"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "time",
+									"value": "18:30"
+								},
+								{
+									"key": "guests",
+									"value": "4"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Store Reservation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"reservedDate\": \"2024-01-15\",\n  \"reservedTime\": \"18:30\",\n  \"guests\": 4,\n  \"duration\": 120,\n  \"content\": \"商務聚餐\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/reservations",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"reservations"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Store Stats",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/stats",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"stats"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Time Slots Management",
+			"item": [
+				{
+					"name": "Get Store Time Slots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Time Slots by Date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/date/2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"date",
+								"2024-01-15"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Time Slots by Date Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/range?startDate=2024-01-15&endDate=2024-01-20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"range"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-01-20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Time Slot",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots?day=2024-01-15&startTime=18:00&endTime=18:30&isActive=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots"
+							],
+							"query": [
+								{
+									"key": "day",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "startTime",
+									"value": "18:00"
+								},
+								{
+									"key": "endTime",
+									"value": "18:30"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Time Slot Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Time Slot",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/1?startTime=18:00&endTime=18:30&isActive=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"1"
+							],
+							"query": [
+								{
+									"key": "startTime",
+									"value": "18:00"
+								},
+								{
+									"key": "endTime",
+									"value": "18:30"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Time Slot",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Generate Time Slots",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/generate?daysAhead=30",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"generate"
+							],
+							"query": [
+								{
+									"key": "daysAhead",
+									"value": "30"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Disable Time Slots by Date",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/disable/2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"disable",
+								"2024-01-15"
+							]
+						}
+					}
+				},
+				{
+					"name": "Enable Time Slots by Date",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/enable/2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"enable",
+								"2024-01-15"
+							]
+						}
+					}
+				},
+				{
+					"name": "Test CONVERT Functions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/timeslots/test-convert?date=2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"timeslots",
+								"test-convert"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Table Management",
+			"item": [
+				{
+					"name": "Get Store Tables",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/tables",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"tables"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Available Tables",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/tables/available?startTime=2024-01-15T18:30:00&duration=120&minSeats=4",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"tables",
+								"available"
+							],
+							"query": [
+								{
+									"key": "startTime",
+									"value": "2024-01-15T18:30:00"
+								},
+								{
+									"key": "duration",
+									"value": "120"
+								},
+								{
+									"key": "minSeats",
+									"value": "4"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Add Table",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/tables?seats=4&quantity=1&status=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"tables"
+							],
+							"query": [
+								{
+									"key": "seats",
+									"value": "4"
+								},
+								{
+									"key": "quantity",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Table Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/tables/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"tables",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Table",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/tables/1?seats=6&quantity=1&status=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"tables",
+								"1"
+							],
+							"query": [
+								{
+									"key": "seats",
+									"value": "6"
+								},
+								{
+									"key": "quantity",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Table",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/tables/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"tables",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Table Availability",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/tables/1/availability?startTime=2024-01-15T18:30:00&duration=120",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"tables",
+								"1",
+								"availability"
+							],
+							"query": [
+								{
+									"key": "startTime",
+									"value": "2024-01-15T18:30:00"
+								},
+								{
+									"key": "duration",
+									"value": "120"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Store Hours Management",
+			"item": [
+				{
+					"name": "Get Store Hours",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Hours by Day",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours/MONDAY",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours",
+								"MONDAY"
+							]
+						}
+					}
+				},
+				{
+					"name": "Set Store Hours",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours?day=MONDAY&openTime=09:00&closeTime=22:00&isOpen=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours"
+							],
+							"query": [
+								{
+									"key": "day",
+									"value": "MONDAY"
+								},
+								{
+									"key": "openTime",
+									"value": "09:00"
+								},
+								{
+									"key": "closeTime",
+									"value": "22:00"
+								},
+								{
+									"key": "isOpen",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Store Hours",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours/1?openTime=10:00&closeTime=23:00&isOpen=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours",
+								"1"
+							],
+							"query": [
+								{
+									"key": "openTime",
+									"value": "10:00"
+								},
+								{
+									"key": "closeTime",
+									"value": "23:00"
+								},
+								{
+									"key": "isOpen",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Store Hours",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Set Default Hours",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours/default",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours",
+								"default"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Store Open",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours/check?day=MONDAY&time=18:30",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours",
+								"check"
+							],
+							"query": [
+								{
+									"key": "day",
+									"value": "MONDAY"
+								},
+								{
+									"key": "time",
+									"value": "18:30"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Store Open by Date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/hours/check/2024-01-15?time=18:30",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"hours",
+								"check",
+								"2024-01-15"
+							],
+							"query": [
+								{
+									"key": "time",
+									"value": "18:30"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Special Hours Management",
+			"item": [
+				{
+					"name": "Get Special Hours",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special"
+							]
+						}
+					}
+				},
+				{
+					"name": "Set Special Holiday",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/holiday?date=2024-01-15&reason=國定假日",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"holiday"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "reason",
+									"value": "國定假日"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Set Special Business Hours",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/business?date=2024-01-15&openTime=10:00&closeTime=22:00&reason=延長營業",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"business"
+							],
+							"query": [
+								{
+									"key": "date",
+									"value": "2024-01-15"
+								},
+								{
+									"key": "openTime",
+									"value": "10:00"
+								},
+								{
+									"key": "closeTime",
+									"value": "22:00"
+								},
+								{
+									"key": "reason",
+									"value": "延長營業"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Set Multiple Holidays",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/holidays?dates=2024-01-15,2024-01-16,2024-01-17&reason=連續假期",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"holidays"
+							],
+							"query": [
+								{
+									"key": "dates",
+									"value": "2024-01-15,2024-01-16,2024-01-17"
+								},
+								{
+									"key": "reason",
+									"value": "連續假期"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Special Hours by Date Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/range?startDate=2024-01-01&endDate=2024-01-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"range"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-01-31"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Special Hours by Date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"2024-01-15"
+							]
+						}
+					}
+				},
+				{
+					"name": "Cancel Special Setting",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"2024-01-15"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Special Holiday",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/holiday/2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"holiday",
+								"2024-01-15"
+							]
+						}
+					}
+				},
+				{
+					"name": "Check Special Business Hours",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/business/2024-01-15",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"business",
+								"2024-01-15"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Special Hours Summary",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/stores/1/special/summary?startDate=2024-01-01&endDate=2024-01-31",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"stores",
+								"1",
+								"special",
+								"summary"
+							],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-01-31"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+} 

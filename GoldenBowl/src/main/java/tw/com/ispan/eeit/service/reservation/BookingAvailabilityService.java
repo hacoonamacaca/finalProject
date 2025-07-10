@@ -121,47 +121,36 @@ public class BookingAvailabilityService {
     }
 
     /**
-     * 檢查特殊營業時間
+     * 檢查特殊營業時間 - 使用 CONVERT 函數優化
      */
     private BookingAvailabilityResult checkSpecialHours(Integer storeId, LocalDate date, LocalTime time) {
         BookingAvailabilityResult result = new BookingAvailabilityResult();
         result.setAvailable(true);
 
-        Optional<SpecialHoursBean> specialHoursOpt = specialHoursRepository.findByStoreIdAndDate(storeId, date);
+        // 檢查是否為特殊休假日
+        Integer isHoliday = specialHoursRepository.isSpecialHolidayAtDate(storeId, date);
+        if (isHoliday != null && isHoliday > 0) {
+            result.setAvailable(false);
+            result.setReason("特殊休假日");
+            return result;
+        }
 
+        // 檢查是否有特殊營業時間
+        Integer hasSpecialHours = specialHoursRepository.hasSpecialHoursAtTime(storeId, date, time);
+        if (hasSpecialHours != null && hasSpecialHours > 0) {
+            result.setAvailable(true);
+            return result;
+        }
+
+        // 如果有特殊營業時間設定但不在時間範圍內
+        Optional<SpecialHoursBean> specialHoursOpt = specialHoursRepository.findByStoreIdAndDate(storeId, date);
         if (specialHoursOpt.isPresent()) {
             SpecialHoursBean specialHours = specialHoursOpt.get();
-
-            // 檢查是否為特殊休假日
-            if (specialHours.getIsClose()) {
+            if (!specialHours.getIsClose() && specialHours.getOpenTime() != null
+                    && specialHours.getCloseTime() != null) {
                 result.setAvailable(false);
-                result.setReason("當日為特殊休假日");
+                result.setReason("不在特殊營業時間內");
                 return result;
-            }
-
-            // 檢查特殊營業時間
-            if (specialHours.getOpenTime() != null && specialHours.getCloseTime() != null) {
-                LocalTime openTime = specialHours.getOpenTime();
-                LocalTime closeTime = specialHours.getCloseTime();
-
-                // 處理跨日營業（如23:00-02:00）
-                if (closeTime.isBefore(openTime)) {
-                    // 跨日營業：時間必須 >= openTime 或 <= closeTime
-                    if (time.isBefore(openTime) && time.isAfter(closeTime)) {
-                        result.setAvailable(false);
-                        result.setReason("不在特殊營業時間內 (" + openTime + "-" + closeTime + ")");
-                        return result;
-                    }
-                } else {
-                    // 同日營業：時間必須在 openTime 和 closeTime 之間
-                    if (time.isBefore(openTime) || time.isAfter(closeTime.minusMinutes(1))) {
-                        result.setAvailable(false);
-                        result.setReason("不在特殊營業時間內 (" + openTime + "-" + closeTime + ")");
-                        return result;
-                    }
-                }
-
-                result.setReason("特殊營業日");
             }
         }
 
@@ -175,9 +164,9 @@ public class BookingAvailabilityService {
         BookingAvailabilityResult result = new BookingAvailabilityResult();
         result.setAvailable(false);
 
-        // 查找對應的時段（允許一些時間誤差）
-        List<TimeSlot> timeSlots = timeSlotRepository.findTimeSlotsByStoreAndDayAndTimeRange(
-                store, date, time, time.plusMinutes(1));
+        // 查找對應的時段（精確時間匹配）
+        List<TimeSlot> timeSlots = timeSlotRepository.findTimeSlotsByStoreAndDayAndExactTime(
+                store, date, time);
 
         if (timeSlots.isEmpty()) {
             result.setReason("該時間沒有開放預約時段");
@@ -195,7 +184,7 @@ public class BookingAvailabilityService {
     }
 
     /**
-     * 檢查桌位容量是否足夠
+     * 檢查桌位容量是否足夠 - 使用 CONVERT 函數優化
      */
     private BookingAvailabilityResult checkTableCapacity(
             Integer storeId, LocalDate date, LocalTime time, Integer guests, Integer duration) {
@@ -203,18 +192,15 @@ public class BookingAvailabilityService {
         BookingAvailabilityResult result = new BookingAvailabilityResult();
         result.setAvailable(false);
 
-        // 計算用餐時間段
-        LocalDateTime startTime = LocalDateTime.of(date, time);
-        LocalDateTime endTime = startTime.plusMinutes(duration != null ? duration : 120); // 預設2小時
+        // 計算用餐時間範圍
+        LocalTime endTime = time.plusMinutes(duration != null ? duration : 120);
 
-        // 查詢該時間段內已確認的預約
+        // 使用 CONVERT 函數查詢該時間段內已確認的預約
         List<ReservationBean> existingReservations = reservationRepository
-                .findConflictingReservations(storeId, date, startTime, endTime);
+                .findConflictingReservationsInTimeRange(storeId, date, time, endTime);
 
         // 計算已被預約的座位數
         int reservedSeats = existingReservations.stream()
-                .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED ||
-                        r.getStatus() == ReservationStatus.PENDING)
                 .mapToInt(ReservationBean::getGuests)
                 .sum();
 
@@ -247,7 +233,7 @@ public class BookingAvailabilityService {
     }
 
     /**
-     * 檢查正常營業時間
+     * 檢查正常營業時間 - 使用 CONVERT 函數優化
      */
     private BookingAvailabilityResult checkBusinessHours(Integer storeId, LocalDate date, LocalTime time) {
         BookingAvailabilityResult result = new BookingAvailabilityResult();
@@ -255,38 +241,17 @@ public class BookingAvailabilityService {
 
         // 取得該日期對應的星期幾
         java.time.DayOfWeek dayOfWeek = date.getDayOfWeek();
+        int dayValue = dayOfWeek.getValue(); // 1=Monday, 7=Sunday
 
-        // 查詢該餐廳該星期的營業時間
-        List<OpenHourBean> openHours = openHourRepository
-                .findByStoreIdAndDayOfWeek(storeId, dayOfWeek);
+        // 使用 CONVERT 函數檢查是否在營業時間內
+        Integer isOpen = openHourRepository.isStoreOpenAtTime(storeId, dayValue, time);
 
-        if (openHours.isEmpty()) {
-            result.setReason("該日餐廳不營業");
+        if (isOpen == null || isOpen == 0) {
+            result.setReason("不在營業時間內");
             return result;
         }
 
-        // 檢查時間是否在任何一個營業時段內
-        for (OpenHourBean openHour : openHours) {
-            LocalTime openTime = openHour.getOpenTime();
-            LocalTime closeTime = openHour.getCloseTime();
-
-            if (openTime != null && closeTime != null) {
-                // 處理跨日營業
-                if (closeTime.isBefore(openTime)) {
-                    if (time.compareTo(openTime) >= 0 || time.compareTo(closeTime) <= 0) {
-                        result.setAvailable(true);
-                        return result;
-                    }
-                } else {
-                    if (time.compareTo(openTime) >= 0 && time.compareTo(closeTime.minusMinutes(1)) <= 0) {
-                        result.setAvailable(true);
-                        return result;
-                    }
-                }
-            }
-        }
-
-        result.setReason("不在營業時間內");
+        result.setAvailable(true);
         return result;
     }
 

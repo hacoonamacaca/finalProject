@@ -22,7 +22,7 @@ import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.service.store.OpenHourService;
 
 @RestController
-@RequestMapping("/api/stores/{storeId}/open-hours")
+@RequestMapping("/api/stores/{storeId}/hours")
 public class OpenHourController {
 
     @Autowired
@@ -128,7 +128,7 @@ public class OpenHourController {
     }
 
     /**
-     * 檢查餐廳在指定時間是否營業（使用當前日期）
+     * 檢查餐廳在指定時間是否營業
      */
     @GetMapping("/check")
     public ResponseEntity<Boolean> isStoreOpen(
@@ -145,12 +145,12 @@ public class OpenHourController {
     }
 
     /**
-     * 檢查餐廳在指定日期和時間是否營業（包含特殊營業時間判定）
+     * 檢查餐廳在指定日期和時間是否營業
      */
-    @GetMapping("/check-date")
+    @GetMapping("/check/{date}")
     public ResponseEntity<Boolean> isStoreOpenByDate(
             @PathVariable Integer storeId,
-            @RequestParam String date,
+            @PathVariable String date,
             @RequestParam String time) {
         try {
             LocalDate localDate = LocalDate.parse(date);

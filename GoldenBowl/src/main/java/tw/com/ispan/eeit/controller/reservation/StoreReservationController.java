@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import tw.com.ispan.eeit.service.reservation.StoreReservationIntegrationService;
 
 @RestController
-@RequestMapping("/api/integration")
+@RequestMapping("/api/store-reservations")
 @CrossOrigin(origins = "*")
 public class StoreReservationController {
 
@@ -19,9 +19,20 @@ public class StoreReservationController {
     private StoreReservationIntegrationService integrationService;
 
     /**
+     * 搜尋餐廳
+     */
+    @GetMapping("/search")
+    public Map<String, Object> searchStores(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) Boolean isOpen) {
+        return integrationService.searchStores(keyword, category, isOpen);
+    }
+
+    /**
      * 獲取餐廳完整資訊
      */
-    @GetMapping("/store/{storeId}")
+    @GetMapping("/{storeId}")
     public Map<String, Object> getStoreInfo(@PathVariable Integer storeId) {
         return integrationService.getStoreWithReservationInfo(storeId);
     }
@@ -29,7 +40,7 @@ public class StoreReservationController {
     /**
      * 檢查餐廳可用性
      */
-    @GetMapping("/store/{storeId}/availability")
+    @GetMapping("/{storeId}/availability")
     public Map<String, Object> checkAvailability(
             @PathVariable Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -41,11 +52,12 @@ public class StoreReservationController {
     /**
      * 創建訂位（整合版本）
      */
-    @PostMapping("/reservation/create")
-    public Map<String, Object> createReservation(@RequestBody Map<String, Object> request) {
+    @PostMapping("/{storeId}/reservations")
+    public Map<String, Object> createReservation(
+            @PathVariable Integer storeId,
+            @RequestBody Map<String, Object> request) {
         try {
             Integer userId = Integer.parseInt(request.get("userId").toString());
-            Integer storeId = Integer.parseInt(request.get("storeId").toString());
             LocalDate reservedDate = LocalDate.parse(request.get("reservedDate").toString());
             LocalTime reservedTime = LocalTime.parse(request.get("reservedTime").toString());
             Integer guests = Integer.parseInt(request.get("guests").toString());
@@ -62,19 +74,8 @@ public class StoreReservationController {
     /**
      * 獲取餐廳訂位統計
      */
-    @GetMapping("/store/{storeId}/stats")
+    @GetMapping("/{storeId}/stats")
     public Map<String, Object> getStoreStats(@PathVariable Integer storeId) {
         return integrationService.getStoreReservationStats(storeId);
-    }
-
-    /**
-     * 搜尋餐廳
-     */
-    @GetMapping("/search")
-    public Map<String, Object> searchStores(
-            @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) Boolean isOpen) {
-        return integrationService.searchStores(keyword, category, isOpen);
     }
 }

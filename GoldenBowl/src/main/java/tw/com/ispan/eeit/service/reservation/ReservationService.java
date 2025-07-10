@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,6 +34,7 @@ import tw.com.ispan.eeit.repository.store.StoreRepository;
 import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.repository.store.SpecialHoursRepository;
 import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService.BookingAvailabilityResult;
+import tw.com.ispan.eeit.model.dto.reservation.TimeSlotSimpleDTO;
 
 @Service
 public class ReservationService {
@@ -243,39 +245,50 @@ public class ReservationService {
         return conflictingReservations.isEmpty();
     }
 
-    // 新增方法：取得可用時段
-    public List<TimeSlot> getAvailableTimeSlots(Integer storeId) {
-        StoreBean store = storeRepository.findById(storeId).orElse(null);
-        if (store == null) {
-            return new ArrayList<>();
-        }
-
-        // 查詢餐廳所有啟用的時段
-        return timeSlotRepository.findAvailableTimeSlotsByStore(store);
-    }
-
-    // 新增方法：取得簡化的時段資料
-    public List<Map<String, Object>> getAvailableTimeSlotsSimple(Integer storeId) {
+    // 新增方法：取得可用時段 - 使用 DTO
+    public List<TimeSlotSimpleDTO> getAvailableTimeSlots(Integer storeId) {
         StoreBean store = storeRepository.findById(storeId).orElse(null);
         if (store == null) {
             return new ArrayList<>();
         }
 
         List<TimeSlot> timeSlots = timeSlotRepository.findAvailableTimeSlotsByStore(store);
+        return convertToTimeSlotSimpleDTO(timeSlots, storeId);
+    }
 
+    // 新增方法：取得簡化的時段資料 - 使用 DTO
+    public List<TimeSlotSimpleDTO> getAvailableTimeSlotsSimple(Integer storeId) {
+        StoreBean store = storeRepository.findById(storeId).orElse(null);
+        if (store == null) {
+            return new ArrayList<>();
+        }
+
+        List<TimeSlot> timeSlots = timeSlotRepository.findAvailableTimeSlotsByStore(store);
+        return convertToTimeSlotSimpleDTO(timeSlots, storeId);
+    }
+
+    // 工具方法：轉換 TimeSlot 為 TimeSlotSimpleDTO
+    private List<TimeSlotSimpleDTO> convertToTimeSlotSimpleDTO(List<TimeSlot> timeSlots, Integer storeId) {
         return timeSlots.stream()
-                .map(slot -> {
-                    Map<String, Object> simpleSlot = new HashMap<>();
-                    simpleSlot.put("id", slot.getId());
-                    simpleSlot.put("storeId", store.getId());
-                    simpleSlot.put("storeName", store.getName());
-                    simpleSlot.put("day", slot.getDay());
-                    simpleSlot.put("startTime", slot.getStartTime());
-                    simpleSlot.put("endTime", slot.getEndTime());
-                    simpleSlot.put("isActive", slot.getIsActive());
-                    return simpleSlot;
-                })
+                .map(slot -> new TimeSlotSimpleDTO(
+                        slot.getId(),
+                        storeId,
+                        slot.getDay(),
+                        slot.getStartTime(),
+                        slot.getEndTime(),
+                        slot.getIsActive()))
                 .toList();
+    }
+
+    // 工具方法：轉換單個 TimeSlot 為 TimeSlotSimpleDTO
+    private TimeSlotSimpleDTO convertToTimeSlotSimpleDTO(TimeSlot timeSlot, Integer storeId) {
+        return new TimeSlotSimpleDTO(
+                timeSlot.getId(),
+                storeId,
+                timeSlot.getDay(),
+                timeSlot.getStartTime(),
+                timeSlot.getEndTime(),
+                timeSlot.getIsActive());
     }
 
     // 新增方法：創建訂位（重載版本）
@@ -393,12 +406,118 @@ public class ReservationService {
         generateTimeSlotsForRange(store, date, openTime, closeTime, intervalMinutes);
     }
 
+    /**
+     * 檢查時段是否可預約（使用 CONVERT 函數優化）
+     */
+    public boolean isTimeSlotBookableWithConvert(Integer storeId, LocalDate date, LocalTime time, Integer guests) {
+        // 使用 CONVERT 函數檢查是否有預約衝突
+        Integer hasConflict = reservationRepository.hasReservationAtTime(storeId, date, time);
+
+        if (hasConflict != null && hasConflict > 0) {
+            return false;
+        }
+
+        // 檢查座位容量（使用 CONVERT 函數）
+        Integer totalGuests = reservationRepository.sumGuestsInTimeRange(storeId, date, time, time.plusMinutes(120));
+
+        // 這裡可以添加座位容量檢查邏輯
+        return true;
+    }
+
+    /**
+     * 使用 CONVERT 函數獲取時段統計資訊
+     */
+    public Map<String, Object> getTimeSlotStatisticsWithConvert(Integer storeId, LocalDate date, LocalTime startTime,
+            LocalTime endTime) {
+        Map<String, Object> stats = new HashMap<>();
+
+        // 統計預約數量
+        Integer reservationCount = reservationRepository.countReservationsInTimeRange(storeId, date, startTime,
+                endTime);
+        stats.put("reservationCount", reservationCount);
+
+        // 統計總客人數
+        Integer totalGuests = reservationRepository.sumGuestsInTimeRange(storeId, date, startTime, endTime);
+        stats.put("totalGuests", totalGuests);
+
+        // 查詢該時段的預約列表
+        List<ReservationBean> reservations = reservationRepository.findConflictingReservationsInTimeRange(storeId, date,
+                startTime, endTime);
+        stats.put("reservations", reservations);
+
+        return stats;
+    }
+
+    /**
+     * 使用 CONVERT 函數查詢可用時段
+     */
+    public List<TimeSlotSimpleDTO> getAvailableTimeSlotsWithConvert(Integer storeId, LocalDate date) {
+        // 使用 CONVERT 函數查詢可用時段
+        List<TimeSlot> availableSlots = timeSlotRepository.findAvailableTimeSlotsAfterTime(storeId, date,
+                LocalTime.now());
+
+        return availableSlots.stream()
+                .map(slot -> convertToTimeSlotSimpleDTO(slot, storeId))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * 使用 CONVERT 函數檢查時段重疊
+     */
+    public boolean hasOverlappingTimeSlotsWithConvert(Integer storeId, LocalDate date, LocalTime startTime,
+            LocalTime endTime) {
+        Integer hasOverlap = timeSlotRepository.hasOverlappingTimeSlots(storeId, date, startTime, endTime);
+        return hasOverlap != null && hasOverlap > 0;
+    }
+
+    /**
+     * 使用 CONVERT 函數查詢特定時間範圍的預約
+     */
+    public List<ReservationBean> getReservationsInTimeRangeWithConvert(Integer storeId, LocalDate date,
+            LocalTime startTime, LocalTime endTime) {
+        return reservationRepository.findConflictingReservationsInTimeRange(storeId, date, startTime, endTime);
+    }
+
+    /**
+     * 測試 CONVERT 函數功能
+     */
+    public Map<String, Object> testConvertFunctions(Integer storeId, LocalDate date) {
+        Map<String, Object> testResults = new HashMap<>();
+
+        try {
+            // 測試 OpenHour CONVERT 函數
+            LocalTime testTime = LocalTime.of(12, 0);
+            Integer isOpen = openHourRepository.isStoreOpenAtTime(storeId, date.getDayOfWeek().getValue(), testTime);
+            testResults.put("openHourTest", isOpen);
+
+            // 測試 SpecialHours CONVERT 函數
+            Integer isHoliday = specialHoursRepository.isSpecialHolidayAtDate(storeId, date);
+            testResults.put("specialHoursTest", isHoliday);
+
+            // 測試 TimeSlot CONVERT 函數
+            Integer hasOverlap = timeSlotRepository.hasOverlappingTimeSlots(storeId, date, testTime,
+                    testTime.plusHours(1));
+            testResults.put("timeSlotTest", hasOverlap);
+
+            // 測試 Reservation CONVERT 函數
+            Integer hasReservation = reservationRepository.hasReservationAtTime(storeId, date, testTime);
+            testResults.put("reservationTest", hasReservation);
+
+            testResults.put("status", "success");
+        } catch (Exception e) {
+            testResults.put("status", "error");
+            testResults.put("error", e.getMessage());
+        }
+
+        return testResults;
+    }
+
     // 判斷時段是否可預約（考慮特殊營業時間）
     public boolean isTimeSlotBookable(Integer storeId, LocalDate date, LocalTime time) {
         // 檢查時段是否存在且啟用
-        List<TimeSlot> timeSlots = timeSlotRepository.findTimeSlotsByStoreAndDayAndTimeRange(
+        List<TimeSlot> timeSlots = timeSlotRepository.findTimeSlotsByStoreAndDayAndExactTime(
                 storeRepository.findById(storeId).orElse(null),
-                date, time, time.plusMinutes(1));
+                date, time);
 
         if (timeSlots.isEmpty()) {
             return false; // 時段不存在
@@ -434,9 +553,8 @@ public class ReservationService {
             LocalTime slotEnd = current.plusMinutes(intervalMinutes);
             if (slotEnd.isAfter(end))
                 break;
-            String timeStr = current.format(DateTimeFormatter.ofPattern("HH:mm"));
             boolean exists = timeSlotRepository
-                    .existsByStoreAndDayAndStartTime(store.getId(), date, timeStr) > 0;
+                    .existsByStoreIdAndDayAndStartTime(store.getId(), date, current) > 0;
             if (!exists) {
                 TimeSlot slot = new TimeSlot();
                 slot.setStore(store);
@@ -477,47 +595,76 @@ public class ReservationService {
         return map;
     }
 
-    // TimeSlot 相關方法
-    public List<TimeSlot> getAvailableTimeSlotsByDate(Integer storeId, LocalDate date, Integer guests) {
-        return bookingAvailabilityService.getAvailableTimeSlotsForDate(storeId, date, guests);
+    // TimeSlot 相關方法 - 更新為使用 DTO
+    public List<TimeSlotSimpleDTO> getAvailableTimeSlotsByDate(Integer storeId, LocalDate date, Integer guests) {
+        List<TimeSlot> timeSlots = bookingAvailabilityService.getAvailableTimeSlotsForDate(storeId, date, guests);
+        return convertToTimeSlotSimpleDTO(timeSlots, storeId);
     }
 
-    public List<TimeSlot> getAvailableTimeSlotsByDate(Integer storeId, LocalDate date) {
+    public List<TimeSlotSimpleDTO> getAvailableTimeSlotsByDate(Integer storeId, LocalDate date) {
         StoreBean store = storeRepository.findById(storeId).orElse(null);
         if (store == null) {
             return new ArrayList<>();
         }
-        return timeSlotRepository.findByStoreAndDayAndIsActive(store, date, true);
+        List<TimeSlot> timeSlots = timeSlotRepository.findByStoreAndDayAndIsActive(store, date, true);
+        return convertToTimeSlotSimpleDTO(timeSlots, storeId);
     }
 
-    public List<TimeSlot> getTimeSlotsByDateRange(Integer storeId, LocalDate startDate, LocalDate endDate) {
-        // TODO: 實作按日期範圍查詢時段邏輯
-        return new ArrayList<>();
+    public List<TimeSlotSimpleDTO> getTimeSlotsByDateRange(Integer storeId, LocalDate startDate, LocalDate endDate) {
+        StoreBean store = storeRepository.findById(storeId).orElse(null);
+        if (store == null) {
+            return new ArrayList<>();
+        }
+
+        List<TimeSlot> timeSlots = timeSlotRepository.findTimeSlotsByStoreAndDateRange(store, startDate, endDate);
+        return convertToTimeSlotSimpleDTO(timeSlots, storeId);
     }
 
-    public TimeSlot addTimeSlot(Integer storeId, LocalDate day, String startTime, String endTime, Boolean isActive) {
-        // TODO: 實作新增時段邏輯
+    public TimeSlotSimpleDTO addTimeSlot(Integer storeId, LocalDate day, String startTime, String endTime,
+            Boolean isActive) {
+        StoreBean store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("餐廳不存在: " + storeId));
+
         TimeSlot timeSlot = new TimeSlot();
-        // 設置基本屬性
-        return timeSlot;
+        timeSlot.setStore(store);
+        timeSlot.setDay(day);
+        timeSlot.setStartTime(LocalTime.parse(startTime));
+        timeSlot.setEndTime(LocalTime.parse(endTime));
+        timeSlot.setIsActive(isActive != null ? isActive : true);
+
+        TimeSlot savedTimeSlot = timeSlotRepository.save(timeSlot);
+        return convertToTimeSlotSimpleDTO(savedTimeSlot, storeId);
     }
 
-    public TimeSlot updateTimeSlot(Integer timeSlotId, String startTime, String endTime, Boolean isActive) {
-        // TODO: 實作更新時段邏輯
-        TimeSlot timeSlot = new TimeSlot();
+    public TimeSlotSimpleDTO updateTimeSlot(Integer timeSlotId, String startTime, String endTime, Boolean isActive) {
+        TimeSlot timeSlot = timeSlotRepository.findById(timeSlotId)
+                .orElseThrow(() -> new RuntimeException("時段不存在: " + timeSlotId));
+
         // 更新屬性
-        return timeSlot;
+        if (startTime != null) {
+            timeSlot.setStartTime(LocalTime.parse(startTime));
+        }
+        if (endTime != null) {
+            timeSlot.setEndTime(LocalTime.parse(endTime));
+        }
+        if (isActive != null) {
+            timeSlot.setIsActive(isActive);
+        }
+
+        TimeSlot updatedTimeSlot = timeSlotRepository.save(timeSlot);
+        return convertToTimeSlotSimpleDTO(updatedTimeSlot, updatedTimeSlot.getStore().getId());
     }
 
     public void deleteTimeSlot(Integer timeSlotId) {
-        // TODO: 實作刪除時段邏輯
-        System.out.println("刪除時段: " + timeSlotId);
+        TimeSlot timeSlot = timeSlotRepository.findById(timeSlotId)
+                .orElseThrow(() -> new RuntimeException("時段不存在: " + timeSlotId));
+        timeSlotRepository.delete(timeSlot);
     }
 
-    public TimeSlot getTimeSlotById(Integer timeSlotId) {
-        // TODO: 實作查詢時段詳情邏輯
-        TimeSlot timeSlot = new TimeSlot();
-        return timeSlot;
+    public TimeSlotSimpleDTO getTimeSlotById(Integer timeSlotId) {
+        TimeSlot timeSlot = timeSlotRepository.findById(timeSlotId)
+                .orElseThrow(() -> new RuntimeException("時段不存在: " + timeSlotId));
+        return convertToTimeSlotSimpleDTO(timeSlot, timeSlot.getStore().getId());
     }
 
     public int disableTimeSlotsByDate(Integer storeId, LocalDate date) {

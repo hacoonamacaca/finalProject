@@ -52,4 +52,68 @@ public interface OpenHourRepository extends JpaRepository<OpenHourBean, Integer>
     default List<OpenHourBean> findByStoreIdAndDayOfWeek(Integer storeId, DayOfWeek dayOfWeek) {
         return findByStoreIdAndDay(storeId, dayOfWeek);
     }
+
+    // 使用 CONVERT 函數的原生 SQL 查詢
+
+    /**
+     * 檢查特定時間是否在營業時間內（使用 CONVERT 函數）
+     */
+    @Query(value = """
+            SELECT oh.* FROM open_hour oh
+            WHERE oh.store_id = :storeId
+            AND oh.day = :dayOfWeek
+            AND (
+                (CONVERT(time, oh.close_time) > CONVERT(time, oh.open_time)
+                 AND CONVERT(time, :checkTime) BETWEEN CONVERT(time, oh.open_time) AND CONVERT(time, oh.close_time))
+                OR
+                (CONVERT(time, oh.close_time) < CONVERT(time, oh.open_time)
+                 AND (CONVERT(time, :checkTime) >= CONVERT(time, oh.open_time) OR CONVERT(time, :checkTime) <= CONVERT(time, oh.close_time)))
+            )
+            """, nativeQuery = true)
+    List<OpenHourBean> findOpenHoursContainingTime(
+            @Param("storeId") Integer storeId,
+            @Param("dayOfWeek") Integer dayOfWeek,
+            @Param("checkTime") java.time.LocalTime checkTime);
+
+    /**
+     * 查詢餐廳在特定時間範圍內的營業時間（使用 CONVERT 函數）
+     */
+    @Query(value = """
+            SELECT oh.* FROM open_hour oh
+            WHERE oh.store_id = :storeId
+            AND oh.day = :dayOfWeek
+            AND (
+                (CONVERT(time, oh.open_time) <= CONVERT(time, :endTime)
+                 AND CONVERT(time, oh.close_time) >= CONVERT(time, :startTime))
+                OR
+                (CONVERT(time, oh.close_time) < CONVERT(time, oh.open_time)
+                 AND (CONVERT(time, oh.open_time) <= CONVERT(time, :endTime) OR CONVERT(time, oh.close_time) >= CONVERT(time, :startTime)))
+            )
+            """, nativeQuery = true)
+    List<OpenHourBean> findOpenHoursInTimeRange(
+            @Param("storeId") Integer storeId,
+            @Param("dayOfWeek") Integer dayOfWeek,
+            @Param("startTime") java.time.LocalTime startTime,
+            @Param("endTime") java.time.LocalTime endTime);
+
+    /**
+     * 檢查餐廳是否在特定時間營業（使用 CONVERT 函數）
+     */
+    @Query(value = """
+            SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+            FROM open_hour oh
+            WHERE oh.store_id = :storeId
+            AND oh.day = :dayOfWeek
+            AND (
+                (CONVERT(time, oh.close_time) > CONVERT(time, oh.open_time)
+                 AND CONVERT(time, :checkTime) BETWEEN CONVERT(time, oh.open_time) AND CONVERT(time, oh.close_time))
+                OR
+                (CONVERT(time, oh.close_time) < CONVERT(time, oh.open_time)
+                 AND (CONVERT(time, :checkTime) >= CONVERT(time, oh.open_time) OR CONVERT(time, :checkTime) <= CONVERT(time, oh.close_time)))
+            )
+            """, nativeQuery = true)
+    Integer isStoreOpenAtTime(
+            @Param("storeId") Integer storeId,
+            @Param("dayOfWeek") Integer dayOfWeek,
+            @Param("checkTime") java.time.LocalTime checkTime);
 }

@@ -35,8 +35,15 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Integer> {
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
-        // 根據餐廳、日期和時間範圍查詢時段
-        @Query("SELECT ts FROM TimeSlot ts WHERE ts.store = :store AND ts.day = :day AND ts.startTime >= :startTime AND ts.endTime <= :endTime AND ts.isActive = true")
+        // 根據餐廳、日期和精確時間查詢時段
+        @Query("SELECT ts FROM TimeSlot ts WHERE ts.store = :store AND ts.day = :day AND ts.startTime = :startTime AND ts.isActive = true")
+        List<TimeSlot> findTimeSlotsByStoreAndDayAndExactTime(
+                        @Param("store") StoreBean store,
+                        @Param("day") LocalDate day,
+                        @Param("startTime") LocalTime startTime);
+
+        // 根據餐廳、日期和時間範圍查詢時段 - 修正 SQL 查詢邏輯
+        @Query("SELECT ts FROM TimeSlot ts WHERE ts.store = :store AND ts.day = :day AND ts.startTime >= :startTime AND ts.startTime < :endTime AND ts.isActive = true")
         List<TimeSlot> findTimeSlotsByStoreAndDayAndTimeRange(
                         @Param("store") StoreBean store,
                         @Param("day") LocalDate day,
@@ -71,16 +78,196 @@ public interface TimeSlotRepository extends JpaRepository<TimeSlot, Integer> {
                         @Param("startDate") LocalDate startDate,
                         @Param("endDate") LocalDate endDate);
 
-        // 檢查特定日期和時間是否已有時段（使用原生 SQL）
-        @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM time_slots WHERE store_id = :storeId AND day = :day AND start_time = :startTime", nativeQuery = true)
-        Integer existsByStoreAndDayAndStartTime(
-                        @Param("storeId") Integer storeId,
-                        @Param("day") LocalDate day,
-                        @Param("startTime") String startTime);
+        // 檢查時段是否存在（使用原生 SQL）
+        @Query(value = "SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END FROM time_slots WHERE store_id = :storeId AND day = :day AND start_time = CONVERT(time, :startTime)", nativeQuery = true)
+        Integer existsByStoreIdAndDayAndStartTime(@Param("storeId") Integer storeId, @Param("day") LocalDate day,
+                        @Param("startTime") LocalTime startTime);
 
         // 呼叫 SQL 儲存程序來大宗生成時段
         @Query(value = "EXEC sp_generate_time_slots @store_id = :storeId, @days_ahead = :daysAhead", nativeQuery = true)
         Integer generateTimeSlotsUsingSP(
                         @Param("storeId") Integer storeId,
                         @Param("daysAhead") Integer daysAhead);
+
+        // 使用 CONVERT 函數檢查時段與預約時間衝突（原生 SQL）
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :date
+                        AND ts.start_time = CONVERT(time, :reservedTime)
+                        AND ts.is_active = 1
+                        """, nativeQuery = true)
+        List<TimeSlot> findTimeSlotsByStoreAndDateAndReservedTime(
+                        @Param("storeId") Integer storeId,
+                        @Param("date") LocalDate date,
+                        @Param("reservedTime") java.time.LocalDateTime reservedTime);
+
+        // 使用 CONVERT 函數檢查時段範圍內的預約衝突（原生 SQL）
+        @Query(value = """
+                        SELECT COUNT(*) FROM reservation r
+                        WHERE r.store_id = :storeId
+                        AND r.reserved_date = :date
+                        AND CONVERT(time, r.reserved_time) BETWEEN :startTime AND :endTime
+                        AND r.status IN ('CONFIRMED', 'PENDING')
+                        """, nativeQuery = true)
+        Integer countConflictingReservationsInTimeRange(
+                        @Param("storeId") Integer storeId,
+                        @Param("date") LocalDate date,
+                        @Param("startTime") LocalTime startTime,
+                        @Param("endTime") LocalTime endTime);
+
+        // 使用 CONVERT 函數的更多時段查詢
+
+        /**
+         * 查詢特定時間範圍內的可用時段（使用 CONVERT 函數）
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :date
+                        AND ts.is_active = 1
+                        AND CONVERT(time, ts.start_time) BETWEEN CONVERT(time, :startTime) AND CONVERT(time, :endTime)
+                        ORDER BY ts.start_time
+                        """, nativeQuery = true)
+        List<TimeSlot> findAvailableTimeSlotsInTimeRange(
+                        @Param("storeId") Integer storeId,
+                        @Param("date") LocalDate date,
+                        @Param("startTime") LocalTime startTime,
+                        @Param("endTime") LocalTime endTime);
+
+        /**
+         * 查詢與預約時間衝突的時段（使用 CONVERT 函數）
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :date
+                        AND ts.is_active = 1
+                        AND (
+                            CONVERT(time, ts.start_time) <= CONVERT(time, :reservedTime)
+                            AND CONVERT(time, ts.end_time) > CONVERT(time, :reservedTime)
+                        )
+                        """, nativeQuery = true)
+        List<TimeSlot> findTimeSlotsContainingReservedTime(
+                        @Param("storeId") Integer storeId,
+                        @Param("date") LocalDate date,
+                        @Param("reservedTime") java.time.LocalDateTime reservedTime);
+
+        /**
+         * 檢查時段是否與預約時間重疊（使用 CONVERT 函數）
+         */
+        @Query(value = """
+                        SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+                        FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :date
+                        AND ts.is_active = 1
+                        AND (
+                            (CONVERT(time, ts.start_time) <= CONVERT(time, :startTime) AND CONVERT(time, ts.end_time) > CONVERT(time, :startTime))
+                            OR
+                            (CONVERT(time, ts.start_time) < CONVERT(time, :endTime) AND CONVERT(time, ts.end_time) >= CONVERT(time, :endTime))
+                            OR
+                            (CONVERT(time, ts.start_time) >= CONVERT(time, :startTime) AND CONVERT(time, ts.end_time) <= CONVERT(time, :endTime))
+                        )
+                        """, nativeQuery = true)
+        Integer hasOverlappingTimeSlots(
+                        @Param("storeId") Integer storeId,
+                        @Param("date") LocalDate date,
+                        @Param("startTime") LocalTime startTime,
+                        @Param("endTime") LocalTime endTime);
+
+        /**
+         * 查詢指定時間之後的可用時段（使用 CONVERT 函數）
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :date
+                        AND ts.is_active = 1
+                        AND CONVERT(time, ts.start_time) >= CONVERT(time, :afterTime)
+                        ORDER BY ts.start_time
+                        """, nativeQuery = true)
+        List<TimeSlot> findAvailableTimeSlotsAfterTime(
+                        @Param("storeId") Integer storeId,
+                        @Param("date") LocalDate date,
+                        @Param("afterTime") LocalTime afterTime);
+
+        /**
+         * 查詢指定時間之前的可用時段（使用 CONVERT 函數）
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :date
+                        AND ts.is_active = 1
+                        AND CONVERT(time, ts.end_time) <= CONVERT(time, :beforeTime)
+                        ORDER BY ts.start_time DESC
+                        """, nativeQuery = true)
+        List<TimeSlot> findAvailableTimeSlotsBeforeTime(
+                        @Param("storeId") Integer storeId,
+                        @Param("date") LocalDate date,
+                        @Param("beforeTime") LocalTime beforeTime);
+
+        /**
+         * 根據 storeId、日期、開始時間和狀態查詢時段（使用 CONVERT 函數處理類型轉換）
+         * 這個方法用來替代 Spring Data JPA 自動生成的方法，避免時間類型不相容錯誤
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :day
+                        AND CONVERT(time, ts.start_time) = CONVERT(time, :startTime)
+                        AND ts.is_active = :isActive
+                        """, nativeQuery = true)
+        List<TimeSlot> findByStoreIdAndDayAndStartTimeAndIsActive(
+                        @Param("storeId") Integer storeId,
+                        @Param("day") LocalDate day,
+                        @Param("startTime") LocalTime startTime,
+                        @Param("isActive") Boolean isActive);
+
+        /**
+         * 根據 storeId、日期和開始時間查詢時段（使用 CONVERT 函數處理類型轉換）
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :day
+                        AND CONVERT(time, ts.start_time) = CONVERT(time, :startTime)
+                        """, nativeQuery = true)
+        List<TimeSlot> findByStoreIdAndDayAndStartTime(
+                        @Param("storeId") Integer storeId,
+                        @Param("day") LocalDate day,
+                        @Param("startTime") LocalTime startTime);
+
+        /**
+         * 根據 storeId、日期和開始時間查詢時段（支援 LocalDateTime 參數）
+         * 使用 CONVERT 函數處理類型轉換，避免時間類型不相容錯誤
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :day
+                        AND CONVERT(time, ts.start_time) = CONVERT(time, :startTime)
+                        """, nativeQuery = true)
+        List<TimeSlot> findByStoreIdAndDayAndStartTimeDateTime(
+                        @Param("storeId") Integer storeId,
+                        @Param("day") LocalDate day,
+                        @Param("startTime") java.time.LocalDateTime startTime);
+
+        /**
+         * 根據 storeId、日期、開始時間和狀態查詢時段（支援 LocalDateTime 參數）
+         * 使用 CONVERT 函數處理類型轉換，避免時間類型不相容錯誤
+         */
+        @Query(value = """
+                        SELECT ts.* FROM time_slots ts
+                        WHERE ts.store_id = :storeId
+                        AND ts.day = :day
+                        AND CONVERT(time, ts.start_time) = CONVERT(time, :startTime)
+                        AND ts.is_active = :isActive
+                        """, nativeQuery = true)
+        List<TimeSlot> findByStoreIdAndDayAndStartTimeDateTimeAndIsActive(
+                        @Param("storeId") Integer storeId,
+                        @Param("day") LocalDate day,
+                        @Param("startTime") java.time.LocalDateTime startTime,
+                        @Param("isActive") Boolean isActive);
 }

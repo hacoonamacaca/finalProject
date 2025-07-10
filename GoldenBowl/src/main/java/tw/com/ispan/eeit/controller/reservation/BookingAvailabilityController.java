@@ -26,10 +26,8 @@ public class BookingAvailabilityController {
 
     /**
      * 檢查特定時間是否可預約
-     * GET
-     * /api/booking/check-availability?storeId=1&date=2024-01-15&time=18:30&guests=4&duration=120
      */
-    @GetMapping("/check-availability")
+    @GetMapping("/check")
     public ResponseEntity<BookingAvailabilityResult> checkAvailability(
             @RequestParam Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
@@ -44,40 +42,7 @@ public class BookingAvailabilityController {
     }
 
     /**
-     * 取得餐廳在指定日期的所有可用時段
-     * GET /api/booking/available-slots/1?date=2024-01-15&guests=4
-     */
-    @GetMapping("/available-slots/{storeId}")
-    public ResponseEntity<List<TimeSlot>> getAvailableTimeSlots(
-            @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam Integer guests) {
-
-        List<TimeSlot> availableSlots = bookingAvailabilityService
-                .getAvailableTimeSlotsForDate(storeId, date, guests);
-
-        return ResponseEntity.ok(availableSlots);
-    }
-
-    /**
-     * 取得餐廳在指定日期的所有時段（不考慮客人數量）
-     * GET /api/booking/time-slots/1?date=2024-01-15
-     */
-    @GetMapping("/time-slots/{storeId}")
-    public ResponseEntity<List<TimeSlot>> getAllTimeSlots(
-            @PathVariable Integer storeId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-
-        List<TimeSlot> timeSlots = bookingAvailabilityService
-                .getAvailableTimeSlotsForDate(storeId, date, 1); // 使用最小人數來獲取所有基本時段
-
-        return ResponseEntity.ok(timeSlots);
-    }
-
-    /**
      * 批量檢查多個時間的可用性
-     * GET
-     * /api/booking/batch-check?storeId=1&date=2024-01-15&times=18:00,18:30,19:00&guests=4
      */
     @GetMapping("/batch-check")
     public ResponseEntity<List<BookingAvailabilityResult>> batchCheckAvailability(
@@ -106,5 +71,34 @@ public class BookingAvailabilityController {
                 .toList();
 
         return ResponseEntity.ok(results);
+    }
+
+    /**
+     * 取得餐廳在指定日期的可用時段
+     */
+    @GetMapping("/slots/{storeId}")
+    public ResponseEntity<List<TimeSlot>> getAvailableTimeSlots(
+            @PathVariable Integer storeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @RequestParam Integer guests) {
+
+        List<TimeSlot> availableSlots = bookingAvailabilityService
+                .getAvailableTimeSlotsForDate(storeId, date, guests);
+
+        return ResponseEntity.ok(availableSlots);
+    }
+
+    /**
+     * 取得餐廳在指定日期的所有時段
+     */
+    @GetMapping("/all-slots/{storeId}")
+    public ResponseEntity<List<TimeSlot>> getAllTimeSlots(
+            @PathVariable Integer storeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        List<TimeSlot> timeSlots = bookingAvailabilityService
+                .getAvailableTimeSlotsForDate(storeId, date, 1); // 使用最小人數來獲取所有基本時段
+
+        return ResponseEntity.ok(timeSlots);
     }
 }

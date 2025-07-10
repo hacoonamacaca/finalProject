@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 public class TimeSlotSimpleDTO {
     private Integer id;
     private Integer storeId;
-    private String storeName;
     private LocalDate day;
     private LocalTime startTime;
     private LocalTime endTime;
