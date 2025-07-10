@@ -5,7 +5,6 @@ target/
 !**/src/test/**/target/
 
 ###取消git 的文件###
-emailToken.properties
 gmailLogin.txt
 
 ### STS ###
