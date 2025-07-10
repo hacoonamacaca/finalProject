@@ -42,10 +42,10 @@ import tw.com.ispan.eeit.model.dto.reservation.TimeSlotSimpleDTO;
 public class ReservationService {
 
     @Autowired
-    private ReservationRepository reservationRepository;
+    private ReservationRepository reservationRepo;
 
     @Autowired
-    private TableRepository tableRepository;
+    private TableRepository tableRepo;
 
     @Autowired
     private StoreRepository storeRepository;
@@ -320,18 +320,7 @@ public class ReservationService {
         reservation.setStoreId(store.getId());
         reservation.setStatus(ReservationStatus.PENDING);
         reservation.setCreatedAt(LocalDateTime.now());
-        reservation.setUpdatedAt(LocalDateTime.now());
-
-        // 設置桌位
-        Set<TableBean> tables = new HashSet<>();
-        for (Integer tableId : tableIds) {
-            TableBean table = tableRepository.findById(tableId)
-                    .orElseThrow(() -> new RuntimeException("桌位不存在: " + tableId));
-            tables.add(table);
-        }
-        reservation.setTables(tables);
-
-        return reservationRepository.save(reservation);
+        return reservationRepo.save(reservation);
     }
 
     // 新增方法：生成時段資料（使用 SQL 儲存程序）

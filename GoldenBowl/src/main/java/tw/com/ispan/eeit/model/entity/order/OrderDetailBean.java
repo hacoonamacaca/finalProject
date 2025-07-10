@@ -1,10 +1,9 @@
 package tw.com.ispan.eeit.model.entity.order;
 
 import java.util.List;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,7 +15,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,30 +32,35 @@ public class OrderDetailBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id") // SQLServer的名稱
-	@JsonBackReference
-	private OrderBean order;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "food_id")
-	@JsonBackReference
-	private FoodBean food;
-
 	private Integer quantity;
 
-	private Integer price;
+	private Integer price; // 這個字段通常是 redundant 的，因為 food bean 已經有 price 了。同上。
 
 	@Column(name = "sub_total")
 	private Integer subTotal;
 
 	private Integer total;
 
-	@OneToMany(mappedBy = "orderDetail", fetch = FetchType.LAZY)
-	private Set<LikedFoodBean> likedFoods;
+	// ------------comment資料夾--------------------------------~---
+	@OneToOne(mappedBy = "orderDetail")
+	@JsonManagedReference
+	private LikedFoodBean likedFood;
+	// 0709 OneToMany修正成OneToOne
+	// ------------food 資料夾-----------------------------------
+	@ManyToOne
+	@JoinColumn(name = "food_id")
+	@JsonBackReference
+	private FoodBean food;
 
+	// ------------order 資料夾-----------------------------------
+	@ManyToOne
+	@JoinColumn(name = "order_id") // SQLServer的名稱
+	@JsonBackReference
+	private OrderBean order;
+
+	// ------------多對多關聯表--------------------------------------
 	@ManyToMany(fetch = FetchType.LAZY)
-	@JsonIgnore
-	@JoinTable(name = "order_detail_spec", joinColumns = @JoinColumn(name = "order_detail_id"), inverseJoinColumns = @JoinColumn(name = "spec_id"))
+	@JoinTable(name = "order_detail_spec", joinColumns = @JoinColumn(name = "spec_id"), inverseJoinColumns = @JoinColumn(name = "order_detail_id"))
+	@JsonManagedReference
 	private List<SpecBean> specs;
 }

@@ -29,15 +29,36 @@
         </div>
     </div>
 </template>
+
 <script setup>
 import { ref } from 'vue'
-const props = defineProps({ show: Boolean })
-const emit = defineEmits(['close', 'submit', 'register'])
+const props = defineProps({show: Boolean})
+const emit = defineEmits(['submit', 'register', 'close'])
 const email = ref('')
-function onSubmit() {
-emit('submit', email.value)
+import axios from '@/plungins/axios.js'
+
+async function onSubmit() {
+    if (!email.value) {
+        alert('請輸入 email')
+        return
+    }
+    try {
+        // axios 寫法：第二個參數就是 body 物件
+        const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+        // 回傳的就是 json 物件，不用再 .json()
+        if (res.data.exists) {
+            emit('submit', email.value)
+        } else {
+            alert('此 email 尚未註冊，請先註冊')
+            // emit('register')
+        }
+    } catch (e) {
+        alert('檢查 email 時發生錯誤')
+        console.error(e)
+    }
 }
 </script>
+
 <style scoped>
 .modal-bg {
 position: fixed;

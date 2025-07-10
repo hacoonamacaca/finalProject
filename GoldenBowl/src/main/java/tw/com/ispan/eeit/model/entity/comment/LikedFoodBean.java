@@ -2,6 +2,8 @@ package tw.com.ispan.eeit.model.entity.comment;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,10 +35,12 @@ public class LikedFoodBean {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_id")
+    @JsonBackReference
     private FoodBean food;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_detail_id")
+    @JsonBackReference
     private OrderDetailBean orderDetail;
 
     @Column(name = "is_liked")

@@ -1,43 +1,77 @@
-    <template>
-        <div class="modal-bg" v-if="show">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content p-4">
-                    <div class="modal-header border-0 pb-0 justify-content-between">
-                        <button class="btn nav-btn" @click="emit('back')">
-                            <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                                <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
+<template>
+    <div class="modal-bg" v-if="show">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-4">
+                <div class="modal-header border-0 pb-0 justify-content-between">
+                    <button class="btn nav-btn" @click="emit('back')">
+                        <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                            <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
+                </div>
+                <div class="modal-body d-flex flex-column align-items-center pt-0">
+                    <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
+                        class="email-img mb-3">
+                    <div class="fw-bold title mb-1">你的<span class="highlight">email</span>是？</div>
+                    <div class="desc mb-4">請輸入登入 Email</div>
+                    <form class="w-100" @submit.prevent="onSubmit">
+                        <div class="mb-3 text-start w-100">
+                            <label class="form-label label-strong">電子郵件</label>
+                            <input type="email" v-model="email" class="form-control custom-input" required
+                                placeholder="請輸入 email">
+                        </div>
+                        <div v-if="errorMsg" class="text-danger mb-2">{{ errorMsg }}</div>
+                        <button type="submit" class="btn btn-main w-100" :disabled="loading">
+                            <span v-if="loading">檢查中...</span>
+                            <span v-else>繼續</span>
                         </button>
-                        <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
-                    </div>
-                    <div class="modal-body d-flex flex-column align-items-center pt-0">
-                        <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
-                            class="email-img mb-3">
-                        <div class="fw-bold title mb-1">你的<span class="highlight">email</span>是？</div>
-                        <div class="desc mb-4">請輸入登入 Email</div>
-                        <form class="w-100" @submit.prevent="onSubmit">
-                            <div class="mb-3 text-start w-100">
-                                <label class="form-label label-strong">電子郵件</label>
-                                <input type="email" v-model="email" class="form-control custom-input" required
-                                    placeholder="請輸入 email">
-                            </div>
-                            <button type="submit" class="btn btn-main w-100">繼續</button>
-                        </form>
-                    </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </template>
+    </div>
+</template>
+
 <script setup>
 import { ref } from 'vue'
-const props = defineProps({ show: Boolean })
+import axios from 'axios'
+
+const props = defineProps({ 
+    show: Boolean,
+    errorMsg: String
+})
+
 const emit = defineEmits(['close', 'submit', 'register', 'back'])
+
 const email = ref('')
-function onSubmit() {
-    emit('submit', email.value)
+const errorMsg = ref('')
+const loading = ref(false)
+
+async function onSubmit() {
+    errorMsg.value = ''
+    if (!email.value) {
+        errorMsg.value = '請輸入 Email'
+        return
+    }
+    loading.value = true
+    try {
+        // 請改成你的API路徑
+        const res = await axios.post('/api/owner/check-email', { email: email.value })
+        if (res.data.exists) {
+            emit('submit', email.value) // 通知父元件可以進入密碼步驟
+        } else {
+            errorMsg.value = '查無此帳號，請確認Email或註冊新帳號'
+        }
+    } catch (e) {
+        errorMsg.value = '伺服器錯誤，請稍後再試'
+    } finally {
+        loading.value = false
+    }
 }
 </script>
+
 <style scoped>
 .modal-bg {
     position: fixed;

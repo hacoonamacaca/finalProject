@@ -1,7 +1,8 @@
 package tw.com.ispan.eeit.model.entity.store;
 
-import java.time.DayOfWeek;
 import java.time.LocalTime;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +21,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class OpenHourBean {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Integer id;
 
@@ -35,9 +35,8 @@ public class OpenHourBean {
 
 	@Column(name = "open_time", columnDefinition = "TIME(0)")
 	private LocalTime openTime;
-
 	@Column(name = "close_time", columnDefinition = "TIME(0)")
-	private LocalTime closeTime;
+	private LocalTime close_time;
 
 	// @Column(name = "is_open", nullable = false)
 	// private Boolean isOpen = true;
