@@ -40,7 +40,8 @@ public class StoreBean {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_id")
+    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @JsonIgnore
     private OwnerBean owner;
 
     @Column(length = 50)

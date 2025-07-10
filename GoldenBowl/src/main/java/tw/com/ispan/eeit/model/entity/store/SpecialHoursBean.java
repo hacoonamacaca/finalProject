@@ -21,7 +21,8 @@ public class SpecialHoursBean {
 	private Integer id;
 	@Column(name = "store_id")
 	private Integer storeId;
-	@Column(name = "date", columnDefinition = "datetime2(6)")
+	// 修正：雖然資料庫是 datetime2(6)，但我們只需要日期部分
+	@Column(name = "date")
 	private LocalDate date;
 	@Column(name = "open_time", columnDefinition = "time(0)")
 	private LocalTime openTime;

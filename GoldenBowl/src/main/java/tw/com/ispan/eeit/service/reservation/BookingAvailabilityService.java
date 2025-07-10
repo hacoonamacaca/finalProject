@@ -1,7 +1,6 @@
 package tw.com.ispan.eeit.service.reservation;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
@@ -15,7 +14,6 @@ import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
-import tw.com.ispan.eeit.model.enums.ReservationStatus;
 import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 import tw.com.ispan.eeit.repository.reservation.TableRepository;
 import tw.com.ispan.eeit.repository.reservation.TimeSlotRepository;
@@ -23,6 +21,9 @@ import tw.com.ispan.eeit.repository.store.OpenHourRepository;
 import tw.com.ispan.eeit.repository.store.SpecialHoursRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
 
+/**
+ * 預約可用性檢查服務 - 包含修復的 SQL 時間類型處理
+ */
 @Service
 public class BookingAvailabilityService {
 
@@ -45,109 +46,101 @@ public class BookingAvailabilityService {
     private OpenHourRepository openHourRepository;
 
     /**
-     * 全面檢查指定時間是否可預約
+     * 檢查預約可用性 - 主要入口點
      * 
      * @param storeId  餐廳ID
      * @param date     預約日期
      * @param time     預約時間
      * @param guests   客人數量
-     * @param duration 用餐時長（分鐘）
-     * @return 預約可用性結果
+     * @param duration 用餐時長(分鐘)
+     * @return 可用性檢查結果
      */
     public BookingAvailabilityResult checkBookingAvailability(
             Integer storeId, LocalDate date, LocalTime time, Integer guests, Integer duration) {
 
         BookingAvailabilityResult result = new BookingAvailabilityResult();
-        result.setAvailable(false);
         result.setStoreId(storeId);
         result.setDate(date);
         result.setTime(time);
         result.setGuests(guests);
 
         try {
-            // 1. 檢查餐廳是否存在並營業
+            // 1. 檢查餐廳是否存在和營業狀態
             StoreBean store = storeRepository.findById(storeId).orElse(null);
             if (store == null) {
+                result.setAvailable(false);
                 result.setReason("餐廳不存在");
                 return result;
             }
 
-            if (!store.getIsOpen()) {
-                result.setReason("餐廳目前暫停營業");
-                return result;
-            }
-
-            // 2. 檢查日期是否合法（不能預約過去的日期）
+            // 2. 檢查日期是否有效（不能是過去日期）
             if (date.isBefore(LocalDate.now())) {
+                result.setAvailable(false);
                 result.setReason("不能預約過去的日期");
                 return result;
             }
 
-            // 3. 檢查特殊營業時間覆蓋
-            BookingAvailabilityResult specialHoursCheck = checkSpecialHours(storeId, date, time);
-            if (!specialHoursCheck.isAvailable()) {
-                return specialHoursCheck;
+            // 3. 檢查特殊營業時間 (節假日等)
+            BookingAvailabilityResult specialHoursResult = checkSpecialHours(storeId, date, time);
+            if (!specialHoursResult.isAvailable()) {
+                return specialHoursResult;
             }
 
-            // 4. 檢查時段是否存在且啟用
-            BookingAvailabilityResult timeSlotCheck = checkTimeSlotAvailability(store, date, time);
-            if (!timeSlotCheck.isAvailable()) {
-                return timeSlotCheck;
+            // 4. 檢查時段是否開放 - 使用修復的方法
+            BookingAvailabilityResult timeSlotResult = checkTimeSlotAvailability(store, date, time);
+            if (!timeSlotResult.isAvailable()) {
+                return timeSlotResult;
             }
 
             // 5. 檢查桌位容量
-            BookingAvailabilityResult tableCapacityCheck = checkTableCapacity(storeId, date, time, guests, duration);
-            if (!tableCapacityCheck.isAvailable()) {
-                return tableCapacityCheck;
+            BookingAvailabilityResult capacityResult = checkTableCapacity(storeId, date, time, guests, duration);
+            if (!capacityResult.isAvailable()) {
+                return capacityResult;
             }
 
-            // 6. 檢查是否在正常營業時間內（如果沒有特殊時間覆蓋）
-            if (specialHoursCheck.getReason() == null) { // 沒有特殊時間覆蓋
-                BookingAvailabilityResult businessHoursCheck = checkBusinessHours(storeId, date, time);
-                if (!businessHoursCheck.isAvailable()) {
-                    return businessHoursCheck;
-                }
+            // 6. 檢查正常營業時間
+            BookingAvailabilityResult businessHoursResult = checkBusinessHours(storeId, date, time);
+            if (!businessHoursResult.isAvailable()) {
+                return businessHoursResult;
             }
 
-            // 所有檢查都通過
+            // 全部檢查通過
             result.setAvailable(true);
-            result.setReason("可以預約");
-            return result;
+            result.setReason("預約時段可用");
+            result.setAvailableSeats(capacityResult.getAvailableSeats());
 
         } catch (Exception e) {
+            result.setAvailable(false);
             result.setReason("系統錯誤: " + e.getMessage());
-            return result;
         }
+
+        return result;
     }
 
     /**
-     * 檢查特殊營業時間 - 使用 CONVERT 函數優化
+     * 檢查特殊營業時間
      */
     private BookingAvailabilityResult checkSpecialHours(Integer storeId, LocalDate date, LocalTime time) {
         BookingAvailabilityResult result = new BookingAvailabilityResult();
         result.setAvailable(true);
 
-        // 檢查是否為特殊休假日
-        Integer isHoliday = specialHoursRepository.isSpecialHolidayAtDate(storeId, date);
-        if (isHoliday != null && isHoliday > 0) {
-            result.setAvailable(false);
-            result.setReason("特殊休假日");
-            return result;
-        }
-
-        // 檢查是否有特殊營業時間
-        Integer hasSpecialHours = specialHoursRepository.hasSpecialHoursAtTime(storeId, date, time);
-        if (hasSpecialHours != null && hasSpecialHours > 0) {
-            result.setAvailable(true);
-            return result;
-        }
-
-        // 如果有特殊營業時間設定但不在時間範圍內
+        // 查詢該日期是否有特殊營業時間設定
         Optional<SpecialHoursBean> specialHoursOpt = specialHoursRepository.findByStoreIdAndDate(storeId, date);
+
         if (specialHoursOpt.isPresent()) {
             SpecialHoursBean specialHours = specialHoursOpt.get();
-            if (!specialHours.getIsClose() && specialHours.getOpenTime() != null
-                    && specialHours.getCloseTime() != null) {
+
+            // 如果該日期店家關閉
+            if (specialHours.getIsClose()) {
+                result.setAvailable(false);
+                result.setReason("該日期餐廳不營業");
+                return result;
+            }
+
+            // 如果有設定特殊營業時間，檢查是否在範圍內
+            if (specialHours.getOpenTime() != null && specialHours.getCloseTime() != null
+                    && (time.isBefore(specialHours.getOpenTime())
+                            || time.isAfter(specialHours.getCloseTime()))) {
                 result.setAvailable(false);
                 result.setReason("不在特殊營業時間內");
                 return result;
@@ -158,15 +151,15 @@ public class BookingAvailabilityService {
     }
 
     /**
-     * 檢查時段是否存在且啟用
+     * 檢查時段是否存在且啟用 - 使用 CONVERT 函數修復 SQL 類型錯誤
      */
     private BookingAvailabilityResult checkTimeSlotAvailability(StoreBean store, LocalDate date, LocalTime time) {
         BookingAvailabilityResult result = new BookingAvailabilityResult();
         result.setAvailable(false);
 
-        // 查找對應的時段（精確時間匹配）
-        List<TimeSlot> timeSlots = timeSlotRepository.findTimeSlotsByStoreAndDayAndExactTime(
-                store, date, time);
+        // 使用修復後的方法，使用 CONVERT 函數避免時間類型錯誤
+        List<TimeSlot> timeSlots = timeSlotRepository.findByStoreIdAndDayAndStartTimeAndIsActive(
+                store.getId(), date, time, true);
 
         if (timeSlots.isEmpty()) {
             result.setReason("該時間沒有開放預約時段");
@@ -220,7 +213,7 @@ public class BookingAvailabilityService {
 
         // 檢查是否有合適大小的桌位組合
         List<TableBean> suitableTables = tableRepository
-                .findAvailableTablesByStoreAndMinSeats(storeId, guests);
+                .findAvailableTablesByStoreIdAndMinSeats(storeId, guests);
 
         if (suitableTables.isEmpty()) {
             result.setReason("沒有適合 " + guests + " 人的桌位組合");

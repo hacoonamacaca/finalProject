@@ -44,9 +44,13 @@ public class ReservationController {
                     "reservationId", reservation.getId(),
                     "message", "訂位成功");
         } catch (Exception e) {
+            String errorMessage = e.getMessage();
+            if (errorMessage == null || errorMessage.trim().isEmpty()) {
+                errorMessage = "系統錯誤，請稍後再試";
+            }
             return Map.of(
                     "success", false,
-                    "message", "訂位失敗: " + e.getMessage());
+                    "message", "訂位失敗: " + errorMessage);
         }
     }
 

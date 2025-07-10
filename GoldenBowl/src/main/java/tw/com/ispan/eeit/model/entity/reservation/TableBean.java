@@ -12,12 +12,14 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "tables")
@@ -44,7 +46,8 @@ public class TableBean {
     @Column(name = "is_active")
     private Boolean status; // 桌位狀態
 
-    @ManyToMany(mappedBy = "tables")
-    @JsonBackReference("reservation-tables")
+    // 暫時移除預約關聯，避免mappedBy錯誤
+    @Transient
+    @JsonIgnore
     private Set<ReservationBean> reservations = new HashSet<>();
 }

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Comparator;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -97,7 +99,7 @@ public class ReservationService {
         LocalDateTime reservedDateTime = LocalDateTime.of(reservedDate, reservedTime);
 
         // 查找可用桌位
-        List<TableBean> availableTables = tableRepository.findAvailableTablesByStoreAndMinSeats(storeId, guests);
+        List<TableBean> availableTables = tableRepository.findAvailableTablesByStoreIdAndMinSeats(storeId, guests);
         if (availableTables.isEmpty()) {
             throw new RuntimeException("沒有足夠的桌位");
         }
@@ -115,10 +117,24 @@ public class ReservationService {
         reservation.setCreatedAt(LocalDateTime.now());
         reservation.setUpdatedAt(LocalDateTime.now());
 
-        // 分配桌位
-        Set<TableBean> tables = reservation.getTables();
-        tables.add(availableTables.get(0)); // 簡單分配第一個可用桌位
-        reservation.setTables(tables);
+        // 使用智能桌位分配邏輯
+        try {
+            List<TableBean> allocatedTables = allocateTablesForReservation(
+                    storeId, guests, reservedDate, reservedTime, duration);
+
+            System.out.println("成功分配桌位: " + allocatedTables.size() + "個");
+            for (TableBean table : allocatedTables) {
+                System.out.println("分配的桌位ID: " + table.getId() + ", 座位數: " + table.getSeats());
+            }
+
+            // 暫時不設置桌位關聯，先讓預約功能正常運作
+            // Set<TableBean> tableSet = new HashSet<>(allocatedTables);
+            // reservation.setTables(tableSet);
+        } catch (Exception e) {
+            System.err.println("桌位分配失敗詳細錯誤: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("桌位分配失敗: " + e.getMessage());
+        }
 
         return reservationRepository.save(reservation);
     }
@@ -182,8 +198,9 @@ public class ReservationService {
         return bookingAvailabilityService.checkBookingAvailability(storeId, date, time, guests, duration);
     }
 
+    // 根據時段可用性檢查可預約性
     public List<TableBean> getAvailableTables(Integer storeId, Integer minSeats) {
-        return tableRepository.findAvailableTablesByStoreAndMinSeats(storeId, minSeats);
+        return tableRepository.findAvailableTablesByStoreIdAndMinSeats(storeId, minSeats);
     }
 
     public List<TableBean> getStoreTables(Integer storeId) {
@@ -191,7 +208,7 @@ public class ReservationService {
     }
 
     public List<TableBean> findAvailableTables(Integer storeId, LocalDateTime startTime, int duration, int minSeats) {
-        return tableRepository.findAvailableTablesByStoreAndMinSeats(storeId, minSeats);
+        return tableRepository.findAvailableTablesByStoreIdAndMinSeats(storeId, minSeats);
     }
 
     public TableBean addTable(Integer storeId, Integer seats, Integer quantity, Boolean status) {
@@ -707,5 +724,190 @@ public class ReservationService {
         }
 
         return enabledCount;
+    }
+
+    /**
+     * 智能桌位分配邏輯
+     */
+    private List<TableBean> allocateTablesForReservation(Integer storeId, Integer guests,
+            LocalDate date, LocalTime startTime, Integer duration) {
+
+        try {
+            System.out.println("=== 開始桌位分配 ===");
+            System.out.println("餐廳ID: " + storeId + ", 客人數: " + guests + ", 日期: " + date + ", 時間: " + startTime
+                    + ", 用餐時長: " + duration);
+
+            // 取得該時段所有可用桌位
+            List<TableBean> availableTables = getAvailableTablesInTimeRange(storeId, date, startTime, duration);
+            System.out.println("查詢到可用桌位數量: " + (availableTables != null ? availableTables.size() : "null"));
+
+            if (availableTables == null || availableTables.isEmpty()) {
+                System.out.println("沒有可用桌位");
+                throw new RuntimeException("該時段沒有可用桌位");
+            }
+
+            // 打印可用桌位詳情
+            for (int i = 0; i < availableTables.size(); i++) {
+                TableBean table = availableTables.get(i);
+                System.out.println("桌位" + (i + 1) + ": ID=" + table.getId() + ", 座位數=" + table.getSeats() + ", 狀態="
+                        + table.getStatus());
+            }
+
+            // 策略 1: 尋找恰好合適的桌位（座位數 = 客人數 或 客人數+1）
+            System.out.println("嘗試策略1: 尋找恰好合適的桌位");
+            Optional<TableBean> exactMatch = availableTables.stream()
+                    .filter(table -> {
+                        boolean matches = table.getSeats() != null && table.getSeats() >= guests
+                                && table.getSeats() <= guests + 1;
+                        System.out.println("桌位ID" + table.getId() + "座位數" + table.getSeats() + " 是否匹配: " + matches);
+                        return matches;
+                    })
+                    .min(Comparator.comparing(TableBean::getSeats));
+
+            if (exactMatch.isPresent()) {
+                System.out.println("策略1成功: 找到恰好合適的桌位ID " + exactMatch.get().getId());
+                return List.of(exactMatch.get());
+            }
+
+            // 策略 2: 尋找最小的能容納所有客人的桌位
+            System.out.println("嘗試策略2: 尋找最小容納桌位");
+            Optional<TableBean> minSufficientTable = availableTables.stream()
+                    .filter(table -> {
+                        boolean matches = table.getSeats() != null && table.getSeats() >= guests;
+                        System.out.println("桌位ID" + table.getId() + "座位數" + table.getSeats() + " 能否容納: " + matches);
+                        return matches;
+                    })
+                    .min(Comparator.comparing(TableBean::getSeats));
+
+            if (minSufficientTable.isPresent()) {
+                System.out.println("策略2成功: 找到最小容納桌位ID " + minSufficientTable.get().getId());
+                return List.of(minSufficientTable.get());
+            }
+
+            // 策略 3: 組合多個小桌位（簡化版本 - 最多組合2個桌位）
+            System.out.println("嘗試策略3: 組合多個桌位");
+            for (TableBean table1 : availableTables) {
+                if (table1.getSeats() == null) {
+                    System.out.println("桌位ID" + table1.getId() + " 座位數為null，跳過");
+                    continue;
+                }
+                for (TableBean table2 : availableTables) {
+                    if (table2.getSeats() == null || table1.getId().equals(table2.getId()))
+                        continue;
+
+                    int combinedSeats = table1.getSeats() + table2.getSeats();
+                    System.out.println("嘗試組合桌位ID" + table1.getId() + "(" + table1.getSeats() + "位) + ID"
+                            + table2.getId() + "(" + table2.getSeats() + "位) = " + combinedSeats + "位");
+
+                    if (combinedSeats >= guests) {
+                        System.out.println("策略3成功: 組合桌位ID" + table1.getId() + " + ID" + table2.getId());
+                        return List.of(table1, table2);
+                    }
+                }
+            }
+
+            System.out.println("所有策略都失敗");
+            throw new RuntimeException("無法找到合適的桌位組合");
+        } catch (Exception e) {
+            System.err.println("桌位分配異常: " + e.getClass().getSimpleName() + " - " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("桌位分配過程發生錯誤: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 檢查指定時間範圍內的可用桌位
+     */
+    private List<TableBean> getAvailableTablesInTimeRange(Integer storeId, LocalDate date,
+            LocalTime startTime, Integer duration) {
+
+        try {
+            System.out.println("--- 檢查可用桌位 ---");
+            if (duration == null || duration <= 0) {
+                duration = 120; // 預設用餐時間2小時
+                System.out.println("使用預設用餐時間: " + duration + "分鐘");
+            }
+
+            LocalTime endTime = startTime.plusMinutes(duration);
+            System.out.println("用餐時間範圍: " + startTime + " ~ " + endTime);
+
+            // 取得餐廳所有啟用的桌位
+            List<TableBean> allTables = tableRepository.findByStoreId(storeId);
+            System.out.println("餐廳總桌位數: " + (allTables != null ? allTables.size() : "null"));
+
+            if (allTables == null || allTables.isEmpty()) {
+                System.out.println("餐廳沒有任何桌位");
+                return new ArrayList<>();
+            }
+
+            List<TableBean> activeTables = allTables.stream()
+                    .filter(table -> {
+                        boolean isActive = table != null && Boolean.TRUE.equals(table.getStatus());
+                        if (table != null) {
+                            System.out.println(
+                                    "桌位ID" + table.getId() + " 狀態: " + table.getStatus() + " (啟用: " + isActive + ")");
+                        }
+                        return isActive;
+                    })
+                    .collect(Collectors.toList());
+
+            System.out.println("啟用的桌位數: " + activeTables.size());
+
+            // 檢查每個桌位在該時段是否被預約
+            List<TableBean> availableTables = activeTables.stream()
+                    .filter(table -> {
+                        boolean isAvailable = isTableAvailableInTimeRange(table.getId(), date, startTime, endTime);
+                        System.out.println("桌位ID" + table.getId() + " 在時段內是否可用: " + isAvailable);
+                        return isAvailable;
+                    })
+                    .collect(Collectors.toList());
+
+            System.out.println("最終可用桌位數: " + availableTables.size());
+            return availableTables;
+        } catch (Exception e) {
+            System.err.println("取得可用桌位時發生錯誤: " + e.getMessage());
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 檢查桌位在指定時間範圍是否可用
+     */
+    private boolean isTableAvailableInTimeRange(Integer tableId, LocalDate date,
+            LocalTime startTime, LocalTime endTime) {
+
+        try {
+            // 檢查桌位是否存在
+            Optional<TableBean> tableOpt = tableRepository.findById(tableId);
+            if (tableOpt.isEmpty()) {
+                return false;
+            }
+
+            TableBean table = tableOpt.get();
+            if (table.getStore() == null) {
+                return false;
+            }
+
+            // 查詢該桌位在指定時間範圍內的預約
+            List<ReservationBean> conflictingReservations = reservationRepository
+                    .findConflictingReservationsInTimeRange(
+                            table.getStore().getId(),
+                            date, startTime, endTime);
+
+            if (conflictingReservations == null) {
+                return true;
+            }
+
+            // 檢查是否有預約使用了這個桌位
+            return conflictingReservations.stream()
+                    .filter(reservation -> reservation.getTables() != null)
+                    .noneMatch(reservation -> reservation.getTables().stream()
+                            .filter(t -> t != null && t.getId() != null)
+                            .anyMatch(t -> t.getId().equals(tableId)));
+        } catch (Exception e) {
+            System.err.println("檢查桌位可用性時發生錯誤: " + e.getMessage());
+            return false; // 發生錯誤時謹慎地返回不可用
+        }
     }
 }

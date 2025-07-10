@@ -93,8 +93,8 @@ public interface ReservationRepository extends JpaRepository<ReservationBean, In
         @Query("SELECT r FROM ReservationBean r WHERE r.storeId = :storeId ORDER BY r.reservedDate DESC")
         List<ReservationBean> findByStoreIdOrderByReservedDateDesc(@Param("storeId") Integer storeId);
 
-        // 查詢衝突的訂位
-        @Query("SELECT r FROM ReservationBean r WHERE r.storeId = :storeId AND r.reservedDate = :date AND r.reservedTime BETWEEN :startTime AND :endTime")
+        // 查詢衝突的訂位 - 只查詢有效狀態的預約
+        @Query("SELECT r FROM ReservationBean r WHERE r.storeId = :storeId AND r.reservedDate = :date AND r.reservedTime BETWEEN :startTime AND :endTime AND r.status IN ('CONFIRMED', 'PENDING')")
         List<ReservationBean> findConflictingReservations(
                         @Param("storeId") Integer storeId,
                         @Param("date") LocalDate date,
@@ -103,19 +103,30 @@ public interface ReservationRepository extends JpaRepository<ReservationBean, In
 
         // === 新增 CONVERT 函數優化方法 ===
 
-        // 統計時間範圍內的預約數量（使用 CONVERT 函數）
-        @Query(value = "SELECT COUNT(*) FROM reservation r WHERE r.store_id = :storeId AND r.reserved_date = :date " +
-                        "AND CONVERT(time, r.reserved_time) BETWEEN :startTime AND :endTime", nativeQuery = true)
+        // 統計時間範圍內的預約數量（使用 CONVERT 函數）- 只計算有效預約
+        @Query(value = """
+                        SELECT COUNT(*) FROM reservation r
+                        WHERE r.store_id = :storeId
+                        AND r.reserved_date = :date
+                        AND CONVERT(time, r.reserved_time) >= CONVERT(time, :startTime)
+                        AND CONVERT(time, r.reserved_time) <= CONVERT(time, :endTime)
+                        AND r.status IN ('CONFIRMED', 'PENDING')
+                        """, nativeQuery = true)
         Integer countReservationsInTimeRange(
                         @Param("storeId") Integer storeId,
                         @Param("date") LocalDate date,
                         @Param("startTime") LocalTime startTime,
                         @Param("endTime") LocalTime endTime);
 
-        // 統計時間範圍內的總客人數（使用 CONVERT 函數）
-        @Query(value = "SELECT COALESCE(SUM(r.guests), 0) FROM reservation r WHERE r.store_id = :storeId AND r.reserved_date = :date "
-                        +
-                        "AND CONVERT(time, r.reserved_time) BETWEEN :startTime AND :endTime", nativeQuery = true)
+        // 統計時間範圍內的總客人數（使用 CONVERT 函數）- 只計算有效預約
+        @Query(value = """
+                        SELECT COALESCE(SUM(r.guests), 0) FROM reservation r
+                        WHERE r.store_id = :storeId
+                        AND r.reserved_date = :date
+                        AND CONVERT(time, r.reserved_time) >= CONVERT(time, :startTime)
+                        AND CONVERT(time, r.reserved_time) <= CONVERT(time, :endTime)
+                        AND r.status IN ('CONFIRMED', 'PENDING')
+                        """, nativeQuery = true)
         Integer sumGuestsInTimeRange(
                         @Param("storeId") Integer storeId,
                         @Param("date") LocalDate date,
@@ -123,17 +134,28 @@ public interface ReservationRepository extends JpaRepository<ReservationBean, In
                         @Param("endTime") LocalTime endTime);
 
         // 查詢時間範圍內的衝突預約（使用 CONVERT 函數）
-        @Query(value = "SELECT * FROM reservation r WHERE r.store_id = :storeId AND r.reserved_date = :date " +
-                        "AND CONVERT(time, r.reserved_time) BETWEEN :startTime AND :endTime", nativeQuery = true)
+        @Query(value = """
+                        SELECT * FROM reservation r
+                        WHERE r.store_id = :storeId
+                        AND r.reserved_date = :date
+                        AND CONVERT(time, r.reserved_time) >= CONVERT(time, :startTime)
+                        AND CONVERT(time, r.reserved_time) <= CONVERT(time, :endTime)
+                        AND r.status IN ('CONFIRMED', 'PENDING')
+                        """, nativeQuery = true)
         List<ReservationBean> findConflictingReservationsInTimeRange(
                         @Param("storeId") Integer storeId,
                         @Param("date") LocalDate date,
                         @Param("startTime") LocalTime startTime,
                         @Param("endTime") LocalTime endTime);
 
-        // 檢查特定時間是否有預約（使用 CONVERT 函數）
-        @Query(value = "SELECT COUNT(*) FROM reservation r WHERE r.store_id = :storeId AND r.reserved_date = :date " +
-                        "AND CONVERT(time, r.reserved_time) = :time", nativeQuery = true)
+        // 檢查特定時間是否有預約（使用 CONVERT 函數）- 只檢查有效預約
+        @Query(value = """
+                        SELECT COUNT(*) FROM reservation r
+                        WHERE r.store_id = :storeId
+                        AND r.reserved_date = :date
+                        AND CONVERT(time, r.reserved_time) = :time
+                        AND r.status IN ('CONFIRMED', 'PENDING')
+                        """, nativeQuery = true)
         Integer hasReservationAtTime(
                         @Param("storeId") Integer storeId,
                         @Param("date") LocalDate date,

@@ -3,6 +3,7 @@ package tw.com.ispan.eeit.controller.reservation;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -74,10 +75,10 @@ public class BookingAvailabilityController {
     }
 
     /**
-     * 取得餐廳在指定日期的可用時段
+     * 取得餐廳在指定日期的可用時段 - 返回簡化的時段資料
      */
     @GetMapping("/slots/{storeId}")
-    public ResponseEntity<List<TimeSlot>> getAvailableTimeSlots(
+    public ResponseEntity<List<Map<String, Object>>> getAvailableTimeSlots(
             @PathVariable Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam Integer guests) {
@@ -85,20 +86,48 @@ public class BookingAvailabilityController {
         List<TimeSlot> availableSlots = bookingAvailabilityService
                 .getAvailableTimeSlotsForDate(storeId, date, guests);
 
-        return ResponseEntity.ok(availableSlots);
+        // 轉換為簡化的DTO，只包含必要的時段資訊
+        List<Map<String, Object>> simplifiedSlots = availableSlots.stream()
+                .map(slot -> {
+                    Map<String, Object> slotMap = new java.util.HashMap<>();
+                    slotMap.put("id", slot.getId());
+                    slotMap.put("storeId", storeId);
+                    slotMap.put("day", slot.getDay());
+                    slotMap.put("startTime", slot.getStartTime());
+                    slotMap.put("endTime", slot.getEndTime());
+                    slotMap.put("isActive", slot.getIsActive());
+                    return slotMap;
+                })
+                .toList();
+
+        return ResponseEntity.ok(simplifiedSlots);
     }
 
     /**
-     * 取得餐廳在指定日期的所有時段
+     * 取得餐廳在指定日期的所有時段 - 返回簡化的時段資料
      */
     @GetMapping("/all-slots/{storeId}")
-    public ResponseEntity<List<TimeSlot>> getAllTimeSlots(
+    public ResponseEntity<List<Map<String, Object>>> getAllTimeSlots(
             @PathVariable Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         List<TimeSlot> timeSlots = bookingAvailabilityService
                 .getAvailableTimeSlotsForDate(storeId, date, 1); // 使用最小人數來獲取所有基本時段
 
-        return ResponseEntity.ok(timeSlots);
+        // 轉換為簡化的DTO，只包含必要的時段資訊
+        List<Map<String, Object>> simplifiedSlots = timeSlots.stream()
+                .map(slot -> {
+                    Map<String, Object> slotMap = new java.util.HashMap<>();
+                    slotMap.put("id", slot.getId());
+                    slotMap.put("storeId", storeId);
+                    slotMap.put("day", slot.getDay());
+                    slotMap.put("startTime", slot.getStartTime());
+                    slotMap.put("endTime", slot.getEndTime());
+                    slotMap.put("isActive", slot.getIsActive());
+                    return slotMap;
+                })
+                .toList();
+
+        return ResponseEntity.ok(simplifiedSlots);
     }
 }

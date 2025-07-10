@@ -182,7 +182,7 @@ public class TimeSlotConflictTest {
 
         try {
             List<TimeSlot> slots = timeSlotRepository
-                    .findByStoreIdAndDayAndStartTimeDateTime(storeId, date, dateTime);
+                    .findByStoreIdAndDayAndStartTimeFromDateTime(storeId, date, dateTime);
 
             assertNotNull(slots, "查詢結果不應為 null");
             System.out.println("✅ LocalDateTime 參數測試通過，找到 " + slots.size() + " 個時段");
