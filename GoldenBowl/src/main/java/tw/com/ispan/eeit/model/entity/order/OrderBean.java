@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.Hibernate;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -21,6 +22,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.CommentBean;
@@ -31,12 +33,13 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Entity
 @Table(name = "customer_order")
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id") // <--- 在這裡加上這一行
 public class OrderBean {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
 	@JsonBackReference
 	private UserBean user;
@@ -74,7 +77,7 @@ public class OrderBean {
 	// ------------store 資料夾-----------------------------------
 	@ManyToOne
 	@JoinColumn(name = "store_id") // customer_order表中的欄位
-	@JsonBackReference
+	@JsonIgnore
 	private StoreBean store;
 
 	@Override

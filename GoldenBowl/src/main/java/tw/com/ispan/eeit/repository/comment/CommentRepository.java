@@ -13,11 +13,10 @@ public interface CommentRepository extends JpaRepository<CommentBean, Integer> {
     // // 根據 userId 查詢評論
     // List<CommentBean> findByUserId(Integer userId);
 
-    // // 根據 storeId 查詢評論
-    // List<CommentBean> findByStoreId(Integer storeId);
+     // 根據 storeId 查詢評論
+     List<CommentBean> findByStoreId(Integer storeId);
 
     // // 根據 isHidden 查詢評論
     // List<CommentBean> findByIsHidden(Boolean isHidden);
-    List<CommentBean> findByStoreId(Integer storeId);
 
 }

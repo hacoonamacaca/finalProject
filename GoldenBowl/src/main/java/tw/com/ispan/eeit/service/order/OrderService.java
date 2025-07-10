@@ -7,8 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.transaction.Transactional;
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
@@ -86,7 +86,7 @@ public class OrderService {
 
     // 根據用戶 ID 查找訂單
     // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
-    @Transactional(readOnly = true) // 確保在一個讀取事務中
+    
     public List<OrderDTO> findOrdersByUserId(Integer userId) {
         if (userId != null) {
             // orderRepository.findByUser_Id(userId);

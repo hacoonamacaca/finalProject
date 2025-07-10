@@ -37,8 +37,8 @@ public class StoreDTO {
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
     private Boolean isActive;
-
-    // 若你要給前端顯示空間點座標，可以自行決定怎麼包
+    
+ // 若你要給前端顯示空間點座標，可以自行決定怎麼包
     private String storeCoords; // 通常轉 WKT 字串或 GeoJSON 字串。要怎麼顯示決定於你的前端設計
 
     // 這個構造函數用於將 StoreBean 轉換為 StoreDTO

@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -33,7 +34,7 @@ public class OrderDetailBean {
 
 	private Integer quantity;
 
-	private Integer price;
+	private Integer price; // 這個字段通常是 redundant 的，因為 food bean 已經有 price 了。同上。
 
 	@Column(name = "sub_total")
 	private Integer subTotal;
@@ -58,7 +59,11 @@ public class OrderDetailBean {
 	private OrderBean order;
 
 	// ------------多對多關聯表--------------------------------------
-	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "orderDetails")
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(
+			name="order_detail_spec",
+			joinColumns=@JoinColumn(name="spec_id"),
+			inverseJoinColumns =@JoinColumn(name="order_detail_id"))
 	@JsonManagedReference
 	private List<SpecBean> specs;
 }

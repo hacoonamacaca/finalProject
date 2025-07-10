@@ -50,12 +50,12 @@ public class SpecGroupBean implements Serializable {
     private Integer sort;
 
     // 一對多：一個規格群組 -> 多個規格選項
-    @OneToMany(mappedBy = "specGroup", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "specGroup", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<SpecBean> specs;
 
     // 多對多：一個規格群組 -> 被多個品項使用
-    @ManyToMany(mappedBy = "specGroups", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "specGroups",fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<FoodBean> foods;
 }

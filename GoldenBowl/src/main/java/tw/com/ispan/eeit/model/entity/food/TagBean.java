@@ -29,9 +29,8 @@ public class TagBean {
     @Column(length = 50)
     private String name;
 
-    @ManyToMany(mappedBy = "tags", fetch = FetchType.LAZY)
+    @ManyToMany(mappedBy = "tags")
     @JsonManagedReference
-    @JsonIgnore
     private List<FoodBean> foods;
 
     @OneToMany(mappedBy = "tag", fetch = FetchType.LAZY)

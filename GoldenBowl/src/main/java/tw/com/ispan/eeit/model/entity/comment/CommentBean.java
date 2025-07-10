@@ -53,17 +53,17 @@ public class CommentBean {
     // 如果您保留了 id 字段並設置了 insertable=false, updatable=false，這表示您只讀取 id
     // 但在保存時 JPA 會使用 OrderBean 對象來設置外鍵。
     // 如果您刪除重複的 ID 字段，則無需 insertable = false, updatable = false
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id") // 移除 insertable = false, updatable = false 測試
     @JsonBackReference
     private OrderBean order;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id") // 移除 insertable = false, updatable = false 測試
     @JsonBackReference
     private UserBean user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id") // 移除 insertable = false, updatable = false 測試
     @JsonBackReference
     private StoreBean store;

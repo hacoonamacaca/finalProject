@@ -3,7 +3,6 @@ package tw.com.ispan.eeit.model.entity.plan;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -42,12 +41,10 @@ public class PlanBean {
 
 	@Column(name = "update_time")
 	private LocalDateTime updateTime;
-
-	@OneToOne(mappedBy = "plan") // 對應到 promotionbean 中的 java 屬性名稱
-	@JsonIgnore
+//-------------------------------------------------------------
+	@OneToOne(mappedBy = "plan",fetch = FetchType.LAZY) //對應到 promotionbean 中的 java 屬性名稱
 	private PromotionBean promotion;
 
-	@OneToMany(mappedBy = "plan", fetch = FetchType.LAZY)
-	@JsonIgnore
+	@OneToMany(mappedBy = "plan",fetch = FetchType.LAZY)
 	private List<SubRecordBean> subRecords;
 }

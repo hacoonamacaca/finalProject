@@ -32,31 +32,16 @@ public class PromotionBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@OneToOne
-	@JoinColumn(name = "plan_id") // sql當中的promotion table FK
-	@JsonIgnore
-	private PlanBean plan;
-
-	@ManyToOne
-	@JoinColumn(name = "store_id")
-	@JsonIgnore
-	private StoreBean store;
-
-	@ManyToOne
-	@JoinColumn(name = "tag_id")
-	@JsonIgnore
-	private TagBean tag;
-
 	@Column(columnDefinition = "NVARCHAR(50)")
 	private String title;
 
 	@Column(columnDefinition = "NVARCHAR(50)")
 	private String description;
 
-	@Column(name = "discount_type", columnDefinition = "NVARCHAR(50)")
+	@Column(name = "discount_type",columnDefinition = "NVARCHAR(50)")
 	private String discountType;
 
-	@Column(name = "discount_value", columnDefinition = "NVARCHAR(50)")
+	@Column(name = "discount_value",columnDefinition = "NVARCHAR(50)")
 	private String discountValue;
 
 	@Column(name = "min_spend")
@@ -85,9 +70,22 @@ public class PromotionBean {
 
 	@Column(length = 20)
 	private String status;
-
-	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
+//------------------------------------------------------------O
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "store_id")
 	@JsonIgnore
+	private StoreBean store;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "tag_id")
+	@JsonIgnore
+	private TagBean tag;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "plan_id")//sql當中的promotion table FK
+	private PlanBean plan;
+
+	@OneToMany(mappedBy = "promotion")
 	private List<OrderBean> orders;
 
 	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)

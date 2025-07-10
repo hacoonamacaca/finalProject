@@ -2,7 +2,6 @@ package tw.com.ispan.eeit.model.entity.plan;
 
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -20,7 +19,7 @@ import tw.com.ispan.eeit.model.entity.UserBean;
 
 @Data
 @NoArgsConstructor
-@JsonIgnoreProperties({ "promotions", "subRecords" })
+@JsonIgnoreProperties({"promotions", "subRecords"})
 @Entity
 @Table(name = "sub_record")
 public class SubRecordBean {
@@ -28,14 +27,12 @@ public class SubRecordBean {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
-	@JsonIgnore
 	private UserBean user;
 
-	@ManyToOne
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "plan_id")
-	@JsonIgnore
 	private PlanBean plan;
 
 	@Column(name = "start_time")

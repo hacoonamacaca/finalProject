@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import lombok.Data;
 import tw.com.ispan.eeit.model.dto.comment.CommentResponseDTO;
-import tw.com.ispan.eeit.model.dto.store.StoreDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 
 @Data

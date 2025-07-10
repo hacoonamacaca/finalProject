@@ -33,12 +33,12 @@ public class LikedFoodBean {
     @JoinColumn(name = "user_id")
     private UserBean user;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "food_id")
     @JsonBackReference
     private FoodBean food;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_detail_id")
     @JsonBackReference
     private OrderDetailBean orderDetail;

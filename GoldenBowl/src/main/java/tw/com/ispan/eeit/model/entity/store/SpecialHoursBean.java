@@ -1,5 +1,4 @@
 package tw.com.ispan.eeit.model.entity.store;
-
 //0709修改store
 import java.time.LocalTime;
 import java.util.Date;
@@ -8,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;

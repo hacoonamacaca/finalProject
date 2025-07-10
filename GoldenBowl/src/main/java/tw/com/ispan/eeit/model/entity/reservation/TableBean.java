@@ -3,6 +3,7 @@ package tw.com.ispan.eeit.model.entity.reservation;
 import java.util.HashSet;
 import java.util.Set;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
