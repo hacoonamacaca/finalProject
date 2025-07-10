@@ -14,16 +14,15 @@
                 <div class="modal-body d-flex flex-column align-items-center pt-0">
                     <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
                         class="email-img mb-3">
-                    <div class="fw-bold title mb-1">你的<span class="highlight">email</span>是？</div>
-                    <div class="desc mb-4">我們將確認你是否已擁有帳戶</div>
-                    <form class="w-100" @submit.prevent="onSubmit">
-                        <div class="mb-3 text-start w-100">
-                            <label class="form-label label-strong">電子郵件</label>
-                            <input type="email" v-model="email" class="form-control custom-input" required
-                                placeholder="請輸入 email">
-                        </div>
-                        <button type="submit" class="btn btn-main w-100">繼續</button>
-                    </form>
+                    <div class="fw-bold verify-title mb-1">驗證你的<span class="highlight">email</span>以開始使用</div>
+                    <div class="verify-desc mb-4">這有助我們預防詐騙，並保護你的個人資料安全</div>
+                    <button
+                        class="btn btn-main w-100"
+                        :disabled="loading"
+                        @click="sendVerifyEmail"
+                    >
+                        {{ loading ? '寄送中...' : '發送驗證信' }}
+                    </button>
                 </div>
             </div>
         </div>
@@ -32,30 +31,37 @@
 
 <script setup>
 import { ref } from 'vue'
-const props = defineProps({ show: Boolean })
-const emit = defineEmits(['close', 'submit', 'back'])
+import axios from '@/plungins/axios.js'
 
-const email = ref('eattiy@msn.com') // 測試用預設
+const props = defineProps({ show: Boolean, email: String })
+const emit = defineEmits(['close', 'send', 'back'])
 
-async function onSubmit() {
-    // 呼叫後端API寄送驗證信
-    const res = await fetch('/api/send-verify-email', {
-        method: 'POST',
-        headers: {
-            'Content-Type':'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-            email: email.value })
-    })
-    const text = await res.text();
-    // 顯示回傳訊息(可改UI)
-    alert(text)
-    // 通知外層可進到下一步
-    emit('submit', email.value)   
+const loading = ref(false)
+
+async function sendVerifyEmail() {
+    if (!props.email) {
+        alert('請先輸入 email')
+        return
+    }
+    loading.value = true
+    try {
+    // 建議用 URLSearchParams，因為後端是 @RequestParam String email
+        const params = new URLSearchParams();
+        params.append('email', props.email.trim());
+        await axios.post('/api/send-verify-email', params);
+        alert('驗證信已寄出，請至信箱查收')
+        emit('send')
+    } catch (e) {
+        alert('寄送失敗，請稍後再試')
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 
+
 <style scoped>
+/* 參照前面 modal 樣式 */
 .modal-bg {
 position: fixed;
 inset: 0;
@@ -67,7 +73,7 @@ justify-content: center;
 }
 
 .modal-dialog {
-width: 400px;
+width: auto;
 margin: 0 auto;
 }
 
@@ -80,7 +86,6 @@ padding: 2.2rem 2rem 2rem 2rem;
 position: relative;
 }
 
-/* 返回箭頭按鈕 */
 .nav-btn {
 background: none;
 border: none;
@@ -117,7 +122,7 @@ object-fit: contain;
 margin-bottom: 8px;
 }
 
-.title {
+.verify-title {
 font-size: 2rem;
 font-weight: bold;
 color: #222;
@@ -132,34 +137,11 @@ font-family: inherit;
 letter-spacing: 0.5px;
 }
 
-.desc {
+.verify-desc {
 color: #999;
 font-size: 1.1rem;
 font-weight: 400;
 margin-bottom: 1.2rem;
-}
-
-.label-strong {
-font-weight: bold;
-color: #222;
-font-size: 1.08rem;
-margin-bottom: 2px;
-}
-
-.custom-input {
-font-size: 1.1rem;
-border: 2px solid #222;
-border-radius: 8px;
-height: 46px;
-padding: 7px 12px;
-margin-top: 5px;
-background: #fff;
-box-shadow: none;
-}
-
-.custom-input:focus {
-border-color: #ffba20;
-box-shadow: 0 0 0 1px #ffba2021;
 }
 
 .btn-main {
@@ -170,7 +152,7 @@ font-size: 20px;
 height: 48px;
 border-radius: 10px;
 border: none;
-margin-top: 18px;
+margin-top: 8px;
 letter-spacing: 2px;
 transition: filter 0.15s;
 box-shadow: 0 2px 8px 1px #ffba200f;

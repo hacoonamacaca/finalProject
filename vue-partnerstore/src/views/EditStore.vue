@@ -63,7 +63,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 function goBack() {
-    router.push('/store')
+    router.push('/')
 }
 
 const initial = reactive({
@@ -97,6 +97,7 @@ onMounted(() => {
     initial.phone = phone.value
     initial.email = emailLocal.value
     initial.isEmailVerified = true
+    initial.photos = []
 })
 
 const isDirty = computed(() => {
@@ -118,34 +119,47 @@ function onFileChange(e) {
     photos.value = Array.from(e.target.files)
 }
 
-function handleSave() {
-    if (storeName.value !== initial.storeName) {
-        initial.storeName = storeName.value
-        localStorage.setItem('storeName', storeName.value)
+async function handleSave() {
+    // 檢查必填欄位
+    if (!storeName.value || !address.value) {
+        alert("餐廳名稱/地址必填")
+        return
     }
-    if (address.value !== initial.address) {
-        initial.address = address.value
-        localStorage.setItem('storeAddress', address.value)
-    }
-    if (intro.value !== initial.intro) {
-        initial.intro = intro.value
-        localStorage.setItem('storeIntro', intro.value)
-    }
-    if (phone.value !== initial.phone) {
-        initial.phone = phone.value
-        localStorage.setItem('userPhone', phone.value)
-    }
-    if (emailLocal.value !== initial.email) {
-        initial.email = emailLocal.value
-        initial.isEmailVerified = false
-        localStorage.setItem('userEmail', emailLocal.value)
-    }
-    // 儲存照片（此處僅 demo，通常你要上傳到後端）
-    if (photos.value.length > 0) {
-        // 這裡只是示意，如果你要上傳給 API，請改用 FormData 並送出
-        alert(`共選擇了 ${photos.value.length} 張照片，請自行串接API上傳！`)
-        // 儲存照片清空
-        photos.value = []
+
+    // 準備 FormData（多檔案）
+    const formData = new FormData()
+    formData.append('storeName', storeName.value)
+    formData.append('address', address.value)
+    formData.append('intro', intro.value)
+    formData.append('phone', phone.value)
+    formData.append('email', emailLocal.value)
+    // 多檔案 append
+    photos.value.forEach((file, idx) => {
+        formData.append('photos', file) // key "photos" 要與後端一致
+    })
+
+    // 送出
+    try {
+        const resp = await fetch('/api/store/updateInfo', {
+            method: 'POST',
+            body: formData
+        })
+        const result = await resp.json()
+        if (result.success) {
+            alert('儲存成功！')
+            // 更新 initial 狀態
+            initial.storeName = storeName.value
+            initial.address = address.value
+            initial.intro = intro.value
+            initial.phone = phone.value
+            initial.email = emailLocal.value
+            initial.photos = []
+            photos.value = []
+        } else {
+            alert('儲存失敗：' + result.message)
+        }
+    } catch (err) {
+        alert('發生錯誤：' + err)
     }
 }
 </script>

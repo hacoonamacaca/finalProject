@@ -3,11 +3,8 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('register')">
-                        <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                            <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
+                    <button class="btn nav-btn" @click="emit('back')">
+                        <!-- SVG 略 -->
                     </button>
                     <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
                 </div>
@@ -15,8 +12,8 @@
                     <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
                         class="email-img mb-3">
                     <div class="fw-bold title mb-1">你的<span class="highlight">email</span>是？</div>
-                    <div class="desc mb-4">請輸入登入 Email</div>
-                    <form class="w-100" @submit.prevent="onSubmit">
+                    <div class="desc mb-4">我們將確認你是否已擁有帳戶</div>
+                    <form class="w-100" @submit.prevent="submitEmail">
                         <div class="mb-3 text-start w-100">
                             <label class="form-label label-strong">電子郵件</label>
                             <input type="email" v-model="email" class="form-control custom-input" required
@@ -29,15 +26,37 @@
         </div>
     </div>
 </template>
+
 <script setup>
 import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
+
 const props = defineProps({ show: Boolean })
-const emit = defineEmits(['close', 'submit', 'register'])
-const email = ref('')
-function onSubmit() {
-emit('submit', email.value)
+const emit = defineEmits(['close', 'submit', 'back'])
+const email = ref('eattiy1986@gmail.com') // 測試用預設
+const loading = ref(false)
+
+async function submitEmail() {
+    if (!email.value) {
+        alert('請輸入 email')
+        return
+    }
+    loading.value = true
+    try {
+    const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+    if (!res.data.verified) {
+            emit('submit', email.value)
+        } else {
+            alert('此 email 已註冊，請用其他 email')
+        }
+    } catch (err) {
+        alert('伺服器錯誤或網路異常，請稍後再試')
+    } finally {
+        loading.value = false
+    }
 }
 </script>
+
 <style scoped>
 .modal-bg {
 position: fixed;
@@ -63,6 +82,17 @@ padding: 2.2rem 2rem 2rem 2rem;
 position: relative;
 }
 
+/* 返回箭頭按鈕 */
+.nav-btn {
+background: none;
+border: none;
+padding: 0;
+margin-left: -5px;
+margin-top: -5px;
+box-shadow: none;
+outline: none;
+}
+
 .close-btn {
 position: absolute;
 top: 14px;
@@ -80,16 +110,6 @@ justify-content: center;
 cursor: pointer;
 z-index: 10;
 transition: background 0.15s;
-}
-
-.nav-btn {
-background: none;
-border: none;
-padding: 0;
-margin-left: -5px;
-margin-top: -5px;
-box-shadow: none;
-outline: none;
 }
 
 .email-img {

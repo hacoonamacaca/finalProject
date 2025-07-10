@@ -12,9 +12,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,6 +32,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
@@ -41,14 +48,18 @@ import tw.com.ispan.eeit.model.entity.order.OrderBean;
 @Table(name = "store")
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class StoreBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
+    @EqualsAndHashCode.Include
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY) // 建議對 ManyToOne 關聯設置 LAZY
+    @ManyToOne(fetch = FetchType.LAZY) // 建議對 ManyToOne 關聯設置 LAZY
     @JoinColumn(name = "owner_id")
+    @JsonIgnore
     @JsonIgnore
     private OwnerBean owner;
 
@@ -60,6 +71,7 @@ public class StoreBean {
 
     @Convert(converter = tw.com.ispan.eeit.model.converter.PointToGeographyConverter.class)
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
+    private Point storeCoords;
     private Point storeCoords;
 
     private Double lng;
@@ -102,6 +114,8 @@ public class StoreBean {
     @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     @JsonManagedReference
     private Set<CategoryBean> categories; // 您已經改為 Set，這是好的
+    @JsonManagedReference
+    private Set<CategoryBean> categories; // 您已經改為 Set，這是好的
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL) // 評論通常不應該因為 Store 刪除而刪除，請根據業務邏輯調整 cascade
     @BatchSize(size = 25)
@@ -125,6 +139,7 @@ public class StoreBean {
     private List<SpecialHoursBean> specialHours;
 
     @ManyToMany(mappedBy = "favoriteStores")
+    @JsonIgnore
     @JsonIgnore
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

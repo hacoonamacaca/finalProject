@@ -1,16 +1,18 @@
 package tw.com.ispan.eeit.service.order;
 
 import java.time.LocalDateTime;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
+import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
+import tw.com.ispan.eeit.repository.order.OrderDetailRepository;
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
 import tw.com.ispan.eeit.repository.order.OrderDetailRepository;
 import tw.com.ispan.eeit.repository.order.OrderRepository;
@@ -25,6 +27,20 @@ public class OrderService {
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
+    @Autowired
+    private OrderRepository orderRepository;
+
+    @Autowired
+    private OrderDetailRepository orderDetailRepository;
+
+    // 創建訂單 (包含其明細)
+    public OrderBean createOrder(OrderBean order) {
+        order.setCreateTime(LocalDateTime.now());
+        if (order.getStatus() == null || order.getStatus().isEmpty()) {
+            order.setStatus("PENDING");
+        }
+
+        OrderBean savedOrder = orderRepository.save(order);
     // 創建訂單 (包含其明細)
     public OrderBean createOrder(OrderBean order) {
         order.setCreateTime(LocalDateTime.now());

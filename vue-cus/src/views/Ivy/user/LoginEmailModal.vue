@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('back')">
+                    <button class="btn nav-btn" @click="emit('register')">
                         <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                             <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
@@ -14,23 +14,52 @@
                 <div class="modal-body d-flex flex-column align-items-center pt-0">
                     <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
                         class="email-img mb-3">
-                    <div class="fw-bold verify-title mb-1">驗證你的<span class="highlight">email</span>以開始使用</div>
-                    <div class="verify-desc mb-4">這有助我們預防詐騙，並保護你的個人資料安全</div>
-                    <button class="btn btn-main w-100" @click="emit('send')">發送驗證信</button>
+                    <div class="fw-bold title mb-1">你的<span class="highlight">email</span>是？</div>
+                    <div class="desc mb-4">請輸入登入 Email</div>
+                    <form class="w-100" @submit.prevent="onSubmit">
+                        <div class="mb-3 text-start w-100">
+                            <label class="form-label label-strong">電子郵件</label>
+                            <input type="email" v-model="email" class="form-control custom-input" required
+                                placeholder="請輸入 email">
+                        </div>
+                        <button type="submit" class="btn btn-main w-100">繼續</button>
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
 <script setup>
-const props = defineProps({ show: Boolean, email: String })
-const emit = defineEmits(['close', 'send', 'back'])
+import { ref } from 'vue'
+const props = defineProps({show: Boolean})
+const emit = defineEmits(['submit', 'register', 'close'])
+const email = ref('')
+import axios from '@/plungins/axios.js'
 
-
-
+async function onSubmit() {
+    if (!email.value) {
+        alert('請輸入 email')
+        return
+    }
+    try {
+        // axios 寫法：第二個參數就是 body 物件
+        const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+        // 回傳的就是 json 物件，不用再 .json()
+        if (res.data.exists) {
+            emit('submit', email.value)
+        } else {
+            alert('此 email 尚未註冊，請先註冊')
+            // emit('register')
+        }
+    } catch (e) {
+        alert('檢查 email 時發生錯誤')
+        console.error(e)
+    }
+}
 </script>
+
 <style scoped>
-/* 參照前面 modal 樣式 */
 .modal-bg {
 position: fixed;
 inset: 0;
@@ -42,7 +71,7 @@ justify-content: center;
 }
 
 .modal-dialog {
-width: auto;
+width: 400px;
 margin: 0 auto;
 }
 
@@ -53,16 +82,6 @@ box-shadow: 0 2px 24px 4px rgba(0, 0, 0, 0.10);
 border: none;
 padding: 2.2rem 2rem 2rem 2rem;
 position: relative;
-}
-
-.nav-btn {
-background: none;
-border: none;
-padding: 0;
-margin-left: -5px;
-margin-top: -5px;
-box-shadow: none;
-outline: none;
 }
 
 .close-btn {
@@ -84,6 +103,16 @@ z-index: 10;
 transition: background 0.15s;
 }
 
+.nav-btn {
+background: none;
+border: none;
+padding: 0;
+margin-left: -5px;
+margin-top: -5px;
+box-shadow: none;
+outline: none;
+}
+
 .email-img {
 width: 62px;
 height: 62px;
@@ -91,7 +120,7 @@ object-fit: contain;
 margin-bottom: 8px;
 }
 
-.verify-title {
+.title {
 font-size: 2rem;
 font-weight: bold;
 color: #222;
@@ -106,11 +135,34 @@ font-family: inherit;
 letter-spacing: 0.5px;
 }
 
-.verify-desc {
+.desc {
 color: #999;
 font-size: 1.1rem;
 font-weight: 400;
 margin-bottom: 1.2rem;
+}
+
+.label-strong {
+font-weight: bold;
+color: #222;
+font-size: 1.08rem;
+margin-bottom: 2px;
+}
+
+.custom-input {
+font-size: 1.1rem;
+border: 2px solid #222;
+border-radius: 8px;
+height: 46px;
+padding: 7px 12px;
+margin-top: 5px;
+background: #fff;
+box-shadow: none;
+}
+
+.custom-input:focus {
+border-color: #ffba20;
+box-shadow: 0 0 0 1px #ffba2021;
 }
 
 .btn-main {
@@ -121,7 +173,7 @@ font-size: 20px;
 height: 48px;
 border-radius: 10px;
 border: none;
-margin-top: 8px;
+margin-top: 18px;
 letter-spacing: 2px;
 transition: filter 0.15s;
 box-shadow: 0 2px 8px 1px #ffba200f;
