@@ -1,5 +1,6 @@
 package tw.com.ispan.eeit.model.entity.comment;
 
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

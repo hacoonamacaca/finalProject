@@ -1,3 +1,62 @@
+<script setup>
+import { ref, watchEffect, computed } from 'vue';
+
+const props = defineProps({
+    item: {
+        type: Object,
+        default: null, // 如果是新增，prop 會是 null
+    },
+    categories: { 
+        type: Array, 
+        required: true } // 在 props 中接收 categories
+});
+
+const emit = defineEmits(['close', 'save', 'delete']);
+
+// 建立一個本地的響應式物件來處理表單資料
+// 這樣才不會直接修改到 prop，這是 Vue 的一個重要實踐
+const form = ref({});
+
+// 使用 watchEffect 來監聽 prop 的變化，並更新本地 form
+watchEffect(() => {
+    if (props.item) {
+        // 編輯模式：複製 prop item 的資料到 form
+        form.value = { ...props.item };
+    } else {
+        // 新增模式：設定預設空值
+        form.value = {
+            name: '',
+            price: 0,
+            status: '供應中',
+            stock: 0,
+            categoryId: props.categories.length > 0 ? props.categories[0].id : null, // 設定預設類別為第一個類別
+            description: '',
+            img: ''
+        };
+    }
+});
+
+const title = computed(() => props.item ? '編輯品項' : '新增品項');
+
+const handleSave = () => {
+    // 把表單資料透過 event 傳回給父組件
+    emit('save', form.value);
+};
+
+const handleDelete = () => {
+    // 把要刪除的 id 傳回去
+    if (props.item && props.item.id) {
+        emit('delete', props.item.id);
+    }
+};
+
+const handleClose = () => {
+    emit('close');
+};
+
+</script>
+
+
 <template>
     <!-- Modal 的背景遮罩 -->
     <div class="modal-backdrop fade show"></div>
@@ -76,61 +135,3 @@
         </div>
     </div>
 </template>
-
-<script setup>
-import { ref, watchEffect, computed } from 'vue';
-
-const props = defineProps({
-    item: {
-        type: Object,
-        default: null, // 如果是新增，prop 會是 null
-    },
-    categories: { 
-        type: Array, 
-        required: true } // 在 props 中接收 categories
-});
-
-const emit = defineEmits(['close', 'save', 'delete']);
-
-// 建立一個本地的響應式物件來處理表單資料
-// 這樣才不會直接修改到 prop，這是 Vue 的一個重要實踐
-const form = ref({});
-
-// 使用 watchEffect 來監聽 prop 的變化，並更新本地 form
-watchEffect(() => {
-    if (props.item) {
-        // 編輯模式：複製 prop item 的資料到 form
-        form.value = { ...props.item };
-    } else {
-        // 新增模式：設定預設空值
-        form.value = {
-            name: '',
-            price: 0,
-            status: '供應中',
-            stock: 0,
-            categoryId: props.categories.length > 0 ? props.categories[0].id : null, // 設定預設類別為第一個類別
-            description: '',
-            img: ''
-        };
-    }
-});
-
-const title = computed(() => props.item ? '編輯品項' : '新增品項');
-
-const handleSave = () => {
-    // 把表單資料透過 event 傳回給父組件
-    emit('save', form.value);
-};
-
-const handleDelete = () => {
-    // 把要刪除的 id 傳回去
-    if (props.item && props.item.id) {
-        emit('delete', props.item.id);
-    }
-};
-
-const handleClose = () => {
-    emit('close');
-};
-
-</script>

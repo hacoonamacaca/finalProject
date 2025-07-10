@@ -3,10 +3,10 @@
     <h3>篩選條件</h3>
     <div class="filter-group">
       <h4>美食類型</h4>
-      <label><input type="checkbox" v-model="localFilters.category" value="中式"> 中式</label>
-      <label><input type="checkbox" v-model="localFilters.category" value="日式"> 日式</label>
-      <label><input type="checkbox" v-model="localFilters.category" value="西式"> 西式</label>
-      <label><input type="checkbox" v-model="localFilters.category" value="韓式"> 韓式</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="中式料理"> 中式料理</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="西式料理"> 西式料理</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="日式料理"> 日式料理</label>
+      <label><input type="checkbox" v-model="localFilters.category" value="韓式料理"> 韓式料理</label>
     </div>
     <div class="filter-group">
       <h4>最低星數</h4>
@@ -24,9 +24,8 @@
       <div class="range-value">{{ localFilters.minscore.toFixed(1) }} 星</div>
     </div>
     <div class="filter-group">
-      <h4>優惠活動</h4>
-      <label><input type="checkbox" v-model="localFilters.promo" value="免運費"> 免運費</label>
-      <label><input type="checkbox" v-model="localFilters.promo" value="折扣"> 折扣</label>
+      <h4>營業狀態</h4>
+      <label><input type="checkbox" v-model="localFilters.isOpen"> 營業中</label>
     </div>
   </div>
 </template>
@@ -35,15 +34,27 @@
 import { ref, watch } from 'vue';
 
 const props = defineProps({
-  filters: Object
+  filters: Object,  
 });
 
 const emit = defineEmits(['update:filters', 'update-score']);
 
-const localFilters = ref({ ...props.filters });
+const localFilters = ref({
+  category: props.filters.category || [],
+  minscore: props.filters.minscore || 0,
+  // promo: props.filters.promo || [], // 移除 promo 初始化
+  isOpen: props.filters.isOpen || false // 確保這裡有 isOpen 且為布林值
+});
+
 
 watch(() => props.filters, (newFilters) => {
-  localFilters.value = { ...newFilters };
+  // 深度複製，確保所有屬性都被更新，同時要小心處理新/舊屬性
+  localFilters.value = {
+    category: newFilters.category || [],
+    minscore: newFilters.minscore || 0,
+    // promo: newFilters.promo || [], // 移除 promo watch
+    isOpen: newFilters.isOpen || false // 確保 isOpen 被正確更新
+  };
 }, { deep: true });
 
 watch(localFilters, (newFilters) => {

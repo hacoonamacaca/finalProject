@@ -1,92 +1,171 @@
-<!-- src/components/Jimmy/PopularRestaurants.vue -->
 <template>
-<section class="popular-section" v-if="address">
+  <section class="popular-section" v-if="address">
     <h2>附近熱門美食</h2>
     <div class="restaurant-scroll">
-    <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
+      <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
         <img
-        :src="restaurant.image"
-        :alt="restaurant.name"
-        @click="$router.push(`/restaurant/${restaurant.id}`)"
-        style="cursor: pointer;"
+          :src="restaurant.image || '/path/to/default-popular-image.jpg'" :alt="restaurant.name"
+          @click="navigateToRestaurant(restaurant.id)"
+          style="cursor: pointer;"
         />
         <div class="info">
-            <h3>
-                {{ restaurant.name }} {{ restaurant.score }}★
-            </h3>
+          <h3>
+            {{ restaurant.name }} {{ restaurant.score ? restaurant.score.toFixed(1) : 'N/A' }}★
+          </h3>
+          <p class="comment-trigger-text" @click="openCommentModal(restaurant.id)" style="cursor: pointer;">
+            ({{ restaurant.comments ? restaurant.comments.length : 0 }} 則評論)
+          </p>
         </div>
-        <Comment :comments="restaurant.comments" :comment-count="restaurant.comments.length" />
+      </div>
     </div>
-    </div>
-</section>
+  </section>
+
+  <CommentModal
+    v-if="showCommentModal"
+    :storeId="selectedStoreId"
+    @close="showCommentModal = false"
+  />
 </template>
 
 <script setup>
-import { computed } from 'vue';
-import Comment from '@/components/Jimmy/Comment.vue';
+import { ref, computed } from 'vue'; // 引入 ref
+import { useRouter } from 'vue-router';
+import CommentModal from '@/components/Jimmy/Comment.vue'; // <-- 新增這一行
 
 // 定義 Props
 const props = defineProps({
-address: {
+  address: {
     type: String,
     required: true,
-},
-restaurants: {
+  },
+  restaurants: { // 這個 props 現在預期接收的是 Home.vue 轉換後的餐廳數據
     type: Array,
     required: true,
-},
+    default: () => [],
+  },
 });
+
+const router = useRouter(); // 初始化 useRouter
+
+// 控制評論模態框顯示的狀態
+const showCommentModal = ref(false);
+const selectedStoreId = ref(null); // 用於儲存當前點擊的餐廳 ID
 
 // 計算屬性：熱門餐廳
 const popularRestaurants = computed(() => {
-return [...props.restaurants]
-    .sort((a, b) => b.popularityScore - a.popularityScore)
-    .slice(0, 10);
+  // 確保 restaurants 存在且為陣列
+  if (!props.restaurants || props.restaurants.length === 0) {
+    return [];
+  }
+
+  // 複製陣列以避免直接修改 props
+  return [...props.restaurants]
+  .sort((a, b) => (b.score || 0) - (a.score || 0)) // 改為按 score 排序
+  .slice(0, 10);
 });
+
+// 定義導航方法
+const navigateToRestaurant = (id) => {
+  router.push(`/restaurant/${id}`);
+};
+
+// 打開評論模態框的函數
+const openCommentModal = (storeId) => {
+  selectedStoreId.value = storeId;
+  showCommentModal.value = true;
+};
 </script>
 
 <style scoped>
-    .popular-section {
-    padding: 10px;
-    background-color: #fff;
-    margin: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
+.popular-section {
+  padding: 10px;
+  background-color: #fff;
+  margin: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
-    .restaurant-scroll {
-    display: flex;
-    overflow-x: auto;
-    gap: 10px;
-    padding-bottom: 5px;
-    }
+.popular-section h2 {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  color: #333;
+}
 
-    .restaurant-scroll::-webkit-scrollbar {
-    height: 4px;
-    }
+.restaurant-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 5px; /* 為滾動條留出空間 */
+  -webkit-overflow-scrolling: touch; /* 提升 iOS 上的滾動體驗 */
+}
 
-    .restaurant-scroll::-webkit-scrollbar-thumb {
-    background-color: #ffba20;
-    border-radius: 4px;
-    }
+/* 自定義滾動條樣式 */
+.restaurant-scroll::-webkit-scrollbar {
+  height: 6px; /* 滾動條高度 */
+}
 
-    .restaurant-scroll .restaurant-card {
-    flex: 0 0 180px;
-    width: 180px;
-    }
+.restaurant-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 滾動條軌道背景 */
+  border-radius: 10px;
+}
 
-    .restaurant-card img {
-    width: 100%;
-    height: 120px;
-    object-fit: cover;
-    }
+.restaurant-scroll::-webkit-scrollbar-thumb {
+  background-color: #ffba20; /* 滾動條滑塊顏色 */
+  border-radius: 10px;
+  border: 1px solid #f1f1f1; /* 滑塊邊框 */
+}
 
-    .restaurant-card .info {
-    padding: 7.5px;
-    }
+.restaurant-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #e6a000; /* 滑塊懸停顏色 */
+}
 
-    .restaurant-card h3 {
-    font-size: 15px;
-    margin-bottom: 4px;
-    }
+.restaurant-scroll .restaurant-card {
+  flex: 0 0 180px; /* 固定寬度，不壓縮 */
+  width: 180px; /* 確保寬度一致 */
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease-in-out; /* 添加過渡效果 */
+}
+
+.restaurant-scroll .restaurant-card:hover {
+  transform: translateY(-3px); /* 懸停效果 */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.restaurant-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover; /* 圖片裁剪並覆蓋 */
+  border-bottom: 1px solid #eee; /* 圖片底部邊框 */
+}
+
+.restaurant-card .info {
+  padding: 7.5px 10px; /* 調整內邊距 */
+}
+
+.restaurant-card h3 {
+  font-size: 16px;
+  margin-top: 5px; /* 調整標題上邊距 */
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #333;
+}
+
+/* 新增的評論觸發文字樣式 */
+.comment-trigger-text {
+  cursor: pointer;
+  color: #007bff; /* 藍色鏈接 */
+  text-decoration: underline;
+  font-size: 13px; /* 調整字體大小 */
+  display: block; /* 確保獨佔一行 */
+  margin-top: 5px;
+}
+
+.comment-trigger-text:hover {
+  color: #0056b3;
+}
 </style>

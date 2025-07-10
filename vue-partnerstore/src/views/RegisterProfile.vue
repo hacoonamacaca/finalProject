@@ -162,7 +162,7 @@ function togglePassword() {
 }
 
 function onSubmit() {
-    localStorage.setItem('userFirstName', firstName.value)
+    localStorage.setItem('userFullName', firstName.value)
     router.push('/')
 }
 

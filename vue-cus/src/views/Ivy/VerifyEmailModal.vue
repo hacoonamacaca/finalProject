@@ -16,19 +16,50 @@
                         class="email-img mb-3">
                     <div class="fw-bold verify-title mb-1">驗證你的<span class="highlight">email</span>以開始使用</div>
                     <div class="verify-desc mb-4">這有助我們預防詐騙，並保護你的個人資料安全</div>
-                    <button class="btn btn-main w-100" @click="emit('send')">發送驗證信</button>
+                    <button
+                        class="btn btn-main w-100"
+                        :disabled="loading"
+                        @click="sendVerifyEmail"
+                    >
+                        {{ loading ? '寄送中...' : '發送驗證信' }}
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 </template>
+
 <script setup>
+import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
+
 const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'send', 'back'])
 
+const loading = ref(false)
 
-
+async function sendVerifyEmail() {
+    if (!props.email) {
+        alert('請先輸入 email')
+        return
+    }
+    loading.value = true
+    try {
+    // 建議用 URLSearchParams，因為後端是 @RequestParam String email
+        const params = new URLSearchParams();
+        params.append('email', props.email.trim());
+        await axios.post('/api/send-verify-email', params);
+        alert('驗證信已寄出，請至信箱查收')
+        emit('send')
+    } catch (e) {
+        alert('寄送失敗，請稍後再試')
+    } finally {
+        loading.value = false
+    }
+}
 </script>
+
+
 <style scoped>
 /* 參照前面 modal 樣式 */
 .modal-bg {

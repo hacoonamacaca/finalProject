@@ -101,6 +101,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from '@/plungins/axios.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -136,10 +137,24 @@ function togglePassword() {
     showPassword.value = !showPassword.value
 }
 
-function onSubmit() {
-    localStorage.setItem('userFullName', fullName.value.trim())
-    localStorage.setItem('userEmail', email.value)
-    router.push('/search')
+async function onSubmit() {
+    if(!canSubmit.value) return
+    try {
+        // 送出註冊資料到後端
+        const res = await axios.post('api/users/register', {
+            fullName: fullName.value.trim(),
+            email: email.value,
+            password: password.value
+        })
+        // 假設後端成功回傳
+        // 可以把資料寫進LocalStorage
+        localStorage.setItem('userFullName', fullName.value.trim())
+        localStorage.setItem('userEmail', email.value)
+        router.push('/search')
+    } catch (e) {
+        message.value = e.response?.data || '註冊失敗，請稍後再試'
+        messageType.value = 'error'
+    }
 }
 </script>
 

@@ -5,21 +5,18 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.entity.reservation.TableBean;
 import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 import tw.com.ispan.eeit.repository.reservation.TableRepository;
 
-@Service
+//@Service
 public class ReservationService {
 
-    @Autowired
+//    @Autowired
     private ReservationRepository reservationRepo;
 
-    @Autowired
+//    @Autowired
     private TableRepository tableRepo;
 
     public ReservationBean createReservation(ReservationBean reservation, List<Integer> tableIds) {

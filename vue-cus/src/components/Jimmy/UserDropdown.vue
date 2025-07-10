@@ -34,6 +34,12 @@
         <li @click="navigateTo('ReportType')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> ReportType*
         </li> 
+        <li @click="navigateTo('CC')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-house-door"></i> CC*
+        </li> 
+        <li @click="navigateTo('TagCategoryManager')" class="d-flex align-items-center gap-2 px-3 py-2">
+          <i class="bi bi-house-door"></i> TagCategoryManager*
+        </li> 
         <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-box-arrow-right"></i> 登出
         </li>
@@ -71,7 +77,7 @@ const navigateTo = (path) => {
 const logout = () => {
   localStorage.removeItem('token');
   showDropdown.value = false;
-  router.push('/login');
+  router.push('/search');
 };
 
 // 點擊外部關閉下拉選單
