@@ -64,16 +64,21 @@ public class TagController {
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
+    // 更新標籤 (使用 DTO 作為請求體)
     @PutMapping("/{id}")
     public ResponseEntity<TagDTO> updateTag(@PathVariable Integer id, @RequestBody TagDTO tagDto) {
+        // 從 DTO 轉換為 Bean
         TagBean tagBean = new TagBean();
-        BeanUtils.copyProperties(tagDto, tagBean); // 將 DTO 屬性複製到 Bean
+        // 注意：這裡只會複製 DTO 中有的屬性 (id, name) 到 tagBean
+        // 如果你的 Service 層需要使用 Bean 的其他屬性來更新，需要額外從資料庫載入
+        BeanUtils.copyProperties(tagDto, tagBean);
 
-        TagBean updatedTag = tagService.updateTag(id, tagBean);
+        TagBean updatedTag = tagService.updateTag(id, tagBean); // 假設 Service 會處理更新邏輯
 
         if (updatedTag != null) {
+            // 從更新後的 Bean 轉換回 DTO 以返回
             TagDTO responseDto = new TagDTO();
-            BeanUtils.copyProperties(updatedTag, responseDto); // 將更新的 Bean 屬性複製回 DTO
+            BeanUtils.copyProperties(updatedTag, responseDto); // Bean -> DTO
             return new ResponseEntity<>(responseDto, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);

@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
@@ -38,27 +39,28 @@ public class OrderDetailBean {
 	@Column(name = "sub_total")
 	private Integer subTotal;
 
-	private Integer total; // 在 OrderDetail 層面，通常是 subTotal
+	private Integer total;
 
 	// ------------comment資料夾--------------------------------~---
-	@OneToOne(mappedBy = "orderDetail", fetch = FetchType.LAZY)
+	@OneToOne(mappedBy = "orderDetail")
 	@JsonManagedReference
 	private LikedFoodBean likedFood;
 	// 0709 OneToMany修正成OneToOne
 	// ------------food 資料夾-----------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "food_id")
 	@JsonBackReference
 	private FoodBean food;
 
 	// ------------order 資料夾-----------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "order_id") // SQLServer的名稱
 	@JsonBackReference
 	private OrderBean order;
 
 	// ------------多對多關聯表--------------------------------------
-	@ManyToMany(fetch = FetchType.LAZY, mappedBy = "orderDetails")
+	@ManyToMany(fetch = FetchType.LAZY)
+	@JoinTable(name = "order_detail_spec", joinColumns = @JoinColumn(name = "spec_id"), inverseJoinColumns = @JoinColumn(name = "order_detail_id"))
 	@JsonManagedReference
 	private List<SpecBean> specs;
 }

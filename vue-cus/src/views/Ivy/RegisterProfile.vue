@@ -101,6 +101,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import axios from '@/plungins/axios.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -112,6 +113,9 @@ const email = ref(route.query.email || localStorage.getItem('userEmail') || '')
 const fullName = ref('')
 const password = ref('')
 const showPassword = ref(false)
+
+const message = ref('')
+const messageType = ref('Info')
 
 // 密碼規則檢查
 const hasLen = computed(() => password.value.length >= 8)
@@ -136,10 +140,21 @@ function togglePassword() {
     showPassword.value = !showPassword.value
 }
 
-function onSubmit() {
-    localStorage.setItem('userFullName', fullName.value.trim())
-    localStorage.setItem('userEmail', email.value)
-    router.push('/search')
+async function onSubmit() {
+    if(!canSubmit.value) return
+    try {
+        const res = await axios.post('/api/users', {
+            name: fullName.value.trim(), // 和後端 UserDTO 欄位一致
+            email: email.value,
+            password: password.value
+        })
+        localStorage.setItem('userFullName', fullName.value.trim())
+        localStorage.setItem('userEmail', email.value)
+        router.push('/search')
+    } catch (e) {
+        message.value = e.response?.data?.message || '註冊失敗，請稍後再試'
+        messageType.value = 'error'
+    }
 }
 </script>
 

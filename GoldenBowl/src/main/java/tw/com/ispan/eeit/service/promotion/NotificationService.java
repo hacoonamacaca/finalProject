@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 import tw.com.ispan.eeit.model.entity.promotion.NotificationBean;
 import tw.com.ispan.eeit.repository.promotion.NotificationRepository;
 
-//@Service
+@Service
 public class NotificationService {
 
-//	@Autowired
+	@Autowired
 	//注入 NotificationRepository，讓Service可以使用
 	private NotificationRepository notificationRepository;
 	

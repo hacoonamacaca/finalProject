@@ -4,10 +4,7 @@
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
                     <button class="btn nav-btn" @click="emit('back')">
-                        <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                            <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
+                        <!-- SVG 略 -->
                     </button>
                     <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
                 </div>
@@ -16,7 +13,7 @@
                         class="email-img mb-3">
                     <div class="fw-bold title mb-1">你的<span class="highlight">email</span>是？</div>
                     <div class="desc mb-4">我們將確認你是否已擁有帳戶</div>
-                    <form class="w-100" @submit.prevent="onSubmit">
+                    <form class="w-100" @submit.prevent="submitEmail">
                         <div class="mb-3 text-start w-100">
                             <label class="form-label label-strong">電子郵件</label>
                             <input type="email" v-model="email" class="form-control custom-input" required
@@ -32,26 +29,31 @@
 
 <script setup>
 import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
+
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'submit', 'back'])
+const email = ref('eattiy1986@gmail.com') // 測試用預設
+const loading = ref(false)
 
-const email = ref('eattiy@msn.com') // 測試用預設
-
-async function onSubmit() {
-    // 呼叫後端API寄送驗證信
-    const res = await fetch('/api/send-verify-email', {
-        method: 'POST',
-        headers: {
-            'Content-Type':'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-            email: email.value })
-    })
-    const text = await res.text();
-    // 顯示回傳訊息(可改UI)
-    alert(text)
-    // 通知外層可進到下一步
-    emit('submit', email.value)   
+async function submitEmail() {
+    if (!email.value) {
+        alert('請輸入 email')
+        return
+    }
+    loading.value = true
+    try {
+    const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+    if (!res.data.verified) {
+            emit('submit', email.value)
+        } else {
+            alert('此 email 已註冊，請用其他 email')
+        }
+    } catch (err) {
+        alert('伺服器錯誤或網路異常，請稍後再試')
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 

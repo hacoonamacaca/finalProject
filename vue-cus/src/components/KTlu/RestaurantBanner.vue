@@ -1,5 +1,5 @@
 <template>
-    <div class="restaurant-banner restaurant-theme">
+    <div class="restaurant-banner goldenbowl-restaurant-theme">
         <img :src="restaurant.image" :alt="restaurant.name + '店面圖片'" class="banner-image" />
     </div>
 </template>

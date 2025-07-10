@@ -3,9 +3,11 @@ package tw.com.ispan.eeit.repository.order;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
 
+@Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetailBean, Integer> {
 
   public List<OrderDetailBean> findByOrder_Id(Integer orderId);

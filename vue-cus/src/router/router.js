@@ -8,11 +8,14 @@ import Search from "@/views/Jimmy/Search.vue"
 import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
 import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
-import CartTest from '@/views/CartTest.vue'
+import Cart from '@/views/KTlu/Cart.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
 import RegisterProfile from '@/views/Ivy/RegisterProfile.vue'
 import EditUser from '@/views/Ivy/EditUser.vue'
+import {
+    getRestaurantById
+} from "@/data/restaurants.js"
 import WebRecom from "@/views/Jimmy/WebRecom.vue"
 import ReportType from "@/views/Jimmy/ReportType.vue"
 import ReservationRecords from '@/views/KTlu/ReservationRecords.vue'
@@ -55,9 +58,9 @@ const routes = [{
     component: CheckoutCoupon
 },
 {
-    path: '/cart-test',
-    name: 'CartTest',
-    component: CartTest
+    path: '/cart',
+    name: 'Cart',
+    component: Cart
 },
 {
     path: '/register',
@@ -84,8 +87,9 @@ const routes = [{
     path: "/restaurant/:id",
     name: "Restaurant",
     component: () => import("@/views/KTlu/RestaurantPage.vue"),
-    // 【核心修改】讓 props: true，這會自動把 URL 中的 :id 作為 prop 傳遞下去
-    props: true,
+    props: (route) => ({
+        restaurant: getRestaurantById(parseInt(route.params.id)),
+    }),
 },
 {
     path: '/profile',

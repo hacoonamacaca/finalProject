@@ -14,14 +14,11 @@
 import { ref, onMounted } from 'vue';
 import apiClient from '../../plungins/axios.js'; // 確保路徑正確
 import RestaurantTemplate from "@/components/KTlu/RestaurantTemplate.vue";
+import { useRoute } from 'vue-router';
+const route = useRoute();
 
 // 【核心修改 1】接收一個名為 'id' 的 prop
-const props = defineProps({
-    id: {
-        type: [String, Number],
-        required: true,
-    }
-});
+
 
 const restaurantData = ref(null);
 const isLoading = ref(true);
@@ -31,10 +28,12 @@ const error = ref(null);
 onMounted(async () => {
     try {
         // 使用我們統一的 /api/stores 路徑
-        const response = await apiClient.get(`/api/stores/${props.id}`);
+         
+        const response = await apiClient.get(`/api/stores/${route.params.id}`);
         restaurantData.value = response.data;
     } catch (e) {
         console.error("獲取店家資料失敗:", e);
+        console.log()
         error.value = "抱歉，找不到該店家或發生錯誤。";
     } finally {
         isLoading.value = false;

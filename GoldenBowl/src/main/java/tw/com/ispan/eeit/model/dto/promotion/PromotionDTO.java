@@ -28,4 +28,6 @@ public class PromotionDTO {
     private String storeName;
     private Integer planId;
     private String planName;
+	private Integer planPrice;
+	private Integer planValidMonths;
 }

@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.entity.promotion;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -27,10 +28,12 @@ public class NotificationBean {
 	private Integer id;
 
 	@ManyToOne
+	@JsonIgnore
 	@JoinColumn(name = "user_id")
 	private UserBean user;
 
 	@ManyToOne
+	@JsonIgnore
 	@JoinColumn(name = "promotion_id")
 	private PromotionBean promotion;
 

@@ -19,9 +19,9 @@
             ({{ restaurant.comments ? restaurant.comments.length : 0 }} 則評論) 
           </span>
         </p>
-        <div class="tags">
+        <!-- <div class="tags">
         <span v-for="tag in restaurant.tags" :key="tag">{{ tag }}</span> 
-        </div>
+        </div> -->
     </div>
     </div>
 </section>
@@ -80,7 +80,7 @@ const openComment = (storeId) => {
     overflow: hidden;
     box-shadow: 0 2px 8px rgba;
     transition: transform 0.2s;
-    height: 320px;
+    height: 300px;
   }
 
   .restaurant-list .restaurant-card:hover {

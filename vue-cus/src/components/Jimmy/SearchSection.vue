@@ -10,6 +10,7 @@
         @blur="hideDropdownWithDelay"
         @input="filterSuggestions"
         @keydown.enter="handleSearch"
+        @click="handleClickInInput" 
       />
       <button @click="handleSearch">搜尋</button>
       <div class="search-dropdown" v-show="showDropdown" @mousedown.prevent>
@@ -123,6 +124,17 @@ const handleSearch = () => {
     emit('search', '');
     showDropdown.value = false;
   }
+};
+
+// 新增：處理在 input 欄位內部的點擊事件 (用於已經聚焦時的再次點擊)
+const handleClickInInput = () => {
+  // 只有當 input 已經聚焦且顯示下拉選單時，才清空內容
+  // 否則，讓 handleFocus 處理第一次的點擊（使其聚焦並顯示）
+  if (showDropdown.value) { // 或者可以使用 document.activeElement === event.target 來判斷是否已經聚焦
+    searched.value = ''; // 清空內容
+    filterSuggestions(); // 重新過濾建議（此時會顯示所有歷史和熱門）
+  }
+  showDropdown.value = true; // 確保下拉選單顯示
 };
 
 // 選擇建議 - **重要修改**
