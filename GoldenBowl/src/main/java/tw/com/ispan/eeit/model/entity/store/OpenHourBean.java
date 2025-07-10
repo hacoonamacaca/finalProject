@@ -1,13 +1,10 @@
 package tw.com.ispan.eeit.model.entity.store;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -36,7 +33,7 @@ public class OpenHourBean {
 	@Column(name = "open_time", columnDefinition = "TIME(0)")
 	private LocalTime openTime;
 	@Column(name = "close_time", columnDefinition = "TIME(0)")
-	private LocalTime close_time;
+	private LocalTime closeTime;
 
 	// @Column(name = "is_open", nullable = false)
 	// private Boolean isOpen = true;

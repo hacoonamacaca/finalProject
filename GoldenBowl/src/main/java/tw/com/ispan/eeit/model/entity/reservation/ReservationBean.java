@@ -11,13 +11,9 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -30,23 +26,14 @@ import tw.com.ispan.eeit.model.enums.ReservationStatus;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class ReservationBean {
-    @ManyToMany
-    @JoinTable(name = "reservation_tables", joinColumns = @JoinColumn(name = "reservation_id"), inverseJoinColumns = @JoinColumn(name = "tables_id"))
-    private Set<TableBean> tables = new HashSet<>();
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "user_id", nullable = false)
     private Integer userId;
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
 
-    @Column(name = "store_id", nullable = false)
-    private Integer storeId;
     @Column(name = "store_id", nullable = false)
     private Integer storeId;
 

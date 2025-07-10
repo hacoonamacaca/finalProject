@@ -131,7 +131,8 @@ public class StoreBean {
     @JsonManagedReference
     private Set<SpecGroupBean> specGroups;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
     @JsonManagedReference
     private List<SpecialHoursBean> specialHours;
 

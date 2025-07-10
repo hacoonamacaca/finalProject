@@ -122,25 +122,21 @@ public class TestController {
             request.setUserId(userId);
             request.setStoreId(storeId);
             request.setReservedDate(LocalDate.parse(date));
-            request.setReservedTime(LocalTime.parse(time));
+            request.setReservedTime(LocalDate.parse(date).atTime(LocalTime.parse(time)));
             request.setGuests(guests);
             request.setDuration(120); // 2小時
-            request.setContent("測試訂位");
-            request.setTableIds(List.of(1)); // 使用第一個桌位
 
             // 建立訂位
             ReservationBean reservation = new ReservationBean();
             reservation.setUserId(userId);
             reservation.setStoreId(storeId);
-
             reservation.setReservedDate(request.getReservedDate());
-            reservation
-                    .setReservedTime(java.time.LocalDateTime.of(request.getReservedDate(), request.getReservedTime()));
+            reservation.setReservedTime(request.getReservedTime());
             reservation.setGuests(request.getGuests());
             reservation.setDuration(request.getDuration());
-            reservation.setContent(request.getContent());
+            reservation.setContent("測試訂位");
 
-            ReservationBean savedReservation = reservationService.createReservation(reservation, request.getTableIds());
+            ReservationBean savedReservation = reservationService.createReservation(reservation, List.of(1));
             return ResponseEntity.ok(savedReservation);
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();

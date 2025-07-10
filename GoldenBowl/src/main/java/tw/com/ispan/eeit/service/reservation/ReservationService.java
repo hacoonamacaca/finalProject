@@ -4,26 +4,25 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.Comparator;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import tw.com.ispan.eeit.model.dto.reservation.TimeSlotSimpleDTO;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.entity.reservation.TableBean;
 import tw.com.ispan.eeit.model.entity.reservation.TimeSettingBean;
 import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
+import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
 import tw.com.ispan.eeit.repository.UserRepository;
@@ -32,20 +31,18 @@ import tw.com.ispan.eeit.repository.reservation.TableRepository;
 import tw.com.ispan.eeit.repository.reservation.TimeSettingRepository;
 import tw.com.ispan.eeit.repository.reservation.TimeSlotRepository;
 import tw.com.ispan.eeit.repository.store.OpenHourRepository;
-import tw.com.ispan.eeit.repository.store.StoreRepository;
-import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.repository.store.SpecialHoursRepository;
+import tw.com.ispan.eeit.repository.store.StoreRepository;
 import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService.BookingAvailabilityResult;
-import tw.com.ispan.eeit.model.dto.reservation.TimeSlotSimpleDTO;
 
 @Service
 public class ReservationService {
 
     @Autowired
-    private ReservationRepository reservationRepo;
+    private ReservationRepository reservationRepository;
 
     @Autowired
-    private TableRepository tableRepo;
+    private TableRepository tableRepository;
 
     @Autowired
     private StoreRepository storeRepository;
@@ -320,7 +317,7 @@ public class ReservationService {
         reservation.setStoreId(store.getId());
         reservation.setStatus(ReservationStatus.PENDING);
         reservation.setCreatedAt(LocalDateTime.now());
-        return reservationRepo.save(reservation);
+        return reservationRepository.save(reservation);
     }
 
     // 新增方法：生成時段資料（使用 SQL 儲存程序）

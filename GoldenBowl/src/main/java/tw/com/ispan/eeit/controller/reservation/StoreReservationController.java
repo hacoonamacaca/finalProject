@@ -6,9 +6,16 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import tw.com.ispan.eeit.service.reservation.StoreReservationIntegrationService;
+import tw.com.ispan.eeit.service.reservation.ReservationService;
 
 @RestController
 @RequestMapping("/api/store-reservations")
@@ -16,7 +23,7 @@ import tw.com.ispan.eeit.service.reservation.StoreReservationIntegrationService;
 public class StoreReservationController {
 
     @Autowired
-    private StoreReservationIntegrationService integrationService;
+    private ReservationService reservationService;
 
     /**
      * 搜尋餐廳
@@ -26,7 +33,7 @@ public class StoreReservationController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) Boolean isOpen) {
-        return integrationService.searchStores(keyword, category, isOpen);
+        return Map.of("success", false, "message", "功能尚未實現");
     }
 
     /**
@@ -34,7 +41,7 @@ public class StoreReservationController {
      */
     @GetMapping("/{storeId}")
     public Map<String, Object> getStoreInfo(@PathVariable Integer storeId) {
-        return integrationService.getStoreWithReservationInfo(storeId);
+        return Map.of("success", false, "message", "功能尚未實現");
     }
 
     /**
@@ -46,7 +53,12 @@ public class StoreReservationController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime time,
             @RequestParam Integer guests) {
-        return integrationService.checkStoreAvailability(storeId, date, time, guests);
+        try {
+            boolean available = reservationService.checkAvailability(storeId, date, time, guests);
+            return Map.of("success", true, "available", available);
+        } catch (Exception e) {
+            return Map.of("success", false, "message", e.getMessage());
+        }
     }
 
     /**
@@ -64,8 +76,9 @@ public class StoreReservationController {
             Integer duration = Integer.parseInt(request.get("duration").toString());
             String content = (String) request.get("content");
 
-            return integrationService.createReservationWithStoreValidation(
+            var reservation = reservationService.createReservation(
                     userId, storeId, reservedDate, reservedTime, guests, duration, content);
+            return Map.of("success", true, "reservationId", reservation.getId());
         } catch (Exception e) {
             return Map.of("success", false, "message", "參數錯誤: " + e.getMessage());
         }
@@ -76,6 +89,6 @@ public class StoreReservationController {
      */
     @GetMapping("/{storeId}/stats")
     public Map<String, Object> getStoreStats(@PathVariable Integer storeId) {
-        return integrationService.getStoreReservationStats(storeId);
+        return Map.of("success", false, "message", "功能尚未實現");
     }
 }
