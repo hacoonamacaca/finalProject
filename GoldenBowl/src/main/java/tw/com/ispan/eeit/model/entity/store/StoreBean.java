@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.hibernate.annotations.BatchSize;
 import org.locationtech.jts.geom.Point;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -28,6 +27,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.CategorySearchedBean;
@@ -47,26 +47,24 @@ public class StoreBean {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY) // 建議對 ManyToOne 關聯設置 LAZY
-    @JoinColumn(name = "owner_id")
-    @JsonIgnore
-    private OwnerBean owner;
+    
 
     @Column(length = 50)
     private String name;
 
     @Column(length = 50)
     private String address;
-
+    
     @Convert(converter = tw.com.ispan.eeit.model.converter.PointToGeographyConverter.class)
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
     private Point storeCoords;
+    
 
     private Double lng;
 
     private Double lat;
 
-    @Column(name = "store_intro", columnDefinition = "varchar(max)")
+    @Column(name = "store_intro" , columnDefinition = "varchar(max)")
     private String storeIntro;
 
     @Column(columnDefinition = "varchar(max)")
@@ -85,46 +83,63 @@ public class StoreBean {
 
     @Column(name = "is_active")
     private Boolean isActive;
+    
+    
+    @ManyToOne(fetch = FetchType.LAZY) // 建議對 ManyToOne 關聯設置 LAZY
+    @JoinColumn(name = "owner_id")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private OwnerBean owner;
+    
+// ------------comment   資料夾-------------------------------------    
+    @OneToMany(mappedBy = "store")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<CategorySearchedBean> categorySearched; // 如果這裡不是 Set，要特別注意
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private Set<FoodBean> foods;
-
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private Set<FoodClassBean> foodClasses;
-
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private Set<OrderBean> orders;
-
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "store_category", joinColumns = @JoinColumn(name = "store_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<CategoryBean> categories; // 您已經改為 Set，這是好的
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL) // 評論通常不應該因為 Store 刪除而刪除，請根據業務邏輯調整 cascade
-    @BatchSize(size = 25)
     @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<CommentBean> comments; // 您已經改為 Set，這是好的
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+// ------------food      資料夾-------------------------------------
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true) // 如果食物刪除是級聯刪除，加上 cascade 和
     @JsonManagedReference
-    private Set<CategorySearchedBean> categorySearched;
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude// orphanRemoval
+    private Set<FoodBean> foods; // 您已經改為 Set，這是好的
+    
+// ------------order     資料夾-------------------------------------
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL) // 訂單通常不應該因為 Store 刪除而刪除，請根據業務邏輯調整 cascade
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<OrderBean> orders; // 如果這裡不是 Set，要特別注意，但 StackOverflow 是 equals/hashCode 引起
+    
+//-------------promotion 資料夾-------------------------------------
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private Set<OpenHourBean> OpenHours;
-
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private Set<SpecGroupBean> specGroups;
-
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private List<SpecialHoursBean> specialHours;
-
+// ------------store     資料夾-------------------------------------
+    
+    @OneToMany(mappedBy = "store")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<FoodClassBean> foodClasses; // 如果這裡不是 Set，要特別注意
+    
+// ------------多對多關聯表-----------------------------------------
     @ManyToMany(mappedBy = "favoriteStores")
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

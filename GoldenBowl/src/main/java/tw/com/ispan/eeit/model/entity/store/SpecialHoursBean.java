@@ -23,15 +23,15 @@ public class SpecialHoursBean {
 	@Id
 	@Column(name = "id")
 	private Integer id;
-	
+
 	@ManyToOne
-	@JoinColumn(name="store_id")
+	@JoinColumn(name = "store_id")
 	@JsonBackReference
 	private StoreBean store;
-	
-//	@Column(name = "store_id")
-//	private Integer storeId;
-	
+
+	// @Column(name = "store_id")
+	// private Integer storeId;
+
 	@Column(name = "date")
 	private Date date;
 	@Column(name = "open_time", columnDefinition = "Time(0)")

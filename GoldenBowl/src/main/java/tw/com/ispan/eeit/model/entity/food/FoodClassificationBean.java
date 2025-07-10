@@ -12,8 +12,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
-import tw.com.ispan.eeit.model.entity.food.FoodBean;
-import tw.com.ispan.eeit.model.entity.food.FoodClassBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 /**

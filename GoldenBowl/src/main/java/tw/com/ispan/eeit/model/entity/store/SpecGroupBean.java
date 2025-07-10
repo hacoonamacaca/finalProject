@@ -32,7 +32,7 @@ public class SpecGroupBean implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "store_id")
     @JsonBackReference
     private StoreBean store;

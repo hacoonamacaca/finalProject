@@ -41,7 +41,7 @@ public class PlanBean {
 
 	@Column(name = "update_time")
 	private LocalDateTime updateTime;
-
+//-------------------------------------------------------------
 	@OneToOne(mappedBy = "plan",fetch = FetchType.LAZY) //對應到 promotionbean 中的 java 屬性名稱
 	private PromotionBean promotion;
 

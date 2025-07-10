@@ -22,12 +22,23 @@ import tw.com.ispan.eeit.service.order.OrderService;
 @RequestMapping("/api/orders") // 建議使用 /api/ 作為 RESTful API 前綴
 public class OrderController {
 
+    private final OrderDetailController orderDetailController;
+
     @Autowired
     private OrderService orderService;
 
+    OrderController(OrderDetailController orderDetailController) {
+        this.orderDetailController = orderDetailController;
+    }
+
     // 創建新訂單
     @PostMapping
-    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean order) {
+    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean orders) {
+    	System.out.println(orders.getTotal());
+//    	JSONObject obj = new JSONObject(body);
+//    	OrderBean order = new OrderBean();
+    	System.out.println(orders.getTotal());
+    	OrderBean order = new OrderBean();
         OrderBean createdOrder = orderService.createOrder(order);
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }

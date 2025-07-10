@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.Hibernate;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
@@ -57,7 +58,7 @@ public class OrderBean {
 	@Column(name = "pickup_time")
 	private LocalDateTime pickupTime;
 	// ------------comment資料夾-----------------------------------
-	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToOne(mappedBy = "order", cascade = CascadeType.ALL)
 	@JsonManagedReference
 	private CommentBean comment;
 	// mappedBy="order" 是comment的java屬性order
@@ -69,14 +70,14 @@ public class OrderBean {
 	// mappedBy的是java物件名稱
 
 	// ------------promotion資料夾---------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "promotion_id")
 	@JsonBackReference
 	private PromotionBean promotion; // 假設 Promotion Entity 存在
 	// ------------store 資料夾-----------------------------------
-	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne
 	@JoinColumn(name = "store_id") // customer_order表中的欄位
-	@JsonBackReference
+	@JsonIgnore
 	private StoreBean store;
 
 	@Override
