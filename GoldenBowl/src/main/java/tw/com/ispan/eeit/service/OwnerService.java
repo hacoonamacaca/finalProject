@@ -1,10 +1,13 @@
 package tw.com.ispan.eeit.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import tw.com.ispan.eeit.model.dto.OwnerDTO;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.repository.OwnerRepository;
 
@@ -12,6 +15,35 @@ import tw.com.ispan.eeit.repository.OwnerRepository;
 public class OwnerService {
 	@Autowired
 	private OwnerRepository ownerRepository;
+	
+	public List<OwnerBean> findAll() {
+        return ownerRepository.findAll();
+    }
+
+    public OwnerBean findById(Integer id) {
+        return ownerRepository.findById(id).orElse(null);
+    }
+    
+    public OwnerBean updateOwner(Integer id, String name, String phone, String email) {
+        Optional<OwnerBean> optional = ownerRepository.findById(id);
+        if (optional.isPresent()) {
+            OwnerBean owner = optional.get();
+            // 只有有傳值才更新
+            if (name != null && !name.isEmpty()) owner.setName(name);
+            if (phone != null && !phone.isEmpty()) owner.setPhone(phone);
+            if (email != null && !email.isEmpty()) owner.setEmail(email);
+            return ownerRepository.save(owner);
+        }
+        return null;
+    }
+    
+    public boolean deleteOwner(Integer id) {
+        if (ownerRepository.existsById(id)) {
+            ownerRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
 	
 	public boolean checkEmailExists(String email) {
 		return ownerRepository.existsByEmail(email);
@@ -38,4 +70,28 @@ public class OwnerService {
         owner.setIsVerify(false);
         return ownerRepository.save(owner);
     }
+	
+	public OwnerDTO toDTO(OwnerBean bean) {
+	    if (bean == null) return null;
+	    OwnerDTO dto = new OwnerDTO();
+	    dto.setId(bean.getId());
+	    dto.setEmail(bean.getEmail());
+	    dto.setName(bean.getName());
+	    dto.setPhone(bean.getPhone());
+	    dto.setSignupDate(bean.getSignupDate());
+	    dto.setLastLogin(bean.getLastLogin());
+	    dto.setIsActive(bean.getIsActive());
+	    dto.setIsVerify(bean.getIsVerify());
+	    // 只傳簡單的 store info
+	    if(bean.getStores() != null) {
+	        List<OwnerDTO.StoreSimpleDTO> stores = bean.getStores().stream().map(store -> {
+	            OwnerDTO.StoreSimpleDTO s = new OwnerDTO.StoreSimpleDTO();
+	            s.setId(store.getId());
+	            s.setName(store.getName());
+	            return s;
+	        }).toList();
+	        dto.setStores(stores);
+	    }
+	    return dto;
+	}
 }
