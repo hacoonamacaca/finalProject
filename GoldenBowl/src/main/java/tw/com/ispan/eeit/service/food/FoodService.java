@@ -2,98 +2,157 @@ package tw.com.ispan.eeit.service.food;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.dto.food.FoodDTO;
+import tw.com.ispan.eeit.model.dto.food.FoodRequest;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
-import tw.com.ispan.eeit.model.entity.food.TagBean;
+import tw.com.ispan.eeit.model.entity.food.FoodClassBean;
+import tw.com.ispan.eeit.model.entity.food.FoodClassificationBean;
+import tw.com.ispan.eeit.model.entity.store.StoreBean;
+import tw.com.ispan.eeit.repository.food.FoodClassRepository;
 import tw.com.ispan.eeit.repository.food.FoodRepository;
+import tw.com.ispan.eeit.repository.store.StoreRepository;
 
 @Service
 public class FoodService {
 
     @Autowired
     private FoodRepository foodRepository;
+    @Autowired
+    private StoreRepository storeRepository;
+    @Autowired
+    private FoodClassRepository foodClassRepository;
 
-    // 修改返回類型為 List<FoodDTO>
-    public List<FoodDTO> getAllFoodsDTO() {
-        List<FoodBean> foods = foodRepository.findAll();
-        // 將 FoodBean 列表轉換為 FoodDTO 列表
-        return foods.stream()
-                .map(this::convertToFoodDTO) // 使用輔助方法進行轉換
-                .collect(Collectors.toList());
-    }
+    // --- Create ---
+    @Transactional
+    public FoodDTO createFood(FoodRequest request) {
+        StoreBean store = storeRepository.findById(request.getStoreId())
+                .orElseThrow(() -> new ResourceNotFoundException("找不到店家，ID: " + request.getStoreId()));
 
-    // 獲取單個食物的 DTO (可選，如果需要詳情頁)
-    public Optional<FoodDTO> getFoodDTOById(Integer id) {
-        return foodRepository.findById(id)
-                .map(this::convertToFoodDTO);
-    }
-
-    public FoodBean createFood(FoodBean food) {
-        food.setCreateTime(LocalDateTime.now());
-        food.setUpdateTime(LocalDateTime.now());
-        if (food.getIsActive() == null) {
-            food.setIsActive(true);
+        List<FoodClassBean> foodClasses = foodClassRepository.findAllById(request.getFoodClassIds());
+        if (foodClasses.size() != request.getFoodClassIds().size()) {
+            throw new ResourceNotFoundException("部分食物分類不存在，請確認 ID 是否正確。");
         }
-        if (food.getStock() == null) {
-            food.setStock(0); // 預設庫存為 0
+
+        FoodBean newFood = new FoodBean();
+        newFood.setStore(store);
+        newFood.setName(request.getName());
+        newFood.setPrice(request.getPrice());
+        newFood.setDescription(request.getDescription());
+        newFood.setStock(request.getStock());
+        newFood.setImgResource(request.getImgResource());
+        
+        // 【核心修正：使用新的中間表 Entity】
+        newFood.getClassifications().clear(); // 清理（對新增來說是多餘的，但好習慣）
+        for (FoodClassBean foodClass : foodClasses) {
+            
+            newFood.getClassifications().add(
+            new FoodClassificationBean(newFood, foodClass, store, foodClass.getSort()));
         }
-        return foodRepository.save(food);
+                
+//        newFood.setFoodClasses(foodClasses); // 設定多對多關聯
+        newFood.setCreateTime(LocalDateTime.now());
+        newFood.setUpdateTime(LocalDateTime.now());
+        newFood.setIsActive(true);
+        newFood.setScore(0.0f);
+
+        FoodBean savedFood = foodRepository.save(newFood);
+        return convertToDTO(savedFood);
     }
 
-    public FoodBean updateFood(Integer id, FoodBean foodDetails) {
-        Optional<FoodBean> optionalFood = foodRepository.findById(id);
-        if (optionalFood.isPresent()) {
-            FoodBean existingFood = optionalFood.get();
-            existingFood.setName(foodDetails.getName());
-            existingFood.setPrice(foodDetails.getPrice());
-            existingFood.setDescription(foodDetails.getDescription());
-            existingFood.setUpdateTime(LocalDateTime.now());
-            existingFood.setScore(foodDetails.getScore());
-            existingFood.setIsActive(foodDetails.getIsActive());
-            existingFood.setStock(foodDetails.getStock());
-            existingFood.setImgResource(foodDetails.getImgResource());
-            // 處理關聯實體 (store, tags, specGroups, foodClasses, favoritedByUsers) 需要額外的邏輯
-            return foodRepository.save(existingFood);
-        }
-        return null;
+    // --- Read (Single) ---
+    public FoodDTO findFoodById(Integer id) {
+        FoodBean foodBean = foodRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到食物，ID: " + id));
+        return convertToDTO(foodBean);
     }
 
-    public boolean deleteFood(Integer id) {
-        if (foodRepository.existsById(id)) {
-            foodRepository.deleteById(id);
-            return true;
+    // --- Read (List by Store) ---
+    public List<FoodDTO> findFoodsByStoreId(Integer storeId) {
+        // 可以在這裡加一個檢查，確認店家是否存在
+        if (!storeRepository.existsById(storeId)) {
+            throw new ResourceNotFoundException("找不到店家，ID: " + storeId);
         }
-        return false;
+        List<FoodBean> foodBeans = foodRepository.findByStoreId(storeId);
+        return foodBeans.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
-    // 輔助方法：將 FoodBean 轉換為 FoodDTO
-    private FoodDTO convertToFoodDTO(FoodBean foodBean) {
+    // --- Update ---
+    @Transactional
+    public FoodDTO updateFood(Integer id, FoodRequest request) {
+        FoodBean existingFood = foodRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("找不到要更新的食物，ID: " + id));
+
+        // 驗證店家 ID 是否匹配 (可選，但更安全)
+        if (!existingFood.getStore().getId().equals(request.getStoreId())) {
+            throw new IllegalArgumentException("無法變更食物所屬的店家。");
+        }
+
+        List<FoodClassBean> foodClasses = foodClassRepository.findAllById(request.getFoodClassIds());
+        if (foodClasses.size() != request.getFoodClassIds().size()) {
+            throw new ResourceNotFoundException("部分食物分類不存在，請確認 ID 是否正確。");
+        }
+
+        existingFood.setName(request.getName());
+        existingFood.setPrice(request.getPrice());
+        existingFood.setDescription(request.getDescription());
+        existingFood.setStock(request.getStock());
+        existingFood.setImgResource(request.getImgResource());
+//        existingFood.setFoodClasses(foodClasses);
+        existingFood.setUpdateTime(LocalDateTime.now());
+
+        existingFood.getClassifications().clear(); // 清理掉所有舊的關聯
+        for (FoodClassBean foodClass : foodClasses) {
+            
+            existingFood.getClassifications().add(
+            new FoodClassificationBean(existingFood, foodClass, existingFood.getStore(), foodClass.getSort()));
+        }
+        
+        existingFood.setUpdateTime(LocalDateTime.now());
+
+        FoodBean updatedFood = foodRepository.save(existingFood);
+        return convertToDTO(updatedFood);
+    }
+
+    // --- Delete ---
+    @Transactional
+    public void deleteFood(Integer id) {
+        if (!foodRepository.existsById(id)) {
+            throw new ResourceNotFoundException("找不到要刪除的食物，ID: " + id);
+        }
+        foodRepository.deleteById(id);
+    }
+
+    // --- Helper Method ---
+    private FoodDTO convertToDTO(FoodBean foodBean) {
         FoodDTO dto = new FoodDTO();
         dto.setId(foodBean.getId());
         dto.setName(foodBean.getName());
         dto.setPrice(foodBean.getPrice());
         dto.setDescription(foodBean.getDescription());
-        dto.setImgResource(foodBean.getImgResource());
         dto.setScore(foodBean.getScore());
+        dto.setIsActive(foodBean.getIsActive());
+        dto.setStock(foodBean.getStock());
+        dto.setImgResource(foodBean.getImgResource());
 
-        // 處理 tags：將 TagBean 列表轉換為 Tag 名稱列表
-        if (foodBean.getTags() != null) {
-            dto.setTagNames(foodBean.getTags().stream()
-                    .map(TagBean::getName) // 假設 TagBean 有 getName() 方法
-                    .collect(Collectors.toList()));
-        }
-
-        // 如果需要 Store 名稱
         if (foodBean.getStore() != null) {
             dto.setStoreId(foodBean.getStore().getId());
             dto.setStoreName(foodBean.getStore().getName());
         }
+
+        if (foodBean.getClassifications() != null && !foodBean.getClassifications().isEmpty()) {
+            // 為了簡化，DTO 只顯示第一個分類的資訊
+            FoodClassificationBean primaryClassification = foodBean.getClassifications().iterator().next();
+            dto.setCategoryName(primaryClassification.getFoodClass().getName());
+            dto.setCategoryId(primaryClassification.getFoodClass().getId());
+        }
+
         return dto;
     }
 }
