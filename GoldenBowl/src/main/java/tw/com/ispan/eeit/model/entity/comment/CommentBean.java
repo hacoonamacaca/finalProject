@@ -15,7 +15,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
@@ -25,7 +24,6 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Table(name = "comment")
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(of = "id") // <--- 在這裡加上這一行
 @EqualsAndHashCode(of = "id") // <--- 在這裡加上這一行
 public class CommentBean {
     @Id
@@ -49,12 +47,6 @@ public class CommentBean {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
-    // 將 insertable = false, updatable = false 移除，因為通常關聯會自動處理外鍵
-    // 或者，如果您只是想通過 ID 進行手動關聯，但同時需要對象實例，則保持它們。
-    // 但更常見的做法是直接讓 JPA 管理這些外鍵。
-    // 如果您保留了 id 字段並設置了 insertable=false, updatable=false，這表示您只讀取 id
-    // 但在保存時 JPA 會使用 OrderBean 對象來設置外鍵。
-    // 如果您刪除重複的 ID 字段，則無需 insertable = false, updatable = false
     // 將 insertable = false, updatable = false 移除，因為通常關聯會自動處理外鍵
     // 或者，如果您只是想通過 ID 進行手動關聯，但同時需要對象實例，則保持它們。
     // 但更常見的做法是直接讓 JPA 管理這些外鍵。

@@ -25,13 +25,15 @@ public interface OrderRepository extends JpaRepository<OrderBean, Integer> {
     // "WHERE u.id = :userId")
     // List<OrderBean> findByUser_Id(@Param("userId") Integer userId);
     @Query("SELECT o FROM OrderBean o " +
-            "JOIN FETCH o.user u " +
-            "JOIN FETCH o.orderDetails od " +
-            "JOIN FETCH od.food f " +
-            "LEFT JOIN FETCH o.comment c " + // 使用 LEFT JOIN FETCH 以防沒有評論
+            "LEFT JOIN FETCH o.user u " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.food f " +
+            "LEFT JOIN FETCH o.comment c " +
+            "LEFT JOIN FETCH f.store fs " +
+            "LEFT JOIN FETCH od.likedFood lf " + // 使用 LEFT JOIN FETCH 以防沒有評論
             // 如果需要 likedFoods: "LEFT JOIN FETCH od.likedFoods lf " + // 注意：不能同時 JOIN FETCH
             // 多個 OneToMany 集合
-            "WHERE u.id = :userId")
+            "WHERE u.id = :userId ")
     List<OrderBean> findByUser_Id(@Param("userId") Integer userId);
 
     List<OrderBean> findByUser_IdAndStatus(Integer userId, String status);

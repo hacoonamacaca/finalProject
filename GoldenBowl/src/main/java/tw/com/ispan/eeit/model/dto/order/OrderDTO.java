@@ -24,12 +24,23 @@ public class OrderDTO {
     private CommentResponseDTO comment;
     private List<OrderDetailDTO> orderDetails; // 包含訂單明細列表
     private List<StoreDTO> stores;
+    private OrderStoreDto store;
 
     // 如果需要更詳細的User/Store/Promotion資料，可以嵌套對應的DTO
     @Data
     public static class OrderUserDto {
         private Integer id;
         private String name;
+        // ... 其他用戶資訊
+    }
+
+    @Data
+    public static class OrderStoreDto {
+        private Integer id;
+        private String name;
+        private String photo;
+        private Boolean isOpen;
+        private Boolean isActive;
         // ... 其他用戶資訊
     }
 
@@ -52,6 +63,18 @@ public class OrderDTO {
             userDto.setId(orderBean.getUser().getId());
             userDto.setName(orderBean.getUser().getName());
             orderDto.setUser(userDto);
+        }
+
+        if (orderBean.getStore() != null &&
+                org.hibernate.Hibernate.isInitialized(orderBean.getStore())) {
+            // 如果 OrderDto 包含嵌套的 UserDto，可以這樣做：
+            OrderDTO.OrderStoreDto storeDto = new OrderDTO.OrderStoreDto();
+            storeDto.setId(orderBean.getStore().getId());
+            storeDto.setName(orderBean.getStore().getName());
+            storeDto.setPhoto(orderBean.getStore().getPhoto());
+            storeDto.setIsActive(orderBean.getStore().getIsActive());
+            storeDto.setIsOpen(orderBean.getStore().getIsOpen());
+            orderDto.setStore(storeDto);
         }
 
         // 複製 Comment 資訊

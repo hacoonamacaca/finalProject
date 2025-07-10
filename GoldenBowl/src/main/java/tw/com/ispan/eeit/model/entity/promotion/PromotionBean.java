@@ -3,6 +3,8 @@ package tw.com.ispan.eeit.model.entity.promotion;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -33,13 +35,16 @@ public class PromotionBean {
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "plan_id")//sql當中的promotion table FK
+	@JsonBackReference
 	private PlanBean plan;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonIgnore
 	@JoinColumn(name = "store_id")
 	private StoreBean store;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonIgnore
 	@JoinColumn(name = "tag_id")
 	private TagBean tag;
 

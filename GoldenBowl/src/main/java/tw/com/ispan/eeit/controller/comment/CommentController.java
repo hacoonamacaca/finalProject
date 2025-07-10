@@ -68,10 +68,7 @@ public class CommentController {
     }
 
     // 根據 ID 查找評論 (返回 DTO)
-    // 根據 ID 查找評論 (返回 DTO)
     @GetMapping("/{id}")
-    public ResponseEntity<CommentResponseDTO> getCommentById(@PathVariable Integer id) {
-        return commentService.findCommentDtoById(id) // 調用返回 DTO 的方法
     public ResponseEntity<CommentResponseDTO> getCommentById(@PathVariable Integer id) {
         return commentService.findCommentDtoById(id) // 調用返回 DTO 的方法
                 .map(ResponseEntity::ok)
@@ -79,10 +76,7 @@ public class CommentController {
     }
 
     // 查找所有評論 (返回 DTO 列表)
-    // 查找所有評論 (返回 DTO 列表)
     @GetMapping
-    public ResponseEntity<List<CommentResponseDTO>> getAllComments() {
-        List<CommentResponseDTO> comments = commentService.findAllAsDto(); // 調用返回 DTO 列表的方法
     public ResponseEntity<List<CommentResponseDTO>> getAllComments() {
         List<CommentResponseDTO> comments = commentService.findAllAsDto(); // 調用返回 DTO 列表的方法
         return ResponseEntity.ok(comments);
@@ -105,16 +99,6 @@ public class CommentController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }
-    }
-
-    // 根據 Store ID 查找評論列表 (返回 DTO 列表)
-    @GetMapping("/store/{storeId}")
-    public ResponseEntity<List<CommentResponseDTO>> getCommentsByStoreId(@PathVariable Integer storeId) {
-        List<CommentResponseDTO> comments = commentService.findByStoreIdAsDto(storeId); // 調用返回 DTO 列表的方法
-        if (comments.isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(comments);
     }
 
     // 根據 Store ID 查找評論列表 (返回 DTO 列表)

@@ -1,9 +1,14 @@
 <template>
-    <div class="cart-modal-overlay goldenbowl-restaurant-theme" @click="closeModal">
-        <div class="cart-modal-content" @click.stop>
+    <div class="cart-page goldenbowl-restaurant-theme">
+        <div class="cart-container">
             <div class="cart-header">
-                <h4 class="cart-title">購物車 ({{ totalItems }})</h4>
-                <button class="close-btn" @click="closeModal">×</button>
+                <div class="header-content">
+                    <button class="back-btn" @click="$router.go(-1)">
+                        <i class="bi bi-arrow-left"></i>
+                        返回
+                    </button>
+                    <h1 class="cart-title">購物車 ({{ totalItems }})</h1>
+                </div>
             </div>
 
             <div class="cart-body">
@@ -11,6 +16,9 @@
                     <div class="empty-cart-icon">🛒</div>
                     <p>購物車是空的</p>
                     <p class="empty-cart-desc">快去選購美味的商品吧！</p>
+                    <button class="continue-shopping-btn" @click="$router.push('/search')">
+                        開始購物
+                    </button>
                 </div>
 
                 <div v-else class="cart-restaurants">
@@ -47,40 +55,7 @@
                                 <div class="item-details">
                                     <h5 class="item-name">{{ item.name }}</h5>
 
-                                    <!-- 显示冰量 -->
-                                    <div v-if="item.selectedIceLevel" class="item-specification">
-                                        <span class="spec-label">冰量：</span>
-                                        <span class="spec-value">{{ formatIceLevel(item.selectedIceLevel) }}</span>
-                                    </div>
-
-                                    <!-- 显示甜度 -->
-                                    <div v-if="item.selectedSweetnessLevel" class="item-specification">
-                                        <span class="spec-label">甜度：</span>
-                                        <span class="spec-value">{{ formatSweetnessLevel(item.selectedSweetnessLevel)
-                                        }}</span>
-                                    </div>
-
-                                    <!-- 显示尺寸 -->
-                                    <div v-if="item.selectedSizeLevel" class="item-specification">
-                                        <span class="spec-label">尺寸：</span>
-                                        <span class="spec-value">{{ formatSizeLevel(item.selectedSizeLevel) }}</span>
-                                    </div>
-
-                                    <!-- 显示溫度 -->
-                                    <div v-if="item.selectedTemperatureLevel" class="item-specification">
-                                        <span class="spec-label">溫度：</span>
-                                        <span class="spec-value">{{
-                                            formatTemperatureLevel(item.selectedTemperatureLevel) }}</span>
-                                    </div>
-
-                                    <!-- 显示配料 -->
-                                    <div v-if="item.selectedToppings && item.selectedToppings.length > 0"
-                                        class="item-specification">
-                                        <span class="spec-label">配料：</span>
-                                        <span class="spec-value">{{ formatToppings(item.selectedToppings) }}</span>
-                                    </div>
-
-                                    <!-- 显示其他选项 -->
+                                    <!-- 显示选项 -->
                                     <div v-if="item.selectedOptions && hasSelectedOptions(item.selectedOptions)"
                                         class="item-options">
                                         <div v-for="(optionValue, optionId) in item.selectedOptions" :key="optionId">
@@ -150,8 +125,11 @@
                 </div>
 
                 <div class="cart-actions">
-                    <button class="continue-shopping-btn" @click="closeModal">
+                    <button class="continue-shopping-btn" @click="$router.push('/search')">
                         繼續購物
+                    </button>
+                    <button class="checkout-all-btn" @click="checkoutAllRestaurants">
+                        全部結帳 (NT${{ totalAmount + deliveryFee }})
                     </button>
                 </div>
             </div>
@@ -161,60 +139,64 @@
 
 <script setup>
 import { computed } from 'vue'
-// import '@/assets/css/restaurant-theme.css'
+import { useCartStore } from '@/stores/cart'
+import { useRouter } from 'vue-router'
 
-const props = defineProps({
-    cartByRestaurant: {
-        type: Object,
-        required: true
-    },
-    totalAmount: {
-        type: Number,
-        required: true
-    }
-})
-
-const emit = defineEmits(['close', 'update-quantity', 'remove-item', 'checkout-restaurant', 'clear-restaurant'])
+const router = useRouter()
+const cartStore = useCartStore()
 
 // 计算属性
+const cartByRestaurant = computed(() => cartStore.cartByRestaurant)
+const totalAmount = computed(() => cartStore.totalAmount)
+
 const totalItems = computed(() => {
-    return Object.values(props.cartByRestaurant).reduce((total, restaurantCart) => {
+    return Object.values(cartByRestaurant.value).reduce((total, restaurantCart) => {
         return total + restaurantCart.items.reduce((sum, item) => sum + item.quantity, 0)
     }, 0)
 })
 
 const restaurantCount = computed(() => {
-    return Object.keys(props.cartByRestaurant).length
+    return Object.keys(cartByRestaurant.value).length
 })
 
 const deliveryFee = computed(() => {
     // 满额免运费逻辑
-    return props.totalAmount >= 300 ? 0 : 50
+    return totalAmount.value >= 300 ? 0 : 50
 })
 
 // 方法
-const closeModal = () => {
-    emit('close')
-}
-
 const updateQuantity = (itemId, newQuantity, restaurantId) => {
-    emit('update-quantity', itemId, newQuantity, restaurantId)
+    cartStore.updateQuantity(itemId, newQuantity, restaurantId)
 }
 
 const removeItem = (itemId, restaurantId) => {
-    emit('remove-item', itemId, restaurantId)
+    cartStore.removeItem(itemId, restaurantId)
 }
 
 const checkoutRestaurant = (restaurantId) => {
-    emit('checkout-restaurant', restaurantId)
+    const orderData = cartStore.checkoutSingleRestaurant(restaurantId)
+    if (orderData) {
+        console.log('單一餐廳結帳：', orderData)
+        // 可以導航到結帳頁面
+        // router.push('/checkout', { state: { orderData } })
+    }
+}
+
+const checkoutAllRestaurants = () => {
+    const orders = cartStore.checkoutAllRestaurants()
+    if (orders.length > 0) {
+        console.log('全部餐廳結帳：', orders)
+        // 可以導航到結帳頁面
+        // router.push('/checkout', { state: { orders } })
+    }
 }
 
 const clearRestaurant = (restaurantId) => {
-    emit('clear-restaurant', restaurantId)
+    cartStore.clearRestaurantCart(restaurantId)
 }
 
 const getRestaurantTotal = (restaurantId) => {
-    const restaurantCart = props.cartByRestaurant[restaurantId]
+    const restaurantCart = cartByRestaurant.value[restaurantId]
     if (!restaurantCart) return 0
 
     return restaurantCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -238,138 +220,71 @@ const formatOptions = (optionValue) => {
     }
     return optionValue
 }
-
-const formatIceLevel = (iceLevel) => {
-    const iceLevelMap = {
-        'more': '多冰',
-        'normal': '正常冰',
-        'less': '少冰',
-        'light': '微冰',
-        'none': '去冰'
-    }
-    return iceLevelMap[iceLevel] || iceLevel
-}
-
-const formatSweetnessLevel = (sweetnessLevel) => {
-    const sweetnessMap = {
-        'less': '少糖',
-        'normal': '正常糖',
-        'more': '多糖',
-        'extra': '加糖'
-    }
-    return sweetnessMap[sweetnessLevel] || sweetnessLevel
-}
-
-const formatSizeLevel = (sizeLevel) => {
-    const sizeMap = {
-        'small': '小杯',
-        'medium': '中杯',
-        'large': '大杯',
-        'extra': '特大杯'
-    }
-    return sizeMap[sizeLevel] || sizeLevel
-}
-
-const formatTemperatureLevel = (temperatureLevel) => {
-    const temperatureMap = {
-        'hot': '熱',
-        'warm': '溫',
-        'cold': '冰',
-        'extra': '常溫'
-    }
-    return temperatureMap[temperatureLevel] || temperatureLevel
-}
-
-const formatToppings = (toppings) => {
-    const toppingMap = {
-        'pearl': '珍珠',
-        'taro': '小芋圓',
-        'crystal': '寒天晶球',
-        'jelly': '金萱茶凍',
-        'grass': '仙草',
-        'pudding': '布丁'
-    }
-    return toppings.map(topping => toppingMap[topping] || topping).join('、')
-}
-
 </script>
 
 <style scoped>
 @import '../../assets/css/restaurant-theme.css';
 
-.cart-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000;
+.cart-page {
+    min-height: 100vh;
+    background: var(--restaurant-bg-light);
     padding: 1rem;
 }
 
-.cart-modal-content {
+.cart-container {
+    max-width: 1200px;
+    margin: 0 auto;
     background: var(--restaurant-bg-primary);
-    border: 1px solid var(--restaurant-border-light);
     border-radius: 12px;
-    width: 100%;
-    max-width: 800px;
-    max-height: 90vh;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 12px 40px var(--restaurant-shadow-dark);
+    box-shadow: 0 4px 20px var(--restaurant-shadow-medium);
+    overflow: hidden;
 }
 
 .cart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1.5rem;
-    border-bottom: 1px solid var(--restaurant-border-light);
     background: var(--restaurant-gradient-light);
-    flex-shrink: 0;
+    border-bottom: 1px solid var(--restaurant-border-light);
+    padding: 1.5rem;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.back-btn {
+    background: none;
+    border: 1px solid var(--restaurant-border-medium);
+    color: var(--restaurant-text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.back-btn:hover {
+    background: var(--restaurant-shadow-light);
+    border-color: var(--restaurant-primary);
 }
 
 .cart-title {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 600;
     color: var(--restaurant-text-primary);
     margin: 0;
 }
 
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: var(--restaurant-text-secondary);
-    cursor: pointer;
-    padding: 0;
-    width: 2rem;
-    height: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-    color: var(--restaurant-primary);
-    background: var(--restaurant-shadow-light);
-}
-
 .cart-body {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem 1.5rem;
+    padding: 1.5rem;
 }
 
 .empty-cart {
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 4rem 1rem;
     color: var(--restaurant-text-secondary);
     background: var(--restaurant-bg-light);
     border-radius: 8px;
@@ -377,8 +292,8 @@ const formatToppings = (toppings) => {
 }
 
 .empty-cart-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
+    font-size: 5rem;
+    margin-bottom: 1.5rem;
 }
 
 .empty-cart p {
@@ -387,8 +302,9 @@ const formatToppings = (toppings) => {
 }
 
 .empty-cart-desc {
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--restaurant-text-muted);
+    margin-bottom: 2rem;
 }
 
 .cart-restaurants {
@@ -538,26 +454,6 @@ const formatToppings = (toppings) => {
     border: 1px solid var(--restaurant-border-light);
 }
 
-.item-specification {
-    font-size: 0.85rem;
-    color: var(--restaurant-text-secondary);
-    margin-bottom: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    background: var(--restaurant-bg-secondary);
-    border-radius: 4px;
-    border: 1px solid var(--restaurant-border-light);
-}
-
-.spec-label {
-    font-weight: 500;
-    color: var(--restaurant-text-primary);
-}
-
-.spec-value {
-    color: var(--restaurant-primary-dark);
-    font-weight: 500;
-}
-
 .item-notes {
     font-size: 0.85rem;
     color: var(--restaurant-text-secondary);
@@ -675,11 +571,9 @@ const formatToppings = (toppings) => {
 }
 
 .cart-footer {
-    flex-shrink: 0;
     border-top: 1px solid var(--restaurant-border-light);
     padding: 1.5rem;
     background: var(--restaurant-bg-secondary);
-    border-radius: 0 0 12px 12px;
 }
 
 .cart-summary {
@@ -753,10 +647,8 @@ const formatToppings = (toppings) => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-    .cart-modal-content {
-        margin: 0.5rem;
-        max-width: none;
-        max-height: 95vh;
+    .cart-page {
+        padding: 0.5rem;
     }
 
     .cart-header,

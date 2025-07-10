@@ -15,11 +15,11 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  // server: {
-  //   proxy: {
-  //     // 將 /api 代理到 Spring Boot 後端（假設你後端跑在 8080 port）
-  //     '/api': 'http://localhost:8080'
-  //   }
-  // }
+  server: {
+    proxy: {
+      // 將 /api 代理到 Spring Boot 後端（假設你後端跑在 8080 port）
+      '/api': 'http://localhost:8080'
+    }
+  }
 })
 

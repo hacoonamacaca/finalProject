@@ -69,14 +69,14 @@ console.log('LoginEmailModal.vue loaded!')
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router';
 import RegisterModal from '@/components/Ivy/RegisterModal.vue'
-import LoginEmailModal from '@/views/Ivy/user/LoginEmailModal.vue'
-import RegisterEmailModal from '@/views/Ivy/user/RegisterEmailModal.vue'
-import VerifyEmailModal from '@/views/Ivy/user/VerifyEmailModal.vue'
-import LoginPasswordModal from '@/views/Ivy/user/LoginPasswordModal.vue'
-import ForgotPasswordModal from '@/views/Ivy/user/ForgotPasswordModal.vue'
-import ForgotPasswordSentModal from '@/views/Ivy/user/ForgotPasswordSentModal.vue'
-import ResetPasswordSentModal from '@/views/Ivy/user/ResetPasswordSentModal.vue'
-import ResetPasswordDialog from '@/views/Ivy/user/ResetPasswordDialog.vue'
+import LoginEmailModal from '@/views/Ivy/LoginEmailModal.vue'
+import RegisterEmailModal from '@/views/Ivy/RegisterEmailModal.vue'
+import VerifyEmailModal from '@/views/Ivy/VerifyEmailModal.vue'
+import LoginPasswordModal from '@/views/Ivy/LoginPasswordModal.vue'
+import ForgotPasswordModal from '@/views/Ivy/ForgotPasswordModal.vue'
+import ForgotPasswordSentModal from '@/views/Ivy/ForgotPasswordSentModal.vue'
+import ResetPasswordSentModal from '@/views/Ivy/ResetPasswordSentModal.vue'
+import ResetPasswordDialog from '@/views/Ivy/ResetPasswordDialog.vue'
 //-----Ivy----------------------
 const step = ref('')            // 控制哪個modal開
 const userEmail = ref('')       // 存email

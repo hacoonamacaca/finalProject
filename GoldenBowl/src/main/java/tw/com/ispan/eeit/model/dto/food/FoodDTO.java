@@ -5,9 +5,11 @@ import java.util.List;
 //3. FoodDto.java (可以定義為 OrderDetailDto 的靜態內部類，或獨立類)
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
 
 @Data
+@NoArgsConstructor
 public class FoodDTO {
 	private Integer id;
 	private String name;
@@ -18,6 +20,12 @@ public class FoodDTO {
 	private String storeName;
 	private Integer storeId;
 	private List<String> tagNames;
+
+	// 新增food資料需要的映射 by kinan
+	private Boolean isActive;
+	private Integer stock;
+	private String categoryName;
+	private Integer categoryId;
 
 	// ... 其他食物屬性
 	public static FoodDTO fromEntity(FoodBean foodBean) {

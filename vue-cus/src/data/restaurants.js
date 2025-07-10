@@ -477,7 +477,7 @@ export const restaurants = {
                 items: [{
                         id: 901,
                         name: 'Tiramisu',
-                        description: '經典提拉米蘇配咖啡和可可粉',
+                        description: '經典提拉米蘇配咖  啡和可可粉',
                         image: 'https://img.ltn.com.tw/Upload/food/page/2018/02/01/180201-7131-0-C92C8.jpg',
                         price: 180,
                         originalPrice: 220,
