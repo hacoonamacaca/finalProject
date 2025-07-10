@@ -35,7 +35,7 @@ public class LikedFoodDTO {
      *
      * @param likedFoodBean 要轉換的 LikedFoodBean 物件。
      * @return 轉換後的 LikedFoodDTO 物件。
-     */
+     **/
     public static LikedFoodDTO fromLikedFoodBean(LikedFoodBean likedFoodBean) {
         if (likedFoodBean == null) {
             return null;

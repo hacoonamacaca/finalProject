@@ -31,15 +31,15 @@ public class FoodDTO {
 	private Integer categoryId;
 
 	// ... 其他食物屬性 (已不需要)
-	public static FoodDTO fromEntity(FoodBean foodBean) {
-		FoodDTO foodDto = new FoodDTO();
-		foodDto.setId(foodBean.getId());
-		foodDto.setName(foodBean.getName());
-		foodDto.setPrice(foodBean.getPrice());
-		foodDto.setScore(foodBean.getScore());
-		foodDto.setImgResource(foodBean.getImgResource());
-		foodDto.setDescription(foodBean.getDescription());
-		return foodDto;
-	}
+//	public static FoodDTO fromEntity(FoodBean foodBean) {
+//		FoodDTO foodDto = new FoodDTO();
+//		foodDto.setId(foodBean.getId());
+//		foodDto.setName(foodBean.getName());
+//		foodDto.setPrice(foodBean.getPrice());
+//		foodDto.setScore(foodBean.getScore());
+//		foodDto.setImgResource(foodBean.getImgResource());
+//		foodDto.setDescription(foodBean.getDescription());
+//		return foodDto;
+//	}
 
 }

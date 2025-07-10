@@ -34,10 +34,32 @@ public interface OrderRepository extends JpaRepository<OrderBean, Integer> {
             // 如果需要 likedFoods: "LEFT JOIN FETCH od.likedFoods lf " + // 注意：不能同時 JOIN FETCH 多個 OneToMany 集合
             "WHERE u.id = :userId ")
 	List<OrderBean> findByUser_Id(@Param("userId") Integer userId);
-
-
     
-    List<OrderBean> findByUser_IdAndStatus(Integer userId,String status);
-    List<OrderBean> findByUser_IdAndStatusNot(Integer userId,String status);
     
+    @Query("SELECT o FROM OrderBean o " +
+            "LEFT JOIN FETCH o.user u " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.food f " +
+            "LEFT JOIN FETCH o.comment c " +
+            "LEFT JOIN FETCH f.store fs " +
+            "LEFT JOIN FETCH od.likedFood lf " + // 使用 LEFT JOIN FETCH 以防沒有評論
+            // 如果需要 likedFoods: "LEFT JOIN FETCH od.likedFoods lf " + // 注意：不能同時 JOIN FETCH 多個 OneToMany 集合
+            "WHERE u.id = :userId "+ 
+            "AND o.status = 'COMPLETED' OR  o.status = 'CANCELLED'")    
+    List<OrderBean> findByUser_IdAndStatus(@Param("userId") Integer userId,String status);
+    //用來找歷史訂單的訂單
+    
+    
+    @Query("SELECT o FROM OrderBean o " +
+            "LEFT JOIN FETCH o.user u " +
+            "LEFT JOIN FETCH o.orderDetails od " +
+            "LEFT JOIN FETCH od.food f " +
+            "LEFT JOIN FETCH o.comment c " +
+            "LEFT JOIN FETCH f.store fs " +
+            "LEFT JOIN FETCH od.likedFood lf " + // 使用 LEFT JOIN FETCH 以防沒有評論
+            // 如果需要 likedFoods: "LEFT JOIN FETCH od.likedFoods lf " + // 注意：不能同時 JOIN FETCH 多個 OneToMany 集合
+            "WHERE u.id = :userId "+ 
+            "AND o.status != 'COMPLETED' AND  o.status != 'CANCELLED'")
+    List<OrderBean> findByUser_IdAndStatusNot(@Param("userId")Integer userId,String status);
+  //用來找正在線上的訂單
 }

@@ -54,6 +54,11 @@
                                     <i class="bi bi-star me-2"></i> 網站推薦
                                 </router-link>
                             </li>
+                            <li>
+                                <router-link to="/reportType" class="list-group-item parent" :class="{ active: isReportTypeActive }">
+                                    <i class="bi bi-star me-2"></i> 檢舉項目管理
+                                </router-link>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -87,6 +92,7 @@ const isSubscriptionRecordActive = computed(() => route.path.startsWith('/subscr
 const isRestaurantTagActive      = computed(() => route.path.startsWith('/restaurantTag'))
 const isFoodTagActive            = computed(() => route.path.startsWith('/foodTag'))
 const isRecommendationActive     = computed(() => route.path.startsWith('/recommendation'))
+const isReportTypeActive     = computed(() => route.path.startsWith('/reportType'))
 </script>
 
 <style scoped>
