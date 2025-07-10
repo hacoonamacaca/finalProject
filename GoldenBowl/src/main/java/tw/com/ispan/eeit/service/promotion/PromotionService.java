@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import tw.com.ispan.eeit.model.dto.plan.PlanDTO;
 import tw.com.ispan.eeit.model.dto.promotion.PromotionDTO;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.repository.promotion.PromotionRepository;
@@ -144,7 +145,8 @@ public class PromotionService {
 
     // Entity 轉 DTO（包含分類 type 判斷）
     public PromotionDTO toDTO(PromotionBean p) {
-        String type = getType(p); // 🔸 改這行：用共用方法判斷分類
+        String type = getType(p);
+
         return new PromotionDTO(
             p.getId(),
             p.getTitle(),
@@ -160,7 +162,9 @@ public class PromotionService {
             p.getStore() != null ? p.getStore().getId() : null,
             p.getStore() != null ? p.getStore().getName() : null,
             p.getPlan() != null ? p.getPlan().getId() : null,
-            p.getPlan() != null ? p.getPlan().getName() : null
+            p.getPlan() != null ? p.getPlan().getName() : null,
+            p.getPlan() != null ? p.getPlan().getPrice() : null,
+            p.getPlan() != null ? p.getPlan().getValidMonths() : null
         );
     }
 }

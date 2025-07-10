@@ -43,8 +43,6 @@ public class FoodBean {
     @EqualsAndHashCode.Include
     private Integer id;
 
-    
-
     @Column(length = 100)
     private String name;
 
@@ -75,9 +73,7 @@ public class FoodBean {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private StoreBean store;
-    
-    
-    
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "food_tag", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @JsonBackReference
@@ -103,11 +99,12 @@ public class FoodBean {
     @EqualsAndHashCode.Exclude
     private List<SpecGroupBean> specGroups;
 
-//    @ManyToMany
-//    @JoinTable(name = "food_class_id", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
-//    @JsonBackReference
-//    private List<FoodClassBean> foodClasses;
-    
+    // @ManyToMany
+    // @JoinTable(name = "food_class_id", joinColumns = @JoinColumn(name =
+    // "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
+    // @JsonBackReference
+    // private List<FoodClassBean> foodClasses;
+
     @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @ToString.Exclude

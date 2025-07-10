@@ -35,7 +35,7 @@ public class FoodClassBean {
 
     @Column(length = 100)
     private String description;
-    
+
     private Integer sort;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -45,11 +45,11 @@ public class FoodClassBean {
     @EqualsAndHashCode.Exclude
     private StoreBean store;
 
-//    @ManyToMany(mappedBy = "foodClasses", fetch = FetchType.LAZY)
-//    @JsonManagedReference
-//    private List<FoodBean> foods;
-    
-    @OneToMany(mappedBy = "foodClass") 
+    // @ManyToMany(mappedBy = "foodClasses", fetch = FetchType.LAZY)
+    // @JsonManagedReference
+    // private List<FoodBean> foods;
+
+    @OneToMany(mappedBy = "foodClass")
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

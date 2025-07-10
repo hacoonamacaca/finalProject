@@ -1,7 +1,6 @@
 package tw.com.ispan.eeit.model.entity.comment;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
@@ -32,7 +31,7 @@ public class CategorySearchedBean {
     @ManyToOne
     @MapsId("storeId")
     @JoinColumn(name = "store_id")
-    @JsonIgnore
+    @JsonBackReference
     private StoreBean store;
 
     @Column

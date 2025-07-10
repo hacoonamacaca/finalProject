@@ -4,15 +4,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import tw.com.ispan.eeit.model.entity.plan.PlanBean;
 import tw.com.ispan.eeit.repository.plan.PlanRepository;
 
-//@Service
+@Service
 public class PlanService {
 
 	
-//	@Autowired
+	@Autowired
 	private PlanRepository planRepository;
 	
 	//查詢全部訂閱方案

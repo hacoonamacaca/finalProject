@@ -12,6 +12,7 @@
                 <li @click="step = 'register'">會員*</li>
                 <li @click="navigateTo('store')">餐廳方*</li>
                 <li @click="navigateTo('admin')">管理者*</li>
+                <li @click="navigateTo('Search')">Search*</li>
                 <li @click="logout">登出</li>
             </ul>
         </div>

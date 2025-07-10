@@ -3,6 +3,7 @@ package tw.com.ispan.eeit.model.entity.promotion;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
@@ -31,6 +32,21 @@ public class PromotionBean {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Integer id;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "plan_id")//sql當中的promotion table FK
+	@JsonBackReference
+	private PlanBean plan;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonIgnore
+	@JoinColumn(name = "store_id")
+	private StoreBean store;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonIgnore
+	@JoinColumn(name = "tag_id")
+	private TagBean tag;
 
 	@Column(columnDefinition = "NVARCHAR(50)")
 	private String title;
@@ -70,25 +86,10 @@ public class PromotionBean {
 
 	@Column(length = 20)
 	private String status;
-//------------------------------------------------------------O
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "store_id")
-	@JsonIgnore
-	private StoreBean store;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "tag_id")
-	@JsonIgnore
-	private TagBean tag;
-
-	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "plan_id")//sql當中的promotion table FK
-	private PlanBean plan;
 
 	@OneToMany(mappedBy = "promotion")
 	private List<OrderBean> orders;
 
-	@OneToMany(mappedBy = "promotion", fetch = FetchType.LAZY)
-	@JsonIgnore
+	@OneToMany(mappedBy = "promotion")
 	private List<NotificationBean> notifications;
 }

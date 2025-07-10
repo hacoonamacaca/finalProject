@@ -28,4 +28,3 @@ public class AdminBean {
 	@Column(name = "name")
 	private String name;
 }
-

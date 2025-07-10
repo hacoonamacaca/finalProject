@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.entity.plan;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -28,10 +29,12 @@ public class SubRecordBean {
 	private Integer id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonIgnore
 	@JoinColumn(name = "user_id")
 	private UserBean user;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@JsonIgnore
 	@JoinColumn(name = "plan_id")
 	private PlanBean plan;
 

@@ -64,17 +64,18 @@ public class CategoryController {
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
+    // 更新分類 (使用 DTO 作為請求體)
     @PutMapping("/{id}")
     public ResponseEntity<CategoryDTO> updateCategory(@PathVariable Integer id,
             @RequestBody CategoryDTO categoryDto) {
         CategoryBean categoryBean = new CategoryBean();
-        BeanUtils.copyProperties(categoryDto, categoryBean); // 將 DTO 屬性複製到 Bean
+        BeanUtils.copyProperties(categoryDto, categoryBean); // DTO -> Bean
 
-        CategoryBean updatedCategory = categoryService.updateCategory(id, categoryBean);
+        CategoryBean updatedCategory = categoryService.updateCategory(id, categoryBean); // 假設 Service 會處理更新邏輯
 
         if (updatedCategory != null) {
             CategoryDTO responseDto = new CategoryDTO();
-            BeanUtils.copyProperties(updatedCategory, responseDto); // 將更新的 Bean 屬性複製回 DTO
+            BeanUtils.copyProperties(updatedCategory, responseDto); // Bean -> DTO
             return new ResponseEntity<>(responseDto, HttpStatus.OK);
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
