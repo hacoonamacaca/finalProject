@@ -8,7 +8,6 @@ import Search from "@/views/Jimmy/Search.vue"
 import OrderList from "@/views/Ted/OrderList.vue"
 import VoucherWallet from "@/views/Yifan/VoucherWallet.vue"
 import CheckoutCoupon from '@/views/Yifan/CheckoutCoupon.vue'
-import SubscriptionPlan from '@/views/Yifan/SubscriptionPlan.vue'
 import Cart from '@/views/KTlu/Cart.vue'
 import Register from '@/components/Ivy/RegisterModal.vue'
 import VerifyPending from '@/views/Ivy/VerifyPending.vue'
@@ -57,11 +56,6 @@ const routes = [{
     path: '/Checkout',
     name: 'CheckoutCoupon',
     component: CheckoutCoupon
-},
-{
-    path: '/subscription',
-    name: 'subscriptionplan',
-    component: SubscriptionPlan
 },
 {
     path: '/cart',

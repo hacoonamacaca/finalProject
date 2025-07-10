@@ -22,7 +22,7 @@ public class UserTokenBean {
 	private Integer id;
 
 	@Column(name = "user_id")
-	private Integer userId;
+	private Integer userid;
 
 	@Column(name = "email")
 	private String email;

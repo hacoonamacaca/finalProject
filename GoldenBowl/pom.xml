@@ -31,39 +31,24 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-		<!--
+	<!--
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 	-->
-	
-	<!-- Spring Security測試用 -->
-	<!--	<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-security</artifactId>
-		</dependency>
-	-->
-	
 		<dependency>
 		    <groupId>org.locationtech.jts</groupId>
 		    <artifactId>jts-core</artifactId>
 		    <version>1.19.0</version> 
 	    </dependency>
-	    <!--地理位置-->
+		
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
-		
-		<dependency>
-		    <groupId>org.locationtech.jts</groupId>
-		    <artifactId>jts-core</artifactId>
-		    <version>1.19.0</version> 
-	    </dependency>
-	    <!--地理位置-->
 
 		<dependency>
 			<groupId>com.nimbusds</groupId>
@@ -86,10 +71,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
+		
 		<dependency>
 		    <groupId>org.springframework.boot</groupId>
 		    <artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
+		</dependency>		
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
@@ -115,18 +102,27 @@
 			<scope>test</scope>
 		</dependency>
 		
-		
-		<dependency>
-		    <groupId>org.springframework.boot</groupId>
-		    <artifactId>spring-boot-starter-mail</artifactId>
-		</dependency>
-		
 		<dependency>
 		    <groupId>com.sendgrid</groupId>
 		    <artifactId>sendgrid-java</artifactId>
 		    <version>4.10.1</version>
 		</dependency>
 		
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.springframework.boot</groupId>
+		    <artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.hibernate.orm</groupId>
+		    <artifactId>hibernate-spatial</artifactId>
+		</dependency>
+	
 
 	</dependencies>
 
