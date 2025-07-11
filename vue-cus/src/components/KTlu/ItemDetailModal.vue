@@ -8,7 +8,7 @@
 
             <div class="modal-body">
                 <div class="item-image">
-                    <img :src="item.imgResource" :alt="item.name" />
+                    <img :src="item.image" :alt="item.name" />
                 </div>
 
                 <div class="item-details">

@@ -51,7 +51,7 @@
                                 </div> -->
 
                                 <div class="item-image">
-                                    <img :src="item.imgResource || restaurant.image" :alt="item.name" />
+                                    <img :src="item.imageResource || restaurant.image" :alt="item.name" />
                                 </div>
                                 <div class="item-content">
                                     <div class="item-info">

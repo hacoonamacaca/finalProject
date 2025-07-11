@@ -40,6 +40,7 @@
       <a href="#">聯繫我們</a>
       <a href="#">隱私政策</a>
       <a href="#">服務條款</a>
+      您的使用者 ID: {{ userStore.userId }}
     </p>
   </footer>
 </template>
@@ -53,6 +54,9 @@ import PopularRestaurants from '@/components/Jimmy/PopularRestaurants.vue';
 import SearchSection from '@/components/Jimmy/SearchSection.vue';
 import RestaurantListSection  from "@/components/Jimmy/RestaurantListSection.vue"
 import axios from 'axios';
+import { useUserStore } from '@/stores/user'; // 確保路徑正確指向您的 user store
+
+const userStore = useUserStore();
 
 const route = useRoute();
 const address = ref('');

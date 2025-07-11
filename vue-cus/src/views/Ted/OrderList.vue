@@ -1,85 +1,26 @@
 <!-- 歷史訂單 -->
-<!-- 歷史訂單 -->
 <script setup>
-import { ref ,onMounted} from 'vue';
-import axios from '@/plungins/axios.js';
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
 import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
-// 如果你的 main.js 或其他地方沒有全局引入 Bootstrap CSS 和 Icons，你可以在這裡引入
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap-icons/font/bootstrap-icons.css'; // 如果你使用了 Bootstrap Icons
-// import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // 如果需要 Bootstrap JS 功能
-
-
-
 
 const orders=ref([])
-// 模擬訂單數據
-// orders.value.push(
-//   {
-//     id: 1,
-//     store: '店家名稱1', // 修正 'sotre' 為 'store'
-//     img: 'https://www.discoverhongkong.com/content/dam/dhk/intl/explore/dining/hong-kong-restaurants-by-the-sea/hue-960x720.jpg',
-//     price: 499,
-//     foods: [{
-//       name: '綠茶',
-//       quantity: 1,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '紅茶拿鐵',
-//       quantity: 2,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '叉燒飯',
-//       quantity: 3,
-//       like: null,
-//     }],
-//     time: '2025-06-24 18:30',
-//     rating: 0, // 初始未評分
-//     like: null,
-//   },
-//   {
-//     id: 2,
-//     img: 'https://www.discoverhongkong.com/content/dam/dhk/intl/explore/dining/hong-kong-restaurants-by-the-sea/hue-960x720.jpg',
-//     store: '店家名稱2', // 修正 'sotre' 為 'store'
-//     price: 699,
-//     foods: [{
-//       name: '綠茶',
-//       quantity: 1,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '紅茶拿鐵',
-//       quantity: 2,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '叉燒飯',
-//       quantity: 3,
-//       like: null,
-//     }],
-//     time: '2025-06-23 19:00',
-//     rating: 5,
-//     like: null,
-//   },
-// );
-// 如果有來自Pinia的參數
-
 const id = ref(1)
 const userStore = useUserStore(); // 實例化 userStore
 const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
 
 onMounted(() => {
-  orders.value.push(findorder(id))
+  // 獲取用戶 ID 從 Pinia
+  console.log(userId.value)
+
   // 初始化訂單評分狀態
   // 從 Pinia 獲取用戶 ID
   userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
   if (userId.value) {
-    findOrder(userId.value);
+    findorder(userId.value)
+
+    // orders.value.push(findOrder(userId.value));
   } else {
     console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
     // 您可以導向登入頁面或顯示提示
@@ -87,7 +28,7 @@ onMounted(() => {
 })
 
 function findorder(id) {
-  axios.get(`/api/orders/user/${id.value}`)
+  axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
 
       console.log("訂單數據:", response.data);
@@ -106,7 +47,6 @@ function findorder(id) {
 
 // 重新訂購功能
 const reorder = (order) => {
-  alert(`重新訂購：${order.store}`); // 修正 alert 內容
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
 </script>
@@ -139,40 +79,7 @@ const reorder = (order) => {
         <p class="mb-2 text-muted small">
           訂購時間: {{ order.createTime }}
         </p>
-  <div class="order-history-container">
-    <h4 class="mb-4 text-center">
-      <strong>歷史訂單</strong>
-    </h4>
-    <div
-      v-for="order in orders"
-      :key="order.id"
-      class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
-    >
-      <img
-        :src="order.store.photo"
-        alt="店家圖片"
-        class="me-3 rounded-circle border border-light"
-        style="width: 70px; height: 70px; object-fit: cover;"
-      >
-      <div class="flex-grow-1">
-        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
-          <h5 class="mb-0 text-primary">
-            {{ order.store.name }}<!--店家名稱-->
-          </h5>
-          <h4 class="mb-0 text-danger fw-bold">
-            ${{ order.total }}<!--訂單總價-->
-          </h4>
-        </div>
-        <p class="mb-2 text-muted small">
-          訂購時間: {{ order.createTime }}
-        </p>
 
-        <div class="mb-3">
-          <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
-            <span class="text-dark">{{ detail.food.name }}  x  {{ detail.quantity }}</span>
-            <!-- <span v-if="food.spec" class="text-secondary small"> ({{  }})</span> -->
-          </p>
-        </div>
         <div class="mb-3">
           <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
             <span class="text-dark">{{ detail.food.name }}  x  {{ detail.quantity }}</span>
@@ -225,20 +132,6 @@ const reorder = (order) => {
   border-radius: 50% !important;
 }
 
-/* 重新訂購按鈕樣式 */
-.btn-outline-danger {
-  color: var(--bs-danger);
-  border-color: var(--bs-danger);
-}
-
-.btn-outline-danger:hover {
-  background-color: var(--bs-danger);
-  color: #fff;
-}
-
-/* 覆蓋部分 Bootstrap 文本顏色 */
-.text-primary {
-  color: #333 !important; /* 可以根據你的主題調整主要文本顏色 */
 /* 重新訂購按鈕樣式 */
 .btn-outline-danger {
   color: var(--bs-danger);
