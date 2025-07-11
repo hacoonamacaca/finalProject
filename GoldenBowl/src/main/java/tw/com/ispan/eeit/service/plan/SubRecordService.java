@@ -4,14 +4,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import tw.com.ispan.eeit.model.entity.plan.SubRecordBean;
 import tw.com.ispan.eeit.repository.plan.SubRecordRepository;
 
-//@Service
+@Service
 public class SubRecordService {
 
-//    @Autowired
+    @Autowired
     private SubRecordRepository subRecordRepository;
     // 查全部
     public List<SubRecordBean> findAll() {
