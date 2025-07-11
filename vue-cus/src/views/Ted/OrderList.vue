@@ -1,5 +1,8 @@
 <!-- 歷史訂單 -->
+<!-- 歷史訂單 -->
 <script setup>
+import { ref ,onMounted} from 'vue';
+import axios from '@/plungins/axios.js';
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
@@ -104,6 +107,7 @@ function findorder(id) {
 // 重新訂購功能
 const reorder = (order) => {
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
+  alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
 </script>
 
@@ -135,7 +139,40 @@ const reorder = (order) => {
         <p class="mb-2 text-muted small">
           訂購時間: {{ order.createTime }}
         </p>
+  <div class="order-history-container">
+    <h4 class="mb-4 text-center">
+      <strong>歷史訂單</strong>
+    </h4>
+    <div
+      v-for="order in orders"
+      :key="order.id"
+      class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
+    >
+      <img
+        :src="order.store.photo"
+        alt="店家圖片"
+        class="me-3 rounded-circle border border-light"
+        style="width: 70px; height: 70px; object-fit: cover;"
+      >
+      <div class="flex-grow-1">
+        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+          <h5 class="mb-0 text-primary">
+            {{ order.store.name }}<!--店家名稱-->
+          </h5>
+          <h4 class="mb-0 text-danger fw-bold">
+            ${{ order.total }}<!--訂單總價-->
+          </h4>
+        </div>
+        <p class="mb-2 text-muted small">
+          訂購時間: {{ order.createTime }}
+        </p>
 
+        <div class="mb-3">
+          <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
+            <span class="text-dark">{{ detail.food.name }}  x  {{ detail.quantity }}</span>
+            <!-- <span v-if="food.spec" class="text-secondary small"> ({{  }})</span> -->
+          </p>
+        </div>
         <div class="mb-3">
           <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
             <span class="text-dark">{{ detail.food.name }}  x  {{ detail.quantity }}</span>
@@ -188,6 +225,20 @@ const reorder = (order) => {
   border-radius: 50% !important;
 }
 
+/* 重新訂購按鈕樣式 */
+.btn-outline-danger {
+  color: var(--bs-danger);
+  border-color: var(--bs-danger);
+}
+
+.btn-outline-danger:hover {
+  background-color: var(--bs-danger);
+  color: #fff;
+}
+
+/* 覆蓋部分 Bootstrap 文本顏色 */
+.text-primary {
+  color: #333 !important; /* 可以根據你的主題調整主要文本顏色 */
 /* 重新訂購按鈕樣式 */
 .btn-outline-danger {
   color: var(--bs-danger);
