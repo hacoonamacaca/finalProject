@@ -3,9 +3,11 @@ import { ref, reactive, onMounted, watch } from 'vue'; // 導入 onMounted 、wa
 import SlideOutPanel from '../components/common/SlideOutPanel.vue';
 import apiClient from '../plungins/axios.js'; // 導入 apiClient
 import PageHeader from '../components/common/PageHeader.vue';
-import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';
+// import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';  //預定捨棄功能
 import EditItemModal from '../components/menu/EditItemModal.vue';
-import EditSpecModal from '../components/menu/EditSpecModal.vue';
+import CategoryManagement from '../components/menu/CategoryManagement.vue';
+import EditCategoryPanel from '../components/menu/EditCategoryPanel.vue'; 
+// import EditSpecModal from '../components/menu/EditSpecModal.vue';  //預定捨棄功能
 import MenuOverview from '../components/menu/MenuOverview.vue';
 
 // --- 響應式狀態 (State) ---
@@ -15,12 +17,12 @@ import MenuOverview from '../components/menu/MenuOverview.vue';
 // =================================================================
 
 // 當前活動的 Tab
-const activeTab = ref('overview'); // 'overview' 或 'specs'
+const activeTab = ref('overview'); // 'overview', 'categories' 或 'specs'
 
 // 模擬的商店資料
 const stores = ref([
-    { id: 1, name: '美味小館' },
-    { id: 3, name: '燒烤之家' },
+    { id: 6, name: '香辣火鍋' },
+    { id: 7, name: '義大利小館' },
 ]);
 const selectedStore = ref(stores.value[0]?.id || null); // 預設選中第一個店家的 ID
 
@@ -103,17 +105,17 @@ watch(selectedStore, (newStoreId) => {
 // 5. 品項管理相關 (Item Management)
 // =================================================================
 
-const isItemModalOpen = ref(false); // 控制編輯品項 Modal 的開關
+const isItemPanelOpen = ref(false); // 控制編輯品項 Modal 的開關
 
 const currentEditingItem = ref(null); // 正在編輯的品項，null 代表是新增
 
-const openItemModal = (item) => {
+const openItemPanel = (item) => {
     currentEditingItem.value = item ? { ...item } : null;
-    isItemModalOpen.value = true;
+    isItemPanelOpen.value = true;
 };
 
-const closeItemModal = () => {
-    isItemModalOpen.value = false;
+const closeItemPanel = () => {
+    isItemPanelOpen.value = false;
 };
 
 const handleSaveItem = async (itemData) => {
@@ -165,7 +167,7 @@ const handleSaveItem = async (itemData) => {
         alert(`儲存失敗：${e.response?.data?.message || e.message}`);
     } finally {
         isLoading.value = false;
-        closeItemModal();
+        closeItemPanel();
     }
 };
 
@@ -182,46 +184,109 @@ const handleDeleteItem = async (itemId) => {
             alert(`刪除失敗：${e.response?.data?.message || e.message}`);
         } finally {
             isLoading.value = false;
-            closeItemModal();
+            closeItemPanel();
         }
     }
 };
 
 // =================================================================
-// 5. 規格管理相關 (Specification Management) (待修改)
+// 6. 品項類別管理相關 (Category Management)
+// =================================================================
+
+// 控制編輯品項類別 Modal 的開關
+const isCategoryPanelOpen = ref(false);
+
+// 正在編輯的品項類別，null 代表是新增
+const currentEditingCategory = ref(null);
+
+const openCategoryPanel = (category) => {
+    console.log('打開品項類別 Modal，編輯的資料是:', category);
+    currentEditingCategory.value = category ? { ...category } : null;
+    isCategoryPanelOpen.value = true;
+};
+
+const closeCategoryPanel = () => {
+    isCategoryPanelOpen.value = false;
+}
+
+const handleSaveCategory = async (categoryData) => {
+    isLoading.value = true;
+    try {
+        if (categoryData.id) {
+            // 編輯模式
+            await apiClient.put(`/api/food-classes/${categoryData.id}`, categoryData);
+            alert('類別更新成功！');
+        } else {
+            // 新增模式，記得加上 storeId
+            const payload = { ...categoryData, storeId: selectedStore.value };
+            await apiClient.post('/api/food-classes', payload);
+            alert('類別新增成功！');
+        }
+        // 成功後，只重新獲取 categories 列表即可
+        const response = await apiClient.get(`/api/food-classes/store/${selectedStore.value}`);
+        categories.splice(0, categories.length, ...response.data);
+    } catch (e) {
+        console.error('儲存品項類別失敗:', e);
+        alert(`儲存失敗：${e.response?.data?.message || e.message}`);
+    } finally {
+        isLoading.value = false;
+        closeCategoryPanel(); // 使用您已有的關閉函式
+    }
+};
+
+const handleDeleteCategory = async (categoryId) => {
+    if (confirm('確定要刪除此品項類別嗎？\n刪除後，屬於此類別的品項將變為「未分類」。')) {
+        isLoading.value = true;
+        try {
+            await apiClient.delete(`/api/food-classes/${categoryId}`);
+            alert('刪除成功！');
+            const response = await apiClient.get(`/api/food-classes/store/${selectedStore.value}`);
+            categories.splice(0, categories.length, ...response.data);
+        } catch (e) {
+            console.error('刪除品項類別失敗:', e);
+            alert(`刪除失敗：${e.response?.data?.message || e.message}`);
+        } finally {
+            isLoading.value = false;
+            closeCategoryPanel();
+        }
+    }
+};
+
+// =================================================================
+// 6. 規格管理相關 (Specification Management) (可能來不及做)
 // =================================================================
 
 // 控制編輯規格 Modal 的開關
-const isSpecModalOpen = ref(false);
+// const isSpecModalOpen = ref(false);
 
 // 正在編輯的規格，null 代表是新增
-const currentEditingSpec = ref(null);
+// const currentEditingSpec = ref(null);
 
-const openSpecModal = (spec) => {
-    console.log('打開規格 Modal，編輯的資料是:', spec);
-    currentEditingSpec.value = spec ? { ...spec } : null;
-    isSpecModalOpen.value = true;
-};
+// const openSpecModal = (spec) => {
+//     console.log('打開規格 Modal，編輯的資料是:', spec);
+//     currentEditingSpec.value = spec ? { ...spec } : null;
+//     isSpecModalOpen.value = true;
+// };
 
-const closeSpecModal = () => {
-    isSpecModalOpen.value = false;
-}
+// const closeSpecModal = () => {
+//     isSpecModalOpen.value = false;
+// }
 
-const handleSaveSpec = (specData) => {
-    console.log('儲存規格:', specData);
-    alert('規格已儲存！');
-    closeSpecModal();
-}
+// const handleSaveSpec = (specData) => {
+//     console.log('儲存規格:', specData);
+//     alert('規格已儲存！');
+//     closeSpecModal();
+// }
 
-const handleDeleteSpec = (specId) => {
-    if (confirm('確定要刪除此規格嗎？')) {
-        alert('規格已刪除！');
-        closeSpecModal();
-    }
-}
+// const handleDeleteSpec = (specId) => {
+//     if (confirm('確定要刪除此規格嗎？')) {
+//         alert('規格已刪除！');
+//         closeSpecModal();
+//     }
+// }
 
 // =================================================================
-// 6. 通用方法 (General Methods)
+// 7. 通用方法 (General Methods)
 // =================================================================
 
 // 切換 Tab
@@ -264,51 +329,71 @@ const selectTab = (tab) => {
                         @click.prevent="selectTab('overview')">菜單總覽</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link" :class="{ active: activeTab === 'categories' }" href="#"
+                        @click.prevent="selectTab('categories')">品項類別管理</a>
+                </li>
+                <!-- <li class="nav-item">
                     <a class="nav-link" :class="{ active: activeTab === 'specs' }" href="#"
                         @click.prevent="selectTab('specs')">客製化規格</a>
-                </li>
+                </li> -->
             </ul>
 
             <div class="mt-4">
                 <MenuOverview v-if="activeTab === 'overview'" :items="items" :categories="categories"
-                    @add-new-item="openItemModal(null)" @edit-item="openItemModal" />
+                    @add-new-item="openItemPanel(null)" @edit-item="openItemPanel" />
 
-                <CustomizationSpecs v-if="activeTab === 'specs'" :specs="specs" @add-new-spec="openSpecModal(null)"
-                    @edit-spec="openSpecModal" />
+                <CategoryManagement v-if="activeTab === 'categories'" :categories="categories" @add-new-category="openCategoryPanel(null)"
+                    @edit-category="openCategoryPanel" />
+
+                <!-- <CustomizationSpecs v-if="activeTab === 'specs'" :specs="specs" @add-new-spec="openSpecModal(null)"
+                    @edit-spec="openSpecModal" /> -->
             </div>
         </div>
 
         <!-- Modals (不受佈局影響，已套用共用面板SlideOutPanel) -->
-        <SlideOutPanel v-model:isOpen="isItemModalOpen"
+        <SlideOutPanel v-model:isOpen="isItemPanelOpen"
             :title="currentEditingItem ? '編輯品項' : '新增品項'">
         
         <!-- 
-        只有在 isItemModalOpen 為 true (面板打開) 時，才渲染 EditItemModal。
-        這樣可以確保每次打開面板時，EditItemModal 都會重新掛載，
+        只有在 isItemPanelOpen 為 true (面板打開) 時，才渲染 EditItemPanel。
+        這樣可以確保每次打開面板時，EditItemPanel 都會重新掛載，
         其內部的 watchEffect 會重新執行，正確地初始化表單資料。
         -->
-            <EditItemModal v-if="isItemModalOpen" 
+            <EditItemModal v-if="isItemPanelOpen" 
                 :item="currentEditingItem" 
                 :categories="categories"
-                @close="isItemModalOpen = false" 
+                @close="isItemPanelOpen = false" 
                 @save="handleSaveItem"
                 @delete="handleDeleteItem" 
             />
         </SlideOutPanel>
 
+
+        <SlideOutPanel v-model:isOpen="isCategoryPanelOpen"
+            :title="currentEditingCategory ? '編輯品項類別' : '新增品項類別'"
+        >
         
-        <SlideOutPanel v-model:isOpen="isSpecModalOpen"
-            :title="currentEditingSpec ? '編輯客製化規格' : '新增客製化規格'">
+            <EditCategoryPanel v-if="isCategoryPanelOpen" 
+                :category="currentEditingCategory"  
+                @close="closeCategoryPanel" 
+                @save="handleSaveCategory"
+                @delete="handleDeleteCategory" 
+            />
+        </SlideOutPanel>
+
+        
+        <!-- <SlideOutPanel v-model:isOpen="isSpecModalOpen"
+            :title="currentEditingSpec ? '編輯客製化規格' : '新增客製化規格'"> -->
         
         <!-- 同樣只在 isSpecModalOpen 為 true 時，才渲染 EditSpecModal。-->
 
-            <EditSpecModal v-if="isSpecModalOpen" 
+            <!-- <EditSpecModal v-if="isSpecModalOpen" 
                 :spec="currentEditingSpec" 
                 @close="isSpecModalOpen = false" 
                 @save="handleSaveSpec"
                 @delete="handleDeleteSpec" 
             />
-        </SlideOutPanel>
+        </SlideOutPanel> -->
     </div>
 </template>
 
