@@ -38,6 +38,9 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Comment from '@/components/Jimmy/Comment.vue';
+import { useUserStore } from '@/stores/user'; 
+
+const userStore = useUserStore();
 
 const props = defineProps({
   restaurants: {
@@ -59,6 +62,7 @@ const navigateToRestaurant = (id) => {
 
 // 打開評論模態框的函數
 const openComment = (storeId) => {
+console.log("User:"+userStore.userId);
   selectedStoreId.value = storeId;
   showComment.value = true;
 };

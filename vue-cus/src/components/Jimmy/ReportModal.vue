@@ -23,15 +23,9 @@
             <small v-if="!selectedReportTypeId && submitted" class="p-error">請選擇檢舉類型。</small>
           </div>
   
-          <div class="p-field mt-3">
-            <label for="description">詳細描述 (可選):</label>
-            <InputText
-              id="description"
-              v-model="description"
-              type="text"
-              rows="3"
-              class="w-full"
-            />
+          <div class="p-field mt-3" v-if="selectedReportDescription">
+            <label>詳細描述:</label>
+            <p class="report-description-display">{{ selectedReportDescription }}</p>
           </div>
         </div>
         <div class="report-modal-footer">
@@ -43,13 +37,12 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import axios from 'axios';
   import { useUserStore } from '@/stores/user'; // 假設你有用戶 store
   import Message from 'primevue/message';
   import Dropdown from 'primevue/dropdown';
   import Button from 'primevue/button';
-  import InputText from 'primevue/inputtext'; // PrimeVue InputText
   
   // 定義組件 props
   const props = defineProps({
@@ -68,7 +61,6 @@
   
   const reportTypes = ref([]);
   const selectedReportTypeId = ref(null);
-  const description = ref('');
   const message = ref(null); // 用於顯示成功或錯誤訊息
   const submitted = ref(false); // 用於表單驗證提示
   
@@ -95,7 +87,7 @@
     // 這裡假設 submitter_type 為 'user'，submitter_id 從 Pinia Store 中獲取
     // 如果用戶未登入，你可能需要處理為匿名檢舉或阻止檢舉
     const submitterType = "user"; // 假設為 'user'
-    const submitterId = userStore.id; // 從 Pinia store 獲取用戶 ID
+    const submitterId = userStore.userId; // 從 Pinia store 獲取用戶 ID
   
     if (!submitterId) {
       message.value = { type: 'warn', text: '請先登入才能提交檢舉。' };
@@ -133,6 +125,15 @@
       }
     }
   };
+
+  // 計算屬性：根據 selectedReportTypeId 獲取對應的描述
+const selectedReportDescription = computed(() => {
+  const selectedType = reportTypes.value.find(
+    (type) => type.id === selectedReportTypeId.value
+  );
+  // 假設 reportType 物件中有一個 'description' 字段
+  return selectedType ? selectedType.description : ''; 
+});
   
   onMounted(() => {
     fetchReportTypes();
