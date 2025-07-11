@@ -244,6 +244,9 @@ const submitReview = async () => {
 </template>
 
 <style scoped>
+/* 確保 Bootstrap Icons 載入 */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
 .star-rating .bi {
     font-size: 1.8rem;
     cursor: pointer;
@@ -255,6 +258,4 @@ const submitReview = async () => {
     color: #ffc107 !important; /* 黃色星星 */
 }
 
-/* 確保 Bootstrap Icons 載入 */
-@import 'bootstrap-icons/font/bootstrap-icons.css';
 </style>
