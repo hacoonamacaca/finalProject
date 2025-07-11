@@ -58,11 +58,13 @@
 <script setup>
 import { ref } from 'vue'
 import axios from '@/plungins/axios.js'
+import { useUserStore } from '@/stores/user.js' 
 
 const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'back', 'login'])
 const password = ref('')
 const showPassword = ref(false)
+const userStore = useUserStore();
 
 async function onSubmit() {
     if (!password.value) {
@@ -78,13 +80,20 @@ async function onSubmit() {
         const data = res.data
         if (data.success) {
             alert('登入成功！')
+            userStore.setLogin({
+                fullName: data.userFullName,
+                email: data.userEmail,
+                userId: data.userId,
+                token: data.token    // 看你的 API 有沒有這欄
+            });
             emit('login', { 
                 email: props.email,
                 userFullName: data.userFullName,
                 userEmail: data.userEmail,
-                userPhone: data.userPhone // 如果有這欄位
-            })
-            // 你可以加 router.push(...) 或 emit('close') 關掉 modal
+                userId: data.userId,
+                userPhone: data.userPhone
+            });
+        // emit('close') // 如需關閉 modal
         } else {
             alert(data.message || '帳號或密碼錯誤')
             password.value = ''

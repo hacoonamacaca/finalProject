@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.dto.UserDTO;
 import tw.com.ispan.eeit.model.entity.UserBean;
+import tw.com.ispan.eeit.repository.emailVerify.UserTokenRepository;
 import tw.com.ispan.eeit.service.UserService;
 
 @RestController
@@ -27,7 +28,10 @@ public class UserController {
 
     @Autowired
     private UserService userService;
-
+    
+    @Autowired
+    private UserTokenRepository userTokenRepository;
+    
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserBean> users = userService.getAllUsers();
@@ -52,11 +56,32 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@RequestBody UserDTO dto) {
-        UserBean entity = UserService.toEntity(dto);
-        UserBean createdUser = userService.createUser(entity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserService.toDTO(createdUser));
+    public ResponseEntity<?> createUser(@RequestBody UserDTO dto) {
+        if(dto.getEmail() == null || dto.getEmail().isBlank()){
+            return ResponseEntity.badRequest().body("Email必填");
+        }
+
+        // 檢查這個 email 是否通過 email 驗證
+        boolean verified = userTokenRepository.findTopByEmailAndUsedTrueOrderByIdDesc(dto.getEmail().trim()).isPresent();
+        if (!verified) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("請先完成 Email 驗證再註冊！");
+        }
+
+        try {
+            UserBean entity = UserService.toEntity(dto);
+            UserBean createdUser = userService.createUser(entity);
+            return ResponseEntity.status(HttpStatus.CREATED).body(UserService.toDTO(createdUser));
+        } catch (IllegalStateException e) {
+            // email 重複
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email 已註冊");
+        } catch (IllegalArgumentException e) {
+            // email 為空
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("新增會員失敗");
+        }
     }
+
     
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @RequestBody UserDTO dto) {

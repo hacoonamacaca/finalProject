@@ -124,7 +124,31 @@ const routes = [{
 {
     path: '/store',
     name: 'StoreHome',
-    component: () => import('@/views/store/StoreHome.vue')
+    component: () => import('@/views/Store/StoreHome.vue')
+},
+{
+    path: '/registerBusiness',
+    component: () => import('@/views/Store/RegisterBusiness.vue')
+},
+{
+    path:'/editStoreUser',
+    component: () => import('@/views/Store/EditStoreUser.vue')
+},
+{
+    path:'/registerStoreInfo',
+    component: () => import('@/views/Store/RegisterStoreInfo.vue')
+},
+{
+    path: '/verifyAddress',
+    component: () => import('@/views/Store/VerifyAddress.vue')
+},
+{
+    path: '/registerProfile',
+    component: () => import('@/views/Store/RegisterProfile.vue')
+},
+{
+    path: '/verifyPending',
+    component: () => import('@/views/Store/VerifyPending.vue')
 }
 ];
 

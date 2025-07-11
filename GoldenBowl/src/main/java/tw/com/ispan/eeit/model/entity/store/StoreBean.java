@@ -28,6 +28,7 @@ import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.CategorySearchedBean;
@@ -50,6 +51,8 @@ public class StoreBean {
     @ManyToOne(fetch = FetchType.LAZY) // 建議對 ManyToOne 關聯設置 LAZY
     @JoinColumn(name = "owner_id")
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private OwnerBean owner;
 
     @Column(length = 50)
@@ -62,7 +65,8 @@ public class StoreBean {
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
     private Point storeCoords;
 
-    private Double lng;
+    @Column(name = "lng")
+    private Double lon;
 
     private Double lat;
 
@@ -88,14 +92,21 @@ public class StoreBean {
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude // orphanRemoval
     private Set<FoodBean> foods;
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    @JsonManagedReference
-    private Set<FoodClassBean> foodClasses;
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<FoodClassBean> foodClasses;
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     @JsonManagedReference
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<OrderBean> orders;
 
     @ManyToMany
@@ -124,7 +135,10 @@ public class StoreBean {
     @JsonManagedReference
     private List<SpecialHoursBean> specialHours;
 
+    // ------------多對多關聯表-----------------------------------------
     @ManyToMany(mappedBy = "favoriteStores")
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Set<UserBean> favoritedByUsers = new HashSet<>();
 }

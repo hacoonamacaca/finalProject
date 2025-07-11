@@ -44,7 +44,8 @@ async function submitEmail() {
     loading.value = true
     try {
     const res = await axios.post('/api/users/check-email-exists', { email: email.value })
-    if (!res.data.verified) {
+    if (!res.data.exists) {
+            localStorage.setItem('userEmail', email.value)
             emit('submit', email.value)
         } else {
             alert('此 email 已註冊，請用其他 email')

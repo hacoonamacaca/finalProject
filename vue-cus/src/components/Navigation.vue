@@ -26,8 +26,11 @@
     <div class="nav-links" :class="{ active: isMenuOpen }">
       <!-- auth-section 在行動版置頂 -->
       <div class="auth-section">
+        <StoreDropdown v-if="isStoreRoute" />
+        <template v-else>
         <a href="#" @click="getLogin" v-if="!isLoggedIn">登入</a>
         <UserDropdown v-if="isLoggedIn" />
+        </template>
       </div>
       <!-- 其他導航項 -->
       <div class="nav-items">
@@ -88,6 +91,17 @@ import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
 import NotificationList from '@/components/Yifan/NotificationList.vue';
 import CartModal from '@/components/KTlu/CartModal.vue';
 import { useCartStore } from '@/stores/cart';
+import StoreDropdown from '@/components/Store/StoreDropdown.vue';
+import { useUserStore } from '@/stores/user.js';
+
+// 取得使用者狀態管理（Pinia store 實例）
+const userStore = useUserStore();
+
+// 元件掛載後執行
+onMounted(() => {
+  // 從本地儲存同步（還原）使用者資料到 Pinia 狀態管理
+  userStore.syncFromStorage();
+})
 
 // 購物車 store
 const cartStore = useCartStore();
@@ -291,6 +305,14 @@ onMounted(() => {
 const getLogin = () => {
   isLoggedIn.value = true; // 模擬登入
 };
+
+// 判斷現在是不是業者頁面
+const isStoreRoute = computed(() => 
+  route.path.startsWith('/store') ||
+  route.path.startsWith('/editStoreUser') ||
+  route.path.startsWith('/editStore')
+);
+
 </script>
 
 <style scoped>

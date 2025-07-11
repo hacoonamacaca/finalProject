@@ -99,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plungins/axios.js'
 
@@ -109,13 +109,20 @@ const router = useRouter()
 // 從 query 拿到 email
 const email = ref(route.query.email || localStorage.getItem('userEmail') || '')
 
+onMounted(() => {
+    if (!email.value) {
+        alert('請先輸入 email')
+        router.push('/register-email')
+    }
+})
+
 // 表單欄位
 const fullName = ref('')
 const password = ref('')
 const showPassword = ref(false)
 
 const message = ref('')
-const messageType = ref('Info')
+const registering = ref(false)
 
 // 密碼規則檢查
 const hasLen = computed(() => password.value.length >= 8)
@@ -141,19 +148,24 @@ function togglePassword() {
 }
 
 async function onSubmit() {
-    if(!canSubmit.value) return
+    if(!canSubmit.value || registering.value) return
+    registering.value = true
+    message.value = ''
     try {
-        const res = await axios.post('/api/users', {
-            name: fullName.value.trim(), // 和後端 UserDTO 欄位一致
-            email: email.value,
-            password: password.value
-        })
+        const params = new URLSearchParams();
+        params.append('name', fullName.value.trim());
+        params.append('email', email.value);
+        params.append('password', password.value);
+
+        await axios.post('/api/register', params);
+
         localStorage.setItem('userFullName', fullName.value.trim())
         localStorage.setItem('userEmail', email.value)
         router.push('/search')
     } catch (e) {
         message.value = e.response?.data?.message || '註冊失敗，請稍後再試'
-        messageType.value = 'error'
+    } finally {
+        registering.value = false
     }
 }
 </script>

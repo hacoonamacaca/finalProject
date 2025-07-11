@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,7 +23,22 @@ public class OwnerController {
     @Autowired
     private OwnerService ownerService;
 
-    // 查詢email是否存在
+    // 查詢全部（Read All）
+    @GetMapping
+    public List<OwnerBean> findAll() {
+        return ownerService.findAll();
+    }
+
+    // 查詢單筆（Read One）
+    @GetMapping("/{id}")
+    public Map<String, Object> findById(@PathVariable Integer id) {
+        OwnerBean bean = ownerService.findById(id);
+        if (bean == null) return Map.of("success", false, "message", "找不到此帳號");
+        OwnerDTO dto = ownerService.toDTO(bean);
+        return Map.of("success", true, "owner", dto);
+    }
+
+    // 檢查 Email
     @PostMapping("/check-email")
     public Map<String, Object> checkEmail(@RequestBody Map<String, String> map) {
         String email = map.get("email");
@@ -32,7 +46,7 @@ public class OwnerController {
         return Map.of("exists", exists);
     }
 
-    // 註冊
+    // 註冊（Create）
     @PostMapping("/register")
     public Map<String, Object> register(@RequestBody Map<String, String> map) {
         String email = map.get("email");
@@ -51,60 +65,44 @@ public class OwnerController {
     public Map<String, Object> login(@RequestBody Map<String, String> map) {
         String email = map.get("email");
         String pwd = map.get("password");
+        System.out.println("login email: " + email + ", pwd: " + pwd);
         OwnerBean owner = ownerService.findByEmailAndPassword(email, pwd);
         if (owner == null) {
+            System.out.println("login fail");
             return Map.of("success", false, "message", "帳號或密碼錯誤");
         }
-        // DTO（不回傳密碼）
-        OwnerDTO dto = ownerService.toDTO(owner);
+        System.out.println("login success: " + owner.getEmail());
         return Map.of(
             "success", true,
-            "owner", dto
+            "ownerId", owner.getId(),
+            "name", owner.getName(),
+            "email", owner.getEmail(),
+            "phone", owner.getPhone(),
+            "lastLogin", owner.getLastLogin()
         );
     }
 
-    // 查詢全部
-    @GetMapping("/all")
-    public List<OwnerDTO> findAll() {
-        return ownerService.findAll().stream()
-            .map(ownerService::toDTO)
-            .toList();
-    }
-
-    // 查詢單筆
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Integer id) {
-        OwnerBean owner = ownerService.findById(id);
-        if (owner == null) {
-            return ResponseEntity.notFound().build();
-        }
-        OwnerDTO dto = ownerService.toDTO(owner);
-        return ResponseEntity.ok(dto);
-    }
-
-    // 修改
+    // 修改（Update）
     @PutMapping("/{id}")
     public Map<String, Object> update(@PathVariable Integer id, @RequestBody Map<String, String> map) {
-        // 不管前端有沒有全部傳，後端都會補上舊資料
         String name = map.get("name");
         String phone = map.get("phone");
         String email = map.get("email");
         OwnerBean updated = ownerService.updateOwner(id, name, phone, email);
         if (updated == null) {
-            return Map.of("success", false, "message", "找不到該業者");
+            return Map.of("success", false, "message", "找不到此帳號");
         }
-        OwnerDTO dto = ownerService.toDTO(updated);
-        return Map.of("success", true, "owner", dto);
+        return Map.of("success", true, "owner", updated);
     }
 
-    // 刪除
+    // 刪除（Delete）
     @DeleteMapping("/{id}")
     public Map<String, Object> delete(@PathVariable Integer id) {
         boolean deleted = ownerService.deleteOwner(id);
-        if (deleted) {
-            return Map.of("success", true);
-        } else {
-            return Map.of("success", false, "message", "找不到該業者");
+        if (!deleted) {
+            return Map.of("success", false, "message", "找不到此帳號");
         }
+        return Map.of("success", true);
     }
 }
+

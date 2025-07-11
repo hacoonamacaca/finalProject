@@ -3,7 +3,6 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0">
-                    <h4 class="modal-title fw-bold">歡迎！</h4>
                     <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
                 </div>
                 <div class="modal-body">

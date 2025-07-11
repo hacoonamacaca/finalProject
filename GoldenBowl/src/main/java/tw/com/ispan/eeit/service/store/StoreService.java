@@ -96,7 +96,7 @@ public class StoreService {
             existingStore.setName(storeDetails.getName());
             existingStore.setAddress(storeDetails.getAddress());
             existingStore.setStoreCoords(storeDetails.getStoreCoords());
-            existingStore.setLng(storeDetails.getLng());
+            existingStore.setLon(storeDetails.getLon());
             existingStore.setLat(storeDetails.getLat());
             existingStore.setStoreIntro(storeDetails.getStoreIntro());
             existingStore.setPhoto(storeDetails.getPhoto());
@@ -122,7 +122,7 @@ public class StoreService {
             Integer storeId,
             String address,
             Double lat,
-            Double lng) {
+            Double lon) {
         StoreBean store = storeRepository.findById(storeId)
                 .orElse(null);
         if (store == null)
@@ -130,12 +130,12 @@ public class StoreService {
 
         store.setAddress(address);
         store.setLat(lat);
-        store.setLng(lng);
+        store.setLon(lon);
 
-        System.out.println("lat=" + lat + ", lng=" + lng);
+        System.out.println("lat=" + lat + ", lon=" + lon);
         try {
-            if (lat != null && lng != null) {
-                Point point = geometryFactory.createPoint(new Coordinate(lng, lat));
+            if (lat != null && lon != null) {
+                Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
                 point.setSRID(4326);
                 System.out.println("set storeCoords: " + point.toText() + " SRID=" + point.getSRID());
                 store.setStoreCoords(point);

@@ -13,22 +13,20 @@ import tw.com.ispan.eeit.repository.OwnerRepository;
 
 @Service
 public class OwnerService {
-	@Autowired
-	private OwnerRepository ownerRepository;
-	
-	public List<OwnerBean> findAll() {
-        return ownerRepository.findAll();
-    }
+    @Autowired
+    private OwnerRepository ownerRepository;
 
-    public OwnerBean findById(Integer id) {
-        return ownerRepository.findById(id).orElse(null);
-    }
-    
+    // 查詢全部
+    public List<OwnerBean> findAll() { return ownerRepository.findAll(); }
+
+    // 查詢單筆
+    public OwnerBean findById(Integer id) { return ownerRepository.findById(id).orElse(null); }
+
+    // 更新
     public OwnerBean updateOwner(Integer id, String name, String phone, String email) {
         Optional<OwnerBean> optional = ownerRepository.findById(id);
         if (optional.isPresent()) {
             OwnerBean owner = optional.get();
-            // 只有有傳值才更新
             if (name != null && !name.isEmpty()) owner.setName(name);
             if (phone != null && !phone.isEmpty()) owner.setPhone(phone);
             if (email != null && !email.isEmpty()) owner.setEmail(email);
@@ -36,7 +34,8 @@ public class OwnerService {
         }
         return null;
     }
-    
+
+    // 刪除
     public boolean deleteOwner(Integer id) {
         if (ownerRepository.existsById(id)) {
             ownerRepository.deleteById(id);
@@ -44,25 +43,28 @@ public class OwnerService {
         }
         return false;
     }
-	
-	public boolean checkEmailExists(String email) {
-		return ownerRepository.existsByEmail(email);
-	}
-	
-	public OwnerBean findByEmailAndPassword(String email, String password) {
-		OwnerBean owner = ownerRepository.findByEmailAndPassword(email, password);
-		if(owner != null) {
-			owner.setLastLogin(LocalDateTime.now());
-			ownerRepository.save(owner);
-		}
-		return owner;
-	}
-	
-	public OwnerBean register(String email, String password, String name, String phone) {
+
+    // 查詢 email 是否存在
+    public boolean checkEmailExists(String email) {
+        return ownerRepository.existsByEmail(email);
+    }
+
+    // 登入（建議 hash 密碼比對）
+    public OwnerBean findByEmailAndPassword(String email, String password) {
+        OwnerBean owner = ownerRepository.findByEmailAndPassword(email, password);
+        if (owner != null) {
+            owner.setLastLogin(LocalDateTime.now());
+            ownerRepository.save(owner);
+        }
+        return owner;
+    }
+
+    // 註冊
+    public OwnerBean register(String email, String password, String name, String phone) {
         if (ownerRepository.existsByEmail(email)) return null;
         OwnerBean owner = new OwnerBean();
         owner.setEmail(email);
-        owner.setPassword(password);
+        owner.setPassword(password); // hash!
         owner.setName(name);
         owner.setPhone(phone);
         owner.setSignupDate(LocalDateTime.now());

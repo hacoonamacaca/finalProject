@@ -28,12 +28,12 @@
         <li @click="navigateTo('')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> 回首頁*
         </li>        
-        <li @click="navigateTo('WebRecom')" class="d-flex align-items-center gap-2 px-3 py-2">
+        <!-- <li @click="navigateTo('WebRecom')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> WebRecom*
         </li> 
         <li @click="navigateTo('ReportType')" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-house-door"></i> ReportType*
-        </li> 
+        </li>  -->
         <li @click="logout" class="d-flex align-items-center gap-2 px-3 py-2">
           <i class="bi bi-box-arrow-right"></i> 登出
         </li>
@@ -50,12 +50,9 @@ import { useUserStore } from '@/stores/user.js';
 
 const showDropdown = ref(false);
 const router = useRouter();
-
-const userFullName = ref('');
-const userEmail = ref('');
-
 const userStore = useUserStore();
-const cUser = computed(() => userStore.FullName);
+
+const userFullName = computed(() => userStore.fullName);
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
@@ -69,7 +66,7 @@ const navigateTo = (path) => {
 
 // 登出邏輯
 const logout = () => {
-  localStorage.removeItem('token');
+  userStore.userLogout();
   showDropdown.value = false;
   router.push('/search');
 };
@@ -83,8 +80,7 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  userFullName.value = localStorage.getItem('userFullName') || ''
-  userEmail.value = localStorage.getItem('userEmail') || ''
+  userStore.syncFromStorage();
 });
 
 onUnmounted(() => {

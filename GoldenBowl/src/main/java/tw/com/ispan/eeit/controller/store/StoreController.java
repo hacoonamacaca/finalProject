@@ -118,7 +118,7 @@ public class StoreController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    // 支援多張照片的註冊
+    // 支援多張照片的註冊，照片存前端public/photos，SQL只存相對路徑
     @PostMapping(value = "/registerInfo", consumes = "multipart/form-data")
     public Map<String, Object> register(
             @RequestParam("ownerId") Integer ownerId,
@@ -157,6 +157,27 @@ public class StoreController {
         }
         return Map.of("success", true, "storeId", store.getId());
     }
+    
+ // 照片儲存到前端 public/photos，回傳相對路徑（供 SQL 儲存、前端使用）
+    private String savePhoto(MultipartFile file) {
+        try {
+            // 路徑視你的前端資料夾位置而定
+            String folder = "../frontend/public/photos/"; // 調整成你自己的public照片資料夾絕對或相對路徑
+            File dir = new File(folder);
+            if (!dir.exists()) dir.mkdirs();
+
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            File dest = new File(folder + fileName);
+            file.transferTo(dest);
+
+            // 存相對路徑即可，前端 <img src="/photos/xxx.jpg" />
+            String relativePath = "/photos/" + fileName;
+            return relativePath;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 
     @PostMapping("/updateAddress")
     public Map<String, Object> updateAddress(@RequestBody Map<String, Object> map) {
@@ -172,38 +193,17 @@ public class StoreController {
         }
         String address = (String) map.get("address");
 
-        Double lat = null, lng = null;
+        Double lat = null, lon = null;
         try {
             if (map.get("lat") != null && !((String) map.get("lat")).isBlank())
                 lat = Double.parseDouble((String) map.get("lat"));
             if (map.get("lon") != null && !((String) map.get("lon")).isBlank())
-                lng = Double.parseDouble((String) map.get("lon"));
+                lon = Double.parseDouble((String) map.get("lon"));
         } catch (Exception e) {
             return Map.of("success", false, "message", "經緯度格式錯誤");
         }
 
-        boolean ok = storeService.updateAddress(storeId, address, lat, lng);
+        boolean ok = storeService.updateAddress(storeId, address, lat, lon);
         return Map.of("success", ok);
-    }
-
-    // 照片存檔範例
-    private String savePhoto(MultipartFile file) {
-        try {
-            String folder = "uploads/photos";
-            File dir = new File(folder);
-            if (!dir.exists())
-                dir.mkdirs();
-
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File dest = new File(folder + fileName);
-            file.transferTo(dest);
-
-            // 回傳完整網址（這裡假設 domain 你自己決定）
-            String domain = "https://localhost:8080";
-            return domain + "/photos/" + fileName;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "";
-        }
     }
 }

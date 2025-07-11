@@ -12,6 +12,7 @@
                 <li @click="step = 'register'">會員*</li>
                 <li @click="toStore">餐廳方*</li>
                 <li @click="navigateTo('admin')">管理者*</li>
+                <li @click="navigateTo('Search')">Search*</li>
                 <li @click="logout">登出</li>
             </ul>
         </div>
@@ -55,18 +56,33 @@
         @back="step = 'loginEmail'"
     />
     <!-- 忘記密碼 -->
-    <ForgotPasswordModal :show="step === 'forgotPassword'" :email="userEmail" @close="step = ''"
-        @back="step = 'loginPassword'" @submit="handleForgotSubmit" />
-    <ForgotPasswordSentModal :show="step === 'forgotSent'" @close="step = ''" @back="step = 'loginPassword'"
-        @backToLogin="step = 'loginEmail'" />
-    <ResetPasswordSentModal :show="step === 'resetPasswordSent'" @close="step = ''" @back="step = 'loginPassword'" />
+    <ForgotPasswordModal 
+        :show="step === 'forgotPassword'"
+        :email="userEmail" @close="step = ''"
+        @back="step = 'loginPassword'"
+        @submit="handleForgotSubmit" 
+    />
+    <ForgotPasswordSentModal
+        :show="step === 'forgotSent'"
+        @close="step = ''" @back="step = 'loginPassword'"
+        @backToLogin="step = 'loginEmail'" 
+    />
+    <ResetPasswordSentModal 
+        :show="step === 'resetPasswordSent'"
+        @close="step = ''"
+        @back="step = 'loginPassword'"
+    />
     <!-- or step = 'loginEmail' 依你的流程-->
-    <ResetPasswordDialog v-if="showReset" @close="showReset = false" @submit="onResetPassword" />
+    <ResetPasswordDialog 
+        v-if="showReset"
+        @close="showReset = false"
+        @submit="onResetPassword"
+    />
 </template>
 
 <script setup>
 console.log('LoginEmailModal.vue loaded!')
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router';
 import RegisterModal from '@/components/Ivy/RegisterModal.vue'
 import LoginEmailModal from '@/views/Ivy/LoginEmailModal.vue'
@@ -135,8 +151,9 @@ function handleLoginEmail(email) {
 function handleSendVerification(email) {
     // email 可直接用 userEmail.value，也可以用 event 傳進來
     alert(`已寄出驗證信到 ${userEmail.value}`);
+    localStorage.setItem('userEmail', userEmail.value)   // 多這行最穩
     step.value = '';
-    router.push('/register-profile'); // 跳轉到驗證信已送出提示頁
+    router.push({ path: '/register-profile', query: { email: userEmail.value } });
 }
 
 function handleForgotSubmit(email) {
@@ -196,9 +213,9 @@ const handleClickOutside = (event) => {
 };
 
 // 監聽 isLoggedIn 變化，動態更新 cUser
-watch(isLoggedIn, (newValue) => {
-    cUser.value = newValue ? "目前使用者*" : "請選擇登入身分";
-});
+// watch(isLoggedIn, (newValue) => {
+//     cUser.value = newValue ? "目前使用者*" : "請選擇登入身分";
+// });
 
 onUnmounted(() => {
     document.removeEventListener('click', handleClickOutside);

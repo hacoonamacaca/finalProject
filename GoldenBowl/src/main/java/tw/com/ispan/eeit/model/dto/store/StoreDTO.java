@@ -23,7 +23,7 @@ public class StoreDTO {
     private Integer ownerId;
     private String name;
     private String address;
-    private Double lng;
+    private Double lon;
     private Double lat;
     private String storeIntro;
     private String photo;

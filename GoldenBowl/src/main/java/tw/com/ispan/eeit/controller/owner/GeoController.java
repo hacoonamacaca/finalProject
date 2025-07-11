@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/geo")
 public class GeoController {
 
-    @GetMapping("/latlng")
-    public Map<String, Object> getLatLng(@RequestParam String address) {
+    @GetMapping("/latlon")
+    public Map<String, Object> getLatLon(@RequestParam String address) {
         try {
             String url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=" + URLEncoder.encode(address, StandardCharsets.UTF_8);
 

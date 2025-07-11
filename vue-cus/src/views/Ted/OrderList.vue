@@ -3,6 +3,7 @@
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
+import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
 // 如果你的 main.js 或其他地方沒有全局引入 Bootstrap CSS 和 Icons，你可以在這裡引入
 // import 'bootstrap/dist/css/bootstrap.min.css';
 // import 'bootstrap-icons/font/bootstrap-icons.css'; // 如果你使用了 Bootstrap Icons
@@ -66,17 +67,27 @@ const orders=ref([])
 // 如果有來自Pinia的參數
 
 const id = ref(1)
+const userStore = useUserStore(); // 實例化 userStore
+const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
 
 onMounted(() => {
   orders.value.push(findorder(id))
   // 初始化訂單評分狀態
+  // 從 Pinia 獲取用戶 ID
+  userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
+  if (userId.value) {
+    findOrder(userId.value);
+  } else {
+    console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
+    // 您可以導向登入頁面或顯示提示
+  }
 })
 
 function findorder(id) {
   axios.get(`/api/orders/user/${id.value}`)
     .then(function (response) {
 
-      console.log("orders")
+      console.log("訂單數據:", response.data);
       orders.value = response.data
       console.log(orders.value)
       // response.data.forEach(element => {
@@ -85,7 +96,7 @@ function findorder(id) {
       // });
       // console.log(`ordersValue:${orders.value}`)
   }).catch(function (error) {
-    console.log(error);
+    console.error("加載訂單失敗:", error);
   })
 
 }
@@ -138,8 +149,8 @@ const reorder = (order) => {
           </button>
         </div>
 
-        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-          <RatingModal :order="order" />
+        <div >
+            <RatingModal :order="order" />
         </div>
       </div>
     </div>
@@ -162,10 +173,10 @@ const reorder = (order) => {
   transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加過渡效果 */
 }
 
-.order-item-card:hover {
-  transform: translateY(-3px); /* 鼠標懸停時輕微上移 */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); /* 懸停時陰影加深 */
-}
+/* .order-item-card:hover {
+  transform: translateY(-3px); 鼠標懸停時輕微上移 
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);  懸停時陰影加深 
+}*/
 
 /* 圓角類，Bootstrap 預設的 rounded-lg 已經很不錯 */
 .rounded-lg {

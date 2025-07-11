@@ -30,17 +30,19 @@ public class UserService {
 
     // 新增會員
     public UserBean createUser(UserBean user) {
-    	System.out.println("[DEBUG] 註冊參數：" + user);
-    	// 設定創建日期和最後登入日期
+        // email 必填
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            throw new IllegalArgumentException("Email 不可為空");
+        }
+        // 先查 email 是否存在
+        if (userRepository.existsByEmail(user.getEmail().trim())) {
+            throw new IllegalStateException("Email 已註冊");
+        }
+        // 設定創建日期和最後登入日期
         user.setSignupDate(LocalDateTime.now());
         user.setLastLogin(LocalDateTime.now());
-        // 預設 active 和 verify 狀態
-        if (user.getIsActive() == null) {
-            user.setIsActive(true);
-        }
-        if (user.getIsVerify() == null) {
-            user.setIsVerify(false);
-        }
+        if (user.getIsActive() == null) user.setIsActive(true);
+        if (user.getIsVerify() == null) user.setIsVerify(false);
         return userRepository.save(user);
     }
 

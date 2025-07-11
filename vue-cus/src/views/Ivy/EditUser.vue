@@ -69,11 +69,16 @@
 import { ref, computed, onMounted, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/plungins/axios.js'
+import { useUserStore } from '@/stores/user.js'
 
 const router = useRouter()
 function goBack() {
     router.back()
 }
+
+const userStore = useUserStore()
+// Pinia 的驗證狀態
+const isVerified = computed(() => !!userStore.verified)
 
 const initial = reactive({
     firstName: '',
@@ -86,7 +91,6 @@ const initial = reactive({
 const fullName = ref('')
 const phone = ref('')
 const emailLocal = ref('')
-const isVerified = ref(false)
 const userId = ref(null)
 
 // loading狀態
@@ -111,14 +115,15 @@ onMounted(async () => {
                 phone.value = user.phone || ''
                 fullName.value = user.name || ''
                 emailLocal.value = user.email || ''
-                isVerified.value = user.isVerify || false
+
+                userStore.setVerified(!!user.isVerify)
 
                 // 2. 同步 initial 參考值
                 initial.phone = user.phone || ''
                 initial.firstName = user.name?.split(' ')[0] || ''
                 initial.lastName = user.name?.split(' ').slice(1).join(' ') || ''
                 initial.email = user.email || ''
-                initial.isVerified = user.isVerify || false
+                initial.isVerified = user.isVerify
 
                 // 3. 也同步 localStorage（讓你原本其它流程還能用）
                 localStorage.setItem('userFullName', user.name || '')
@@ -132,7 +137,7 @@ onMounted(async () => {
             phone.value = ''
             fullName.value = ''
             emailLocal.value = storedEmail
-            isVerified.value = false
+            userStore.setVerified(false); //沒有會員也清掉 verified
 
             initial.phone = ''
             initial.firstName = ''
@@ -143,7 +148,6 @@ onMounted(async () => {
             // localStorage 也同步清空
             localStorage.setItem('userFullName', '')
             localStorage.setItem('userPhone', '')
-            localStorage.setItem('userEmailVerified', 'false')
         }
     }
 })
@@ -152,7 +156,7 @@ onMounted(async () => {
 async function onEmailChange() {
     const email = emailLocal.value?.trim()
     if (!email) {
-        isVerified.value = false
+        userStore.setVerified(false)
         return
     }
     emailChecking.value = true
@@ -160,12 +164,12 @@ async function onEmailChange() {
         const res = await axios.get('/api/users/profile', { params: { email } })
         const user = res.data
         if (user) {
-            isVerified.value = !!user.isVerify
+            userStore.setVerified(!!user.isVerify)
         } else {
-            isVerified.value = false
+            userStore.setVerified(false)
         }
     } catch {
-        isVerified.value = false
+        userStore.setVerified(false)
     } finally {
         emailChecking.value = false
     }
