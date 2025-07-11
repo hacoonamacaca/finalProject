@@ -10,10 +10,10 @@ import org.locationtech.jts.geom.Point;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -32,7 +32,9 @@ import lombok.ToString;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.CategorySearchedBean;
+import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
+import tw.com.ispan.eeit.model.entity.food.FoodClassBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 
 @Data
@@ -61,13 +63,14 @@ public class StoreBean {
 
     @Convert(converter = tw.com.ispan.eeit.model.converter.PointToGeographyConverter.class)
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
+    @JsonIgnore // 忽略這個欄位的 JSON 序列化，避免 JTS Point 的無限遞歸
     private Point storeCoords;
 
     private Double lng;
 
     private Double lat;
 
-    @Column(name = "sotre_intro", columnDefinition = "varchar(max)")
+    @Column(name = "store_intro", columnDefinition = "varchar(max)")
     private String storeIntro;
 
     @Column(columnDefinition = "varchar(max)")
@@ -128,7 +131,8 @@ public class StoreBean {
     @JsonManagedReference
     private Set<SpecGroupBean> specGroups;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
     @JsonManagedReference
     private List<SpecialHoursBean> specialHours;
 
