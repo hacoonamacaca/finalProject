@@ -1,16 +1,20 @@
-import {
-    defineStore
-} from 'pinia'
-import {
-    ref,
-    computed
-} from 'vue'
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
     // 購物車結構：{ restaurantId: { restaurant, items } }
     const cartByRestaurant = ref({})
+    // ✨ 新增的購物車模態框顯示狀態
+    const isCartVisible = ref(false)
 
-
+    // 購物車顯示
+    const showCart = () => {
+        isCartVisible.value = true
+    }
+    // 購物車隱藏
+    const hideCart = () => {
+        isCartVisible.value = false
+    }
 
     // 計算屬性
     const cartCount = computed(() => {
@@ -166,9 +170,11 @@ export const useCartStore = defineStore('cart', () => {
         return orders
     }
 
+
     return {
         // 狀態
         cartByRestaurant,
+        isCartVisible, // ✨ 確保 isCartVisible 被暴露
 
         // 計算屬性
         cartCount,
@@ -186,9 +192,18 @@ export const useCartStore = defineStore('cart', () => {
         getRestaurantCart,
         getRestaurantTotal,
         getRestaurantItemCount,
+        showCart, // ✨ 確保 showCart 被暴露
+        hideCart, // ✨ 確保 hideCart 被暴露
 
         // 結帳方法
         checkoutSingleRestaurant,
         checkoutAllRestaurants
+    }
+}, {
+    // ✨ 新增這個配置物件來啟用持久化
+    persist: {
+        storage: sessionStorage, // 指定使用 sessionStorage
+        // 或者使用 localStorage: storage: localStorage,
+        // key: 'my-cart-data', // 可選：自訂儲存到 sessionStorage/localStorage 的鍵名，預設是 store 的 id ('cart')
     }
 })
