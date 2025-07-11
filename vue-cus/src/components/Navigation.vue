@@ -107,7 +107,7 @@ const error = ref('');
 const cartCount = computed(() => cartStore.cartCount);
 const cartByRestaurant = computed(() => cartStore.cartByRestaurant);
 const totalAmount = computed(() => cartStore.totalAmount);
-const isCartVisible = computed(() => cartStore.isCartVisible);
+const isCartVisible = computed(() =>  cartStore.isCartVisible );
 
 const showCart = () => cartStore.showCart();
 const hideCart = () => cartStore.hideCart();
@@ -285,6 +285,8 @@ watch(() => route.query.address, (newAddress) => {
 
 onMounted(() => {
   address.value = route.query.address || '';
+  console.log("顯示")
+  console.log( cartStore.isCartVisible)
 });
 
 // 模擬登入函數

@@ -37,6 +37,8 @@ public class StoreDTO {
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
     private Boolean isActive;
+    private String tel;
+    
 
     // 若你要給前端顯示空間點座標，可以自行決定怎麼包
     private String storeCoords; // 通常轉 WKT 字串或 GeoJSON 字串。要怎麼顯示決定於你的前端設計
@@ -48,7 +50,7 @@ public class StoreDTO {
         this.photo = store.getPhoto();
         this.score = store.getScore();
         this.isOpen = store.getIsOpen();
-
+        
         // 這裡需要注意：當這些關聯是懶加載時，直接訪問它們可能會觸發懶加載異常
         // 但由於是在 DTO 轉換器中，通常會期望它們已經被加載（通過 EntityGraph 或 JOIN FETCH）
         // 如果它們仍是懶加載且不在事務中，可能會報 LazyInitializationException

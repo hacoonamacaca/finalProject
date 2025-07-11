@@ -1,16 +1,20 @@
-import {
-    defineStore
-} from 'pinia'
-import {
-    ref,
-    computed
-} from 'vue'
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
     // 購物車結構：{ restaurantId: { restaurant, items } }
     const cartByRestaurant = ref({})
+    // ✨ 新增的購物車模態框顯示狀態
+    const isCartVisible = ref(false)
 
-
+    // 購物車顯示
+    const showCart = () => {
+        isCartVisible.value = true
+    }
+    // 購物車隱藏
+    const hideCart = () => {
+        isCartVisible.value = false
+    }
 
     // 計算屬性
     const cartCount = computed(() => {
@@ -24,7 +28,7 @@ export const useCartStore = defineStore('cart', () => {
             return total + restaurantCart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
         }, 0)
     })
-
+    //回傳數量
     const restaurantCount = computed(() => {
         return Object.keys(cartByRestaurant.value).length
     })
@@ -38,7 +42,7 @@ export const useCartStore = defineStore('cart', () => {
         return Object.values(cartByRestaurant.value).map(restaurantCart => restaurantCart.restaurant)
     })
 
-    // 方法
+    // 新增到購物車
     const addToCart = (item, restaurant) => {
         const restaurantId = restaurant.id
 
@@ -53,7 +57,7 @@ export const useCartStore = defineStore('cart', () => {
                 items: []
             }
         }
-
+        // 如果有取出該餐廳的內容
         const restaurantCart = cartByRestaurant.value[restaurantId]
 
         // 創建唯一的商品ID，包含規格信息
@@ -74,12 +78,8 @@ export const useCartStore = defineStore('cart', () => {
     // 生成商品唯一鍵，包含規格信息
     const generateItemKey = (item) => {
         const baseKey = `${item.id}`
-        const iceLevel = item.selectedIceLevel || ''
-        const toppings = (item.selectedToppings || []).sort().join(',')
-        const options = item.selectedOptions ? JSON.stringify(item.selectedOptions) : ''
-        const notes = item.notes || ''
 
-        return `${baseKey}_${iceLevel}_${toppings}_${options}_${notes}`
+        return `${baseKey}`
     }
 
     const updateQuantity = (itemId, newQuantity, restaurantId) => {
@@ -142,7 +142,7 @@ export const useCartStore = defineStore('cart', () => {
 
         const orderData = {
             restaurant: restaurantCart.restaurant,
-            items: [...restaurantCart.items],
+            orderDetail: [...restaurantCart.items],
             totalAmount: getRestaurantTotal(restaurantId),
             orderTime: new Date().toISOString()
         }
@@ -166,9 +166,11 @@ export const useCartStore = defineStore('cart', () => {
         return orders
     }
 
+
     return {
         // 狀態
         cartByRestaurant,
+        isCartVisible, // ✨ 確保 isCartVisible 被暴露
 
         // 計算屬性
         cartCount,
@@ -186,9 +188,18 @@ export const useCartStore = defineStore('cart', () => {
         getRestaurantCart,
         getRestaurantTotal,
         getRestaurantItemCount,
+        showCart, // ✨ 確保 showCart 被暴露
+        hideCart, // ✨ 確保 hideCart 被暴露
 
         // 結帳方法
         checkoutSingleRestaurant,
         checkoutAllRestaurants
+    }
+}, {
+    // ✨ 新增這個配置物件來啟用持久化
+    persist: {
+        storage: sessionStorage, // 指定使用 sessionStorage
+        // 或者使用 localStorage: storage: localStorage,
+        // key: 'my-cart-data', // 可選：自訂儲存到 sessionStorage/localStorage 的鍵名，預設是 store 的 id ('cart')
     }
 })

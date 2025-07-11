@@ -1,3 +1,4 @@
+<!--   -->
 <template>
     <div class="cart-page goldenbowl-restaurant-theme">
         <div class="cart-container">

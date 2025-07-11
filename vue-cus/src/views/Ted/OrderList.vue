@@ -3,80 +3,36 @@
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
-// 如果你的 main.js 或其他地方沒有全局引入 Bootstrap CSS 和 Icons，你可以在這裡引入
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap-icons/font/bootstrap-icons.css'; // 如果你使用了 Bootstrap Icons
-// import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // 如果需要 Bootstrap JS 功能
-
-
-
+import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
 
 const orders=ref([])
-// 模擬訂單數據
-// orders.value.push(
-//   {
-//     id: 1,
-//     store: '店家名稱1', // 修正 'sotre' 為 'store'
-//     img: 'https://www.discoverhongkong.com/content/dam/dhk/intl/explore/dining/hong-kong-restaurants-by-the-sea/hue-960x720.jpg',
-//     price: 499,
-//     foods: [{
-//       name: '綠茶',
-//       quantity: 1,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '紅茶拿鐵',
-//       quantity: 2,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '叉燒飯',
-//       quantity: 3,
-//       like: null,
-//     }],
-//     time: '2025-06-24 18:30',
-//     rating: 0, // 初始未評分
-//     like: null,
-//   },
-//   {
-//     id: 2,
-//     img: 'https://www.discoverhongkong.com/content/dam/dhk/intl/explore/dining/hong-kong-restaurants-by-the-sea/hue-960x720.jpg',
-//     store: '店家名稱2', // 修正 'sotre' 為 'store'
-//     price: 699,
-//     foods: [{
-//       name: '綠茶',
-//       quantity: 1,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '紅茶拿鐵',
-//       quantity: 2,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '叉燒飯',
-//       quantity: 3,
-//       like: null,
-//     }],
-//     time: '2025-06-23 19:00',
-//     rating: 5,
-//     like: null,
-//   },
-// );
-// 如果有來自Pinia的參數
-
 const id = ref(1)
+const userStore = useUserStore(); // 實例化 userStore
+const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
 
 onMounted(() => {
-  orders.value.push(findorder(id))
+  // 獲取用戶 ID 從 Pinia
+  console.log(userId.value)
+
   // 初始化訂單評分狀態
+  // 從 Pinia 獲取用戶 ID
+  userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
+  if (userId.value) {
+    findorder(userId.value)
+
+    // orders.value.push(findOrder(userId.value));
+  } else {
+     findorder(1)
+    console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
+    // 您可以導向登入頁面或顯示提示
+  }
 })
 
 function findorder(id) {
-  axios.get(`/api/orders/user/${id.value}`)
+  axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
 
-      console.log("orders")
+      console.log("訂單數據:", response.data);
       orders.value = response.data
       console.log(orders.value)
       // response.data.forEach(element => {
@@ -85,7 +41,7 @@ function findorder(id) {
       // });
       // console.log(`ordersValue:${orders.value}`)
   }).catch(function (error) {
-    console.log(error);
+    console.error("加載訂單失敗:", error);
   })
 
 }
@@ -138,8 +94,8 @@ const reorder = (order) => {
           </button>
         </div>
 
-        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-          <RatingModal :order="order" />
+        <div >
+            <RatingModal :order="order" />
         </div>
       </div>
     </div>
@@ -162,10 +118,10 @@ const reorder = (order) => {
   transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加過渡效果 */
 }
 
-.order-item-card:hover {
-  transform: translateY(-3px); /* 鼠標懸停時輕微上移 */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); /* 懸停時陰影加深 */
-}
+/* .order-item-card:hover {
+  transform: translateY(-3px); 鼠標懸停時輕微上移 
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);  懸停時陰影加深 
+}*/
 
 /* 圓角類，Bootstrap 預設的 rounded-lg 已經很不錯 */
 .rounded-lg {

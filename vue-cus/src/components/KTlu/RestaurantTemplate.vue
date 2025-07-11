@@ -1,4 +1,4 @@
-<template>
+<template><!--上一層是Restaurant.page-->
     <div class="restaurant-container goldenbowl-restaurant-theme">
         <!-- 餐廳橫幅 -->
         <RestaurantBanner :restaurant="restaurant" />
@@ -61,7 +61,7 @@ import RestaurantFooter from './RestaurantFooter.vue'
 import '@/assets/css/restaurant-theme.css'
 
 // 接收餐廳資料
-defineProps({
+const props = defineProps({
     restaurant: {
         type: Object,
         required: true
@@ -79,9 +79,17 @@ const handleCheckout = (orderData) => {
     alert(`訂單總計：NT$${orderData.totalAmount}\n正在處理訂單...`)
 }
 
+function getStoreFoods() {
+    
+}
+
 // 生命周期
 onMounted(() => {
     console.log('🏪 RestaurantTemplate 已載入')
+    console.log(props.restaurant)
+    
+
+
 })
 </script>
 

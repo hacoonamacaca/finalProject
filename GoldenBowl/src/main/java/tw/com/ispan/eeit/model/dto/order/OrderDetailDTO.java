@@ -25,6 +25,7 @@ public class OrderDetailDTO {
 	 private Integer total;//總價
 	// 外部資料的Food
 	 private OrderDetailFoodDTO food; // OrderDetailDTO內的包含食物資料
+	 	     
 	 private Boolean likeFood; //LikeFood表單中的選項
 
 	 private List<SpecDTO> specs;
@@ -34,7 +35,7 @@ public class OrderDetailDTO {
 	     private Integer id;
 	     private String name;
 	     
-	     
+	     //從DTO轉換成Bean
 	     public FoodBean toFoodBean() {
 	         FoodBean foodBean = new FoodBean();
 	         foodBean.setId(this.id);
@@ -52,12 +53,13 @@ public class OrderDetailDTO {
 		 orderDetail.setSubTotal(orderDetailBean.getSubTotal());
 		 orderDetail.setTotal(orderDetailBean.getTotal());
 		 
-		 //使用內部資料
+		 //使用內部資料 將Bean轉換成內部資料
 		 if (orderDetailBean.getFood() != null && 
 				 Hibernate.isInitialized(orderDetailBean.getFood())) {
 			 OrderDetailDTO.OrderDetailFoodDTO foodDTO = new OrderDetailDTO.OrderDetailFoodDTO();
 			 foodDTO.setId(orderDetailBean.getFood().getId());
 			 foodDTO.setName(orderDetailBean.getFood().getName());
+			 orderDetail.setFood(foodDTO);
 		 }
 		 
 		 //
