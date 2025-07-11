@@ -35,6 +35,7 @@ public class CommentService {
     public List<CommentResponseDTO> findByStoreIdAsDto(Integer storeId) {
         List<CommentBean> comments = commentRepository.findByStoreId(storeId);
         return comments.stream()
+                .filter(comment -> !comment.getIsHidden()) // 過濾隱藏的評論
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }

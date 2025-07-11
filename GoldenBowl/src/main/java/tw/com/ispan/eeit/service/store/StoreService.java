@@ -47,7 +47,7 @@ public class StoreService {
     }
 
     public Optional<StoreBean> getStoreById(Integer id) {
-        return storeRepository.findById(id);
+        return storeRepository.findByIdWithComments(id); // 使用新的方法
     }
 
     public StoreBean createStore(StoreBean store) {

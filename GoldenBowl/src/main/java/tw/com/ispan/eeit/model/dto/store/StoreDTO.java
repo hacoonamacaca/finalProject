@@ -55,9 +55,14 @@ public class StoreDTO {
         this.categoryNames = store.getCategories() != null
                 ? store.getCategories().stream().map(CategoryBean::getName).collect(Collectors.toList())
                 : new ArrayList<>();
+
         this.comments = store.getComments() != null
-                ? store.getComments().stream().map(CommentDTO::new).collect(Collectors.toList())
+                ? store.getComments().stream()
+                        .filter(comment -> !comment.getIsHidden()) // <-- 新增的過濾條件
+                        .map(CommentDTO::new)
+                        .collect(Collectors.toList())
                 : new ArrayList<>();
+
         this.foods = store.getFoods() != null ? store.getFoods().stream().map(FoodDTO::new).collect(Collectors.toList())
                 : new ArrayList<>();
 
