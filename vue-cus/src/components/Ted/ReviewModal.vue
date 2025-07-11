@@ -1,203 +1,261 @@
-<template>
-  <span class="text-muted">
-    <!-- 顯示評分狀態 -->
-    評分
-    <span class="text-warning ms-2" @mouseleave="resetTempRating">
-      <i
-        v-for="star in 5"
-        :key="star"
-        class="bi bi-star-fill"
-        :class="{
-          'text-warning': star <= (order.rating || (selectedOrder === order ? tempRating : 0)),
-          'text-muted': star > (order.rating || (selectedOrder === order ? tempRating : 0)),
-          'pointer': !order.rating
-        }"
-        @click="confirmRating(order, star)"
-        @mouseover="hoverRating(order, star)"
-      ></i>
-    </span>
-  </span> 
-  
-  <!-- 模態框 -->
-  <div class="modal fade" ref="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered"> <!-- 添加 modal-dialog-centered 使模態框垂直居中 -->
-      <div class="modal-content">
-        <div class="modal-header flex-column align-items-start"> <!-- 修改為 flex-column 使星數移到標題下方 -->
-          <h5 class="modal-title mb-2" id="ratingModalLabel">您的評分是</h5>
-          <div class="text-warning" @mouseleave="resetModalTempRating">
-            <i
-              v-for="star in 5"
-              :key="star"
-              class="bi bi-star-fill me-1 fs-5" 
-              :class="{
-                'text-warning': star <= (modalTempRating || currentOrderRating),
-                'text-muted': star > (modalTempRating || currentOrderRating),
-                'pointer': true
-              }"
-              @click="updateModalRating(star)"
-              @mouseover="hoverModalRating(star)"
-            ></i>
-          </div>
-          <button type="button" class="btn-close position-absolute top-0 end-0 m-2" data-bs-dismiss="modal" aria-label="Close"></button> <!-- 調整關閉按鈕位置 -->
-        </div>
-        <div class="modal-body">
-          <div class="d-flex align-items-start">
-            <img :src="order.img" alt="店家圖片" class="me-3 rounded" style="width: 60px; height: 60px; object-fit: cover;">
-            <div class="flex-grow-1">
-              <div class="d-flex w-100 justify-content-between align-items-center mb-2"> <!-- 添加 align-items-center 和 mb-2 -->
-                <h5 class="mb-0">{{ order.sotre }} 店家名稱</h5>
-                <h4 class="text-danger mb-0">${{ order.price }}</h4>
-              </div>
-              <p class="mb-2 text-muted">訂購時間: {{ order.time }}</p> <!-- 添加 text-muted 和 mb-2 -->
-              <div v-for="food in order.foods" :key="food.name + order.id" class="d-flex align-items-center mb-2"> <!-- 使用 d-flex 確保按鈕對齊 -->
-                <span class="flex-grow-1">{{ food.name }}</span>
-                <div class="ms-3"> <!-- 使用 div 包裝按鈕並靠右 -->
-                  <button
-                    class="btn btn-sm btn-outline-primary me-2" 
-                    :class="{ 'active': food.like === true }"
-                    @click="setLike(food, true)"
-                  >
-                    <i class="bi bi-hand-thumbs-up-fill"></i>
-                  </button>
-                  <button
-                    class="btn btn-sm btn-outline-danger"
-                    :class="{ 'active': food.like === false }"
-                    @click="setLike(food, false)"
-                  >
-                    <i class="bi bi-hand-thumbs-down-fill"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer comment p-3"> <!-- 將 comment 移到 footer 並添加內距 -->
-          <textarea class="form-control" id="comment" rows="3" placeholder="請輸入評論"></textarea>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button> <!-- 添加取消按鈕 -->
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" @click="sendRating">確認</button> <!-- 改用 btn-primary -->
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
 <script setup>
-import { onMounted, ref, reactive, watch } from 'vue';
-import bootstrap from 'bootstrap/dist/js/bootstrap.bundle.min.js';
+import { ref, watch, computed } from 'vue';
+import { Modal } from 'bootstrap'; // 引入 Bootstrap Modal JavaScript
+import axios from '@/plungins/axios.js'; // 確保路徑正確
+import { useUserStore } from '@/stores/user.js'; // 假設您有用戶 Pinia Store 來獲取 userId
 
-// 將 order 包裝為 reactive 物件
-const props = defineProps(['order']);
-const order = reactive(props.order);
-
-const selectedOrder = ref(null);
-const modalMessage = ref('');
-const currentOrderRating = ref(0);
-const ratingModal = ref(null);
-const tempRating = ref(0);
-const modalTempRating = ref(0);
-
-let modalInstance = null;
-
-// 建立 Modal 實體
-onMounted(() => {
-  if (ratingModal.value) {
-    modalInstance = new bootstrap.Modal(ratingModal.value);
-    // 初始化 currentOrderRating 與 order.rating 同步
-    currentOrderRating.value = order.rating || 0;
-    // 初始化每個食品的 like 狀態
-    order.foods.forEach(food => {
-      if (food.like === undefined) {
-        food.like = null;
-      }
-    });
-  }
-});
-
-// 雙向監聽 order.rating 和 currentOrderRating
-watch(currentOrderRating, (newRating) => {
-  if (order.rating !== newRating) {
-    order.rating = newRating;
-  }
-});
-watch(() => order.rating, (newRating) => {
-  if (currentOrderRating.value !== newRating) {
-    currentOrderRating.value = newRating;
-  }
-});
-
-// 主畫面滑鼠懸停時更新臨時評分
-const hoverRating = (order, rating) => {
-  if (!order.rating) {
-    tempRating.value = rating;
-    selectedOrder.value = order;
-  }
-};
-
-// 主畫面滑鼠離開時重置臨時評分
-const resetTempRating = () => {
-  tempRating.value = 0;
-  selectedOrder.value = null;
-};
-
-// 模態框滑鼠懸停時更新臨時評分
-const hoverModalRating = (rating) => {
-  modalTempRating.value = rating;
-};
-
-// 模態框滑鼠離開時重置臨時評分
-const resetModalTempRating = () => {
-  modalTempRating.value = 0;
-};
-
-// 模態框點擊星星更新評分
-const updateModalRating = (rating) => {
-  if (rating > 0) {
-    currentOrderRating.value = rating;
-    modalMessage.value = `訂單：${order.title} 已評分 ${rating} 星！`;
-    modalTempRating.value = 0;
-  }
-};
-
-// 主畫面點擊星星確認評分並顯示模態框
-const confirmRating = (order, rating) => {
-  if (!order.rating && rating > 0) {
-    currentOrderRating.value = rating;
-    modalMessage.value = `訂單：${order.title} 已評分 ${rating} 星！`;
-    tempRating.value = 0;
-    selectedOrder.value = null;
-    if (modalInstance) {
-      modalInstance.show();
+const props = defineProps({
+    order: {
+        type: Object,
+        required: true
     }
-  }
+});
+
+const emit = defineEmits(['commentSubmitted', 'ratingUpdated']); // 定義發射事件
+
+// 從 Pinia Store 獲取用戶 ID
+const userStore = useUserStore();
+const currentUserId = computed(() => userStore.userId); // 假設您在 userStore 中存儲了 userId
+
+// Modal 相關
+const ratingModalRef = ref(null); // 用於綁定 Modal 元素的 ref
+let bsModal = null; // Bootstrap Modal 實例
+
+// 評分相關
+const currentRating = ref(0); // 當前選擇的星級評分 (1-5)
+const hoverRating = ref(0); // 滑鼠懸停時的星級評分
+const commentContent = ref(''); // 評論內容
+const existingCommentId = ref(null); // 如果是編輯現有評論，則存儲評論 ID
+
+// 食物點讚/倒讚狀態
+const foodLikes = ref({}); // 儲存每個 orderDetailId 對應的 isLiked 狀態 { orderDetailId: isLiked (boolean) }
+
+// 初始化評分 Modal 數據
+const initializeModalData = () => {
+    // 初始化評分和評論內容
+    if (props.order.comment) {
+        currentRating.value = props.order.comment.score || 0;
+        commentContent.value = props.order.comment.content || '';
+        existingCommentId.value = props.order.comment.id;
+    } else {
+        currentRating.value = 0;
+        commentContent.value = '';
+        existingCommentId.value = null;
+    }
+
+    // 初始化食物點讚狀態
+    foodLikes.value = {};
+    if (props.order.orderDetails && props.order.orderDetails.length > 0) {
+        props.order.orderDetails.forEach(detail => {
+            if (detail.likeFood) {
+                foodLikes.value[detail.id] = detail.likeFood.isLiked;
+            } else {
+                foodLikes.value[detail.id] = null; // 初始為未選擇
+            }
+        });
+    }
 };
 
-// 處理按讚/倒讚，點擊已選中的狀態則取消
-const setLike = (food, value) => {
-  if (food.like === value) {
-    food.like = null; // 再按一次取消
-  } else {
-    food.like = value; // 設置按讚（true）或倒讚（false）
-  }
+// 監聽 order props 變化，當 order 更新時重新初始化數據 (例如，從 API 獲取新訂單數據)
+watch(() => props.order, (newOrder) => {
+    if (newOrder) {
+        initializeModalData();
+    }
+}, { immediate: true }); // immediate: true 表示組件加載時立即執行一次
+
+// Modal 開啟/關閉
+const openModal = () => {
+    if (ratingModalRef.value) {
+        if (!bsModal) {
+            bsModal = new Modal(ratingModalRef.value);
+        }
+        initializeModalData(); // 每次打開 Modal 都重新初始化數據
+        bsModal.show();
+    }
 };
 
-// 傳送評分並關閉模態框
-const sendRating = () => {
-  const comment = document.getElementById('comment').value;
-  const foodLikes = order.foods.map(food => ({
-    name: food.name,
-    like: food.like
-  }));
-  console.log('評分已傳送：', { rating: currentOrderRating.value, foodLikes, comment });
-  if (modalInstance) {
-    modalInstance.hide();
-  }
+const closeModal = () => {
+    if (bsModal) {
+        bsModal.hide();
+    }
+};
+
+// 星級評分操作
+const setRating = (rating) => {
+    currentRating.value = rating;
+};
+
+const setHoverRating = (rating) => {
+    hoverRating.value = rating;
+};
+
+const resetHoverRating = () => {
+    hoverRating.value = 0;
+};
+
+// 食物點讚/倒讚操作
+const toggleLike = (orderDetailId, isLiked) => {
+    foodLikes.value[orderDetailId] = isLiked;
+};
+
+// 提交評論和點讚狀態
+const submitReview = async () => {
+    if (currentUserId.value === null) {
+        alert('請先登入才能進行評論和點讚。');
+        return;
+    }
+
+    // 1. 提交或更新評論
+    try {
+        const commentData = {
+            content: commentContent.value,
+            score: currentRating.value,
+            // reply 和 isHidden 可以在後端預設或不傳
+            orderId: props.order.id,
+            userId: currentUserId.value,
+            storeId: props.order.store.id
+        };
+
+        let commentResponse;
+        if (existingCommentId.value) {
+            // 更新現有評論
+            commentResponse = await axios.put(`/comment/${existingCommentId.value}`, commentData);
+        } else {
+            // 創建新評論
+            commentResponse = await axios.post('/comment', commentData);
+            existingCommentId.value = commentResponse.data.id; // 保存新創建的評論 ID
+        }
+        console.log('評論提交成功:', commentResponse.data);
+        emit('commentSubmitted', commentResponse.data); // 通知父組件評論已提交
+    } catch (error) {
+        console.error('提交評論失敗:', error);
+        alert('提交評論失敗！');
+        return; // 如果評論失敗，則停止後續操作
+    }
+
+    // 2. 提交或更新食物點讚/倒讚狀態
+    if (props.order.orderDetails) {
+        for (const detail of props.order.orderDetails) {
+            const likedStatus = foodLikes.value[detail.id];
+            if (likedStatus !== null) { // 只有當用戶實際選擇了點讚/倒讚時才提交
+                try {
+                    const likedFoodData = {
+                        userId: currentUserId.value,
+                        foodId: detail.food.id,
+                        orderDetailId: detail.id,
+                        isLiked: likedStatus,
+                        // updatedTime 會由後端處理
+                    };
+                    // 假設後端有一個 /liked-food 或 /liked-food/{orderDetailId} 的 endpoint
+                    // 如果是新增或更新，需要判斷現有狀態。
+                    // 這裡簡單處理為直接發送 PUT 請求，假設後端會處理 upsert 邏輯。
+                    // 您可能需要根據實際的 LikedFoodController API 設計進行調整。
+                    await axios.post('/liked-food', likedFoodData); // 或者 PUT /liked-food/{id}
+                    console.log(`食物 ${detail.food.name} 點讚狀態提交成功.`);
+                } catch (error) {
+                    console.error(`提交食物 ${detail.food.name} 點讚狀態失敗:`, error);
+                    // 即使單個食物點讚失敗，也不中斷整個提交過程
+                }
+            }
+        }
+    }
+
+    alert('感謝您的評分和評論！');
+    closeModal(); // 提交成功後關閉 Modal
 };
 </script>
 
+<template>
+    <div>
+        <button class="btn btn-warning btn-sm rounded-pill px-3" @click="openModal">
+            <i class="bi bi-star-fill me-1"></i> 評分
+        </button>
+
+        <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true" ref="ratingModalRef">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="ratingModalLabel">評價訂單 - {{ order.store.name }}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="d-flex align-items-center mb-4">
+                            <img :src="order.store.photo" alt="店家圖片" class="me-3 rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
+                            <div>
+                                <h6 class="mb-0">{{ order.store.name }}</h6>
+                                <p class="text-muted small mb-0">訂單時間: {{ order.createTime }}</p>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label d-block mb-2 fw-bold">整體評分：</label>
+                            <div class="star-rating">
+                                <i v-for="star in 5" :key="star"
+                                   class="bi"
+                                   :class="{ 'bi-star-fill text-warning': star <= currentRating || star <= hoverRating, 'bi-star': star > currentRating && star > hoverRating }"
+                                   @mouseover="setHoverRating(star)"
+                                   @mouseleave="resetHoverRating"
+                                   @click="setRating(star)">
+                                </i>
+                                <span class="ms-2 text-muted">({{ currentRating }} / 5)</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label d-block mb-2 fw-bold">食物評價：</label>
+                            <div v-if="order.orderDetails && order.orderDetails.length > 0">
+                                <div v-for="detail in order.orderDetails" :key="detail.id" class="d-flex align-items-center mb-3 p-2 border rounded">
+                                    <img :src="detail.food.photo" alt="食物圖片" class="me-3 rounded" style="width: 50px; height: 50px; object-fit: cover;">
+                                    <div class="flex-grow-1">
+                                        <p class="mb-0 fw-medium">{{ detail.food.name }} <span class="text-muted small">x {{ detail.quantity }}</span></p>
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <button type="button"
+                                                class="btn"
+                                                :class="{ 'btn-success': foodLikes[detail.id] === true, 'btn-outline-success': foodLikes[detail.id] !== true }"
+                                                @click="toggleLike(detail.id, true)">
+                                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                                        </button>
+                                        <button type="button"
+                                                class="btn"
+                                                :class="{ 'btn-danger': foodLikes[detail.id] === false, 'btn-outline-danger': foodLikes[detail.id] !== false }"
+                                                @click="toggleLike(detail.id, false)">
+                                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <p v-else class="text-muted">此訂單沒有食物明細。</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="commentText" class="form-label fw-bold">您的評論：</label>
+                            <textarea class="form-control" id="commentText" rows="4" v-model="commentContent" placeholder="請輸入您的評論..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                        <button type="button" class="btn btn-primary" @click="submitReview">提交評價</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <style scoped>
-.pointer {
-  cursor: pointer !important;
+/* 確保 Bootstrap Icons 載入 */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+.star-rating .bi {
+    font-size: 1.8rem;
+    cursor: pointer;
+    margin-right: 5px;
+    color: #ccc; /* 預設灰色 */
 }
+
+.star-rating .bi-star-fill.text-warning {
+    color: #ffc107 !important; /* 黃色星星 */
+}
+
 </style>

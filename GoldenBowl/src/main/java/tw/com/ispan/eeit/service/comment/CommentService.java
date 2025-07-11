@@ -39,6 +39,14 @@ public class CommentService {
                 .collect(Collectors.toList());
     }
 
+    // 新增：根據 userId 查找評論列表 (返回 DTO 列表)
+    public List<CommentResponseDTO> findByUserIdAsDto(Integer userId) {
+        List<CommentBean> comments = commentRepository.findByUserId(userId);
+        return comments.stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
     // 查找所有評論 (返回 DTO 列表)
     public List<CommentResponseDTO> findAllAsDto() {
         List<CommentBean> comments = commentRepository.findAll();

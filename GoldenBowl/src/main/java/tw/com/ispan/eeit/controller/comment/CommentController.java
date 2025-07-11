@@ -110,4 +110,14 @@ public class CommentController {
         }
         return ResponseEntity.ok(comments);
     }
+
+    // 新增：根據 User ID 查找評論列表 (返回 DTO 列表)
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CommentResponseDTO>> getCommentsByUserId(@PathVariable Integer userId) {
+        List<CommentResponseDTO> comments = commentService.findByUserIdAsDto(userId);
+        if (comments.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(comments);
+    }
 }
