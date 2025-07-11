@@ -13,6 +13,7 @@ import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
+import tw.com.ispan.eeit.model.dto.store.OpenHourDTO;
 import tw.com.ispan.eeit.repository.store.OpenHourRepository;
 import tw.com.ispan.eeit.repository.store.SpecialHoursRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
@@ -34,11 +35,30 @@ public class OpenHourService {
 	 * 為餐廳設定營業時間
 	 */
 	public OpenHourBean setOpenHour(Integer storeId, DayOfWeek day, String openTime, String closeTime) {
+		return setOpenHour(storeId, day, openTime, closeTime, true);
+	}
+
+	/**
+	 * 為餐廳設定營業時間 (包含是否營業選項)
+	 */
+	public OpenHourBean setOpenHour(Integer storeId, DayOfWeek day, String openTime, String closeTime, boolean isOpen) {
 		StoreBean store = storeRepo.findById(storeId)
 				.orElseThrow(() -> new ResourceNotFoundException("Store not found"));
 
 		// 檢查是否已存在設定
 		Optional<OpenHourBean> existingOpenHour = openHourRepo.findByStoreAndDay(store, day);
+
+		if (!isOpen) {
+			// 如果設定為不營業，刪除現有的營業時間記錄
+			if (existingOpenHour.isPresent()) {
+				openHourRepo.delete(existingOpenHour.get());
+			}
+			// 返回一個空的 OpenHourBean 表示不營業
+			OpenHourBean closedHour = new OpenHourBean();
+			closedHour.setStore(store);
+			closedHour.setDayOfWeek(day);
+			return closedHour;
+		}
 
 		OpenHourBean openHour;
 		if (existingOpenHour.isPresent()) {
@@ -67,6 +87,24 @@ public class OpenHourService {
 		StoreBean store = storeRepo.findById(storeId)
 				.orElseThrow(() -> new ResourceNotFoundException("Store not found"));
 		return openHourRepo.findByStore(store);
+	}
+
+	/**
+	 * 取得餐廳的營業時間設定 (DTO 版本，只返回核心資料)
+	 */
+	public List<OpenHourDTO> getOpenHoursDTOByStore(Integer storeId) {
+		StoreBean store = storeRepo.findById(storeId)
+				.orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+
+		List<OpenHourBean> openHours = openHourRepo.findByStore(store);
+		return openHours.stream()
+				.map(oh -> new OpenHourDTO(
+						oh.getId(),
+						storeId,
+						oh.getDayOfWeek(),
+						oh.getOpenTime(),
+						oh.getCloseTime()))
+				.collect(java.util.stream.Collectors.toList());
 	}
 
 	/**
@@ -208,10 +246,10 @@ public class OpenHourService {
 		if (isClose != null) {
 			specialHours.setIsClose(isClose);
 		}
-		if (openTime != null) {
+		if (openTime != null && !openTime.trim().isEmpty()) {
 			specialHours.setOpenTime(java.time.LocalTime.parse(openTime));
 		}
-		if (closeTime != null) {
+		if (closeTime != null && !closeTime.trim().isEmpty()) {
 			specialHours.setCloseTime(java.time.LocalTime.parse(closeTime));
 		}
 

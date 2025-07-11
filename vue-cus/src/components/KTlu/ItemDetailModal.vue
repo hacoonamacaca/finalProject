@@ -8,7 +8,8 @@
 
             <div class="modal-body">
                 <div class="item-image">
-                    <img :src="item.image" :alt="item.name" />
+                    <img :src="item.imgResource" :alt="item.name" />
+
                 </div>
 
                 <div class="item-details">
@@ -54,7 +55,7 @@
                                 <span class="option-label">
                                     <span class="option-name">{{ sweetnessOption.name }}</span>
                                     <span v-if="sweetnessOption.badge" class="option-badge">{{ sweetnessOption.badge
-                                        }}</span>
+                                    }}</span>
                                 </span>
                                 <span class="option-price">NT${{ sweetnessOption.price }}</span>
                             </label>

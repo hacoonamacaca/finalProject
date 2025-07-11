@@ -51,7 +51,7 @@
                                 </div> -->
 
                                 <div class="item-image">
-                                    <img :src="item.imageResource || restaurant.image" :alt="item.name" />
+                                    <img :src="item.imgResource || restaurant.image" :alt="item.name" />
                                 </div>
                                 <div class="item-content">
                                     <div class="item-info">
@@ -407,10 +407,12 @@ const setupIntersectionObserver = () => {
             const isAtTop = scrollY < menuContainerTop - STICKY_TOP_POSITION + 50;
 
             if (isAtTop && categories.value.length > 0) {
-                const firstCategory = categories.value[0].name;
-                if (activeCategory.value !== firstCategory) {
-                    console.log(`🏠 頁面頂部，設置第一個分類: ${firstCategory}`)
-                    activeCategory.value = firstCategory;
+                const firstCategoryWithItems = categories.value.find(category =>
+                    getCategoryItems(category.name).length > 0
+                );
+                if (firstCategoryWithItems && activeCategory.value !== firstCategoryWithItems.name) {
+                    console.log(`🏠 頁面頂部，設置第一個有菜品的分類: ${firstCategoryWithItems.name}`)
+                    activeCategory.value = firstCategoryWithItems.name;
                 }
             }
             return;
@@ -443,14 +445,24 @@ const setupIntersectionObserver = () => {
         }
     }, observerOptions);
 
-    // 觀察所有分類區塊
-    categories.value.forEach(category => {
+    // 觀察有菜品的分類區塊 - 增加重試機制
+    categoriesWithItems.forEach(category => {
         const element = document.getElementById(`category-${category.id}`);
         if (element) {
             observer.observe(element);
             console.log(`👁️ 觀察分類: ${category.name} (ID: ${category.id})`)
         } else {
-            console.error(`❌ 找不到分類元素: category-${category.id}`)
+            console.warn(`⚠️ 分類元素暫時找不到: category-${category.id}，將重試...`)
+            // 延遲重試機制
+            setTimeout(() => {
+                const retryElement = document.getElementById(`category-${category.id}`);
+                if (retryElement) {
+                    observer.observe(retryElement);
+                    console.log(`✅ 重試成功，觀察分類: ${category.name} (ID: ${category.id})`)
+                } else {
+                    console.error(`❌ 重試後仍找不到分類元素: category-${category.id}`)
+                }
+            }, 100);
         }
     });
 
@@ -480,9 +492,14 @@ onMounted(async () => {
         categories.value = categoriesResponse.data;
         items.value = itemsResponse.data;
 
-        // 如果有分類，將第一個分類設為預設 active
+        // 如果有分類，將第一個有菜品的分類設為預設 active
         if (categories.value.length > 0) {
-            activeCategory.value = categories.value[0].name;
+            const firstCategoryWithItems = categories.value.find(category =>
+                getCategoryItems(category.name).length > 0
+            );
+            if (firstCategoryWithItems) {
+                activeCategory.value = firstCategoryWithItems.name;
+            }
         }
 
         console.log("✅ 成功載入店家分類:", categories.value);
@@ -524,15 +541,15 @@ onMounted(async () => {
 
         // 多次強制檢查，確保按鈕狀態正確
         setTimeout(() => {
-            forceCheckScrollButtons();
+            checkScrollButtonVisibility();
         }, 300);
 
         setTimeout(() => {
-            forceCheckScrollButtons();
+            checkScrollButtonVisibility();
         }, 500);
 
         setTimeout(() => {
-            forceCheckScrollButtons();
+            checkScrollButtonVisibility();
         }, 1000);
 
         // 監聽窗口大小變化，當佈局變化時重新檢查按鈕可見性

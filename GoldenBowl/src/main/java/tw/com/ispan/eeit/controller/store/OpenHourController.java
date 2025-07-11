@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
+import tw.com.ispan.eeit.model.dto.store.OpenHourDTO;
+import tw.com.ispan.eeit.model.dto.store.SpecialHoursDTO;
+import tw.com.ispan.eeit.model.dto.store.StoreOpenStatusDTO;
 import tw.com.ispan.eeit.service.store.OpenHourService;
 
 @RestController
@@ -29,10 +32,23 @@ public class OpenHourController {
     private OpenHourService openHourService;
 
     /**
-     * 取得餐廳的營業時間設定
+     * 取得餐廳的營業時間設定 (簡化版本，只返回核心資料)
      */
     @GetMapping
-    public ResponseEntity<List<OpenHourBean>> getOpenHours(@PathVariable Integer storeId) {
+    public ResponseEntity<List<OpenHourDTO>> getOpenHours(@PathVariable Integer storeId) {
+        try {
+            List<OpenHourDTO> openHours = openHourService.getOpenHoursDTOByStore(storeId);
+            return ResponseEntity.ok(openHours);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
+     * 取得餐廳的營業時間設定 (完整版本，包含所有關聯資料)
+     */
+    @GetMapping("/full")
+    public ResponseEntity<List<OpenHourBean>> getOpenHoursFull(@PathVariable Integer storeId) {
         try {
             List<OpenHourBean> openHours = openHourService.getOpenHoursByStore(storeId);
             return ResponseEntity.ok(openHours);
@@ -42,15 +58,21 @@ public class OpenHourController {
     }
 
     /**
-     * 取得餐廳特定星期的營業時間設定
+     * 取得餐廳特定星期的營業時間設定 (簡化版本)
      */
     @GetMapping("/{day}")
-    public ResponseEntity<OpenHourBean> getOpenHourByDay(
+    public ResponseEntity<OpenHourDTO> getOpenHourByDay(
             @PathVariable Integer storeId,
             @PathVariable DayOfWeek day) {
         try {
             OpenHourBean openHour = openHourService.getOpenHourByStoreAndDay(storeId, day);
-            return ResponseEntity.ok(openHour);
+            OpenHourDTO openHourDTO = new OpenHourDTO(
+                    openHour.getId(),
+                    storeId,
+                    openHour.getDayOfWeek(),
+                    openHour.getOpenTime(),
+                    openHour.getCloseTime());
+            return ResponseEntity.ok(openHourDTO);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
@@ -60,15 +82,21 @@ public class OpenHourController {
      * 設定餐廳的營業時間
      */
     @PostMapping
-    public ResponseEntity<OpenHourBean> setOpenHour(
+    public ResponseEntity<OpenHourDTO> setOpenHour(
             @PathVariable Integer storeId,
             @RequestParam DayOfWeek day,
             @RequestParam String openTime,
             @RequestParam String closeTime,
             @RequestParam(defaultValue = "true") boolean isOpen) {
         try {
-            OpenHourBean openHour = openHourService.setOpenHour(storeId, day, openTime, closeTime);
-            return ResponseEntity.status(HttpStatus.CREATED).body(openHour);
+            OpenHourBean openHour = openHourService.setOpenHour(storeId, day, openTime, closeTime, isOpen);
+            OpenHourDTO openHourDTO = new OpenHourDTO(
+                    openHour.getId(),
+                    storeId,
+                    openHour.getDayOfWeek(),
+                    openHour.getOpenTime(),
+                    openHour.getCloseTime());
+            return ResponseEntity.status(HttpStatus.CREATED).body(openHourDTO);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
@@ -80,7 +108,7 @@ public class OpenHourController {
      * 更新營業時間設定
      */
     @PutMapping("/{openHourId}")
-    public ResponseEntity<OpenHourBean> updateOpenHour(
+    public ResponseEntity<OpenHourDTO> updateOpenHour(
             @PathVariable Integer storeId,
             @PathVariable Integer openHourId,
             @RequestParam(required = false) String openTime,
@@ -88,7 +116,13 @@ public class OpenHourController {
             @RequestParam(required = false) Boolean isOpen) {
         try {
             OpenHourBean openHour = openHourService.updateOpenHour(openHourId, openTime, closeTime);
-            return ResponseEntity.ok(openHour);
+            OpenHourDTO openHourDTO = new OpenHourDTO(
+                    openHour.getId(),
+                    storeId,
+                    openHour.getDayOfWeek(),
+                    openHour.getOpenTime(),
+                    openHour.getCloseTime());
+            return ResponseEntity.ok(openHourDTO);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
@@ -131,14 +165,15 @@ public class OpenHourController {
      * 檢查餐廳在指定時間是否營業
      */
     @GetMapping("/check")
-    public ResponseEntity<Boolean> isStoreOpen(
+    public ResponseEntity<StoreOpenStatusDTO> isStoreOpen(
             @PathVariable Integer storeId,
             @RequestParam DayOfWeek day,
             @RequestParam String time) {
         try {
             java.time.LocalTime localTime = java.time.LocalTime.parse(time);
             boolean isOpen = openHourService.isStoreOpen(storeId, day, localTime);
-            return ResponseEntity.ok(isOpen);
+            StoreOpenStatusDTO statusDTO = new StoreOpenStatusDTO(storeId, isOpen, day, localTime);
+            return ResponseEntity.ok(statusDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -148,7 +183,7 @@ public class OpenHourController {
      * 檢查餐廳在指定日期和時間是否營業
      */
     @GetMapping("/check/{date}")
-    public ResponseEntity<Boolean> isStoreOpenByDate(
+    public ResponseEntity<StoreOpenStatusDTO> isStoreOpenByDate(
             @PathVariable Integer storeId,
             @PathVariable String date,
             @RequestParam String time) {
@@ -156,7 +191,8 @@ public class OpenHourController {
             LocalDate localDate = LocalDate.parse(date);
             java.time.LocalTime localTime = java.time.LocalTime.parse(time);
             boolean isOpen = openHourService.isStoreOpen(storeId, localDate, localTime);
-            return ResponseEntity.ok(isOpen);
+            StoreOpenStatusDTO statusDTO = new StoreOpenStatusDTO(storeId, isOpen, localDate, localTime);
+            return ResponseEntity.ok(statusDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
@@ -168,10 +204,19 @@ public class OpenHourController {
      * 取得餐廳的特殊營業時間設定
      */
     @GetMapping("/special")
-    public ResponseEntity<List<SpecialHoursBean>> getSpecialHours(@PathVariable Integer storeId) {
+    public ResponseEntity<List<SpecialHoursDTO>> getSpecialHours(@PathVariable Integer storeId) {
         try {
             List<SpecialHoursBean> specialHours = openHourService.getSpecialHoursByStore(storeId);
-            return ResponseEntity.ok(specialHours);
+            List<SpecialHoursDTO> specialHoursDTOs = specialHours.stream()
+                    .map(sh -> new SpecialHoursDTO(
+                            sh.getId(),
+                            storeId,
+                            sh.getDate(),
+                            sh.getOpenTime(),
+                            sh.getCloseTime(),
+                            sh.getIsClose()))
+                    .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(specialHoursDTOs);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         }
@@ -181,7 +226,7 @@ public class OpenHourController {
      * 設定特殊營業時間
      */
     @PostMapping("/special")
-    public ResponseEntity<SpecialHoursBean> setSpecialHours(
+    public ResponseEntity<SpecialHoursDTO> setSpecialHours(
             @PathVariable Integer storeId,
             @RequestParam String date,
             @RequestParam(required = false) String openTime,
@@ -191,10 +236,19 @@ public class OpenHourController {
             LocalDate localDate = LocalDate.parse(date);
             SpecialHoursBean specialHours = openHourService.setSpecialHours(storeId, localDate, openTime, closeTime,
                     isClose);
-            return ResponseEntity.status(HttpStatus.CREATED).body(specialHours);
+            SpecialHoursDTO specialHoursDTO = new SpecialHoursDTO(
+                    specialHours.getId(),
+                    storeId,
+                    specialHours.getDate(),
+                    specialHours.getOpenTime(),
+                    specialHours.getCloseTime(),
+                    specialHours.getIsClose());
+            return ResponseEntity.status(HttpStatus.CREATED).body(specialHoursDTO);
         } catch (ResourceNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
+            System.err.println("設定特殊營業時間錯誤: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
