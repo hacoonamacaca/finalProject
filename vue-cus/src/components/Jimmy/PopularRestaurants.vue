@@ -1,5 +1,5 @@
 <template>
-  <section class="popular-section" v-if="address">
+  <section class="popular-section" v-if="locationStore.address">
     <h2>附近熱門美食</h2>
     <div class="restaurant-scroll">
       <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
@@ -31,13 +31,10 @@
 import { ref, computed } from 'vue'; // 引入 ref
 import { useRouter } from 'vue-router';
 import CommentModal from '@/components/Jimmy/Comment.vue'; // <-- 新增這一行
+import { useLocationStore } from '@/stores/location';
 
 // 定義 Props
-const props = defineProps({
-  address: {
-    type: String,
-    required: true,
-  },
+const props = defineProps({  
   restaurants: { // 這個 props 現在預期接收的是 Home.vue 轉換後的餐廳數據
     type: Array,
     required: true,
@@ -46,6 +43,7 @@ const props = defineProps({
 });
 
 const router = useRouter(); // 初始化 useRouter
+const locationStore = useLocationStore(); 
 
 // 控制評論模態框顯示的狀態
 const showCommentModal = ref(false);

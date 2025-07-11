@@ -1,7 +1,7 @@
 <!-- src/views/Jimmy/Home.vue -->
 <template>
   <!-- 附近熱門美食 -->
-  <PopularRestaurants :address="address" :restaurants="filteredRestaurants" />
+  <PopularRestaurants :restaurants="filteredRestaurants" />
 
   <!-- 搜尋與位置區域 -->
   <SearchSection v-model:initialSearch="searched" @search="updateSearchQuery" />
@@ -47,42 +47,24 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
 import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
 import PopularRestaurants from '@/components/Jimmy/PopularRestaurants.vue';
 import SearchSection from '@/components/Jimmy/SearchSection.vue';
 import RestaurantListSection  from "@/components/Jimmy/RestaurantListSection.vue"
 import axios from 'axios';
-import { useUserStore } from '@/stores/user'; // 確保路徑正確指向您的 user store
+import { useUserStore } from '@/stores/user'; 
 
 const userStore = useUserStore();
-
-const route = useRoute();
-const address = ref('');
 const API_URL = import.meta.env.VITE_API_URL;
 
 
-// 從路由查詢參數獲取地址並設定給本地的 address
+
 onMounted(() => {
-  if (route.query.address) {
-    address.value = route.query.address;
-  }
   fetchStores(searchQuery.value);
 });
 
-// 監聽路由查詢參數的變化
-watch(
-  () => route.query.address,
-  (newAddress) => {
-    if (newAddress) {
-      address.value = newAddress;
-    } else {
-      address.value = '';
-    }
-  },
-  { immediate: true }
-);
+
 
 const isSidebarActive = ref(false);
 const toggleSidebar = () => {
@@ -99,8 +81,6 @@ const updateSearchQuery = (searchTerm) => {
   searchQuery.value = searchTerm;
   fetchStores(searchTerm); // 當搜尋詞改變時，重新從後端獲取資料
 };
-
-
 
 
 // 餐廳數據 (從後端取得)
