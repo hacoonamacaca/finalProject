@@ -18,8 +18,7 @@ public class PaymentBean {
 	@Id
 	@Column(name = "id")
 	private Integer id;
-	@Column(name = "order_id")
-	private Integer orderId;
+
 	@Column(name = "method", columnDefinition = "nvarchar(50)")
 	private String method;
 	@Column(name = "transaction_id", columnDefinition = "varchar(100)")
@@ -30,5 +29,8 @@ public class PaymentBean {
 	private Boolean isPaid;
 	@Column(name = "paid_time")
 	private Date paidTime;
+
+	@Column(name = "order_id")
+	private Integer orderId;
 
 }

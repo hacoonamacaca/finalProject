@@ -17,8 +17,7 @@
       經緯度：{{ coordinates.lat }}, {{ coordinates.lon }}
     </p>
     <p v-else-if="error" class="error">{{ error }}</p>
-  </section>
-
+  </section> 
 </template>
 
 <script setup>

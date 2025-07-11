@@ -12,6 +12,7 @@ import FoodTag from '@/views/FoodTag.vue'
 import Recommendation from '@/views/Recommendation.vue'
 import Login from '@/views/Login.vue'
 import PromotionList from '@/pages/Yifan/PromotionList.vue'
+import ReportType from "@/views/ReportType.vue"
 // ...其餘頁面
 
 const routes = [
@@ -30,6 +31,7 @@ const routes = [
             { path: 'restaurantTag', component: RestaurantTag },
             { path: 'foodTag', component: FoodTag },
             { path: 'recommendation', component: Recommendation },
+            { path: 'reportType', component: ReportType },
             { path: 'login', component: Login },
             // ...其餘子路由
         ]

@@ -57,12 +57,50 @@
 
 <script setup>
 import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
+import { useUserStore } from '@/stores/user' 
+
 const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'back', 'login'])
 const password = ref('')
 const showPassword = ref(false)
-function onSubmit() {
-emit('login', { email: props.email, password: password.value })
+const userStore = useUserStore();
+
+async function onSubmit() {
+    if (!password.value) {
+        alert('請輸入密碼')
+        return
+    }
+    try {
+        // 路徑請和後端對應，如：/api/users/login
+        const res = await axios.post('/api/users/login', {
+            email: props.email,
+            password: password.value
+        })
+        const data = res.data
+        if (data.success) {
+            alert('登入成功！')
+            userStore.setFullName(data.userFullName);
+            userStore.setEmail(data.userEmail);
+            userStore.setUserId(data.userId); // <-- 新增這一行
+            userStore.setLogin(true); // 設定登入狀態為 true
+            emit('login', { 
+                email: props.email,
+                userFullName: data.userFullName,
+                userEmail: data.userEmail,
+                userId: data.userId,
+                userPhone: data.userPhone // 如果有這欄位
+            })
+            // 你可以加 router.push(...) 或 emit('close') 關掉 modal
+        } else {
+            alert(data.message || '帳號或密碼錯誤')
+            password.value = ''
+        }
+    } catch (e) {
+        alert('登入發生錯誤，請稍後再試')
+        console.error(e)
+        password.value = ''
+    }
 }
 </script>
 

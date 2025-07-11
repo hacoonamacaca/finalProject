@@ -1,6 +1,7 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'; // 導入 onMounted 函數
-import { apiService } from '../services/apiService.js'; // 導入 API 服務
+import { ref, reactive, onMounted, watch } from 'vue'; // 導入 onMounted 、watch函數
+import SlideOutPanel from '../components/common/SlideOutPanel.vue';
+import apiClient from '../plungins/axios.js'; // 導入 apiClient
 import PageHeader from '../components/common/PageHeader.vue';
 import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';
 import EditItemModal from '../components/menu/EditItemModal.vue';
@@ -18,98 +19,176 @@ const activeTab = ref('overview'); // 'overview' 或 'specs'
 
 // 模擬的商店資料
 const stores = ref([
-    { id: 'd-aan-store', name: '呷蝦密(大安門市)' },
-    { id: 'gong-guan-store', name: '呷蝦密(公館門市)' },
-    { id: 'gu-ting-store', name: '呷蝦密(古亭門市)' },
+    { id: 1, name: '美味小館' },
+    { id: 3, name: '燒烤之家' },
 ]);
-const selectedStore = ref('d-aan-store');
+const selectedStore = ref(stores.value[0]?.id || null); // 預設選中第一個店家的 ID
+
 
 // =================================================================
-// 2. 資料源 (Data Sources) - 模擬從後端獲取的資料
+// 2. 資料源 (Data Sources) - 從後端獲取的資料
 // =================================================================
 
-// 新增 categories 陣列
-const categories = reactive([
-    // 模擬 categories 陣列
-    // { id: 'cat-1', name: '招牌飲品', order: 1 },
-    // { id: 'cat-2', name: '義式咖啡', order: 2 },
-    // { id: 'cat-3', name: '炭烤三明治', order: 3 },
-    // { id: 'cat-4', name: '帕尼尼', order: 4 },
-]);
+const categories = reactive([]);
 
 
-const items = reactive([
-    // 模擬的菜單品項資料
-    // { id: 1, 
-    //   name: '經典拿鐵', 
-    //   price: 70, 
-    //   status: '供應中', 
-    //   stock: 50, 
-    //   img: 'https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=600', 
-    //   categoryId: 'cat-1' },
-]);
+const items = reactive([]);
 
 
-const specs = reactive([
-    // 模擬的客製化規格資料
-    // {
-    //     id: 'spec1',
-    //     name: '附餐選擇',
-    //     minSelection: 1, // 加上 min/max
-    //     maxSelection: 1,
-    //     // 將 options 改為物件陣列
-    //     options: [
-    //         { id: 'opt-a1', name: '六塊雞', price: 20, status: '供應中' },
-    //         { id: 'opt-a2', name: '中薯', price: 10, status: '供應中' },
-    //         { id: 'opt-a3', name: '洋蔥圈', price: 15, status: '供應中' },
-    //         { id: 'opt-a4', name: '蘋果派', price: 15, status: '暫停供應' },
-    //     ]
-    // },
-]);
+const specs = reactive([]);
 
-const isLoading = ref(true); // 新增一個加載狀態，用於顯示讀取中的提示
+const isLoading = ref(false); // 新增一個加載狀態，用於顯示讀取中的提示
 
 const error = ref(null); // 新增一個錯誤狀態
 
+
 // =================================================================
-// 3. 在組件掛載時獲取所有資料 (onMounted)
+// 3. 【全新】獲取資料的核心函式
 // =================================================================
-onMounted(async () => {
+
+const fetchMenuData = async (storeId) => {
+    if (!storeId) {
+        // 如果沒有 storeId，清空列表並返回
+        categories.splice(0);
+        items.splice(0);
+        return;
+    }
+
     try {
         isLoading.value = true;
         error.value = null;
 
+        console.log(`🚀 正在為店家 ID: ${storeId} 獲取菜單資料...`);
         // 使用 Promise.all 來並行發送所有請求，效率更高
-        const [categoriesData, itemsData, specsData] = await Promise.all([
-            apiService.getCategories(),
-            apiService.getItems(),
-            apiService.getSpecs(),
+        const [categoriesResponse, itemsResponse] = await Promise.all([
+            apiClient.get(`/api/food-classes/store/${storeId}`),
+            apiClient.get(`/api/foods/store/${storeId}`),
+            // apiClient.get(`/specs/store/${storeId}`), // 未來可以加上規格的 API
         ]);
 
-        // 將獲取到的資料賦值給我們的響應式變數
-        // 使用 Object.assign 或 .splice(0) 來更新 reactive 陣列
-        Object.assign(categories, categoriesData);
-        Object.assign(items, itemsData);
-        Object.assign(specs, specsData);
+        // 【修改】使用 .splice(0) 和解構賦值來安全地更新 reactive 陣列
+        categories.splice(0, categories.length, ...categoriesResponse.data);
+        items.splice(0, items.length, ...itemsResponse.data);
+        // specs.splice(0, specs.length, ...specsResponse.data);
+
+        console.log('✅ 成功獲取分類:', categories);
+        console.log('✅ 成功獲取品項:', items);
 
     } catch (e) {
-        console.error('Failed to fetch initial data:', e);
-        error.value = '無法載入資料，請稍後再試。';
+        console.error(`❌ 獲取店家 ID:${storeId} 的資料失敗:`, e);
+        error.value = '無法載入菜單資料，請稍後再試。';
+        // 發生錯誤時清空資料
+        categories.splice(0);
+        items.splice(0);
     } finally {
-        isLoading.value = false; // 無論成功或失敗，都結束加載狀態
+        isLoading.value = false;
     }
-});
+};
+
 
 // =================================================================
-// 4. 品項管理相關 (Item Management)
+// 4. 生命週期鉤子和監聽器
+// =================================================================
+onMounted(() => {
+    fetchMenuData(selectedStore.value);
+});
+
+// 【新增】監聽 selectedStore 的變化，當使用者切換店家時，重新獲取資料
+watch(selectedStore, (newStoreId) => {
+    fetchMenuData(newStoreId);
+});
+
+
+// =================================================================
+// 5. 品項管理相關 (Item Management)
 // =================================================================
 
 const isItemModalOpen = ref(false); // 控制編輯品項 Modal 的開關
 
 const currentEditingItem = ref(null); // 正在編輯的品項，null 代表是新增
 
+const openItemModal = (item) => {
+    currentEditingItem.value = item ? { ...item } : null;
+    isItemModalOpen.value = true;
+};
+
+const closeItemModal = () => {
+    isItemModalOpen.value = false;
+};
+
+const handleSaveItem = async (itemData) => {
+    isLoading.value = true;
+    try {
+        let payload; // 先宣告一個 payload 變數
+
+        // 判斷是新增還是編輯
+        if (itemData.id) {
+            // 【編輯模式】
+            // 直接使用 itemData 作為 payload 的基礎
+            payload = { ...itemData };
+            
+            // 將 categoryId 轉換為後端需要的 foodClassIds 陣列
+            if (payload.categoryId) {
+                payload.foodClassIds = [payload.categoryId];
+            } else {
+                payload.foodClassIds = []; // 如果沒有選擇分類，就送一個空陣列
+            }
+            delete payload.categoryId; // 移除掉後端不需要的 categoryId，保持 payload 乾淨
+
+            console.log("準備發送 PUT 請求的 payload:", payload);
+            await apiClient.put(`/api/foods/${itemData.id}`, payload);
+            alert('品項更新成功！');
+
+        } else {
+            // 【新增模式】
+            // 為 payload 加上 storeId
+            payload = { ...itemData, storeId: selectedStore.value };
+
+            // 同樣，將 categoryId 轉換為 foodClassIds 陣列
+            if (payload.categoryId) {
+                payload.foodClassIds = [payload.categoryId];
+            } else {
+                payload.foodClassIds = [];
+            }
+            delete payload.categoryId;
+
+            console.log("準備發送 POST 請求的 payload:", payload);
+            await apiClient.post('/api/foods', payload);
+            alert('品項新增成功！');
+        }
+        
+        // 操作成功後，重新獲取列表
+        await fetchMenuData(selectedStore.value);
+
+    } catch (e) {
+        console.error('儲存品項失敗:', e);
+        alert(`儲存失敗：${e.response?.data?.message || e.message}`);
+    } finally {
+        isLoading.value = false;
+        closeItemModal();
+    }
+};
+
+const handleDeleteItem = async (itemId) => {
+    if (confirm('確定要刪除此品項嗎？')) {
+        isLoading.value = true;
+        try {
+            // 【修改】刪除：呼叫 DELETE API
+            await apiClient.delete(`/api/foods/${itemId}`);
+            alert('刪除成功！');
+            await fetchMenuData(selectedStore.value); // 重新獲取列表
+        } catch (e) {
+            console.error('刪除品項失敗:', e);
+            alert(`刪除失敗：${e.response?.data?.message || e.message}`);
+        } finally {
+            isLoading.value = false;
+            closeItemModal();
+        }
+    }
+};
+
 // =================================================================
-// 5. 規格管理相關 (Specification Management)
+// 5. 規格管理相關 (Specification Management) (待修改)
 // =================================================================
 
 // 控制編輯規格 Modal 的開關
@@ -150,48 +229,6 @@ const selectTab = (tab) => {
     activeTab.value = tab;
 };
 
-// --- 品項 Modal 相關方法 ---
-const openItemModal = (item) => {
-    // 如果傳入了 item，就是編輯；否則就是新增
-    currentEditingItem.value = item ? { ...item } : null; // 傳遞複本以避免雙向綁定問題
-    isItemModalOpen.value = true;
-};
-
-const closeItemModal = () => {
-    isItemModalOpen.value = false;
-};
-
-const handleSaveItem = (itemData) => {
-    console.log('從 Modal 接收到儲存的資料:', itemData);
-    if (itemData.id) {
-        // 編輯：找到對應 id 並更新
-        const index = items.findIndex(i => i.id === itemData.id);
-        if (index !== -1) {
-            items[index] = itemData;
-        }
-    } else {
-        // 新增：給一個新的 id 並推進陣列
-        const newItem = { ...itemData, id: Date.now() }; // 用時間戳當臨時 id
-        items.push(newItem);
-    }
-    // 模擬 API 儲存後的流程
-    alert('儲存中...');
-    setTimeout(() => {
-        alert('儲存成功！');
-        closeItemModal();
-    }, 1000);
-};
-
-const handleDeleteItem = (itemId) => {
-    const index = items.findIndex(i => i.id === itemId);
-    if (index !== -1) {
-        if (confirm('確定要刪除此品項嗎？')) {
-            items.splice(index, 1);
-            alert('刪除成功！');
-            closeItemModal();
-        }
-    }
-}
 </script>
 
 <template>
@@ -241,12 +278,37 @@ const handleDeleteItem = (itemId) => {
             </div>
         </div>
 
-        <!-- Modals (不受佈局影響) -->
-        <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" :categories="categories"
-            @close="closeItemModal" @save="handleSaveItem" @delete="handleDeleteItem" />
+        <!-- Modals (不受佈局影響，已套用共用面板SlideOutPanel) -->
+        <SlideOutPanel v-model:isOpen="isItemModalOpen"
+            :title="currentEditingItem ? '編輯品項' : '新增品項'">
+        
+        <!-- 
+        只有在 isItemModalOpen 為 true (面板打開) 時，才渲染 EditItemModal。
+        這樣可以確保每次打開面板時，EditItemModal 都會重新掛載，
+        其內部的 watchEffect 會重新執行，正確地初始化表單資料。
+        -->
+            <EditItemModal v-if="isItemModalOpen" 
+                :item="currentEditingItem" 
+                :categories="categories"
+                @close="isItemModalOpen = false" 
+                @save="handleSaveItem"
+                @delete="handleDeleteItem" 
+            />
+        </SlideOutPanel>
 
-        <EditSpecModal v-if="isSpecModalOpen" :spec="currentEditingSpec" @close="closeSpecModal" @save="handleSaveSpec"
-            @delete="handleDeleteSpec" />
+        
+        <SlideOutPanel v-model:isOpen="isSpecModalOpen"
+            :title="currentEditingSpec ? '編輯客製化規格' : '新增客製化規格'">
+        
+        <!-- 同樣只在 isSpecModalOpen 為 true 時，才渲染 EditSpecModal。-->
+
+            <EditSpecModal v-if="isSpecModalOpen" 
+                :spec="currentEditingSpec" 
+                @close="isSpecModalOpen = false" 
+                @save="handleSaveSpec"
+                @delete="handleDeleteSpec" 
+            />
+        </SlideOutPanel>
     </div>
 </template>
 

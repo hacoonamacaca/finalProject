@@ -1,14 +1,14 @@
 <!-- src/views/Jimmy/Home.vue -->
 <template>
   <!-- 附近熱門美食 -->
-  <PopularRestaurants :address="address" :restaurants="restaurants" />
+  <PopularRestaurants :address="address" :restaurants="filteredRestaurants" />
 
   <!-- 搜尋與位置區域 -->
-  <SearchSection v-model:search="searched" @search="handleSearch" />
+  <SearchSection v-model:initialSearch="searched" @search="updateSearchQuery" />
 
-  <!-- 篩選與排序（頂部） -->
   <div class="filter-toggle" @click="toggleSidebar">篩選條件</div>
-  <section class="filters">
+  <!-- 篩選與排序（頂部） -->
+  <!-- <section class="filters">
     <TopFilterButtons :filters="filters" @update:filters="filters = $event" />
     <div class="sort">
       <select v-model="sortOption" @change="sortRestaurants">
@@ -17,37 +17,19 @@
         <option value="最快送達">最快送達</option>
       </select>
     </div>
-  </section>
+  </section> -->
 
   <!-- 內容容器 -->
   <div class="content-container">
-    <!-- 左側篩選欄 -->
     <aside class="sidebar" :class="{ active: isSidebarActive }">
-      <SidebarFilters :filters="filters" @update:filters="filters = $event" @update-score="updatescore" />
+      <SidebarFilters
+        :filters="filters"
+        @update:filters="filters = $event"
+        @update-score="updatescore"
+        :availableCategories="uniqueCategoryNames" />
     </aside>
 
-    <!-- 餐廳列表 -->
-    <section class="restaurant-list">
-      <div class="restaurant-card" v-for="restaurant in filteredRestaurants" :key="restaurant.id">
-        <img
-          :src="restaurant.image"
-          :alt="restaurant.name"
-          @click="$router.push(`/restaurant/${restaurant.id}`)"
-          style="cursor: pointer;"
-        />
-        <div class="info">
-          <h3>{{ restaurant.name }}</h3>
-          <p>{{ restaurant.category }} • {{ restaurant.deliveryTime }} 分鐘 • {{ restaurant.promo || '' }}</p>
-          <p>
-            {{ restaurant.score }}★
-            <Comment :comments="restaurant.comments" :comment-count="restaurant.comments.length" />
-          </p>
-          <div class="tags">
-            <span v-for="tag in restaurant.tags" :key="tag">{{ tag }}</span>
-          </div>
-        </div>
-      </div>
-    </section>
+    <RestaurantListSection :restaurants="filteredRestaurants" />
   </div>
 
   <!-- 頁腳 -->
@@ -58,6 +40,7 @@
       <a href="#">聯繫我們</a>
       <a href="#">隱私政策</a>
       <a href="#">服務條款</a>
+      您的使用者 ID: {{ userStore.userId }}
     </p>
   </footer>
 </template>
@@ -67,18 +50,25 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
 import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
-import Comment from '@/components/Jimmy/Comment.vue';
 import PopularRestaurants from '@/components/Jimmy/PopularRestaurants.vue';
 import SearchSection from '@/components/Jimmy/SearchSection.vue';
+import RestaurantListSection  from "@/components/Jimmy/RestaurantListSection.vue"
+import axios from 'axios';
+import { useUserStore } from '@/stores/user'; // 確保路徑正確指向您的 user store
+
+const userStore = useUserStore();
 
 const route = useRoute();
 const address = ref('');
+const API_URL = import.meta.env.VITE_API_URL;
+
 
 // 從路由查詢參數獲取地址並設定給本地的 address
 onMounted(() => {
   if (route.query.address) {
     address.value = route.query.address;
   }
+  fetchStores(searchQuery.value);
 });
 
 // 監聽路由查詢參數的變化
@@ -100,211 +90,108 @@ const toggleSidebar = () => {
 };
 
 // 搜索相關
-const searched = ref('');
-const handleSearch = (searchTerm) => {
-  console.log('搜尋內容:', searchTerm);
+const searched = ref(''); // 用於與 SearchSection 的 v-model 綁定
+const searchQuery = ref(''); // 新增：實際用於觸發後端搜尋的查詢詞
+
+// 處理來自 SearchSection 的搜尋事件
+const updateSearchQuery = (searchTerm) => {
+  console.log('Search.vue 收到搜尋內容:', searchTerm);
+  searchQuery.value = searchTerm;
+  fetchStores(searchTerm); // 當搜尋詞改變時，重新從後端獲取資料
 };
 
-// 餐廳數據
-const restaurants = ref([
-  {
-    id: 1,
-    name: '美味餐廳',
-    category: '中式',
-    deliveryTime: 25,
-    score: 4,
-    comments: [
-      {
-        id: 1,
-        order_id: 1,
-        user_id: 'Jimmy1',
-        content: 'comment 01 der la',
-        score: 4,
-        create_time: '2023-10-01 10:00:00',
-        reply: 'reply 01 der la',
-        reply_update_time: '2023-10-02 10:00:00',
-        is_hidden: false,
-        comment_img: [
-          { img: '/image/kiva.jpg' },
-          { img: '/image/kaimu.jpg' },
-          { img: '/image/kuga.jpg' },
-        ],
-      },
-      {
-        id: 2,
-        order_id: 3,
-        user_id: 'Jimmy3',
-        content: 'comment 02 der la',
-        score: 5,
-        create_time: '2023-10-02 10:00:00',
-        is_hidden: false,
-        comment_img: [
-          { img: '/image/zero1.jpg' },
-          { img: '/image/build.jpg' },
-        ],
-      },
-      {
-        id: 3,
-        order_id: 2,
-        user_id: 'Tom',
-        content: 'comment 03 der la',
-        score: 3,
-        create_time: '2023-10-02 10:00:00',
-        is_hidden: false,
-        comment_img: [{ img: '/image/pizza.jpg' }],
-      },
-    ],
-    tags: ['滷肉飯', '便當'],
-    image: '/image/giachi.jpg',
-    promo: '免運費',
-    popularityScore: 70,
-  },
-  {
-    id: 2,
-    name: '壽司之家',
-    category: '日式',
-    deliveryTime: 10,
-    score: 5,
-    comments: [
-      {
-        id: 4,
-        order_id: 1,
-        user_id: 'Jimmy1',
-        content: 'comment 04 der la',
-        score: 1,
-        create_time: '2023-10-01 10:00:00',
-        reply: 'reply 02 der la',
-        reply_update_time: '2023-10-02 10:00:00',
-        is_hidden: false,
-        comment_img: [
-          { img: '/image/kaimu.jpg' },
-          { img: '/image/kuga.jpg' },
-        ],
-      },
-      {
-        id: 5,
-        order_id: 4,
-        user_id: 'Bob',
-        content: 'comment 05 der la',
-        score: 5,
-        create_time: '2023-10-02 10:00:00',
-        is_hidden: false,
-        comment_img: [{ img: '/image/build.jpg' }],
-      },
-    ],
-    tags: ['壽司', '生魚片'],
-    image: '/image/sooshi.jpg',
-    promo: '',
-    popularityScore: 80,
-  },
-  {
-    id: 3,
-    name: '披薩樂園',
-    category: '西式',
-    deliveryTime: 30,
-    score: 4.5,
-    comments: [],
-    tags: ['披薩', '義大利麵'],
-    image: '/image/pizza.jpg',
-    promo: '滿 $200 免運',
-    popularityScore: 85,
-  },
-  {
-    id: 4,
-    name: '韓式炸雞',
-    category: '韓式',
-    deliveryTime: 8,
-    score: 2,
-    comments: [],
-    tags: ['炸雞', '泡菜'],
-    image: '/image/fryC.jpg',
-    promo: '折扣',
-    popularityScore: 65,
-  },
-  {
-    id: 5,
-    name: 'haha餐廳',
-    category: '中式',
-    deliveryTime: 25,
-    score: 3,
-    comments: [],
-    tags: ['滷肉飯', '便當'],
-    image: '/image/giachi2.jpg',
-    promo: '免運費',
-    popularityScore: 67,
-  },
-  {
-    id: 6,
-    name: 'lala之家',
-    category: '日式',
-    deliveryTime: 10,
-    score: 3.5,
-    comments: [],
-    tags: ['壽司', '生魚片'],
-    image: '/image/sooshi2.jpg',
-    promo: '',
-    popularityScore: 75,
-  },
-  {
-    id: 7,
-    name: 'wola樂園',
-    category: '西式',
-    deliveryTime: 30,
-    score: 5,
-    comments: [],
-    tags: ['披薩', '義大利麵'],
-    image: '/image/pizza2.jpg',
-    promo: '滿 $200 免運',
-    popularityScore: 90,
-  },
-  {
-    id: 8,
-    name: 'GG炸雞',
-    category: '韓式',
-    deliveryTime: 8,
-    score: 4.5,
-    comments: [],
-    tags: ['炸雞', '泡菜'],
-    image: '/image/fryC2.jpg',
-    promo: '折扣',
-    popularityScore: 70,
-  },
-]);
+
+
+
+// 餐廳數據 (從後端取得)
+const allStores = ref([]); // 存放從後端取得的原始 Store 數據
+
+// 異步函數：從後端獲取 Store 數據
+// <-- **重要修改：添加 searchTerm 參數**
+const fetchStores = async (searchTerm = '') => { 
+  try {
+      // 根據 searchTerm 是否存在來構建 URL
+      const url = searchTerm
+        ? `${API_URL}/api/stores?search=${encodeURIComponent(searchTerm)}`
+        : `${API_URL}/api/stores`;
+
+      console.log("Fetching stores from URL:", url); // 添加日誌確認 URL
+
+      const response = await axios.get(url); // <-- **使用構建好的 URL**
+      allStores.value = response.data;
+      console.log("從後端取得的商店資料:", allStores.value);
+      } catch (error) {
+      console.error('獲取商店資料失敗:', error);
+    }
+};
+
+
+// 新增 computed 屬性來收集所有餐廳的唯一類別名稱
+const uniqueCategoryNames = computed(() => {
+  const categories = new Set();
+  allStores.value.forEach(store => {
+    if (store.categoryNames) {
+      store.categoryNames.forEach(name => categories.add(name));
+    }
+  });
+  return Array.from(categories).sort(); // 返回排序後的唯一類別名稱陣列
+});
+
+// 計算屬性：篩選後的餐廳列表
+const filteredRestaurants = computed(() => {
+  let filtered = [...allStores.value];
+
+  // 第一步：根據篩選條件進行過濾
+  if (filters.value.category.length > 0) {
+    filtered = filtered.filter((store) =>
+      store.categoryNames && store.categoryNames.some(catName => filters.value.category.includes(catName))
+    );
+  }
+
+  filtered = filtered.filter((store) => (store.score || 0) >= filters.value.minscore);
+
+  if (filters.value.isOpen) {
+    filtered = filtered.filter((store) => store.isOpen === true);
+  }
+
+  // 第二步：應用排序
+  if (sortOption.value === '評分最高') {
+    filtered = filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+  } else if (sortOption.value === '距離最近' || sortOption.value === '最快送達') {
+    // 假設 deliveryTime 已經在後端計算好並返回
+    filtered = filtered.sort((a, b) => a.deliveryTime - b.deliveryTime);
+  }
+
+  // 第三步：將處理後的 StoreDTO 轉換為 RestaurantListSection 需要的格式
+  // 注意：模糊搜尋應該已經在 `fetchStores` (後端) 完成，這裡不再做二次搜尋過濾
+  return filtered.map(store => ({
+    id: store.id,
+    name: store.name,
+    categoryNames: store.categoryNames || [],
+    deliveryTime: store.deliveryTime || 20, // 使用後端提供的 deliveryTime
+    score: store.score || 0,
+    comments: store.comments || [],
+    // 聚合食物標籤 (保持不變)
+    tags: store.foods ? [...new Set(store.foods.flatMap(food => food.tagNames || []))] : [],
+    image: store.photo,
+    promo: '', // 如果後端有提供促銷資訊，可以在這裡映射
+    popularityScore: store.popularityScore != null ? store.popularityScore : (store.score != null ? parseFloat(store.score) * 10 : 0),
+    isOpen: store.isOpen
+  }));
+});
+
+
 
 // 篩選條件
 const filters = ref({
   category: [],
   minscore: 0,
-  promo: [],
+  isOpen: false,
 });
 
 // 排序選項
 const sortOption = ref('評分最高');
 
-// 計算屬性：篩選後的餐廳列表
-const filteredRestaurants = computed(() => {
-  let filtered = [...restaurants.value];
-
-  if (filters.value.category.length > 0) {
-    filtered = filtered.filter((restaurant) => filters.value.category.includes(restaurant.category));
-  }
-
-  filtered = filtered.filter((restaurant) => restaurant.score >= filters.value.minscore);
-
-  if (filters.value.promo.length > 0) {
-    filtered = filtered.filter((restaurant) =>
-      filters.value.promo.some((promo) => restaurant.promo.includes(promo))
-    );
-  }
-
-  if (sortOption.value === '評分最高') {
-    filtered = filtered.sort((a, b) => b.score - a.score);
-  } else if (sortOption.value === '距離最近' || sortOption.value === '最快送達') {
-    filtered = filtered.sort((a, b) => a.deliveryTime - b.deliveryTime);
-  }
-
-  return filtered;
-});
 
 // 更新配送時間
 const updatescore = () => {
@@ -318,6 +205,7 @@ const sortRestaurants = () => {
 </script>
 
 <style scoped>
+/* 這裡保留 Home.vue 原有的全局或佈局相關 CSS */
 * {
   margin: 0;
   padding: 0;
@@ -357,55 +245,16 @@ body {
   gap: 20px;
 }
 
-/* 餐廳列表 */
-.restaurant-list {
-  flex: 1;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-.restaurant-card {
+/* 左側篩選欄的 CSS 保持不變，因為它仍然在 Home.vue 中 */
+.sidebar {
+  width: 250px; /* 固定寬度，可根據需求調整 */
+  flex-shrink: 0; /* 防止縮小 */
   background-color: #fff;
+  padding: 20px;
   border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.restaurant-card img {
-  width: 100%;
-  height: 160px;
-  object-fit: cover;
-}
-
-.restaurant-card .info {
-  padding: 15px;
-}
-
-.restaurant-card h3 {
-  font-size: 18px;
-  margin-bottom: 8px;
-}
-
-.restaurant-card p {
-  color: #666;
-  font-size: 14px;
-  margin-bottom: 5px;
-}
-
-.restaurant-card .tags {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.restaurant-card .tags span {
-  background-color: #f0f0f0;
-  padding: 5px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-}
 
 /* 頁腳 */
 .footer {

@@ -1,4 +1,5 @@
     <template>
+        <div v-if="errorMsg" class="alert alert-danger mb-2">{{ errorMsg }}</div>
         <div class="address-bg py-5">
             <div class="container" style="max-width:420px;">
                 <h3 class="fw-bold mb-2">驗證您的商家地址</h3>
@@ -81,12 +82,16 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { cityDistrictMap } from '@/assets/cityDistrictMap.js'
+import { useStoreRegister } from '@/stores/user.js'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import axios from 'axios'
 
 const router = useRouter()
+const route = useRoute()
+console.log('ownerId 進來:', route.query.ownerId)
 const city = ref('')
 const district = ref('')
 const zip = ref('')
@@ -95,37 +100,51 @@ const door = ref('')
 const enAddress = ref('')
 const lat = ref('')
 const lon = ref('')
+const errorMsg = ref('')
 let map, marker
+const regStore = useStoreRegister()
 
-// 全台城市/區域清單
+// storeId 優先順序
+const storeId = ref(
+    regStore.storeId ||
+    route.query.storeId ||
+    localStorage.getItem('registerStoreId')
+)
+if (!storeId.value) {
+    // 沒有 storeId 就直接提示/導回填資料頁
+    alert('請先完成商家基本資料')
+    router.push('/registerStoreInfo')
+}
+
 const cityList = cityDistrictMap
 const districtList = computed(() => {
     const c = cityDistrictMap.find(i => i.city === city.value)
     return c ? c.districts : []
 })
 
-// 郵遞區域
 watch([city, district], () => {
     const c = cityDistrictMap.find(i => i.city === city.value)
     const d = c?.districts.find(i => i.name === district.value)
     zip.value = d?.zip || ''
 })
 
-// 合併完整地址
 const mainAddress = computed(() =>
     [zip.value, city.value, district.value, street.value, door.value]
         .filter(Boolean).join(' ')
 )
 
-// Google Maps iframe URL（隱藏）
 const googleUrl = computed(() =>
     lat.value && lon.value
         ? `https://www.google.com/maps?q=${lat.value},${lon.value}&hl=zh-TW&z=16&output=embed`
         : ''
 )
 
-// 建立 Leaflet 地圖
 onMounted(() => {
+    // pinia/storeId/localStorage 再同步一次，保證流程不卡
+    if (storeId.value) {
+        regStore.storeId = storeId.value
+        localStorage.setItem('registerStoreId', storeId.value)
+    }
     map = L.map('map', {
         zoomControl: false,
         dragging: false,
@@ -134,31 +153,44 @@ onMounted(() => {
         attributionControl: false,
     }).setView([25.0340, 121.5645], 13)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
-})
 
-// 只要四個欄位任一改變，就自動重新查位置
-watch([door, street, city, district], () => {
-    if (city.value && district.value && street.value) {
-        searchLocation()
-    } else {
-        lat.value = lon.value = ''
+    if (lat.value && lon.value) {
+        const p = [parseFloat(lat.value), parseFloat(lon.value)]
+        marker = L.marker(p).addTo(map)
+        map.setView(p, 17)
     }
 })
 
-// 呼叫 Nominatim API 查經緯
+watch([city, district, street, door], ([c, d, s, o]) => {
+    if (c && d && s && o) {
+        searchLocation()
+    } else {
+        lat.value = ''
+        lon.value = ''
+        if (marker) marker.remove()
+        marker = null
+    }
+})
+
+// 使用自己的後端 API 查經緯度
 async function searchLocation() {
+    errorMsg.value = ''
     if (!mainAddress.value) return
     try {
-        const res = await fetch(
-            `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(mainAddress.value)}`
-        )
-        if (!res.ok) throw new Error()
-        const data = await res.json()
-        if (!data[0]) return
-        lat.value = data[0].lat
-        lon.value = data[0].lon
+        const url = `/api/geo/latlng?address=${encodeURIComponent(mainAddress.value)}`
+        const res = await axios.get(url)
+        if (!res.data.success) {
+            errorMsg.value = res.data.message || '查無經緯度，請確認地址格式'
+            lat.value = ''
+            lon.value = ''
+            if (marker) marker.remove()
+            marker = null
+            return
+        }
+        lat.value = res.data.lat
+        lon.value = res.data.lon
 
-        // 更新 Leaflet
+        // 更新地圖
         const p = [parseFloat(lat.value), parseFloat(lon.value)]
         map.setView(p, 17)
         if (!marker) {
@@ -167,8 +199,11 @@ async function searchLocation() {
             marker.setLatLng(p)
         }
     } catch (e) {
-        console.error('定位失敗', e)
-        lat.value = lon.value = ''
+        errorMsg.value = 'API 請求失敗，請稍後再試'
+        lat.value = ''
+        lon.value = ''
+        if (marker) marker.remove()
+        marker = null
     }
 }
 
@@ -179,9 +214,49 @@ function clearCity() {
     enAddress.value = ''
 }
 
-function goNext() {
-    router.push('/verifyPending')
+async function goNext() {
+    // 檢查 storeId 再送
+    if (!storeId.value) {
+        errorMsg.value = '找不到 storeId，請回前頁重新填寫'
+        router.push('/registerStoreInfo')
+        return
+    }
+    regStore.setAddressInfo({
+        city: city.value,
+        district: district.value,
+        zip: zip.value,
+        street: street.value,
+        door: door.value,
+        enAddress: enAddress.value,
+        lat: lat.value,
+        lon: lon.value
+    })
+
+    // storeId/ownerId 通常是 pinia 或 route.query 傳來
+    const payload = {
+        storeId: storeId.value,
+        address: mainAddress.value,
+        city: city.value,
+        district: district.value,
+        zip: zip.value,
+        street: street.value,
+        door: door.value,
+        enAddress: enAddress.value,
+        lat: lat.value,
+        lon: lon.value
+    }
+    try {
+        const res = await axios.post('/api/store/updateAddress', payload)
+        if (res.data.success) {
+            router.push('/verifyPending')
+        } else {
+            errorMsg.value = res.data.message || '地址更新失敗'
+        }
+    } catch (e) {
+        errorMsg.value = '儲存失敗，請稍後再試'
+    }
 }
+
 </script>
 
 <style scoped>
