@@ -122,7 +122,7 @@ public class TestController {
             request.setUserId(userId);
             request.setStoreId(storeId);
             request.setReservedDate(LocalDate.parse(date));
-            request.setReservedTime(LocalDate.parse(date).atTime(LocalTime.parse(time)));
+            request.setReservedTime(LocalTime.parse(time));
             request.setGuests(guests);
             request.setDuration(120); // 2小時
 

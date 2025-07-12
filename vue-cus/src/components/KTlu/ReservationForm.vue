@@ -79,9 +79,15 @@ import '@/assets/css/restaurant-theme.css'
 import {
     getTimeSlotsForDate,
     groupTimeSlotsByPeriod,
-    formatDateToString
+    formatDateToString,
+    formatTimeToString
 } from '@/utils/timeSlotUtils.js'
-import { fetchRestaurantTimeSlots, fetchBookedTimeSlots } from '@/services/timeSlotService.js'
+import {
+    fetchRestaurantTimeSlots,
+    fetchBookedTimeSlots,
+    createReservation,
+    checkTimeAvailability
+} from '@/services/timeSlotService.js'
 
 // 定義 props 接收餐廳 ID
 const props = defineProps({
@@ -121,16 +127,20 @@ const bookedSlots = ref([])
 const loading = ref(false)
 
 // 從後台抓取時間段數據
-const fetchTimeSlots = async () => {
+const fetchTimeSlots = async (selectedDate = null) => {
     loading.value = true
     try {
         // 使用服務層來獲取數據
-        const result = await fetchRestaurantTimeSlots(props.restaurantId)
+        const dateParam = selectedDate ? formatDateToString(selectedDate) : null
+        console.log('正在獲取時間段數據，餐廳ID:', props.restaurantId, '日期:', dateParam)
+
+        const result = await fetchRestaurantTimeSlots(props.restaurantId, dateParam)
         timeSlots.value = Array.isArray(result) ? result : []
         console.log('成功獲取時間段數據:', timeSlots.value.length, '筆')
+        console.log('時間段數據樣本:', timeSlots.value.slice(0, 2))
 
         // 獲取已預訂的時間段
-        await fetchBookedSlots()
+        await fetchBookedSlots(selectedDate)
     } catch (error) {
         console.error('抓取時間段失敗:', error)
         timeSlots.value = []
@@ -148,11 +158,17 @@ const fetchTimeSlots = async () => {
 }
 
 // 從後台抓取已預訂的時間段
-const fetchBookedSlots = async () => {
+const fetchBookedSlots = async (selectedDate = null) => {
     try {
-        const result = await fetchBookedTimeSlots(props.restaurantId)
+        const dateParam = selectedDate ? formatDateToString(selectedDate) : null
+        console.log('正在獲取已預訂時間段，餐廳ID:', props.restaurantId, '日期:', dateParam)
+
+        const result = await fetchBookedTimeSlots(props.restaurantId, dateParam)
+        console.log('API 響應:', result)
+
         bookedSlots.value = Array.isArray(result) ? result : []
         console.log('成功獲取已預訂時間段:', bookedSlots.value.length, '筆')
+        console.log('已預訂時間段樣本:', bookedSlots.value.slice(0, 2))
     } catch (error) {
         console.error('抓取已預訂時間段失敗:', error)
         bookedSlots.value = []
@@ -167,11 +183,11 @@ const availableDates = computed(() => {
         const today = new Date()
         const validDates = timeSlots.value
             .map(slot => {
-                // 確保 slot 和 slot.date 存在
-                if (!slot || !slot.date || typeof slot.date !== 'string') {
+                // 確保 slot 和 slot.day/date 存在
+                if (!slot) {
                     return null
                 }
-                return slot.date
+                return slot.day || slot.date
             })
             .filter(dateStr => {
                 if (!dateStr) return false
@@ -232,20 +248,31 @@ const timeSections = computed(() => {
 })
 
 const disabledTimeSlots = computed(() => {
-    if (!date.value || !bookedSlots.value) return []
+    if (!date.value || !bookedSlots.value) {
+        console.log('日期或已預訂數據為空:', { date: date.value, bookedSlots: bookedSlots.value })
+        return []
+    }
+
     try {
         const dateString = formatDateToString(date.value)
-        if (!dateString) {
-            console.error('無法格式化日期:', date.value)
-            return []
-        }
+        console.log('格式化日期:', dateString)
 
         const filtered = bookedSlots.value
-            .filter(slot => slot && slot.date === dateString)
-            .map(slot => slot.startTime)
-            .filter(time => time) // 過濾掉可能的 undefined
+            .filter(slot => {
+                if (!slot) return false
+                const slotDate = slot.date || slot.day
+                console.log('比較日期:', slotDate, 'vs', dateString)
+                return slotDate === dateString
+            })
+            .map(slot => {
+                const formattedTime = formatTimeToString(slot.startTime)
+                console.log('格式化時間:', slot.startTime, '->', formattedTime)
+                return formattedTime
+            })
+            .filter(time => time)
 
-        return Array.isArray(filtered) ? filtered : []
+        console.log('最終禁用時間段:', filtered)
+        return filtered
     } catch (error) {
         console.error('處理已預訂時間段時發生錯誤:', error)
         return []
@@ -263,26 +290,88 @@ const submit = async () => {
         return
     }
 
-    try {
+    // 計算總人數
+    const adultCount = selectedGuest.value ? parseInt(selectedGuest.value.name.split(' ')[0]) : 0
+    const childCount = selectChild.value ? parseInt(selectChild.value.name.split(' ')[0]) : 0
+    const totalGuests = adultCount + childCount
+
+    if (totalGuests === 0) {
         await Swal.fire({
-            title: '預約成功！',
-            text: `${name.value} 您好，已為您預約 ${formatDateToString(date.value)} ${selectedTime.value} 的位子`,
-            icon: 'success',
+            title: '請選擇用餐人數',
+            text: '請至少選擇一位用餐人數',
+            icon: 'warning',
             confirmButtonText: '確定'
         })
+        return
+    }
 
-        // 重置表單
-        name.value = ''
-        phone.value = ''
-        note.value = ''
-        selectedTime.value = ''
-        date.value = null
-        selectedGuest.value = null
-        selectChild.value = null
+    try {
+        console.log('開始檢查時間可用性...')
+        // 檢查時間可用性
+        const availabilityCheck = await checkTimeAvailability(
+            props.restaurantId,
+            formatDateToString(date.value),
+            selectedTime.value,
+            totalGuests
+        )
+
+        console.log('可用性檢查結果:', availabilityCheck)
+
+        if (!availabilityCheck.available) {
+            await Swal.fire({
+                title: '時間不可用',
+                text: availabilityCheck.reason || '選擇的時間已被預訂，請選擇其他時間',
+                icon: 'warning',
+                confirmButtonText: '確定'
+            })
+            return
+        }
+
+        // 準備預約數據
+        const reservationData = {
+            userId: 1, // 暫時使用固定用戶ID，實際應該從登入狀態獲取
+            storeId: parseInt(props.restaurantId),
+            reservedDate: formatDateToString(date.value),
+            reservedTime: selectedTime.value,
+            guests: totalGuests,
+            duration: 120, // 2小時
+            content: note.value || `預約人: ${name.value}, 電話: ${phone.value}, 大人: ${adultCount}位, 小孩: ${childCount}位`
+        }
+
+        console.log('準備提交預約數據:', reservationData)
+
+        // 提交預約
+        const result = await createReservation(reservationData)
+
+        console.log('預約結果:', result)
+
+        if (result.success) {
+            await Swal.fire({
+                title: '預約成功！',
+                text: `${name.value} 您好，已為您預約 ${formatDateToString(date.value)} ${selectedTime.value} 的位子`,
+                icon: 'success',
+                confirmButtonText: '確定'
+            })
+
+            // 重置表單
+            name.value = ''
+            phone.value = ''
+            note.value = ''
+            selectedTime.value = ''
+            date.value = null
+            selectedGuest.value = null
+            selectChild.value = null
+
+            // 重新載入時間段數據
+            await fetchTimeSlots()
+        } else {
+            throw new Error(result.message || '預約失敗')
+        }
     } catch (error) {
+        console.error('預約失敗:', error)
         await Swal.fire({
             title: '預約失敗',
-            text: '請稍後再試或聯繫客服',
+            text: error.message || '請稍後再試或聯繫客服',
             icon: 'error',
             confirmButtonText: '確定'
         })
@@ -295,6 +384,13 @@ onMounted(() => {
 
 watch(() => props.restaurantId, () => {
     fetchTimeSlots()
+})
+
+// 監聽日期變化
+watch(date, (newDate) => {
+    if (newDate) {
+        fetchTimeSlots(newDate)
+    }
 })
 </script>
 

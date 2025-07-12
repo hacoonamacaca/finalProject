@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
 import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService;
 import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService.BookingAvailabilityResult;
+import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
+import tw.com.ispan.eeit.model.enums.ReservationStatus;
+import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 
 @RestController
 @RequestMapping("/api/booking")
@@ -24,6 +27,9 @@ public class BookingAvailabilityController {
 
     @Autowired
     private BookingAvailabilityService bookingAvailabilityService;
+
+    @Autowired
+    private ReservationRepository reservationRepository;
 
     /**
      * 檢查特定時間是否可預約
@@ -129,5 +135,38 @@ public class BookingAvailabilityController {
                 .toList();
 
         return ResponseEntity.ok(simplifiedSlots);
+    }
+
+    /**
+     * 取得餐廳在指定日期的已預訂時段 - 返回簡化的時段資料
+     */
+    @GetMapping("/booked-slots/{storeId}")
+    public ResponseEntity<List<Map<String, Object>>> getBookedTimeSlots(
+            @PathVariable Integer storeId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        // 獲取該日期所有已預訂的預約
+        List<ReservationBean> bookedReservations = reservationRepository.findByStoreIdAndReservedDate(storeId, date);
+
+        // 轉換為簡化的DTO，只包含必要的時段資訊
+        List<Map<String, Object>> bookedSlots = bookedReservations.stream()
+                .filter(reservation -> {
+                    // 只返回有效狀態的預約（CONFIRMED, PENDING）
+                    return reservation.getStatus() == ReservationStatus.CONFIRMED ||
+                            reservation.getStatus() == ReservationStatus.PENDING;
+                })
+                .map(reservation -> {
+                    Map<String, Object> slotMap = new java.util.HashMap<>();
+                    slotMap.put("id", reservation.getId());
+                    slotMap.put("storeId", storeId);
+                    slotMap.put("date", reservation.getReservedDate());
+                    slotMap.put("startTime", reservation.getReservedTime());
+                    slotMap.put("guests", reservation.getGuests());
+                    slotMap.put("status", reservation.getStatus());
+                    return slotMap;
+                })
+                .toList();
+
+        return ResponseEntity.ok(bookedSlots);
     }
 }

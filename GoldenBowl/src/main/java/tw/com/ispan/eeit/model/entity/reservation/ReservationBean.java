@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.entity.reservation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,8 +41,8 @@ public class ReservationBean {
     @Column(name = "reserved_date", nullable = false)
     private LocalDate reservedDate;
 
-    @Column(name = "reserved_time", nullable = false)
-    private LocalDateTime reservedTime;
+    @Column(name = "reserved_time", nullable = false, columnDefinition = "time(0)")
+    private LocalTime reservedTime;
 
     @Column(name = "guests", nullable = false)
     private Integer guests;

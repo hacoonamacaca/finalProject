@@ -106,7 +106,7 @@ public class ReservationService {
         reservation.setUserId(userId);
         reservation.setStoreId(storeId);
         reservation.setReservedDate(reservedDate);
-        reservation.setReservedTime(reservedDateTime);
+        reservation.setReservedTime(reservedTime);
         reservation.setGuests(guests);
         reservation.setDuration(duration);
         reservation.setContent(content);
