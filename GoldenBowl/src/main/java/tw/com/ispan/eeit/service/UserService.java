@@ -98,7 +98,8 @@ public class UserService {
     
     @Transactional
     public void verifyEmail(String email) {
-        Optional<UserBean> opt = userRepository.findByEmail(email);
+        if(email == null) return;
+        Optional<UserBean> opt = userRepository.findByEmail(email.trim());
         if(opt.isPresent()){
             UserBean user = opt.get();
             user.setIsVerify(true);

@@ -41,8 +41,8 @@
                         </div>
                         <div class="mb-3 text-start">
                             <a href="#" style="color: #ffba20;font-weight:600;text-decoration: underline"
-                                @click.prevent="emit('forgot')">
-                                忘記密碼？
+                            @click.prevent="onForgotClick">
+                            忘記密碼？
                             </a>
                         </div>
                         <button type="submit" class="btn btn-main w-100 mt-2" :disabled="!password">
@@ -61,7 +61,7 @@ import axios from '@/plungins/axios.js'
 import { useUserStore } from '@/stores/user.js' 
 
 const props = defineProps({ show: Boolean, email: String })
-const emit = defineEmits(['close', 'back', 'login'])
+const emit = defineEmits(['close', 'back', 'submit', 'forgot', 'login'])
 const password = ref('')
 const showPassword = ref(false)
 const userStore = useUserStore();
@@ -103,6 +103,10 @@ async function onSubmit() {
         console.error(e)
         password.value = ''
     }
+}
+
+function onForgotClick() {
+    emit('forgot')
 }
 </script>
 

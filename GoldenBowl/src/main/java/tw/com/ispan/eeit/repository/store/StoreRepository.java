@@ -40,5 +40,7 @@ public interface StoreRepository extends JpaRepository<StoreBean, Integer> {
             "LEFT JOIN FETCH s.foods f " +
             "LEFT JOIN FETCH f.tags t")
     List<StoreBean> findAllWithDetails(); // 建議你這樣修改 getAllStores，以確保資料一次載入
+    
+    Optional<StoreBean> findByOwner_Id(Integer ownerId);
 
 }

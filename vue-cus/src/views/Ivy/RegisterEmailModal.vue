@@ -19,7 +19,10 @@
                             <input type="email" v-model="email" class="form-control custom-input" required
                                 placeholder="請輸入 email">
                         </div>
-                        <button type="submit" class="btn btn-main w-100">繼續</button>
+                        <button type="submit" class="btn btn-main w-100" :disabled="loading">
+                            <span v-if="loading">請稍候...</span>
+                            <span v-else>繼續</span>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -28,13 +31,20 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
 
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'submit', 'back'])
-const email = ref('eattiy1986@gmail.com') // 測試用預設
+
+const userStore = useUserStore()
 const loading = ref(false)
+// 用 pinia 狀態的 email
+const email = computed({
+    get: () => userStore.email,
+    set: v => userStore.setEmail(v)
+})
 
 async function submitEmail() {
     if (!email.value) {
@@ -43,9 +53,9 @@ async function submitEmail() {
     }
     loading.value = true
     try {
-    const res = await axios.post('/api/users/check-email-exists', { email: email.value })
-    if (!res.data.exists) {
-            localStorage.setItem('userEmail', email.value)
+        const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+        if (!res.data.exists) {
+            // 記得 pinia 狀態已同步，不用再 set localStorage
             emit('submit', email.value)
         } else {
             alert('此 email 已註冊，請用其他 email')

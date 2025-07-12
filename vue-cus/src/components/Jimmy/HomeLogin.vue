@@ -2,10 +2,9 @@
     <div style="position:fixed;top:0;left:0;z-index:99999;color:red;">
         step: {{ step }}, email: {{ userEmail }}
     </div>
-
     <div class="user-dropdown-container">
         <a href="#" class="user-link" @click.prevent="toggleDropdown">
-            {{ cUser }}
+            {{ isLoggedIn ? (userFullName || '目前使用者*') : '請選擇登入身分' }}
         </a>
         <div class="dropdown-menu" v-if="showDropdown">
             <ul>
@@ -17,8 +16,7 @@
             </ul>
         </div>
     </div>
-
-    <!-- 註冊第一步 -->
+    <!-- modal群組不變 -->
     <RegisterModal
         :show="step === 'register'"
         @close="step = ''"
@@ -26,64 +24,70 @@
         @login="step = 'loginEmail'"
         @google-login="onGoogleLogin"
     />
-    <!-- 第二步，Email 驗證步驟 -->
     <RegisterEmailModal
         :show="step === 'email'"
         @close="step = ''"
         @back="step = 'register'"
         @submit="handleRegisterEmail"
-        />
-<!-- 第三步，驗證信 modal -->
+    />
     <VerifyEmailModal
         :show="step === 'verifyEmail'"
         :email="userEmail"
         @close="step = ''"
         @back="step = 'email'"
-        @send="handleSendVerification"  
-        />
-    <!-- 登入 Email Modal -->
+        @send="handleSendVerification"
+    />
     <LoginEmailModal
         :show="step === 'loginEmail'"
         @submit="handleLoginEmail"
         @close="step = ''"
-        />
-    <!-- 登入密碼 -->
+        @back="step = 'register'"
+    />
     <LoginPasswordModal
         :show="step === 'loginPassword'"
         :email="userEmail"
         @login="handlePasswordLogin"
         @close="step = ''"
         @back="step = 'loginEmail'"
+        @forgot="step = 'forgotPassword'"
     />
-    <!-- 忘記密碼 -->
-    <ForgotPasswordModal 
+    <ForgotPasswordModal
         :show="step === 'forgotPassword'"
-        :email="userEmail" @close="step = ''"
+        :email="userEmail"
+        @close="step = ''"
         @back="step = 'loginPassword'"
-        @submit="handleForgotSubmit" 
+        @submit="handleForgotSubmit"
     />
     <ForgotPasswordSentModal
         :show="step === 'forgotSent'"
-        @close="step = ''" @back="step = 'loginPassword'"
-        @backToLogin="step = 'loginEmail'" 
+        @close="step = ''"
+        @back="step = 'loginPassword'"
+        @backToLogin="step = 'loginEmail'"
     />
-    <ResetPasswordSentModal 
+    <ResetPasswordSentModal
         :show="step === 'resetPasswordSent'"
         @close="step = ''"
         @back="step = 'loginPassword'"
     />
-    <!-- or step = 'loginEmail' 依你的流程-->
-    <ResetPasswordDialog 
+    <ResetPasswordDialog
         v-if="showReset"
+        :email="route.query.email"
+        :token="route.query.token"
         @close="showReset = false"
         @submit="onResetPassword"
     />
+    <ResetSuccessModal 
+        v-if="showSuccess"
+        @close="closeSuccess"
+    />
+
 </template>
 
 <script setup>
-console.log('LoginEmailModal.vue loaded!')
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user.js'
+
 import RegisterModal from '@/components/Ivy/RegisterModal.vue'
 import LoginEmailModal from '@/views/Ivy/LoginEmailModal.vue'
 import RegisterEmailModal from '@/views/Ivy/RegisterEmailModal.vue'
@@ -93,138 +97,91 @@ import ForgotPasswordModal from '@/views/Ivy/ForgotPasswordModal.vue'
 import ForgotPasswordSentModal from '@/views/Ivy/ForgotPasswordSentModal.vue'
 import ResetPasswordSentModal from '@/views/Ivy/ResetPasswordSentModal.vue'
 import ResetPasswordDialog from '@/views/Ivy/ResetPasswordDialog.vue'
-//-----Ivy----------------------
-const step = ref('')            // 控制哪個modal開
-const userEmail = ref('')       // 存email
-const userFullName = ref('')   // 登入後要顯示的名字
-const showReset = ref(false)    // 顯示重設密碼 dialog
-const userPhone = ref('')       // 存手機
+import ResetSuccessModal from '@/components/Ivy/ResetSuccessModal.vue'
 
-onMounted(() => {
-    document.addEventListener('click', handleClickOutside);
+const step = ref('')
+const showReset = ref(false)
+const showSuccess = ref(false)
+const showDropdown = ref(false)
+const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore() // Pinia!
 
-    userFullName.value = localStorage.getItem('userFullName') || '';
-    userEmail.value = localStorage.getItem('userEmail') || '';
-    userPhone.value = localStorage.getItem('userPhone') || '';
-    isLoggedIn.value = !!userFullName.value
-});
+// 取得狀態
+const userFullName = computed(() => userStore.fullName)
+const userEmail = computed(() => userStore.email)
+const userPhone = computed(() => userStore.phone)
+const isLoggedIn = computed(() => userStore.isLoggedIn)
 
-// 這邊只接收子組件 emit 上來的完整資料（更推薦這種寫法，登入 API 在 LoginPasswordModal.vue 內處理）
-function handlePasswordLogin({ userFullName: name, userEmail: email, userPhone: phone }) {
-  // 寫入 localStorage
-    localStorage.setItem('userFullName', name)
-    localStorage.setItem('userEmail', email)
-    localStorage.setItem('userPhone', phone || '')
-    userFullName.value = name
-    userEmail.value = email
-    userPhone.value = phone || ''
-    isLoggedIn.value = true
+// 彈窗流程
+function handlePasswordLogin({ userFullName, userEmail, userPhone }) {
+    userStore.setLogin({ fullName: userFullName, email: userEmail, phone: userPhone })
     step.value = ''
     router.push('/search')
 }
-
-function logout() {
-    localStorage.removeItem('userFullName')
-    localStorage.removeItem('userEmail')
-    localStorage.removeItem('userPhone')
-    userFullName.value = ''
-    userEmail.value = ''
-    userPhone.value = ''
-    isLoggedIn.value = false
-    showDropdown.value = false  // 只留這行就好
-    // router.push('/login')
-}
-
-// 假設Email已註冊，按繼續
 function handleRegisterEmail(email) {
-    userEmail.value = email
+    userStore.setEmail(email)
     step.value = 'verifyEmail'
 }
-
-// 登入流程（Email 輸入完後處理）
 function handleLoginEmail(email) {
-    userEmail.value = email
+    userStore.setEmail(email)
     step.value = 'loginPassword'
 }
-
-// 寄送驗證信
 function handleSendVerification(email) {
-    // email 可直接用 userEmail.value，也可以用 event 傳進來
-    alert(`已寄出驗證信到 ${userEmail.value}`);
-    localStorage.setItem('userEmail', userEmail.value)   // 多這行最穩
-    step.value = '';
-    router.push({ path: '/register-profile', query: { email: userEmail.value } });
-}
-
-function handleForgotSubmit(email) {
-    alert('已寄送重設密碼信到 ' + email)
+    alert(`已寄出驗證信到 ${email}`)
     step.value = ''
-    router.push({
-        path: '/resetPasswordEmail',
-        query: (email)
-    })
+    router.push({ path: '/register-profile', query: { email } })
 }
-
+function handleForgotSubmit(email) {
+    step.value = ''
+    router.push('/') // 這裡**不要帶 query**
+}
+function logout() {
+    userStore.logout()
+    showDropdown.value = false
+}
+function toStore() { router.push('/store') }
+function navigateTo(path) {
+    router.push(`/${path}`)
+    showDropdown.value = false
+}
+function toggleDropdown() {
+    showDropdown.value = !showDropdown.value
+}
 function onGoogleLogin() {
     window.location.href = 'http://localhost:8080/oauth2/authorization/google'
 }
-
-//------------------------------
-const isLoggedIn = ref(false);
-// cUser 直接用 computed，跟著 userFullName 和 isLoggedIn 動態變動
-const cUser = computed(() =>
-    isLoggedIn.value
-    ? (userFullName.value ? userFullName.value : "目前使用者*")
-    : "請選擇登入身分"
-)
-
-const showDropdown = ref(false);
-const router = useRouter();
-
-const toggleDropdown = () => {
-    showDropdown.value = !showDropdown.value;
-};
-
-// 導航到對應頁面
-const navigateTo = (path) => {
-    router.push(`/${path}`);
-    showDropdown.value = false;
-};
-
-//檢查初始登入狀態
-// onMounted(() => {
-//     document.addEventListener('click', handleClickOutside);
-//     isLoggedIn.value = !!localStorage.getItem('token'); // 新增，根據 token 設定初始狀態
-// });
-
-// 登出邏輯
-// const logout = () => {
-// localStorage.removeItem('token');
-// isLoggedIn.value = false; // 新增
-// showDropdown.value = false;
-// router.push('/login');
-// };
-
+function onResetPassword() {
+    showReset.value = false
+    showSuccess.value = true // 顯示「密碼已更新」訊息
+    // 清掉 query string，避免重複再次觸發
+    router.replace({ path: '/', query: {} })
+    userStore.syncFromStorage()
+}
+function closeSuccess() {
+    showSuccess.value = false
+    step.value = 'loginEmail' // 或你要打開登入頁
+}
 // 點擊外部關閉下拉選單
-const handleClickOutside = (event) => {
+function handleClickOutside(event) {
     if (!event.target.closest('.user-dropdown-container')) {
-        showDropdown.value = false;
+        showDropdown.value = false
     }
-};
-
-// 監聽 isLoggedIn 變化，動態更新 cUser
-// watch(isLoggedIn, (newValue) => {
-//     cUser.value = newValue ? "目前使用者*" : "請選擇登入身分";
-// });
-
-onUnmounted(() => {
-    document.removeEventListener('click', handleClickOutside);
-});
-
-function toStore() {
-    router.push('/store')
 }
 
+onMounted(() => {
+    // 1. 點擊外部關閉下拉選單
+    document.addEventListener('click', handleClickOutside)
+
+    // 2. 偵測 query string 觸發重設密碼 dialog
+    if (route.query.reset === '1' && route.query.email && route.query.token) {
+        showReset.value = true
+        userStore.setEmail(route.query.email)
+        // 可選：清除 query 以免重複
+        // router.replace({ path: '/', query: {} })
+    }
+})
+onUnmounted(() => { document.removeEventListener('click', handleClickOutside) })
 </script>
 
 <style scoped>

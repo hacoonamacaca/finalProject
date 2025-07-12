@@ -135,6 +135,10 @@ const routes = [{
     component: () => import('@/views/Store/EditStoreUser.vue')
 },
 {
+    path:'/editStore',
+    component: () => import('@/views/Store/EditStore.vue')
+},
+{
     path:'/registerStoreInfo',
     component: () => import('@/views/Store/RegisterStoreInfo.vue')
 },

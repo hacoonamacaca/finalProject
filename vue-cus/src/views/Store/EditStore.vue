@@ -33,7 +33,7 @@
             <!-- 電子郵件 -->
             <div class="mb-2 text-center">
                 <label class="form-label w-100 text-start">電子郵件</label>
-                <input type="email" v-model="emailLocal" class="form-control rounded-pill" placeholder="請輸入 email" />
+                <input type="email" v-model="localProfile.email" class="form-control rounded-pill" placeholder="請輸入 email" />
             </div>
             <div class="d-flex align-items-center justify-content-center mb-3">
                 <i class="bi me-2"
@@ -55,112 +55,84 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
+import axios from '@/plungins/axios.js'
 
 const router = useRouter()
 const userStore = useUserStore()
+const photos = ref([]) // 上傳新照片
 
-function goBack() {
-    router.push('/')
-}
-
-const initial = reactive({
+const localProfile = reactive({
     storeName: '',
     address: '',
     intro: '',
     phone: '',
     email: '',
-    isEmailVerified: true,
-    photos: []
+    isEmailVerified: false
 })
 
-const storeName = ref('')
-const address = ref('')
-const intro = ref('')
-const phone = ref('')
-const emailLocal = ref('')
-const photos = ref([]) // 多檔案
-
-onMounted(() => {
-    storeName.value = localStorage.getItem('storeName') || ''
-    address.value = localStorage.getItem('storeAddress') || ''
-    intro.value = localStorage.getItem('storeIntro') || ''
-    phone.value = localStorage.getItem('userPhone') || ''
-    emailLocal.value = localStorage.getItem('userEmail') || ''
-
-    // 初始化
-    initial.storeName = storeName.value
-    initial.address = address.value
-    initial.intro = intro.value
-    initial.phone = phone.value
-    initial.email = emailLocal.value
-    initial.isEmailVerified = true
-    initial.photos = []
+onMounted(async () => {
+    await userStore.fetchStoreProfile?.()
+  // 不用 assign，因為下面 watchEffect 會自動同步
 })
 
-const isDirty = computed(() => {
-    return (
-        storeName.value !== initial.storeName ||
-        address.value !== initial.address ||
-        intro.value !== initial.intro ||
-        phone.value !== initial.phone ||
-        emailLocal.value !== initial.email ||
-        photos.value.length > 0 // 有新照片也算異動
-    )
+watchEffect(() => {
+    if (userStore.storeProfile) {
+        Object.assign(localProfile, userStore.storeProfile)
+    }
 })
 
-const isEmailVerified = computed(() =>
-    emailLocal.value === initial.email && initial.isEmailVerified
+// 表單異動判斷（對照 pinia 狀態）
+const isDirty = computed(() =>
+    Object.keys(localProfile).some(
+        key => localProfile[key] !== userStore.storeProfile[key]
+    ) || photos.value.length > 0
 )
 
+// Email 驗證顯示
+const isEmailVerified = computed(() =>
+    localProfile.email === userStore.storeProfile.email && userStore.storeProfile.isEmailVerified
+)
+
+// 檔案選擇
 function onFileChange(e) {
     photos.value = Array.from(e.target.files)
 }
 
+// 儲存表單
 async function handleSave() {
-    // 檢查必填欄位
-    if (!storeName.value || !address.value) {
+    if (!localProfile.storeName || !localProfile.address) {
         alert("餐廳名稱/地址必填")
         return
     }
-
-    // 準備 FormData（多檔案）
     const formData = new FormData()
-    formData.append('storeName', storeName.value)
-    formData.append('address', address.value)
-    formData.append('intro', intro.value)
-    formData.append('phone', phone.value)
-    formData.append('email', emailLocal.value)
-    // 多檔案 append
-    photos.value.forEach((file, idx) => {
-        formData.append('photos', file) // key "photos" 要與後端一致
-    })
+    formData.append('storeName', localProfile.storeName)
+    formData.append('address', localProfile.address)
+    formData.append('intro', localProfile.intro)
+    formData.append('phone', localProfile.phone)
+    formData.append('email', localProfile.email)
+    photos.value.forEach(file => formData.append('photos', file))
 
-    // 送出
     try {
-        const resp = await fetch('/api/stores/updateInfo', {
-            method: 'POST',
-            body: formData
-        })
-        const result = await resp.json()
-        if (result.success) {
+        const resp = await axios.post('/api/stores/updateInfo', formData)
+        if (resp.data.success) {
             alert('儲存成功！')
-            // 更新 initial 狀態
-            initial.storeName = storeName.value
-            initial.address = address.value
-            initial.intro = intro.value
-            initial.phone = phone.value
-            initial.email = emailLocal.value
-            initial.photos = []
+            // 儲存成功後，更新 pinia 狀態（全站同步）
+            userStore.setStoreProfile({ ...localProfile, isEmailVerified: isEmailVerified.value })
             photos.value = []
         } else {
-            alert('儲存失敗：' + result.message)
+            alert('儲存失敗：' + (resp.data.message || ''))
         }
     } catch (err) {
-        alert('發生錯誤：' + err)
+        alert('發生錯誤：' + (err?.message || err))
     }
+}
+
+// 返回
+function goBack() {
+    router.push('/store')
 }
 </script>
 

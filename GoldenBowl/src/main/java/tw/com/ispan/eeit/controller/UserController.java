@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.dto.UserDTO;
 import tw.com.ispan.eeit.model.entity.UserBean;
-import tw.com.ispan.eeit.repository.emailVerify.UserTokenRepository;
 import tw.com.ispan.eeit.service.UserService;
 
 @RestController
@@ -27,10 +26,7 @@ import tw.com.ispan.eeit.service.UserService;
 public class UserController {
 
     @Autowired
-    private UserService userService;
-    
-    @Autowired
-    private UserTokenRepository userTokenRepository;
+    private UserService userService;   
     
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
@@ -60,16 +56,11 @@ public class UserController {
         if(dto.getEmail() == null || dto.getEmail().isBlank()){
             return ResponseEntity.badRequest().body("Email必填");
         }
-
-        // 檢查這個 email 是否通過 email 驗證
-        boolean verified = userTokenRepository.findTopByEmailAndUsedTrueOrderByIdDesc(dto.getEmail().trim()).isPresent();
-        if (!verified) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("請先完成 Email 驗證再註冊！");
-        }
-
+        
         try {
             UserBean entity = UserService.toEntity(dto);
-            UserBean createdUser = userService.createUser(entity);
+            entity.setIsVerify(false);
+            UserBean createdUser = userService.createUser(entity); 
             return ResponseEntity.status(HttpStatus.CREATED).body(UserService.toDTO(createdUser));
         } catch (IllegalStateException e) {
             // email 重複
@@ -112,13 +103,15 @@ public class UserController {
         String email = body.get("email");
         String password = body.get("password");
         UserBean user = userService.findByEmailAndPassword(email, password);
-        if (user != null) {
+        if (user != null && user.getIsVerify()) {
             return Map.of(
                 "success", true,
                 "userId", user.getId(),
                 "userFullName", user.getName(),
                 "userEmail", user.getEmail()
             );
+        } else if (user != null && !user.getIsVerify()) {
+            return Map.of("success", false, "message", "請先完成 Email 驗證");
         } else {
             return Map.of("success", false, "message", "帳號或密碼錯誤");
         }

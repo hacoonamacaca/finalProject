@@ -13,11 +13,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.emailVerify.UserTokenBean;
 import tw.com.ispan.eeit.repository.UserRepository;
 import tw.com.ispan.eeit.repository.emailVerify.UserTokenRepository;
+import tw.com.ispan.eeit.service.UserService;
 
 @RestController
 @RequestMapping("/api")
@@ -31,6 +33,9 @@ public class EmailVerifyController {
     
     @Autowired
     private UserTokenRepository userTokenRepository;
+    
+    @Autowired
+    private UserService userService;
 
     // 1. 寄送驗證信
     @PostMapping("/send-verify-email")
@@ -79,6 +84,10 @@ public class EmailVerifyController {
             UserTokenBean userToken = tokenOpt.get();
             userToken.setUsed(true);
             userTokenRepository.save(userToken);
+            
+            // 同時把 user.isVerify 設為 true
+            userService.verifyEmail(email.trim());
+            
             return ResponseEntity.ok("驗證成功！");
         }
         return ResponseEntity.badRequest().body("驗證失敗，請檢查連結或重新發送驗證信！");
@@ -125,5 +134,78 @@ public class EmailVerifyController {
     public ResponseEntity<Boolean> checkEmailVerified(@RequestParam String email) {
         boolean verified = userTokenRepository.findTopByEmailAndUsedTrueOrderByIdDesc(email.trim()).isPresent();
         return ResponseEntity.ok(verified);
+    }
+    
+    // 5. 寄送重設密碼信
+    @PostMapping("/send-reset-password")
+    public ResponseEntity<String> sendResetPassword(@RequestParam String email) {
+        // 跟上面邏輯幾乎一樣，但主旨、內容、連結不同
+        Optional<UserBean> userOpt = userRepository.findByEmail(email.trim());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("查無此 email，請檢查是否註冊！");
+        }
+        String token = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+        Optional<UserTokenBean> exist = userTokenRepository.findByEmail(email.trim());
+        if (exist.isPresent()) {
+            UserTokenBean userToken = exist.get();
+            userToken.setVerifyCode(token);
+            userToken.setExpiration(LocalDateTime.now().plusHours(1));
+            userToken.setUsed(false);
+            userTokenRepository.save(userToken);
+        } else {
+            UserTokenBean userToken = new UserTokenBean();
+            userToken.setVerifyCode(token);
+            userToken.setEmail(email.trim());
+            userToken.setUsed(false);
+            userToken.setExpiration(LocalDateTime.now().plusHours(1));
+            userTokenRepository.save(userToken);
+        }
+        String resetUrl = "http://localhost:5173/?reset=1&email=" + email.trim() + "&token=" + token;
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setFrom("eattiy1986@gmail.com");
+        message.setTo(email);
+        message.setSubject("重設密碼連結");
+        message.setText("您好！請點擊以下連結重設密碼：\n" + resetUrl);
+
+        mailSender.send(message);
+
+        return ResponseEntity.ok("重設密碼信已寄出到 " + email + "，請查收！");
+    }
+    
+    // 重設密碼導向前端網址
+    @GetMapping("/reset-password")
+    public RedirectView redirectResetPassword(@RequestParam String token, @RequestParam String email) {
+        String frontendUrl = "http://localhost:5173/?reset=1&token=" + token + "&email=" + email;
+        return new RedirectView(frontendUrl);
+    }
+    
+    //重設密碼API
+    @PostMapping("/reset-password")
+    public ResponseEntity<String> resetPassword(
+            @RequestParam String email,
+            @RequestParam String token,
+            @RequestParam String newPassword) {
+        // 1. 檢查 token 是否正確、未過期且未用過
+        Optional<UserTokenBean> tokenOpt = userTokenRepository.findByVerifyCodeAndUsedFalse(token);
+        if (tokenOpt.isEmpty() || !tokenOpt.get().getEmail().equals(email)) {
+            return ResponseEntity.badRequest().body("驗證失敗，請重新操作！");
+        }
+
+        // 2. 變更密碼
+        Optional<UserBean> userOpt = userRepository.findByEmail(email);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.badRequest().body("查無此 email！");
+        }
+        UserBean user = userOpt.get();
+        user.setPassword(newPassword); // 建議加密
+        userRepository.save(user);
+
+        // 3. token 設為已用過
+        UserTokenBean userToken = tokenOpt.get();
+        userToken.setUsed(true);
+        userTokenRepository.save(userToken);
+
+        return ResponseEntity.ok("密碼重設成功！");
     }
 }

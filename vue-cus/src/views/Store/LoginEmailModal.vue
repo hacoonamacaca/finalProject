@@ -36,16 +36,18 @@
 
 <script setup>
 import { ref } from 'vue'
-import axios from 'axios'
+import axios from '@/plungins/axios.js'
+import { useUserStore } from '@/stores/user.js'
 
 const props = defineProps({ 
     show: Boolean,
     errorMsg: String
 })
 
-const emit = defineEmits(['close', 'submit', 'register', 'back'])
+const emit = defineEmits(['close', 'submit', 'back'])
 
-const email = ref('')
+const userStore = useUserStore()
+const email = ref(userStore.ownerEmail || '')
 const errorMsg = ref('')
 const loading = ref(false)
 
@@ -57,9 +59,10 @@ async function onSubmit() {
     }
     loading.value = true
     try {
-        // 請改成你的API路徑
+        // 用你專案 axios 路徑
         const res = await axios.post('/api/owner/check-email', { email: email.value })
         if (res.data.exists) {
+            userStore.setOwnerEmail(email.value) // 記下這次 email，方便後續步驟
             emit('submit', email.value) // 通知父元件可以進入密碼步驟
         } else {
             errorMsg.value = '查無此帳號，請確認Email或註冊新帳號'

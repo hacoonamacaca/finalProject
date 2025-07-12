@@ -150,4 +150,8 @@ public class StoreService {
         }
         return true;
     }
+    
+    public Optional<StoreBean> getStoreByOwnerId(Integer ownerId) {
+        return storeRepository.findByOwner_Id(ownerId); // 注意你的 repository 要有這個方法
+    }
 }

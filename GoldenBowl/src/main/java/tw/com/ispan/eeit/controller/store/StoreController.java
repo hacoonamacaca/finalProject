@@ -206,4 +206,17 @@ public class StoreController {
         boolean ok = storeService.updateAddress(storeId, address, lat, lon);
         return Map.of("success", ok);
     }
+    
+    @GetMapping("/profile")
+    public ResponseEntity<StoreDTO> getMyStoreProfile(@RequestParam Integer ownerId) {
+        // ownerId 可以從 JWT 或 session 取得，不要讓前端直接傳（安全性問題）
+        // 這邊為示範，暫時用 query 參數帶
+        if (ownerId == null) return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+        Optional<StoreBean> storeOptional = storeService.getStoreByOwnerId(ownerId);
+        if (storeOptional.isEmpty()) return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+
+        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
+        return new ResponseEntity<>(storeDTO, HttpStatus.OK);
+    }
 }

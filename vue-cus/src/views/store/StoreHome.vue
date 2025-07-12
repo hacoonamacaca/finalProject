@@ -36,7 +36,7 @@
             :show="step === 'loginEmail'"
             :error-msg="loginEmailError"
             @close="step = ''"
-            @back="step = ''"
+            @back="goBackToLoginModal"
             @submit="handleLoginEmail"
         />
         <!-- 登入密碼 Modal -->
@@ -177,6 +177,11 @@ function onResetPassword(newPwd) {
     showReset.value = false
     router.replace({ path: '/store' })
     userStore.syncFromStorage()
+}
+
+function goBackToLoginModal() {
+    step.value = ''
+    showLoginModal.value = true
 }
 </script>
 

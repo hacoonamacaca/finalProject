@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('register')">
+                    <button class="btn nav-btn" @click="emit('back')">
                         <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                             <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
@@ -31,11 +31,19 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-const props = defineProps({show: Boolean})
-const emit = defineEmits(['submit', 'register', 'close'])
-const email = ref('')
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
+
+const props = defineProps({ show: Boolean })
+const emit = defineEmits(['submit', 'close', 'back'])
+
+const userStore = useUserStore()
+// email 欄位直接和 Pinia 同步
+const email = computed({
+    get: () => userStore.email,
+    set: v => userStore.setEmail(v)
+})
 
 async function onSubmit() {
     if (!email.value) {
@@ -43,14 +51,12 @@ async function onSubmit() {
         return
     }
     try {
-        // axios 寫法：第二個參數就是 body 物件
         const res = await axios.post('/api/users/check-email-exists', { email: email.value })
-        // 回傳的就是 json 物件，不用再 .json()
         if (res.data.exists) {
-            emit('submit', email.value)
+            emit('submit', email.value) // 將 email 傳到父元件
         } else {
             alert('此 email 尚未註冊，請先註冊')
-            // emit('register')
+            // emit('register') // 如果要跳註冊可以放開
         }
     } catch (e) {
         alert('檢查 email 時發生錯誤')
