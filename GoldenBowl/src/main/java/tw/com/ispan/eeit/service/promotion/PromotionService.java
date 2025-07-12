@@ -58,11 +58,15 @@ public class PromotionService {
         bean.setDiscountType(dto.getDiscountType());
         bean.setDiscountValue(dto.getDiscountValue());
         bean.setMinSpend(dto.getMinSpend());
-        bean.setStartTime(dto.getStartTime());
-        bean.setEndTime(dto.getEndTime());
         bean.setCode(dto.getCode());
         bean.setMaxUsage(dto.getMaxUsage());
         bean.setUserUsageLimit(dto.getUserUsageLimit());
+        bean.setStatus("ACTIVE");
+        bean.setCreatedTime(LocalDateTime.now());
+
+        // ✅ 預設時間區間
+        bean.setStartTime(dto.getStartTime() != null ? dto.getStartTime() : LocalDateTime.now().minusHours(1));
+        bean.setEndTime(dto.getEndTime() != null ? dto.getEndTime() : LocalDateTime.now().plusDays(7));
 
         // 關聯條件綁定
         if (dto.getStoreId() != null) {
