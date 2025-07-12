@@ -1,4 +1,4 @@
-<template>
+<template><!--CartModal.vue-->
     <div class="cart-modal-overlay goldenbowl-restaurant-theme" @click="closeModal">
         <div class="cart-modal-content" @click.stop>
             <div class="cart-header">
@@ -106,6 +106,8 @@
 
         </div>
     </div>
+
+    
 </template>
 
 <script setup>
@@ -122,7 +124,7 @@ const props = defineProps({
         required: true
     }
 })
-
+// 移除 'checkout-all' 事件定義 ted ted
 const emit = defineEmits(['close', 'update-quantity', 'remove-item', 'checkout-restaurant', 'clear-restaurant'])
 // 定義事件
 // 计算属性
@@ -153,9 +155,10 @@ const updateQuantity = (itemId, newQuantity, restaurantId) => {
 const removeItem = (itemId, restaurantId) => {
     emit('remove-item', itemId, restaurantId)
 }
-// 結帳購物車
+// 結帳此餐廳
 const checkoutRestaurant = (restaurantId) => {
     emit('checkout-restaurant', restaurantId)
+    console.log('發送事件結帳此餐廳')
 }
 // 清空購物車
 const clearRestaurant = (restaurantId) => {

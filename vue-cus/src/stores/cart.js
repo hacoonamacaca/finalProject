@@ -44,6 +44,7 @@ export const useCartStore = defineStore('cart', () => {
 
     // 新增到購物車
     const addToCart = (item, restaurant) => {
+        // item 從restaurantMenu.vue傳送近來
         const restaurantId = restaurant.id
 
         // 如果該餐廳還沒有購物車，創建一個
@@ -52,7 +53,9 @@ export const useCartStore = defineStore('cart', () => {
                 restaurant: {
                     id: restaurant.id,
                     name: restaurant.name,
-                    image: restaurant.image
+                    image: restaurant.image,
+                    status: '',
+                    content: '',
                 },
                 items: []
             }
@@ -67,6 +70,9 @@ export const useCartStore = defineStore('cart', () => {
         if (existingItemIndex > -1) {
             // 如果找到相同規格的商品，增加數量
             restaurantCart.items[existingItemIndex].quantity += item.quantity
+            restaurantCart.items[existingItemIndex].total += item.total
+
+            // restaurantCart.items[existingItemIndex].
         } else {
             // 如果沒有找到相同規格的商品，添加新項目
             restaurantCart.items.push({
@@ -106,11 +112,11 @@ export const useCartStore = defineStore('cart', () => {
             delete cartByRestaurant.value[restaurantId]
         }
     }
-
+    // 清除全部的餐廳
     const clearCart = () => {
         cartByRestaurant.value = {}
     }
-
+    // 清除單一家的餐廳
     const clearRestaurantCart = (restaurantId) => {
         delete cartByRestaurant.value[restaurantId]
     }
@@ -142,9 +148,14 @@ export const useCartStore = defineStore('cart', () => {
 
         const orderData = {
             restaurant: restaurantCart.restaurant,
+            // 餐廳資訊
             orderDetail: [...restaurantCart.items],
-            totalAmount: getRestaurantTotal(restaurantId),
-            orderTime: new Date().toISOString()
+            total: getRestaurantTotal(restaurantId),
+            status: restaurantCart.status,
+            create_time: new Date().toISOString().slice(0, 16),
+            content: restaurantCart.content,
+            pickup_time: restaurantCart.pickup_time,
+
         }
 
         // 移除該餐廳的購物車

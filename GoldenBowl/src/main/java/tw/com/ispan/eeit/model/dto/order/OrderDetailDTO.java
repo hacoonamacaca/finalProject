@@ -26,7 +26,7 @@ public class OrderDetailDTO {
 	// 外部資料的Food
 	 private OrderDetailFoodDTO food; // OrderDetailDTO內的包含食物資料
 	 	     
-	 private Boolean likeFood; //LikeFood表單中的選項
+//	 private Boolean likeFood; //LikeFood表單中的選項
 
 	 private List<SpecDTO> specs;
 	 
@@ -69,10 +69,10 @@ public class OrderDetailDTO {
 	                .collect(Collectors.toList());
 	            orderDetail.setSpecs(specDtos);
 	        }
-		 if (orderDetailBean.getLikedFood() != null && Hibernate.isInitialized(orderDetailBean.getLikedFood())) {
-	            // 假設 LikedFoodDTO 的轉換方法為 fromLikedFoodBean
-	            orderDetail.setLikeFood(orderDetailBean.getLikedFood().getIsLiked());
-	        }
+//		 if (orderDetailBean.getLikedFood() != null && Hibernate.isInitialized(orderDetailBean.getLikedFood())) {
+//	            // 假設 LikedFoodDTO 的轉換方法為 fromLikedFoodBean
+//	            orderDetail.setLikeFood(orderDetailBean.getLikedFood().getIsLiked());
+//	        }
 		 return orderDetail;
 	 }
 	 
@@ -102,11 +102,11 @@ public class OrderDetailDTO {
 	     }
 
 	     // 轉換 LikedFood (如果存在)
-	     if (this.likeFood != null) {
-	    	 LikedFoodBean likeFoodBean = new LikedFoodBean();
-	    	 likeFoodBean.setIsLiked(this.likeFood);
-	         orderDetailBean.setLikedFood(likeFoodBean); // 假設 LikedFoodDTO 有一個 toLikedFoodBean() 方法
-	     }
+//	     if (this.likeFood != null) {
+//	    	 LikedFoodBean likeFoodBean = new LikedFoodBean();
+//	    	 likeFoodBean.setIsLiked(this.likeFood);
+//	         orderDetailBean.setLikedFood(likeFoodBean); // 假設 LikedFoodDTO 有一個 toLikedFoodBean() 方法
+//	     }
 
 	     return orderDetailBean;
 	 }
