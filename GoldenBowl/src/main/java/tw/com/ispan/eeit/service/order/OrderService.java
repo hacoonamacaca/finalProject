@@ -102,6 +102,23 @@ public class OrderService {
         return null;
     }
 
+    @Transactional(readOnly = true) // 確保在一個讀取事務中
+    public List<OrderDTO> findOrdersByUserIdWLF(Integer userId) {
+        if (userId != null) {
+            // orderRepository.findByUser_Id(userId);
+            // List<OrderBean> orderBeans = orderRepository.findByUser_Id(userId);
+            List<OrderBean> orderBeans = orderRepository.findByUserIdWithDetailsAndLikedFood(userId);
+            return orderBeans.stream()
+                    .map(OrderDTO::fromEntity)
+                    .collect(Collectors.toList());
+            // .map(orderBean -> OrderDto.fromEntity(orderBean))
+            // 最終，map 操作會產生一個包含 orderDto1、orderDto2、orderDto3 的新 Stream。
+            // 最後的 .collect(Collectors.toList()) 則會將這個 Stream 中的所有 OrderDto 物件收集起來，
+            // 形成一個 List<OrderDto>。
+        }
+        return null;
+    }
+
     // 根據用戶 ID 查找訂單
     // 這個方法現在可以正常工作，因為 OrderRepository 中已添加 findByUser_Id
     public List<OrderBean> findOrdersUser_IdAndStatus(Integer userId, String status) {
@@ -119,6 +136,14 @@ public class OrderService {
             return orderRepository.findByUser_IdAndStatusNot(userId, status);
         }
         return null;
+    }
+
+    // 根據 ID 查找訂單，並包含其明細-jimmy
+    @Transactional(readOnly = true)
+    public Optional<OrderDTO> findOrderByIdWithDetails(Integer orderId) {
+        // 使用 JOIN FETCH 的方法來避免 N+1 問題
+        return orderRepository.findByIdWithAllDetails(orderId)
+                .map(OrderDTO::fromEntity);
     }
 
 }

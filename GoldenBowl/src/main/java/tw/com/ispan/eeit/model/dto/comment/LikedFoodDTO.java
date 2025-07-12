@@ -1,6 +1,5 @@
 package tw.com.ispan.eeit.model.dto.comment;
 
-
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;

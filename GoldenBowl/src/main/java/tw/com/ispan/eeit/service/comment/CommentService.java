@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
+import tw.com.ispan.eeit.model.dto.comment.CommentRequestDTO;
 import tw.com.ispan.eeit.model.dto.comment.CommentResponseDTO;
 import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.repository.comment.CommentRepository;
@@ -57,14 +59,32 @@ public class CommentService {
     }
 
     // 更新評論
-    public Optional<CommentBean> updateComment(Integer id, CommentBean updatedComment) {
+    @Transactional
+    public Optional<CommentBean> updateCommentFromDto(Integer id, CommentRequestDTO commentDto) {
         return commentRepository.findById(id).map(comment -> {
-            comment.setContent(updatedComment.getContent());
-            comment.setScore(updatedComment.getScore());
-            comment.setReply(updatedComment.getReply());
-            comment.setReplyUpdateTime(
-                    updatedComment.getReply() != null ? LocalDateTime.now() : comment.getReplyUpdateTime());
-            comment.setIsHidden(updatedComment.getIsHidden());
+            // 根據 DTO 的內容更新 Bean 的屬性
+            if (commentDto.getContent() != null) {
+                comment.setContent(commentDto.getContent());
+            }
+            if (commentDto.getScore() != null) {
+                comment.setScore(commentDto.getScore());
+            }
+            if (commentDto.getReply() != null) {
+                comment.setReply(commentDto.getReply());
+                comment.setReplyUpdateTime(LocalDateTime.now()); // 回覆更新時間
+            }
+            if (commentDto.getIsHidden() != null) {
+                comment.setIsHidden(commentDto.getIsHidden());
+            }
+
+            // 對於關聯字段 (orderId, userId, storeId)，通常在更新時不會改變這些主關聯。
+            // 如果需要更新關聯，你需要額外從 repository 查詢並設定。
+            // 例如：
+            // if (commentDto.getOrderId() != null &&
+            // !comment.getOrder().getId().equals(commentDto.getOrderId())) {
+            // orderRepository.findById(commentDto.getOrderId()).ifPresent(comment::setOrder);
+            // }
+
             return commentRepository.save(comment);
         });
     }

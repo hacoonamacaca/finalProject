@@ -10,6 +10,42 @@ const id = ref(1)
 const userStore = useUserStore(); // 實例化 userStore
 const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
 
+
+/**
+ * 從後端獲取用戶訂單列表
+ * @param {number} id - 用戶 ID
+ */
+ async function fetchOrders(id) {
+    try {
+        const response = await axios.get(`/api/orders/user/${id}`);
+        // 對於每個訂單，如果沒有 comment 屬性或 likedFood 屬性，則補上預設值，
+        // 確保 ReviewModal 可以安全訪問這些屬性
+        orders.value = response.data.map(order => {
+            // 確保 comment 屬性存在，即使為空也設為 null
+            order.comment = order.comment || null; 
+            if (order.orderDetails) {
+                order.orderDetails = order.orderDetails.map(detail => {
+                    // 確保 likedFood 屬性存在，即使為空也設為 null
+                    detail.likedFood = detail.likedFood || null; 
+                    return detail;
+                });
+            }
+            return order;
+        });
+        console.log("訂單數據加載成功:", orders.value);
+    } catch (error) {
+        console.error("加載訂單失敗:", error);
+    }
+}
+
+// 監聽 RatingModal 發出的更新事件，然後重新獲取訂單數據
+const handleRatingUpdated = () => {
+    console.log("收到 RatingModal 的更新事件，重新加載訂單...");
+    if (userId.value) {
+        fetchOrders(userId.value); // 重新呼叫 fetchOrders 刷新數據
+    }
+};
+
 onMounted(() => {
   // 獲取用戶 ID 從 Pinia
   console.log(userId.value)
@@ -94,7 +130,7 @@ const reorder = (order) => {
         </div>
 
         <div >
-            <RatingModal :order="order" />
+          <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
         </div>
       </div>
     </div>

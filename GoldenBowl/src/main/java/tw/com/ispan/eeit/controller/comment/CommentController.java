@@ -84,8 +84,10 @@ public class CommentController {
 
     // 更新評論
     @PutMapping("/{id}")
-    public ResponseEntity<CommentBean> updateComment(@PathVariable Integer id, @RequestBody CommentBean comment) {
-        return commentService.updateComment(id, comment)
+    public ResponseEntity<CommentBean> updateComment(@PathVariable Integer id,
+            @RequestBody CommentRequestDTO commentDto) {
+        // 在 Service 層處理 DTO 到 Bean 的轉換和更新邏輯
+        return commentService.updateCommentFromDto(id, commentDto) // 新增一個方法處理 DTO
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }

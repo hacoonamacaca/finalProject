@@ -34,11 +34,11 @@ public class OrderController {
     // 創建新訂單
     @PostMapping
     public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean orders) {
-    	System.out.println(orders.getTotal());
-//    	JSONObject obj = new JSONObject(body);
-//    	OrderBean order = new OrderBean();
-    	System.out.println(orders.getTotal());
-    	OrderBean order = new OrderBean();
+        System.out.println(orders.getTotal());
+        // JSONObject obj = new JSONObject(body);
+        // OrderBean order = new OrderBean();
+        System.out.println(orders.getTotal());
+        OrderBean order = new OrderBean();
         OrderBean createdOrder = orderService.createOrder(order);
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
@@ -71,6 +71,15 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
+    @GetMapping("/userwlf/{userId}")
+    public ResponseEntity<List<OrderDTO>> getOrdersByUserIdWLF(@PathVariable Integer userId) {
+        List<OrderDTO> orders = orderService.findOrdersByUserIdWLF(userId);
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(orders);
+    }
+
     // 更新現有訂單
     @PutMapping("/{id}")
     public ResponseEntity<OrderBean> updateOrder(@PathVariable Integer id, @RequestBody OrderBean order) {
@@ -86,5 +95,12 @@ public class OrderController {
             return ResponseEntity.noContent().build(); // 204 No Content
         }
         return ResponseEntity.notFound().build(); // 404 Not Found
+    }
+
+    @GetMapping("/details/{id}") // JIMMY 返回全部訂單明細
+    public ResponseEntity<OrderDTO> getOrderDetailsById(@PathVariable Integer id) {
+        return orderService.findOrderByIdWithDetails(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
