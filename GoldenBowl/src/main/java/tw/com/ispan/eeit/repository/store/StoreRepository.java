@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 @Repository
@@ -43,5 +44,13 @@ public interface StoreRepository extends JpaRepository<StoreBean, Integer> {
 
         @Query("SELECT s FROM StoreBean s LEFT JOIN FETCH s.comments WHERE s.id = :id")
         Optional<StoreBean> findByIdWithComments(@Param("id") Integer id);
+
+        // 查詢用戶並同時載入其收藏的商店，避免 N+1 問題
+        @Query("SELECT u FROM UserBean u LEFT JOIN FETCH u.favoriteStores WHERE u.id = :userId")
+        Optional<UserBean> findByIdWithFavoriteStores(@Param("userId") Integer userId);
+
+        // 判斷特定用戶是否收藏了特定商店 (更輕量級的查詢)
+        @Query("SELECT COUNT(fs) > 0 FROM UserBean u JOIN u.favoriteStores fs WHERE u.id = :userId AND fs.id = :storeId")
+        boolean existsFavoriteByUserIdAndStoreId(@Param("userId") Integer userId, @Param("storeId") Integer storeId);
 
 }

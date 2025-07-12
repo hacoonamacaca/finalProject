@@ -38,6 +38,9 @@ public class StoreDTO {
     private LocalDateTime updatedTime;
     private Boolean isActive;
 
+    // 新增：表示當前用戶是否收藏了該餐廳
+    private Boolean isFavorited; // 預設為 false，除非明確設置
+
     // 若你要給前端顯示空間點座標，可以自行決定怎麼包
     private String storeCoords; // 通常轉 WKT 字串或 GeoJSON 字串。要怎麼顯示決定於你的前端設計
 
@@ -68,6 +71,12 @@ public class StoreDTO {
 
         this.deliveryTime = 20; // 暫時寫死
         this.popularityScore = (double) (store.getScore() != null ? store.getScore() * 10 : 0);
+    }
+
+    // 重載構造函數，用於在包含用戶上下文時設置 isFavorited
+    public StoreDTO(StoreBean store, Boolean isFavorited) {
+        this(store); // 調用上面的構造函數初始化基本資訊
+        this.isFavorited = isFavorited;
     }
 
     // 定義內部 FoodDTO

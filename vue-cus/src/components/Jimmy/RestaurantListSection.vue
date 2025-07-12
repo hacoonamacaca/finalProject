@@ -1,11 +1,14 @@
 <template>
 <section class="restaurant-list">
-    <div class="restaurant-card" v-for="restaurant in restaurants" :key="restaurant.id">
-    <img
-        :src="restaurant.image" :alt="restaurant.name"
-        @click="navigateToRestaurant(restaurant.id)"
-        style="cursor: pointer;"
-    />
+  <div class="restaurant-card" v-for="restaurant in restaurants" :key="restaurant.id">
+            <div class="image-container">
+                <img :src="restaurant.photo || 'https://via.placeholder.com/280x160'" :alt="restaurant.name"
+                    @click="navigateToRestaurant(restaurant.id)" style="cursor: pointer;" />
+                <i class="favorite-icon bi"
+                    :class="{ 'bi-heart-fill': restaurant.isFavorited, 'bi-heart': !restaurant.isFavorited }"
+                    @click.stop="toggleFavorite(restaurant)">
+                </i>
+            </div>
     <div class="info">
         <h3>{{ restaurant.name }}</h3>
         <p>
@@ -35,12 +38,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import Comment from '@/components/Jimmy/Comment.vue';
 import { useUserStore } from '@/stores/user'; 
+import axios from '@/plungins/axios.js'; 
 
 const userStore = useUserStore();
+const currentUserId = computed(() => userStore.userId); // 獲取當前用戶ID
 
 const props = defineProps({
   restaurants: {
@@ -50,6 +55,7 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['update:favoriteStatus']); // **新增：宣告一個發射事件**
 const router = useRouter();
 
 // 控制評論模態框顯示的狀態
@@ -65,6 +71,56 @@ const openComment = (storeId) => {
 console.log("User:"+userStore.userId);
   selectedStoreId.value = storeId;
   showComment.value = true;
+};
+
+// --- 新增收藏功能相關方法 ---
+const toggleFavorite = async (restaurant) => {
+    if (!currentUserId.value) {
+        alert('請先登入才能收藏餐廳！');
+        return;
+    }
+
+    const storeId = restaurant.id;
+    const userId = currentUserId.value;
+    let newIsFavorited; // 用於儲存新的收藏狀態
+
+    console.log(`RestaurantListSection.vue: 點擊收藏按鈕，當前狀態 restaurant.isFavorited: ${restaurant.isFavorited}`); // 新增
+
+    try {
+        let response;
+        if (restaurant.isFavorited) {
+            response = await axios.delete(`/api/stores/${storeId}/favorite/${userId}`);
+            if (response.data.success) {
+                newIsFavorited = false; // 新狀態為 false
+                // alert('已取消收藏！');
+            } else {
+                alert('取消收藏失敗！');
+                return; // 如果失敗，不繼續更新狀態
+            }
+        } else {
+            response = await axios.post(`/api/stores/${storeId}/favorite/${userId}`);
+            if (response.data.success) {
+                newIsFavorited = true; // 新狀態為 true
+                // alert('已成功收藏！');
+            } else {
+                alert('收藏失敗！');
+                return; // 如果失敗，不繼續更新狀態
+            }
+        }
+
+        console.log("收藏操作結果:", response.data);
+
+        // **重要修改：發射事件，通知父組件更新數據**
+        emit('update:favoriteStatus', {
+            storeId: storeId,
+            isFavorited: newIsFavorited
+        });
+        console.log(`RestaurantListSection.vue: 發射 update:favoriteStatus 事件，storeId: ${storeId}, isFavorited: ${newIsFavorited}`); // 新增
+
+    } catch (error) {
+        console.error('收藏/取消收藏操作出錯:', error);
+        alert('收藏/取消收藏操作發生錯誤！');
+    }
 };
 
 </script>
@@ -85,6 +141,7 @@ console.log("User:"+userStore.userId);
     box-shadow: 0 2px 8px rgba;
     transition: transform 0.2s;
     height: 300px;
+    position: relative; /* 新增：讓子元素可以相對定位 */
   }
 
   .restaurant-list .restaurant-card:hover {
@@ -138,5 +195,25 @@ console.log("User:"+userStore.userId);
 
 .comment-trigger-text:hover {
   color: #0056b3;
+}
+
+/* 愛心圖示樣式 */
+.favorite-icon {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: white; /* 預設白色 */
+    text-shadow: 0 0 2px rgb(255, 255, 255); /* 增加陰影，讓圖標更明顯 */
+    cursor: pointer;
+    /* transition: color 0.1s; */
+    z-index: 10; /* 確保在圖片上方 */
+}
+
+.favorite-icon.bi-heart-fill {
+    color: #c50f2a; /* 實心愛心顏色，例如粉紅色 */
+}
+
+.favorite-icon:hover {
+    transform: scale(1.1); /* 懸停放大效果 */
 }
   </style>

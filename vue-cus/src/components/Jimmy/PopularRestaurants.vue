@@ -4,7 +4,7 @@
     <div class="restaurant-scroll">
       <div class="restaurant-card" v-for="restaurant in popularRestaurants" :key="restaurant.id">
         <img
-          :src="restaurant.image || '/path/to/default-popular-image.jpg'" :alt="restaurant.name"
+          :src="restaurant.photo || '/path/to/default-popular-image.jpg'" :alt="restaurant.name"
           @click="navigateToRestaurant(restaurant.id)"
           style="cursor: pointer;"
         />

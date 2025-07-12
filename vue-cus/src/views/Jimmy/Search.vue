@@ -29,7 +29,7 @@
         :availableCategories="uniqueCategoryNames" />
     </aside>
 
-    <RestaurantListSection :restaurants="filteredRestaurants" />
+    <RestaurantListSection :restaurants="filteredRestaurants" @update:favoriteStatus="handleFavoriteStatusUpdate" />
   </div>
 
   <!-- 頁腳 -->
@@ -63,7 +63,12 @@ const API_URL = import.meta.env.VITE_API_URL;
 onMounted(() => {
   fetchStores(searchQuery.value);
 });
-
+// 當 userId 改變時，重新獲取商店數據，以更新收藏狀態
+watch(userStore.userId, (newUserId, oldUserId) => {
+    if (newUserId !== oldUserId) {
+        fetchStores(searchQuery.value);
+    }
+});
 
 
 const isSidebarActive = ref(false);
@@ -88,20 +93,32 @@ const allStores = ref([]); // 存放從後端取得的原始 Store 數據
 
 // 異步函數：從後端獲取 Store 數據
 // <-- **重要修改：添加 searchTerm 參數**
-const fetchStores = async (searchTerm = '') => { 
-  try {
-      // 根據 searchTerm 是否存在來構建 URL
-      const url = searchTerm
-        ? `${API_URL}/api/stores?search=${encodeURIComponent(searchTerm)}`
-        : `${API_URL}/api/stores`;
+// **重要修改：在獲取商店數據時帶上 userId**
+const fetchStores = async (searchTerm = '') => {
+    try {
+        const userId = userStore.userId; // 獲取當前用戶ID
+        let url = `${API_URL}/api/stores`;
+        const params = {};
 
-      console.log("Fetching stores from URL:", url); // 添加日誌確認 URL
+        if (searchTerm) {
+            params.search = searchTerm;
+        }
+        if (userId) {
+            params.userId = userId; // 將 userId 作為參數傳遞
+        }
 
-      const response = await axios.get(url); // <-- **使用構建好的 URL**
-      allStores.value = response.data;
-      console.log("從後端取得的商店資料:", allStores.value);
-      } catch (error) {
-      console.error('獲取商店資料失敗:', error);
+        // 使用 URLSearchParams 構建查詢字符串，自動處理編碼
+        const queryString = new URLSearchParams(params).toString();
+        if (queryString) {
+            url += `?${queryString}`;
+        }
+
+        console.log("Fetching stores from URL:", url);
+        const response = await axios.get(url);
+        allStores.value = response.data;
+        console.log("從後端取得的商店資料:", allStores.value);
+    } catch (error) {
+        console.error('獲取商店資料失敗:', error);
     }
 };
 
@@ -144,23 +161,35 @@ const filteredRestaurants = computed(() => {
 
   // 第三步：將處理後的 StoreDTO 轉換為 RestaurantListSection 需要的格式
   // 注意：模糊搜尋應該已經在 `fetchStores` (後端) 完成，這裡不再做二次搜尋過濾
-  return filtered.map(store => ({
-    id: store.id,
-    name: store.name,
-    categoryNames: store.categoryNames || [],
-    deliveryTime: store.deliveryTime || 20, // 使用後端提供的 deliveryTime
-    score: store.score || 0,
-    comments: store.comments || [],
-    // 聚合食物標籤 (保持不變)
-    tags: store.foods ? [...new Set(store.foods.flatMap(food => food.tagNames || []))] : [],
-    image: store.photo,
-    promo: '', // 如果後端有提供促銷資訊，可以在這裡映射
-    popularityScore: store.popularityScore != null ? store.popularityScore : (store.score != null ? parseFloat(store.score) * 10 : 0),
-    isOpen: store.isOpen
-  }));
+  const mappedRestaurants = filtered.map(store => ({
+        id: store.id,
+        name: store.name,
+        categoryNames: store.categoryNames || [],
+        deliveryTime: store.deliveryTime || 20,
+        score: store.score || 0,
+        comments: store.comments || [],
+        tags: store.foods ? [...new Set(store.foods.flatMap(food => food.tagNames || []))] : [],
+        photo: store.photo,
+        promo: '',
+        popularityScore: store.popularityScore != null ? store.popularityScore : (store.score != null ? parseFloat(store.score) * 10 : 0),
+        isFavorited: store.isFavorited, // 確保這裡正確映射了 isFavorited
+        isOpen: store.isOpen
+    }));
+    console.log('Home.vue: filteredRestaurants 重新計算，部分資料範例:', mappedRestaurants.slice(0, 2).map(r => ({ id: r.id, name: r.name, isFavorited: r.isFavorited }))); // 新增
+    return mappedRestaurants;
 });
 
-
+// **新增：處理收藏狀態更新的函數**
+const handleFavoriteStatusUpdate = ({ storeId, isFavorited }) => {
+    console.log('Home.vue: 收到 update:favoriteStatus 事件', { storeId, isFavorited }); // 新增
+    const index = allStores.value.findIndex(store => store.id === storeId);
+    if (index !== -1) {
+        // 使用 Vue.set 或直接替換物件來確保響應式更新
+        // 在 Composition API 中，直接修改 ref.value 中的物件屬性是響應式的
+        allStores.value[index].isFavorited = isFavorited;
+        console.log(`Home.vue: 更新 allStores[${index}].isFavorited 為 ${allStores.value[index].isFavorited}`); // 新增
+    }
+};
 
 // 篩選條件
 const filters = ref({
