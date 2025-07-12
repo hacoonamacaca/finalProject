@@ -1,25 +1,9 @@
-<!-- src/views/Jimmy/Home.vue -->
 <template>
-  <!-- 附近熱門美食 -->
-  <PopularRestaurants :restaurants="filteredRestaurants" />
+  <PopularRestaurants :restaurants="displayedRestaurants" />
 
-  <!-- 搜尋與位置區域 -->
   <SearchSection v-model:initialSearch="searched" @search="updateSearchQuery" />
 
   <div class="filter-toggle" @click="toggleSidebar">篩選條件</div>
-  <!-- 篩選與排序（頂部） -->
-  <!-- <section class="filters">
-    <TopFilterButtons :filters="filters" @update:filters="filters = $event" />
-    <div class="sort">
-      <select v-model="sortOption" @change="sortRestaurants">
-        <option value="評分最高">評分最高</option>
-        <option value="距離最近">距離最近</option>
-        <option value="最快送達">最快送達</option>
-      </select>
-    </div>
-  </section> -->
-
-  <!-- 內容容器 -->
   <div class="content-container">
     <aside class="sidebar" :class="{ active: isSidebarActive }">
       <SidebarFilters
@@ -29,10 +13,10 @@
         :availableCategories="uniqueCategoryNames" />
     </aside>
 
-    <RestaurantListSection :restaurants="filteredRestaurants" @update:favoriteStatus="handleFavoriteStatusUpdate" />
+    <RestaurantListSection :restaurants="displayedRestaurants" @update:favoriteStatus="handleFavoriteStatusUpdate"
+      @fetch-restaurants="fetchStoresByDisplayMode" />
   </div>
 
-  <!-- 頁腳 -->
   <footer class="footer">
     <p>© 2025 外送平台. 版權所有。</p>
     <p>
@@ -51,25 +35,26 @@ import TopFilterButtons from '@/components/Jimmy/TopFilterButtons.vue';
 import SidebarFilters from '@/components/Jimmy/SidebarFilters.vue';
 import PopularRestaurants from '@/components/Jimmy/PopularRestaurants.vue';
 import SearchSection from '@/components/Jimmy/SearchSection.vue';
-import RestaurantListSection  from "@/components/Jimmy/RestaurantListSection.vue"
+import RestaurantListSection from "@/components/Jimmy/RestaurantListSection.vue"
 import axios from 'axios';
-import { useUserStore } from '@/stores/user'; 
+import { useUserStore } from '@/stores/user';
+import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
+
 
 const userStore = useUserStore();
+const restaurantDisplayStore = useRestaurantDisplayStore();
 const API_URL = import.meta.env.VITE_API_URL;
 
 
-
 onMounted(() => {
-  fetchStores(searchQuery.value);
+  // 首次載入時，根據當前模式獲取餐廳
+  fetchStoresByDisplayMode(); // 確保首次載入也遵循顯示模式
 });
-// 當 userId 改變時，重新獲取商店數據，以更新收藏狀態
-watch(userStore.userId, (newUserId, oldUserId) => {
-    if (newUserId !== oldUserId) {
-        fetchStores(searchQuery.value);
-    }
-});
-
+// 當 userId 或顯示模式改變時，重新獲取商店數據
+watch([() => userStore.userId, () => restaurantDisplayStore.showAllRestaurants], () => {
+  console.log('User ID or display mode changed, refetching stores...');
+  fetchStoresByDisplayMode();
+}, { immediate: false }); // immediate: false 防止在組件初始化時觸發兩次 fetch
 
 const isSidebarActive = ref(false);
 const toggleSidebar = () => {
@@ -82,9 +67,9 @@ const searchQuery = ref(''); // 新增：實際用於觸發後端搜尋的查詢
 
 // 處理來自 SearchSection 的搜尋事件
 const updateSearchQuery = (searchTerm) => {
-  console.log('Search.vue 收到搜尋內容:', searchTerm);
+  console.log('Home.vue 收到搜尋內容:', searchTerm);
   searchQuery.value = searchTerm;
-  fetchStores(searchTerm); // 當搜尋詞改變時，重新從後端獲取資料
+  fetchStoresByDisplayMode(); // 當搜尋詞改變時，重新從後端獲取資料
 };
 
 
@@ -92,34 +77,38 @@ const updateSearchQuery = (searchTerm) => {
 const allStores = ref([]); // 存放從後端取得的原始 Store 數據
 
 // 異步函數：從後端獲取 Store 數據
-// <-- **重要修改：添加 searchTerm 參數**
-// **重要修改：在獲取商店數據時帶上 userId**
 const fetchStores = async (searchTerm = '') => {
-    try {
-        const userId = userStore.userId; // 獲取當前用戶ID
-        let url = `${API_URL}/api/stores`;
-        const params = {};
+  try {
+    const userId = userStore.userId; // 獲取當前用戶ID
+    let url = `${API_URL}/api/stores`;
+    const params = {};
 
-        if (searchTerm) {
-            params.search = searchTerm;
-        }
-        if (userId) {
-            params.userId = userId; // 將 userId 作為參數傳遞
-        }
-
-        // 使用 URLSearchParams 構建查詢字符串，自動處理編碼
-        const queryString = new URLSearchParams(params).toString();
-        if (queryString) {
-            url += `?${queryString}`;
-        }
-
-        console.log("Fetching stores from URL:", url);
-        const response = await axios.get(url);
-        allStores.value = response.data;
-        console.log("從後端取得的商店資料:", allStores.value);
-    } catch (error) {
-        console.error('獲取商店資料失敗:', error);
+    if (searchTerm) {
+      params.search = searchTerm;
     }
+    if (userId) {
+      params.userId = userId; // 將 userId 作為參數傳遞
+    }
+
+    // 使用 URLSearchParams 構建查詢字符串，自動處理編碼
+    const queryString = new URLSearchParams(params).toString();
+    if (queryString) {
+      url += `?${queryString}`;
+    }
+
+    console.log("Fetching stores from URL:", url);
+    const response = await axios.get(url);
+    allStores.value = response.data;
+    console.log("從後端取得的商店資料:", allStores.value);
+  } catch (error) {
+    console.error('獲取商店資料失敗:', error);
+  }
+};
+
+// 當 RestaurantListSection 或 Navbar 要求刷新時調用此函數
+const fetchStoresByDisplayMode = async () => {
+  // 總是先獲取全部數據（包含 isFavorited 標記），然後由 computed 屬性篩選
+  await fetchStores(searchQuery.value);
 };
 
 
@@ -134,11 +123,11 @@ const uniqueCategoryNames = computed(() => {
   return Array.from(categories).sort(); // 返回排序後的唯一類別名稱陣列
 });
 
-// 計算屬性：篩選後的餐廳列表
+// 計算屬性：應用分類、評分、開放狀態和排序後的餐廳列表
 const filteredRestaurants = computed(() => {
   let filtered = [...allStores.value];
 
-  // 第一步：根據篩選條件進行過濾
+  // 第一步：根據篩選條件進行過濾 (分類、評分、開放狀態)
   if (filters.value.category.length > 0) {
     filtered = filtered.filter((store) =>
       store.categoryNames && store.categoryNames.some(catName => filters.value.category.includes(catName))
@@ -156,39 +145,53 @@ const filteredRestaurants = computed(() => {
     filtered = filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
   } else if (sortOption.value === '距離最近' || sortOption.value === '最快送達') {
     // 假設 deliveryTime 已經在後端計算好並返回
-    filtered = filtered.sort((a, b) => a.deliveryTime - b.deliveryTime);
+    filtered = filtered.sort((a, b) => (a.deliveryTime || Infinity) - (b.deliveryTime || Infinity));
   }
 
   // 第三步：將處理後的 StoreDTO 轉換為 RestaurantListSection 需要的格式
-  // 注意：模糊搜尋應該已經在 `fetchStores` (後端) 完成，這裡不再做二次搜尋過濾
   const mappedRestaurants = filtered.map(store => ({
-        id: store.id,
-        name: store.name,
-        categoryNames: store.categoryNames || [],
-        deliveryTime: store.deliveryTime || 20,
-        score: store.score || 0,
-        comments: store.comments || [],
-        tags: store.foods ? [...new Set(store.foods.flatMap(food => food.tagNames || []))] : [],
-        photo: store.photo,
-        promo: '',
-        popularityScore: store.popularityScore != null ? store.popularityScore : (store.score != null ? parseFloat(store.score) * 10 : 0),
-        isFavorited: store.isFavorited, // 確保這裡正確映射了 isFavorited
-        isOpen: store.isOpen
-    }));
-    console.log('Home.vue: filteredRestaurants 重新計算，部分資料範例:', mappedRestaurants.slice(0, 2).map(r => ({ id: r.id, name: r.name, isFavorited: r.isFavorited }))); // 新增
-    return mappedRestaurants;
+    id: store.id,
+    name: store.name,
+    categoryNames: store.categoryNames || [],
+    deliveryTime: store.deliveryTime || 20,
+    score: store.score || 0,
+    comments: store.comments || [],
+    tags: store.foods ? [...new Set(store.foods.flatMap(food => food.tagNames || []))] : [],
+    photo: store.photo,
+    promo: '',
+    popularityScore: store.popularityScore != null ? store.popularityScore : (store.score != null ? parseFloat(store.score) * 10 : 0),
+    isFavorited: store.isFavorited, // 確保這裡正確映射了 isFavorited
+    isOpen: store.isOpen
+  }));
+  // console.log('Home.vue: filteredRestaurants (pre-display-mode) 重新計算，部分資料範例:', mappedRestaurants.slice(0, 2).map(r => ({ id: r.id, name: r.name, isFavorited: r.isFavorited })));
+  return mappedRestaurants;
 });
 
-// **新增：處理收藏狀態更新的函數**
-const handleFavoriteStatusUpdate = ({ storeId, isFavorited }) => {
-    console.log('Home.vue: 收到 update:favoriteStatus 事件', { storeId, isFavorited }); // 新增
-    const index = allStores.value.findIndex(store => store.id === storeId);
-    if (index !== -1) {
-        // 使用 Vue.set 或直接替換物件來確保響應式更新
-        // 在 Composition API 中，直接修改 ref.value 中的物件屬性是響應式的
-        allStores.value[index].isFavorited = isFavorited;
-        console.log(`Home.vue: 更新 allStores[${index}].isFavorited 為 ${allStores.value[index].isFavorited}`); // 新增
+// **新增：最終顯示給子組件的餐廳列表**
+const displayedRestaurants = computed(() => {
+  let restaurantsToDisplay = [...filteredRestaurants.value]; // 從應用過濾和排序的列表開始
+
+  // 如果是「已收藏」模式，則從 current filtered list 中再次篩選
+  if (!restaurantDisplayStore.showAllRestaurants) {
+    if (userStore.userId) { // 確保用戶已登入
+      restaurantsToDisplay = restaurantsToDisplay.filter(r => r.isFavorited);
+    } else {
+      restaurantsToDisplay = []; // 未登入狀態下，收藏為空
     }
+  }
+  console.log('Home.vue: displayedRestaurants 最終列表，部分資料範例:', restaurantsToDisplay.slice(0, 2).map(r => ({ id: r.id, name: r.name, isFavorited: r.isFavorited })));
+  return restaurantsToDisplay;
+});
+
+// 處理收藏狀態更新的函數
+const handleFavoriteStatusUpdate = ({ storeId, isFavorited }) => {
+  console.log('Home.vue: 收到 update:favoriteStatus 事件', { storeId, isFavorited });
+  const index = allStores.value.findIndex(store => store.id === storeId);
+  if (index !== -1) {
+    allStores.value[index].isFavorited = isFavorited;
+    console.log(`Home.vue: 更新 allStores[${index}].isFavorited 為 ${allStores.value[index].isFavorited}`);
+    // 不需要手動觸發 computed，因為 allStores 已經是響應式的 ref
+  }
 };
 
 // 篩選條件
@@ -202,14 +205,14 @@ const filters = ref({
 const sortOption = ref('評分最高');
 
 
-// 更新配送時間
+// 更新配送時間 (這可能是一個佔位符，實際用途不明)
 const updatescore = () => {
-  // 觸發篩選更新
+  // 觸發篩選更新 (由於 computed property 會自動響應 filters 變化，這裡可能不需要額外邏輯)
 };
 
 // 排序餐廳（實際上由 computed 處理，這裡僅為兼容）
 const sortRestaurants = () => {
-  // 由 filteredRestaurants computed 屬性處理
+  // 由 filteredRestaurants computed 屬性處理，這裡不需要額外邏輯
 };
 </script>
 
@@ -256,8 +259,10 @@ body {
 
 /* 左側篩選欄的 CSS 保持不變，因為它仍然在 Home.vue 中 */
 .sidebar {
-  width: 250px; /* 固定寬度，可根據需求調整 */
-  flex-shrink: 0; /* 防止縮小 */
+  width: 250px;
+  /* 固定寬度，可根據需求調整 */
+  flex-shrink: 0;
+  /* 防止縮小 */
   background-color: #fff;
   padding: 20px;
   border-radius: 8px;

@@ -27,10 +27,11 @@
         <UserDropdown v-if="isLoggedIn" />
       </div>
       <div class="nav-items">
-        <a href="#" @click.prevent="toggleRestaurantMenu" :title="isRestaurant ? '餐廳' : '餐點'"
+        <a href="#" @click.prevent="restaurantDisplayStore.toggleDisplayMode()"
+          :title="restaurantDisplayStore.showAllRestaurants ? '顯示已收藏' : '顯示全部'"
           class="nav-item d-flex align-items-center gap-2">
-          <i :class="isRestaurant ? 'fas fa-store' : 'fas fa-utensils'"></i>
-          <span>{{ isRestaurant ? '餐廳' : '餐點' }}</span>
+          <i :class="restaurantDisplayStore.showAllRestaurants ? 'fas fa-heart' : 'fas fa-store'"></i>
+          <span>{{ restaurantDisplayStore.showAllRestaurants ? '已收藏' : '全部' }}</span>
         </a>
 
         <div class="nav-item" style="position: relative;">
@@ -75,17 +76,18 @@ import NotificationList from '@/components/Yifan/NotificationList.vue';
 import CartModal from '@/components/KTlu/CartModal.vue';
 import { useCartStore } from '@/stores/cart';
 import { useLocationStore } from '@/stores/location'; // <-- 導入新的 location store
+import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
 
 
 // 購物車 store
 const cartStore = useCartStore();
 // 位置 store
 const locationStore = useLocationStore(); // <-- 實例化 location store
+const restaurantDisplayStore = useRestaurantDisplayStore();
 
 const isLoggedIn = ref(true); // 根據實際登入狀態設定
 const isMenuOpen = ref(false);
 const showPopout = ref(false);
-const isRestaurant = ref(true);
 const route = useRoute();
 const router = useRouter();
 
@@ -129,10 +131,10 @@ const toggleMenu = () => {
 };
 
 // 餐廳/餐點切換 (保持不變)
-const toggleRestaurantMenu = () => {
-  isRestaurant.value = !isRestaurant.value;
-  console.log("目前頁面餐廳為是/餐點為否:" + isRestaurant.value);
-};
+// const toggleRestaurantMenu = () => {
+//   isRestaurant.value = !isRestaurant.value;
+//   console.log("目前頁面餐廳為是/餐點為否:" + isRestaurant.value);
+// };
 
 // 優惠通知邏輯 (保持不變)
 const isNotificationOpen = ref(false)
@@ -227,7 +229,7 @@ const getLogin = () => {
   align-items: center;
   position: sticky;
   top: 0;
-  z-index: 3000;
+  z-index: 1000;
 }
 
 .navbar-brand {
