@@ -14,4 +14,8 @@ import Navigation from '@/components/Navigation.vue';
 // import Navigation from "@/views/Navigation.vue"
 </script>
 
-<style></style>
+<style>
+/* 前端背景底色 */
+body {
+  background-color: #fff4e0; /* 淺黃色 */
+}</style>

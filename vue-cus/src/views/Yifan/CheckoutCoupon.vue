@@ -40,7 +40,7 @@ import globalImg from '@/assets/vouchers/global.png'
 import restaurantImg from '@/assets/vouchers/restaurant.png'
 import foodImg from '@/assets/vouchers/food.png'
 import memberImg from '@/assets/vouchers/member.png'
-
+import Swal from 'sweetalert2'
 
 // 購物車金額
 const discountedTotal = computed(() => {
@@ -120,7 +120,12 @@ const handleSelected = (promotion) => {
 //訂單結帳
 const submitOrder = async () => {
   if (!selected.value) {
-    alert('請先選擇優惠券')
+    // ⚠️ 未選擇優惠券的提醒
+    Swal.fire({
+      icon: 'warning',
+      title: '請先選擇優惠券',
+      confirmButtonText: '了解'
+    })
     return
   }
 
@@ -132,23 +137,31 @@ const submitOrder = async () => {
     status: 'COMPLETED',
   }
 
-
   try {
     const res = await axios.post('/api/orders', orderPayload, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     })
-    alert('訂單送出成功！訂單編號：' + res.data.id)
+
+    // ✅ 成功彈窗
+    Swal.fire({
+      icon: 'success',
+      title: '訂單送出成功！',
+      html: `訂單編號：<strong>${res.data.id}</strong>`,
+      confirmButtonText: '太好了！'
+    })
+
   } catch (err) {
     console.error('送出訂單失敗', err)
-    alert('訂單送出失敗')
+
+    // ❌ 失敗提示
+    Swal.fire({
+      icon: 'error',
+      title: '訂單送出失敗',
+      text: '請稍後再試一次',
+      confirmButtonText: '關閉'
+    })
   }
 }
-
-
-
-
 </script>
 
 <style scoped>
