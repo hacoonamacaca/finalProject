@@ -10,10 +10,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
+import tw.com.ispan.eeit.model.dto.order.OrderRequestDTO;
+import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
+import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
+import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.repository.order.OrderDetailRepository;
 import tw.com.ispan.eeit.repository.order.OrderRepository;
+import tw.com.ispan.eeit.repository.promotion.PromotionRepository;
+import tw.com.ispan.eeit.repository.store.StoreRepository;
 
 @Service
 @Transactional
@@ -25,6 +31,13 @@ public class OrderService {
     @Autowired
     private OrderDetailRepository orderDetailRepository;
 
+    @Autowired
+    private StoreRepository storeRepository;
+    
+    @Autowired
+    private PromotionRepository promotionRepository;
+
+    
     // 創建訂單 (包含其明細)
     public OrderBean createOrder(OrderBean order) {
         order.setCreateTime(LocalDateTime.now());
@@ -120,5 +133,57 @@ public class OrderService {
         }
         return null;
     }
+    
+    // 查詢某個使用者使用某張優惠券的次數（僅統計已完成訂單）
+    public int countUserPromotionUsage(Integer userId, Integer promotionId) {
+        if (userId != null && promotionId != null) {
+            return orderRepository.countUsageByUserAndPromotion(userId, promotionId);
+        }
+        return 0;
+    }
 
+    // 查詢某張優惠券總共被使用過幾次（僅統計已完成訂單）
+    public int countPromotionUsage(Integer promotionId) {
+        if (promotionId != null) {
+            return orderRepository.countUsageByPromotion(promotionId);
+        }
+        return 0;
+    }
+    
+    public OrderDTO createOrderFromRequest(OrderRequestDTO dto) {
+    	System.out.println("已選 promotionId: " + dto.getPromotionId());
+    	System.out.println("已選 storeId: " + dto.getStoreId());
+    	
+    	OrderBean order = new OrderBean();
+
+        // 從資料庫查詢 user、store、promotion 實體
+        UserBean user = new UserBean();
+        user.setId(dto.getUserId());
+        order.setUser(user);
+
+        //苡帆改掉
+//        StoreBean store = storeRepository.findById(dto.getStoreId())
+//            .orElseThrow(() -> new RuntimeException("找不到店家"));
+//        order.setStore(store);
+
+        //改成這個：
+        StoreBean store = storeRepository.getReferenceById(dto.getStoreId());
+        order.setStore(store);
+        
+        if (dto.getPromotionId() != null) {
+            PromotionBean promo = new PromotionBean();
+            promo.setId(dto.getPromotionId());
+            order.setPromotion(promo);
+        }
+
+        order.setTotal(dto.getTotal());
+        order.setStatus(dto.getStatus());
+        order.setCreateTime(LocalDateTime.now());
+
+        OrderBean savedOrder = orderRepository.save(order);
+        return OrderDTO.fromEntity(savedOrder); // 回傳給前端
+    }
+
+
+    
 }

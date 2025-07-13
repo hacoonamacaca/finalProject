@@ -68,7 +68,11 @@ const orders=ref([])
 const id = ref(1)
 
 onMounted(() => {
-  orders.value.push(findorder(id))
+
+  // 苡帆備註：⚠️ 這段會導致 orders 裡被放進去一個 Promise，而不是訂單資料本身，畫面不會正常顯示。
+  // orders.value.push(findorder(id))
+  // 苡帆備註：✅ 建議改法如下：直接呼叫 findorder 並讓它修改 orders.value：
+  findorder(id.value)
   // 初始化訂單評分狀態
 })
 

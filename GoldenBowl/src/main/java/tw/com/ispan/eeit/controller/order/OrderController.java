@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
+import tw.com.ispan.eeit.model.dto.order.OrderRequestDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 import tw.com.ispan.eeit.service.order.OrderService;
 
@@ -31,18 +32,29 @@ public class OrderController {
         this.orderDetailController = orderDetailController;
     }
 
-    // 創建新訂單
-    @PostMapping
-    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean orders) {
-    	System.out.println(orders.getTotal());
-//    	JSONObject obj = new JSONObject(body);
+// 苡帆要測試優惠券使用紀錄功能，若有問題再解開註解
+//    // 創建新訂單
+//    @PostMapping
+//    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean orders) {
+//    	System.out.println(orders.getTotal());
+////    	JSONObject obj = new JSONObject(body);
+////    	OrderBean order = new OrderBean();
+//    	System.out.println(orders.getTotal());
 //    	OrderBean order = new OrderBean();
-    	System.out.println(orders.getTotal());
-    	OrderBean order = new OrderBean();
-        OrderBean createdOrder = orderService.createOrder(order);
+//        OrderBean createdOrder = orderService.createOrder(order);
+//        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
+//    }
+
+// 苡帆要測試優惠券使用紀錄功能，若有問題再解開註解
+    //改成用 OrderRequestDTO 接收資料：
+    @PostMapping
+    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderRequestDTO dto) {
+        OrderDTO createdOrder = orderService.createOrderFromRequest(dto);
         return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
     }
 
+
+    
     // 根據 ID 獲取單一訂單
     @GetMapping("/{id}")
     public ResponseEntity<OrderBean> getOrderById(@PathVariable Integer id) {
