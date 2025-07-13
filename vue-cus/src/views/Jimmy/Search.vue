@@ -156,6 +156,28 @@ const uniqueCategoryNames = computed(() => {
 // 計算屬性：應用分類、評分、開放狀態和排序後的餐廳列表
 const filteredRestaurants = computed(() => {
   let filtered = [...allStores.value];
+  let userLat = null;
+  let userLon = null;
+
+  // **新增：在過濾和排序之前，先嘗試獲取用戶位置並計算所有店家的距離**
+  if (locationStore.coordinates && locationStore.coordinates.lat && locationStore.coordinates.lon) {
+    userLat = parseFloat(locationStore.coordinates.lat);
+    userLon = parseFloat(locationStore.coordinates.lon);
+  }
+
+  // 為所有店家計算距離，無論是否按距離排序
+  // 這確保了每個餐廳物件都有 distance 屬性，即使值為 null
+  filtered = filtered.map(store => {
+    let distance = null;
+    // 只有當用戶位置和店家位置都存在時才計算距離
+    if (userLat !== null && userLon !== null && store.lat && store.lng) {
+      distance = calculateDistance(userLat, userLon, parseFloat(store.lat), parseFloat(store.lng));
+    }
+    return {
+      ...store,
+      distance: distance // 將計算出的距離添加到每個 store 物件中
+    };
+  });
 
   // 第一步：根據篩選條件進行過濾 (分類、評分、開放狀態)
   if (filters.value.category.length > 0) {
@@ -234,6 +256,15 @@ const popularRestaurantsByDistance = computed(() => {
     // 篩選出在半徑內的店家
     return store.distanceInKilometers <= SEARCH_RADIUS_KM;
   });
+
+  // 根據 restaurantDisplayStore.showAllRestaurants 篩選是否為收藏餐廳 
+  if (!restaurantDisplayStore.showAllRestaurants && userStore.userId) { // 如果是「已收藏」模式且用戶已登入
+    result = result.filter(store => store.isFavorited);
+  } else if (!restaurantDisplayStore.showAllRestaurants && !userStore.userId) {
+    // 如果是「已收藏」模式但用戶未登入，則不顯示任何餐廳
+    console.log('Home.vue: 用戶未登入，收藏模式下不顯示熱門餐廳。');
+    return [];
+  }
 
   // 對熱門餐廳進行排序：按 distanceInKilometers 升序排列 (距離最近的在前)
   result.sort((a, b) => (a.distanceInKilometers || Infinity) - (b.distanceInKilometers || Infinity));

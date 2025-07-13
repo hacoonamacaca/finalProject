@@ -16,12 +16,17 @@
           •
           {{ restaurant.isOpen ? '營業中' : '休息中' }}
         </p>
-        <p>
-          {{ restaurant.score }}★
-          <span class="comment-trigger-text" @click="openComment(restaurant.id)" style="cursor: pointer;">
-            ({{ restaurant.comments ? restaurant.comments.length : 0 }} 則評論)
+        <p class="score-group"> <span class="score-text">
+            {{ restaurant.score }}★
           </span>
         </p>
+        <div class="comment-distance-group"> <span class="comment-trigger-text" @click="openComment(restaurant.id)" style="cursor: pointer;">
+            ({{ restaurant.comments ? restaurant.comments.length : 0 }} 則評論)
+          </span>
+          <span v-if="restaurant.distance" class="distance-text">
+            • {{ restaurant.distance.toFixed(2) }} km
+          </span>
+        </div>
       </div>
     </div>
     <div v-if="restaurants.length === 0" class="no-restaurants-message">
@@ -206,6 +211,26 @@ const toggleFavorite = async (restaurant) => {
   font-size: 12px;
 }
 
+/* 評分單獨的行，不需要特別的 flex 樣式，它本身就是塊級元素 */
+.score-group {
+  margin-bottom: 5px; /* 讓評分和下方評論/距離組之間有間距 */
+}
+
+/* 新增的評分、評論和距離的父容器樣式 */
+.score-comment-distance-group {
+  display: flex; /* 使用 Flexbox 讓內部元素水平排列 */
+  align-items: center; /* 垂直居中對齊 */
+  gap: 5px; /* 為內部元素之間添加間距 */
+  flex-wrap: wrap; /* 允許在空間不足時換行，以防萬一 */
+}
+
+/* 公里數文字樣式 */
+.distance-text {
+  font-size: 13px; /* 保持你想要的字體大小 */
+  color: #666; /* 保持顏色 */
+  white-space: nowrap; /* 防止距離數字換行 */
+}
+
 /* 新增的評論觸發文字樣式 */
 .comment-trigger-text {
   cursor: pointer;
@@ -214,9 +239,6 @@ const toggleFavorite = async (restaurant) => {
   text-decoration: underline;
   font-size: 13px;
   /* 調整字體大小 */
-  display: block;
-  /* 確保獨佔一行 */
-  margin-top: 5px;
 }
 
 .comment-trigger-text:hover {
