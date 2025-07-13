@@ -104,12 +104,26 @@ public class StoreService {
             existingStore.setScore(storeDetails.getScore());
             existingStore.setUpdatedTime(LocalDateTime.now());
             existingStore.setIsActive(storeDetails.getIsActive());
+            
+ 
+            if (storeDetails.getOwner() != null) {
+                OwnerBean owner = existingStore.getOwner();
+                if (owner != null) {
+                    // 你可以選擇只在有值時才改
+                    if (storeDetails.getOwner().getPhone() != null) {
+                        owner.setPhone(storeDetails.getOwner().getPhone());
+                    }
+                    if (storeDetails.getOwner().getEmail() != null) {
+                        owner.setEmail(storeDetails.getOwner().getEmail());
+                    }
+                    ownerRepository.save(owner);
+                }
+            }
             // 處理關聯實體 (owner, categories, favoritedByUsers) 需要額外的邏輯
             return storeRepository.save(existingStore);
         }
         return null;
     }
-
     public boolean deleteStore(Integer id) {
         if (storeRepository.existsById(id)) {
             storeRepository.deleteById(id);

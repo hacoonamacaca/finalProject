@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import tw.com.ispan.eeit.model.dto.store.StoreDTO;
+import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.service.store.StoreService;
 
@@ -96,6 +97,13 @@ public class StoreController {
         storeToUpdate.setPhoto(storeDetailsDto.getPhoto());
         storeToUpdate.setScore(storeDetailsDto.getScore());
         storeToUpdate.setIsOpen(storeDetailsDto.getIsOpen());
+        storeToUpdate.setAddress(storeDetailsDto.getAddress());
+        storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
+        
+        OwnerBean owner = new OwnerBean();
+        owner.setPhone(storeDetailsDto.getPhone());
+        owner.setEmail(storeDetailsDto.getEmail());
+        storeToUpdate.setOwner(owner);
         // 同樣，對於關聯集合的更新，你需要根據業務邏輯處理
         // 例如，如果前端傳入新的 categoryNames，你可能需要在 service 層更新 StoreBean 的 categories 集合
         // storeDetailsDto.getCategoryNames(); // <-- 這裡會包含前端傳來的類別名稱

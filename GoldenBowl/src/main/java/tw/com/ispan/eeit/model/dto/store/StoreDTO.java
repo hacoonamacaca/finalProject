@@ -37,6 +37,9 @@ public class StoreDTO {
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
     private Boolean isActive;
+    private String phone;
+    private String email;
+    private Boolean isEmailVerified;
 
     // 若你要給前端顯示空間點座標，可以自行決定怎麼包
     private String storeCoords; // 通常轉 WKT 字串或 GeoJSON 字串。要怎麼顯示決定於你的前端設計
@@ -44,10 +47,29 @@ public class StoreDTO {
     // 這個構造函數用於將 StoreBean 轉換為 StoreDTO
     public StoreDTO(StoreBean store) {
         this.id = store.getId();
+        this.ownerId = store.getOwner() != null ? store.getOwner().getId() : null;
         this.name = store.getName();
+        this.address = store.getAddress();
+        this.lon = store.getLon();
+        this.lat = store.getLat();
+        this.storeIntro = store.getStoreIntro();
         this.photo = store.getPhoto();
         this.score = store.getScore();
         this.isOpen = store.getIsOpen();
+        this.createdTime = store.getCreatedTime();
+        this.updatedTime = store.getUpdatedTime();
+        this.isActive = store.getIsActive();
+        
+     // 這裡是關鍵：從 owner 取得 phone/email
+        if (store.getOwner() != null) {
+            this.phone = store.getOwner().getPhone();
+            this.email = store.getOwner().getEmail();
+            this.isEmailVerified = store.getOwner().getIsVerify();
+        } else {
+            this.phone = null;
+            this.email = null;
+            this.isEmailVerified = false;
+        }
 
         // 這裡需要注意：當這些關聯是懶加載時，直接訪問它們可能會觸發懶加載異常
         // 但由於是在 DTO 轉換器中，通常會期望它們已經被加載（通過 EntityGraph 或 JOIN FETCH）

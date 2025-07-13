@@ -8,17 +8,17 @@
             <!-- 餐廳名稱 -->
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">餐廳名稱</label>
-                <input v-model="storeName" type="text" class="form-control rounded-pill" placeholder="請輸入餐廳名稱" />
+                <input v-model="localProfile.name" type="text" class="form-control rounded-pill" placeholder="請輸入餐廳名稱" />
             </div>
             <!-- 餐廳地址 -->
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">餐廳地址</label>
-                <input v-model="address" type="text" class="form-control rounded-pill" placeholder="請輸入餐廳地址" />
+                <input v-model="localProfile.address" type="text" class="form-control rounded-pill" placeholder="請輸入餐廳地址" />
             </div>
             <!-- 餐廳介紹 -->
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">餐廳介紹</label>
-                <textarea v-model="intro" class="form-control" rows="4" placeholder="請輸入餐廳介紹" style="resize:vertical"></textarea>
+                <textarea v-model="localProfile.intro" class="form-control" rows="4" placeholder="請輸入餐廳介紹" style="resize:vertical"></textarea>
             </div>
             <!-- 餐廳照片 -->
             <div class="mb-3 text-center">
@@ -28,7 +28,7 @@
             <!-- 手機號碼 -->
             <div class="mb-3 text-center">
                 <label class="form-label w-100 text-start">手機號碼</label>
-                <input v-model="phone" class="form-control rounded-pill" placeholder="0912345678" />
+                <input v-model="localProfile.phone" class="form-control rounded-pill" placeholder="0912345678" />
             </div>
             <!-- 電子郵件 -->
             <div class="mb-2 text-center">
@@ -59,13 +59,14 @@ import { ref, computed, onMounted, reactive, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
+import { uploadImage } from '@/plungins/firebase-storage.js'
 
 const router = useRouter()
 const userStore = useUserStore()
-const photos = ref([]) // 上傳新照片
+const photoFile = ref(null); // 上傳圖片
 
 const localProfile = reactive({
-    storeName: '',
+    name: '',
     address: '',
     intro: '',
     phone: '',
@@ -75,12 +76,18 @@ const localProfile = reactive({
 
 onMounted(async () => {
     await userStore.fetchStoreProfile?.()
-  // 不用 assign，因為下面 watchEffect 會自動同步
 })
 
+// 只要 pinia 有更新，localProfile 就同步（雙向）
 watchEffect(() => {
-    if (userStore.storeProfile) {
-        Object.assign(localProfile, userStore.storeProfile)
+    const p = userStore.storeProfile
+    if (p) {
+        localProfile.name = p.name || ''
+        localProfile.address = p.address || ''
+        localProfile.intro = p.storeIntro || ''
+        localProfile.phone = p.phone || ''
+        localProfile.email = p.email || ''
+        localProfile.isEmailVerified = p.isEmailVerified || false
     }
 })
 
@@ -88,7 +95,7 @@ watchEffect(() => {
 const isDirty = computed(() =>
     Object.keys(localProfile).some(
         key => localProfile[key] !== userStore.storeProfile[key]
-    ) || photos.value.length > 0
+    ) || photoFile.value
 )
 
 // Email 驗證顯示
@@ -98,30 +105,37 @@ const isEmailVerified = computed(() =>
 
 // 檔案選擇
 function onFileChange(e) {
-    photos.value = Array.from(e.target.files)
+    photoFile.value = e.target.files[0] || null
 }
 
 // 儲存表單
 async function handleSave() {
-    if (!localProfile.storeName || !localProfile.address) {
+    if (!localProfile.name || !localProfile.address) {
         alert("餐廳名稱/地址必填")
         return
     }
-    const formData = new FormData()
-    formData.append('storeName', localProfile.storeName)
-    formData.append('address', localProfile.address)
-    formData.append('intro', localProfile.intro)
-    formData.append('phone', localProfile.phone)
-    formData.append('email', localProfile.email)
-    photos.value.forEach(file => formData.append('photos', file))
 
+    let photoUrl = userStore.storeProfile.photo || ""; // 預設維持舊照
+
+    // 有新照片才傳
+    if (photoFile.value) {
+        photoUrl = await uploadImage(photoFile.value, "stores")
+    }
+
+    const storeId = userStore.storeProfile.id
     try {
-        const resp = await axios.post('/api/stores/updateInfo', formData)
-        if (resp.data.success) {
+        const resp = await axios.put(`/api/stores/${storeId}`, {
+            name: localProfile.name,
+            address: localProfile.address,
+            storeIntro: localProfile.intro,
+            phone: localProfile.phone,
+            email: localProfile.email,
+            photo: photoUrl, // 存網址
+        });
+        if (resp.data) {
             alert('儲存成功！')
-            // 儲存成功後，更新 pinia 狀態（全站同步）
-            userStore.setStoreProfile({ ...localProfile, isEmailVerified: isEmailVerified.value })
-            photos.value = []
+            userStore.setStoreProfile({ ...localProfile, photo: photoUrl })
+            photoFile.value = null
         } else {
             alert('儲存失敗：' + (resp.data.message || ''))
         }

@@ -1,37 +1,16 @@
 <template>
     <div class="container text-center mt-5">
         <h2 class="mb-4">歡迎光臨！</h2>
-        <!-- 已登入：顯示業者下拉 -->
-        <div v-if="storeFullName" class="d-grid gap-3 col-6 mx-auto position-relative">
-            <div class="dropdown-wrapper">
-                <button class="dropdown-btn" :class="{ open: showMenu }" @click="toggleMenu">
-                    <i class="bi bi-person-circle me-1"></i>{{ storeFullName }}
-                    <i class="bi ms-1" :class="showMenu ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
-                </button>
-                <ul v-if="showMenu" class="custom-dropdown text-start">
-                    <li @click="goEditStoreUser">
-                        <i class="bi bi-person me-2"></i>餐廳業者資料
-                    </li>
-                    <li @click="goEditStore">
-                        <i class="bi bi-shop me-2"></i>餐廳資料
-                    </li>
-                    <li @click="logout">
-                        <i class="bi bi-box-arrow-right me-2"></i>登出
-                    </li>
-                </ul>
-            </div>
-        </div>
 
-        <!-- 未登入自動顯示：業者登入/註冊彈窗 -->
+        <!-- 只要這裡就好 -->
         <StoreLoginModal
-            v-if="!storeFullName && showLoginModal"
+            v-if="showLoginModal"
             :show="showLoginModal"
-            @close="showLoginModal = false"
+            @close="closeLoginModal"
             @login="onLogin"
             @register="onRegister"
         />
 
-        <!-- 登入 Email Modal -->
         <LoginEmailModal
             :show="step === 'loginEmail'"
             :error-msg="loginEmailError"
@@ -39,7 +18,6 @@
             @back="goBackToLoginModal"
             @submit="handleLoginEmail"
         />
-        <!-- 登入密碼 Modal -->
         <LoginPasswordModal
             :show="step === 'loginPassword'"
             :email="storeEmail"
@@ -50,7 +28,6 @@
             @back="step = 'loginEmail'"
             @login="handlePasswordLogin"
         />
-        <!-- 忘記密碼 Modal -->
         <ForgotPasswordModal
             :show="step === 'forgotPassword'"
             :email="storeEmail"
@@ -58,7 +35,6 @@
             @back="step = 'loginPassword'"
             @submit="handleForgotSubmit"
         />
-        <!-- 重設密碼 Dialog -->
         <ResetPasswordDialog
             v-if="showReset"
             @close="showReset = false"
@@ -68,8 +44,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plungins/axios.js'
 import { useUserStore } from '@/stores/user.js'
 
@@ -80,14 +56,13 @@ import ForgotPasswordModal from '@/views/Store/ForgotPasswordModal.vue'
 import ResetPasswordDialog from '@/views/Store/ResetPasswordDialog.vue'
 
 const router = useRouter()
+const route = useRoute()
 const step = ref('')
 const storeEmail = ref('')
 const storePhone = ref('')
-const showMenu = ref(false)
 const showReset = ref(false)
 const loginEmailError = ref('')
-const showLoginModal = ref(true) // 一進頁面就彈出
-
+const showLoginModal = ref(false)
 const isLoading = ref(false)
 const passwordErrorMsg = ref('')
 
@@ -95,32 +70,31 @@ const passwordErrorMsg = ref('')
 const userStore = useUserStore()
 const storeFullName = computed(() => userStore.ownerFullName)
 
+// 進頁面就依據 query 狀態顯示登入彈窗
 onMounted(() => {
     userStore.syncFromStorage()
     storeEmail.value = localStorage.getItem('storeEmail')
     storePhone.value = localStorage.getItem('storePhone') || ''
-    if (storeFullName.value) showLoginModal.value = false
+    if (route.query.login === '1') {
+        showLoginModal.value = true
+    }
 })
 
-// 點選「登入」彈窗
+// 監聽網址 query 變化決定彈窗狀態
+watch(() => route.query.login, (val) => {
+    showLoginModal.value = val === '1'
+})
+
+// 點選「登入」彈窗，進入 email 步驟
 function onLogin() {
     step.value = 'loginEmail'
-    showLoginModal.value = false
-}
-// 點選「註冊」彈窗
-function onRegister() {
-    router.push('/registerBusiness')
-    showLoginModal.value = false
+    closeLoginModal()
 }
 
-// 業者下拉選單
-function toggleMenu() { showMenu.value = !showMenu.value }
-function goEditStoreUser() { router.push('/editStoreUser'); showMenu.value = false }
-function goEditStore() { router.push('/editStore'); showMenu.value = false }
-function logout() {
-    userStore.ownerLogout() // 用 Pinia 提供的方法一次清乾淨
-    showMenu.value = false
-    showLoginModal.value = true
+// 點選「註冊」彈窗
+function onRegister() {
+    closeLoginModal()
+    router.push('/registerBusiness')
 }
 
 // 登入 email 驗證
@@ -181,7 +155,16 @@ function onResetPassword(newPwd) {
 
 function goBackToLoginModal() {
     step.value = ''
-    showLoginModal.value = true
+    // 重新顯示登入視窗
+    openLoginModal()
+}
+
+function openLoginModal() {
+    router.replace({ path: '/store', query: { login: '1' } })
+}
+function closeLoginModal() {
+    showLoginModal.value = false
+    router.replace({ path: '/store', query: {} })
 }
 </script>
 

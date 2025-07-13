@@ -159,14 +159,13 @@ export const useUserStore = defineStore('user', () => {
     // storeProfile fetch (同步後端)
 // user.js
 async function fetchStoreProfile() {
-    const ownerId = localStorage.getItem('ownerId') // 或 userStore.ownerId
+    const ownerId = localStorage.getItem('ownerId')
     if (!ownerId) return
 
     const resp = await axios.get('/api/stores/profile', {
         params: { ownerId }
     })
-    // resp.data 就是 StoreDTO
-    setStoreProfile(resp.data)
+    if (resp.data) setStoreProfile(resp.data) // << 記得呼叫 setStoreProfile
 }
 
     // 全部清空

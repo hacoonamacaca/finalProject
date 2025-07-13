@@ -26,7 +26,7 @@
     <div class="nav-links" :class="{ active: isMenuOpen }">
       <!-- auth-section 在行動版置頂 -->
       <div class="auth-section">
-        <StoreDropdown v-if="isStoreRoute" />
+        <StoreDropdown v-if="isStoreRoute" @show-login="handleShowLogin" />
         <template v-else>
         <a href="#" @click="getLogin" v-if="!isLoggedIn">登入</a>
         <UserDropdown v-if="isLoggedIn" />
@@ -312,6 +312,10 @@ const isStoreRoute = computed(() =>
   route.path.startsWith('/editStoreUser') ||
   route.path.startsWith('/editStore')
 );
+
+const handleShowLogin = () => {
+  router.push({ path: '/store', query: { login: '1' } })
+}
 
 </script>
 

@@ -76,18 +76,20 @@ onMounted(async () => {
         return
     }
     try {
+        // 1. 先抓 owner
         const res = await axios.get(`/api/owner/${ownerId}`)
         const data = res.data.owner || res.data
-        initial.storeFullName = data.name
-        initial.phone = data.phone
-        initial.email = data.email
-        initial.isEmailVerified = data.isVerify
-
-        // 直接用 pinia setter（computed 綁定會自動寫回表單）
         userStore.setOwnerFullName(data.name)
         userStore.setOwnerEmail(data.email)
         userStore.setPhone(data.phone)
         userStore.setOwnerId(ownerId + '')
+        // 2. 再抓 storeProfile（餐廳主檔）
+        await userStore.fetchStoreProfile()
+        // **這邊同步一次**
+        initial.storeFullName = data.name
+        initial.phone = data.phone
+        initial.email = data.email
+        initial.isEmailVerified = data.isVerify || false
     } catch (e) {
         alert('取得帳戶資料失敗')
         console.error(e)
