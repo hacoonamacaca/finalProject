@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.dto.store;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +52,21 @@ public class StoreDTO {
         this.photo = store.getPhoto();
         this.score = store.getScore();
         this.isOpen = store.getIsOpen();
+        this.address = store.getAddress();
+        this.lng = store.getLng();
+        this.lat = store.getLat();
+        this.storeIntro = store.getStoreIntro();
+        this.createdTime = store.getCreatedTime();
+        this.updatedTime = store.getUpdatedTime();
+        this.isActive = store.getIsActive();
+
+        // 處理 storeCoords (GEOGRAPHY Point 物件轉換為字串)
+        if (store.getStoreCoords() != null) {
+            // 使用 toText() 方法將 JTS Point 物件轉換為 WKT (Well-Known Text) 格式的字串
+            this.storeCoords = store.getStoreCoords().toText();
+        } else {
+            this.storeCoords = null;
+        }
 
         // 這裡需要注意：當這些關聯是懶加載時，直接訪問它們可能會觸發懶加載異常
         // 但由於是在 DTO 轉換器中，通常會期望它們已經被加載（通過 EntityGraph 或 JOIN FETCH）
@@ -93,9 +109,11 @@ public class StoreDTO {
             this.id = food.getId();
             this.name = food.getName();
             this.price = food.getPrice();
-            this.tagNames = food.getTags() != null
-                    ? food.getTags().stream().map(TagBean::getName).collect(Collectors.toList())
-                    : new ArrayList<>();
+            this.tagNames = food.getTags().stream()
+                    .map(TagBean::getName)
+                    .collect(Collectors.toCollection(LinkedHashSet::new)) // 使用 LinkedHashSet 保留順序並去重
+                    .stream()
+                    .collect(Collectors.toList());
         }
     }
 
