@@ -48,6 +48,9 @@ public class FoodService {
         newFood.setStock(request.getStock());
         newFood.setImgResource(request.getImgResource());
         
+        // 🔥 新增：設定供應狀態
+        newFood.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
+        
         // 【核心修正：使用新的中間表 Entity】
         newFood.getClassifications().clear(); // 清理（對新增來說是多餘的，但好習慣）
         for (FoodClassBean foodClass : foodClasses) {
@@ -59,7 +62,6 @@ public class FoodService {
 //        newFood.setFoodClasses(foodClasses); // 設定多對多關聯
         newFood.setCreateTime(LocalDateTime.now());
         newFood.setUpdateTime(LocalDateTime.now());
-        newFood.setIsActive(true);
         newFood.setScore(0.0f);
 
         FoodBean savedFood = foodRepository.save(newFood);
@@ -80,6 +82,15 @@ public class FoodService {
             throw new ResourceNotFoundException("找不到店家，ID: " + storeId);
         }
         List<FoodBean> foodBeans = foodRepository.findByStoreId(storeId);
+        return foodBeans.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+//  增加有上架的食物--ted
+    public List<FoodDTO> findActiveFoodsByStoreId(Integer storeId) {
+        // 可以在這裡加一個檢查，確認店家是否存在
+        if (!storeRepository.existsById(storeId)) {
+            throw new ResourceNotFoundException("找不到店家，ID: " + storeId);
+        }
+        List<FoodBean> foodBeans = foodRepository.findActiveFoodsByStoreId(storeId);
         return foodBeans.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
@@ -105,6 +116,12 @@ public class FoodService {
         existingFood.setStock(request.getStock());
         existingFood.setImgResource(request.getImgResource());
 //        existingFood.setFoodClasses(foodClasses);
+        
+        // 🔥 新增：設定供應狀態
+        if (request.getIsActive() != null) {
+            existingFood.setIsActive(request.getIsActive());
+        }
+        
         existingFood.setUpdateTime(LocalDateTime.now());
 
         existingFood.getClassifications().clear(); // 清理掉所有舊的關聯
@@ -151,6 +168,11 @@ public class FoodService {
             FoodClassificationBean primaryClassification = foodBean.getClassifications().iterator().next();
             dto.setCategoryName(primaryClassification.getFoodClass().getName());
             dto.setCategoryId(primaryClassification.getFoodClass().getId());
+        }
+        if(foodBean.getTags()!= null && !foodBean.getClassifications().isEmpty()) {
+            dto.setTagNames(foodBean.getTags().stream()
+                    .map(tagBean -> tagBean.getName()) // 假設您的 TagBean 有 getName() 方法
+                    .collect(Collectors.toList()));
         }
 
         return dto;

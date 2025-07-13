@@ -1,29 +1,93 @@
 <script setup>
-// 1. 定義 Props & Emits，這是組件的「合約」
-defineProps({
+import { computed, ref } from 'vue';
+
+// 1. Props & Emits: 組件的合約
+const props = defineProps({
     categories: {
         type: Array,
         required: true
     }
 });
+const emit = defineEmits(['addNewCategory', 'editCategory','updateCategoryOrder']);
 
-const emit = defineEmits(['addNewCategory', 'editCategory']);
+// 2. 核心邏輯：只做排序，不處理任何拖曳狀態
+const sortedCategories = computed(() => {
+    // 確保列表總是按 sort 排序後再渲染
+    return [...props.categories].sort((a, b) => a.sort - b.sort);
+});
 
-// 2. 定義事件處理函式
+// 3. 事件處理函式：只保留最基本的新增和編輯
 const handleAddNew = () => {
-    emit('addNewCategory'); // 向上發出「新增」訊號
+    emit('addNewCategory');
+};
+const handleEdit = (category) => {
+    emit('editCategory', category);
 };
 
-const handleEdit = (category) => {
-    emit('editCategory', category); // 向上發出「編輯」訊號，並附上被點擊的 category 資料
+// 4. 拖曳實驗
+const isDragging = ref(false);
+const draggedItem = ref(null);
+const dragOverIndex = ref(-1);
+
+// 拖曳開始
+const handleDragStart = (event, category, index) => {
+    isDragging.value = true;
+    draggedItem.value = { category, index };
+    event.dataTransfer.effectAllowed = 'move';
+    event.dataTransfer.setData('text/html', event.target.outerHTML);
+    event.target.style.opacity = '0.5';
 };
+
+// 拖曳結束
+const handleDragEnd = (event) => {
+    isDragging.value = false;
+    draggedItem.value = null;
+    dragOverIndex.value = -1;
+    event.target.style.opacity = '1';
+};
+
+// 拖曳經過
+const handleDragOver = (event, index) => {
+    event.preventDefault();
+    dragOverIndex.value = index;
+};
+
+// 拖曳離開
+const handleDragLeave = () => {
+    dragOverIndex.value = -1;
+};
+
+// 放置
+const handleDrop = (event, targetIndex) => {
+    event.preventDefault();
+    
+    if (!draggedItem.value || draggedItem.value.index === targetIndex) {
+        return;
+    }
+    
+    const sourceIndex = draggedItem.value.index;
+    const newCategories = [...sortedCategories.value];
+    
+    // 移動項目
+    const [movedItem] = newCategories.splice(sourceIndex, 1);
+    newCategories.splice(targetIndex, 0, movedItem);
+    
+    // 重新計算 sort 值
+    const updatedCategories = newCategories.map((category, index) => ({
+        ...category,
+        sort: index + 1
+    }));
+    
+    // 發送更新事件給父組件
+    emit('updateCategoryOrder', updatedCategories);
+};
+
 </script>
 
 <template>
     <div>
         <!-- 頂部操作區 -->
         <div class="d-flex justify-content-end mb-3">
-            <!-- 只有一個「新增」按鈕，所以讓它靠右即可 -->
             <button class="btn btn-warning" @click="handleAddNew">
                 + 新增品項類別
             </button>
@@ -31,33 +95,65 @@ const handleEdit = (category) => {
 
         <!-- 類別列表容器 -->
         <div class="list-group">
-            <!-- 使用 v-if 處理沒有資料時的提示 -->
-            <div v-if="categories.length === 0" class="list-group-item text-center text-muted">
+            <!-- 空狀態提示 -->
+            <div v-if="!sortedCategories || sortedCategories.length === 0" class="list-group-item text-center text-muted">
                 目前沒有任何品項類別，請點擊右上角新增。
             </div>
 
-            <!-- 使用 v-for 遍歷傳入的 categories 陣列 -->
-            <div 
+            <!-- 列表渲染：新增拖曳功能 -->
+            <div
                 v-else
-                v-for="category in categories" 
-                :key="category.id" 
+                v-for="(category, index) in sortedCategories"
+                :key="category.id"
                 class="list-group-item list-group-item-action d-flex align-items-center"
+                :class="{
+                    'dragging': isDragging && draggedItem?.index === index,
+                    'drag-over': dragOverIndex === index
+                }"
+                draggable="true"
+                @dragstart="handleDragStart($event, category, index)"
+                @dragend="handleDragEnd"
+                @dragover="handleDragOver($event, index)"
+                @dragleave="handleDragLeave"
+                @drop="handleDrop($event, index)"
                 @click="handleEdit(category)"
                 style="cursor: pointer;"
             >
                 <!-- 拖曳圖標 -->
-                <span class="drag-handle me-3 text-muted">☰</span>
+                <span class="me-3 text-muted drag-handle">☰</span>
                 
                 <!-- 類別名稱 -->
-                <span class="fw-bold">{{ category.name }}</span>
+                <span class="fw-bold flex-grow-1">{{ category.name }}</span>
+                
+                <!-- 排序數字 -->
+                <span class="badge bg-secondary rounded-pill">{{ category.sort }}</span>
             </div>
+
+            
         </div>
     </div>
 </template>
 
 <style scoped>
-/* 可以為拖曳圖標增加一點樣式，讓它看起來更像可操作的 */
+.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.drag-over {
+    border-top: 3px solid #007bff;
+    background-color: #f8f9fa;
+}
+
 .drag-handle {
     cursor: grab;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.list-group-item {
+    transition: all 0.2s ease;
 }
 </style>

@@ -47,7 +47,14 @@ public class FoodController {
         List<FoodDTO> foods = foodService.findFoodsByStoreId(storeId);
         return ResponseEntity.ok(foods);
     }
-
+    
+    // 增加有上架的食物--ted
+    @GetMapping("/active/store/{storeId}")
+    public ResponseEntity<List<FoodDTO>> findActiveFoodsByStoreId(@PathVariable Integer storeId) {
+        List<FoodDTO> foods = foodService.findActiveFoodsByStoreId(storeId);
+        return ResponseEntity.ok(foods);
+    }
+    
     // --- Update ---
     @PutMapping("/{id}")
     public ResponseEntity<FoodDTO> updateFood(@PathVariable Integer id, @Valid @RequestBody FoodRequest request) {
