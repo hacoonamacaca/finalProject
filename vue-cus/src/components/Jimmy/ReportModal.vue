@@ -29,8 +29,8 @@
           </div>
         </div>
         <div class="report-modal-footer">
-          <Button label="取消" severity="secondary" @click="$emit('close')" />
-          <Button label="提交檢舉" @click="submitReport" />
+          <button type="button" class="btn btn-secondary" @click="$emit('close')">取消</button>
+          <button type="button" class="btn btn-primary" @click="submitReport">提交檢舉</button>
         </div>
       </div>
     </div>
@@ -40,9 +40,7 @@
   import { ref, onMounted, computed } from 'vue';
   import axios from 'axios';
   import { useUserStore } from '@/stores/user'; // 假設你有用戶 store
-  import Message from 'primevue/message';
   import Dropdown from 'primevue/dropdown';
-  import Button from 'primevue/button';
   
   // 定義組件 props
   const props = defineProps({
@@ -250,30 +248,5 @@ const selectedReportDescription = computed(() => {
     padding: 15px 20px;
     border-top: 1px solid #eee;
     background-color: #f8f9fa;
-  }
-  
-  /* PrimeVue Button 覆寫 */
-  .report-modal-footer .p-button {
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 1em;
-  }
-  
-  .p-button[severity="secondary"] {
-    background-color: #6c757d; /* Bootstrap secondary */
-    color: white;
-    border: none;
-  }
-  .p-button[severity="secondary"]:hover {
-    background-color: #5a6268;
-  }
-  
-  .p-button { /* default button */
-    background-color: #007bff; /* Bootstrap primary */
-    color: white;
-    border: none;
-  }
-  .p-button:hover {
-    background-color: #0056b3;
-  }
+  } 
   </style>

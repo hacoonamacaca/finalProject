@@ -228,7 +228,7 @@ const toggleFavorite = async (restaurant) => {
   position: absolute;
   top: 10px;
   right: 10px;
-  font-size: 24px;
+  font-size: 20px;
   /* 調整圖標大小 */
   color: white;
   /* 預設白色 */

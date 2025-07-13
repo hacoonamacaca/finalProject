@@ -8,9 +8,9 @@
             ref="ratingModalRef">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content">
-                    <div class="modal-header bg-primary text-white">
+                    <div class="modal-header bg-primary text-black">
                         <h5 class="modal-title" id="ratingModalLabel">評價訂單 - {{ order.store?.name || '未知店家' }}</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                     </div>
 
@@ -302,7 +302,7 @@ const submitReview = async () => {
 
 /* 覆寫 Bootstrap Modal Header 背景色 */
 .modal-header.bg-primary {
-    background-color: #007bff !important;
+    background-color: #fbfbfc !important;
     /* 你可以根據專案主題調整這個顏色 */
 }
 
