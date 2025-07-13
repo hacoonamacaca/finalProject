@@ -28,6 +28,10 @@ const props = defineProps({
     disabledSlots: {
         type: Array,
         default: () => []
+    },
+    selectedDate: {
+        type: Date,
+        default: null
     }
 })
 
@@ -39,16 +43,51 @@ const selectTime = (slot) => {
     }
 }
 
+// 檢查時間段是否過期
+const isTimeExpired = (timeSlot) => {
+    if (!props.selectedDate) return false
+
+    try {
+        const now = new Date()
+        const selectedDate = new Date(props.selectedDate)
+
+        // 如果是今天，檢查時間是否已過
+        if (selectedDate.toDateString() === now.toDateString()) {
+            const [hours, minutes] = timeSlot.split(':').map(Number)
+            const slotTime = new Date(now)
+            slotTime.setHours(hours, minutes, 0, 0)
+
+            // 如果時間段在當前時間之前，則為過期
+            return slotTime <= now
+        }
+
+        return false
+    } catch (error) {
+        console.error('檢查時間過期時發生錯誤:', error)
+        return false
+    }
+}
+
 const isDisabled = (slot) => {
-    return props.disabledSlots.includes(slot)
+    // 檢查是否為已預訂的時間段
+    const isBooked = props.disabledSlots.includes(slot)
+
+    // 檢查是否為過期的時間段
+    const isExpired = isTimeExpired(slot)
+
+    return isBooked || isExpired
 }
 
 const timeSlotClasses = (slot) => {
+    const isExpired = isTimeExpired(slot)
+    const isBooked = props.disabledSlots.includes(slot)
+
     return [
         'time-slot',
         {
             'selected': props.modelValue === slot,
-            'disabled': isDisabled(slot)
+            'disabled': isBooked || isExpired,
+            'expired': isExpired
         }
     ]
 }
@@ -119,6 +158,20 @@ const timeSlotClasses = (slot) => {
     color: var(--restaurant-text-muted);
     cursor: not-allowed;
     opacity: 0.6;
+}
+
+.time-slot.expired {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.4;
+    text-decoration: line-through;
+}
+
+.time-slot.expired:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .time-text {

@@ -45,6 +45,19 @@ public class OpenHourController {
     }
 
     /**
+     * 取得餐廳的完整營業時間設定（包括公休日）
+     */
+    @GetMapping("/complete")
+    public ResponseEntity<List<OpenHourDTO>> getCompleteOpenHours(@PathVariable Integer storeId) {
+        try {
+            List<OpenHourDTO> openHours = openHourService.getCompleteOpenHoursByStore(storeId);
+            return ResponseEntity.ok(openHours);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    /**
      * 取得餐廳的營業時間設定 (完整版本，包含所有關聯資料)
      */
     @GetMapping("/full")
@@ -85,8 +98,8 @@ public class OpenHourController {
     public ResponseEntity<OpenHourDTO> setOpenHour(
             @PathVariable Integer storeId,
             @RequestParam DayOfWeek day,
-            @RequestParam String openTime,
-            @RequestParam String closeTime,
+            @RequestParam(required = false) String openTime,
+            @RequestParam(required = false) String closeTime,
             @RequestParam(defaultValue = "true") boolean isOpen) {
         try {
             OpenHourBean openHour = openHourService.setOpenHour(storeId, day, openTime, closeTime, isOpen);
@@ -115,7 +128,7 @@ public class OpenHourController {
             @RequestParam(required = false) String closeTime,
             @RequestParam(required = false) Boolean isOpen) {
         try {
-            OpenHourBean openHour = openHourService.updateOpenHour(openHourId, openTime, closeTime);
+            OpenHourBean openHour = openHourService.updateOpenHour(openHourId, openTime, closeTime, isOpen);
             OpenHourDTO openHourDTO = new OpenHourDTO(
                     openHour.getId(),
                     storeId,
@@ -193,6 +206,37 @@ public class OpenHourController {
             boolean isOpen = openHourService.isStoreOpen(storeId, localDate, localTime);
             StoreOpenStatusDTO statusDTO = new StoreOpenStatusDTO(storeId, isOpen, localDate, localTime);
             return ResponseEntity.ok(statusDTO);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    /**
+     * 檢查某天是否為公休日
+     */
+    @GetMapping("/closed/{day}")
+    public ResponseEntity<Boolean> isClosedDay(
+            @PathVariable Integer storeId,
+            @PathVariable DayOfWeek day) {
+        try {
+            boolean isClosed = openHourService.isClosedDay(storeId, day);
+            return ResponseEntity.ok(isClosed);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    /**
+     * 檢查指定日期是否為公休日
+     */
+    @GetMapping("/closed/date/{date}")
+    public ResponseEntity<Boolean> isClosedDayByDate(
+            @PathVariable Integer storeId,
+            @PathVariable String date) {
+        try {
+            LocalDate localDate = LocalDate.parse(date);
+            boolean isClosed = openHourService.isClosedDay(storeId, localDate);
+            return ResponseEntity.ok(isClosed);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }

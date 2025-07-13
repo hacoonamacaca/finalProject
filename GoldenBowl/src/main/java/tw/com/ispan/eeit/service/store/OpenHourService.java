@@ -48,18 +48,6 @@ public class OpenHourService {
 		// 檢查是否已存在設定
 		Optional<OpenHourBean> existingOpenHour = openHourRepo.findByStoreAndDay(store, day);
 
-		if (!isOpen) {
-			// 如果設定為不營業，刪除現有的營業時間記錄
-			if (existingOpenHour.isPresent()) {
-				openHourRepo.delete(existingOpenHour.get());
-			}
-			// 返回一個空的 OpenHourBean 表示不營業
-			OpenHourBean closedHour = new OpenHourBean();
-			closedHour.setStore(store);
-			closedHour.setDayOfWeek(day);
-			return closedHour;
-		}
-
 		OpenHourBean openHour;
 		if (existingOpenHour.isPresent()) {
 			openHour = existingOpenHour.get();
@@ -69,12 +57,18 @@ public class OpenHourService {
 			openHour.setDayOfWeek(day);
 		}
 
-		// 設定營業時間
-		if (openTime != null) {
-			openHour.setOpenTime(java.time.LocalTime.parse(openTime));
-		}
-		if (closeTime != null) {
-			openHour.setCloseTime(java.time.LocalTime.parse(closeTime));
+		if (!isOpen) {
+			// 如果設定為不營業，將時間設為NULL
+			openHour.setOpenTime(null);
+			openHour.setCloseTime(null);
+		} else {
+			// 設定營業時間
+			if (openTime != null && !openTime.trim().isEmpty()) {
+				openHour.setOpenTime(java.time.LocalTime.parse(openTime));
+			}
+			if (closeTime != null && !closeTime.trim().isEmpty()) {
+				openHour.setCloseTime(java.time.LocalTime.parse(closeTime));
+			}
 		}
 
 		return openHourRepo.save(openHour);
@@ -141,15 +135,32 @@ public class OpenHourService {
 	/**
 	 * 更新營業時間
 	 */
-	public OpenHourBean updateOpenHour(Integer openHourId, String openTime, String closeTime) {
+	public OpenHourBean updateOpenHour(Integer openHourId, String openTime, String closeTime, Boolean isOpen) {
 		OpenHourBean openHour = openHourRepo.findById(openHourId)
 				.orElseThrow(() -> new ResourceNotFoundException("Open hour not found"));
 
-		if (openTime != null) {
-			openHour.setOpenTime(java.time.LocalTime.parse(openTime));
-		}
-		if (closeTime != null) {
-			openHour.setCloseTime(java.time.LocalTime.parse(closeTime));
+		if (isOpen != null) {
+			if (!isOpen) {
+				// 設定為公休日
+				openHour.setOpenTime(null);
+				openHour.setCloseTime(null);
+			} else {
+				// 設定營業時間
+				if (openTime != null && !openTime.trim().isEmpty()) {
+					openHour.setOpenTime(java.time.LocalTime.parse(openTime));
+				}
+				if (closeTime != null && !closeTime.trim().isEmpty()) {
+					openHour.setCloseTime(java.time.LocalTime.parse(closeTime));
+				}
+			}
+		} else {
+			// 只更新時間，不改變營業狀態
+			if (openTime != null && !openTime.trim().isEmpty()) {
+				openHour.setOpenTime(java.time.LocalTime.parse(openTime));
+			}
+			if (closeTime != null && !closeTime.trim().isEmpty()) {
+				openHour.setCloseTime(java.time.LocalTime.parse(closeTime));
+			}
 		}
 
 		return openHourRepo.save(openHour);
@@ -196,6 +207,12 @@ public class OpenHourService {
 		// 2. 如果沒有特殊設定，使用一般營業時間
 		try {
 			OpenHourBean openHour = getOpenHourByStoreAndDay(storeId, date.getDayOfWeek());
+
+			// 檢查是否為公休日（open_time和close_time都為NULL）
+			if (openHour.getOpenTime() == null || openHour.getCloseTime() == null) {
+				return false;
+			}
+
 			return time.isAfter(openHour.getOpenTime()) && time.isBefore(openHour.getCloseTime());
 		} catch (ResourceNotFoundException e) {
 			// 如果沒有設定，使用預設邏輯
@@ -220,6 +237,26 @@ public class OpenHourService {
 			default:
 				return false;
 		}
+	}
+
+	/**
+	 * 檢查某天是否為公休日
+	 */
+	public boolean isClosedDay(Integer storeId, DayOfWeek day) {
+		try {
+			OpenHourBean openHour = getOpenHourByStoreAndDay(storeId, day);
+			return openHour.getOpenTime() == null || openHour.getCloseTime() == null;
+		} catch (ResourceNotFoundException e) {
+			// 如果沒有設定，預設為營業
+			return false;
+		}
+	}
+
+	/**
+	 * 檢查某天是否為公休日（使用日期）
+	 */
+	public boolean isClosedDay(Integer storeId, LocalDate date) {
+		return isClosedDay(storeId, date.getDayOfWeek());
 	}
 
 	/**
@@ -271,5 +308,48 @@ public class OpenHourService {
 			throw new ResourceNotFoundException("Special hours not found");
 		}
 		specialHoursRepo.deleteById(specialHoursId);
+	}
+
+	/**
+	 * 取得餐廳的完整營業時間資訊（包括公休日）
+	 */
+	public List<OpenHourDTO> getCompleteOpenHoursByStore(Integer storeId) {
+		StoreBean store = storeRepo.findById(storeId)
+				.orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+
+		// 取得現有的營業時間設定
+		List<OpenHourBean> existingOpenHours = openHourRepo.findByStore(store);
+
+		// 建立完整的營業時間列表（週一到週日）
+		List<OpenHourDTO> completeOpenHours = new java.util.ArrayList<>();
+
+		for (DayOfWeek day : DayOfWeek.values()) {
+			// 尋找現有的設定
+			Optional<OpenHourBean> existing = existingOpenHours.stream()
+					.filter(oh -> oh.getDayOfWeek() == day)
+					.findFirst();
+
+			if (existing.isPresent()) {
+				// 使用現有設定
+				OpenHourBean oh = existing.get();
+				completeOpenHours.add(new OpenHourDTO(
+						oh.getId(),
+						storeId,
+						oh.getDayOfWeek(),
+						oh.getOpenTime(),
+						oh.getCloseTime()));
+			} else {
+				// 建立預設設定（營業）
+				OpenHourDTO defaultHour = new OpenHourDTO(
+						null,
+						storeId,
+						day,
+						java.time.LocalTime.of(11, 0),
+						java.time.LocalTime.of(22, 0));
+				completeOpenHours.add(defaultHour);
+			}
+		}
+
+		return completeOpenHours;
 	}
 }

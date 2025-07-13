@@ -19,7 +19,6 @@ import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService;
 import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService.BookingAvailabilityResult;
 import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
-import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 
 @RestController
 @RequestMapping("/api/booking")
@@ -27,9 +26,6 @@ public class BookingAvailabilityController {
 
     @Autowired
     private BookingAvailabilityService bookingAvailabilityService;
-
-    @Autowired
-    private ReservationRepository reservationRepository;
 
     /**
      * 檢查特定時間是否可預約
@@ -117,8 +113,8 @@ public class BookingAvailabilityController {
             @PathVariable Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-        List<TimeSlot> timeSlots = bookingAvailabilityService
-                .getAvailableTimeSlotsForDate(storeId, date, 1); // 使用最小人數來獲取所有基本時段
+        // 使用 service 層來獲取該餐廳在指定日期的所有啟用時段
+        List<TimeSlot> timeSlots = bookingAvailabilityService.getTimeSlotsForDate(storeId, date);
 
         // 轉換為簡化的DTO，只包含必要的時段資訊
         List<Map<String, Object>> simplifiedSlots = timeSlots.stream()
@@ -145,8 +141,8 @@ public class BookingAvailabilityController {
             @PathVariable Integer storeId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
-        // 獲取該日期所有已預訂的預約
-        List<ReservationBean> bookedReservations = reservationRepository.findByStoreIdAndReservedDate(storeId, date);
+        // 使用 service 層來獲取已預訂的預約
+        List<ReservationBean> bookedReservations = bookingAvailabilityService.getBookedReservations(storeId, date);
 
         // 轉換為簡化的DTO，只包含必要的時段資訊
         List<Map<String, Object>> bookedSlots = bookedReservations.stream()
@@ -168,5 +164,22 @@ public class BookingAvailabilityController {
                 .toList();
 
         return ResponseEntity.ok(bookedSlots);
+    }
+
+    /**
+     * 取得餐廳的日曆元數據 - 用於前端日期選擇器控制
+     * GET /api/booking/calendar-metadata/{storeId}
+     */
+    @GetMapping("/calendar-metadata/{storeId}")
+    public ResponseEntity<Map<String, Object>> getCalendarMetadata(@PathVariable Integer storeId) {
+        try {
+            Map<String, Object> metadata = bookingAvailabilityService.getCalendarMetadata(storeId);
+            return ResponseEntity.ok(metadata);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", true);
+            errorResponse.put("message", "獲取日曆元數據失敗: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
     }
 }

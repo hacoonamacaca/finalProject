@@ -119,4 +119,15 @@ public interface OpenHourRepository extends JpaRepository<OpenHourBean, Integer>
                         @Param("storeId") Integer storeId,
                         @Param("dayOfWeek") Integer dayOfWeek,
                         @Param("checkTime") java.time.LocalTime checkTime);
+
+        /**
+         * 查詢餐廳的公休日列表
+         */
+        @Query(value = """
+                        SELECT oh.day FROM open_hour oh
+                        WHERE oh.store_id = :storeId
+                        AND oh.open_time IS NULL
+                        AND oh.close_time IS NULL
+                        """, nativeQuery = true)
+        List<Integer> findClosedDaysByStore(@Param("storeId") Integer storeId);
 }
