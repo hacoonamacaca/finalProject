@@ -49,14 +49,24 @@
                                     </div>
                                     <div class="btn-group" role="group">
                                         <button type="button" class="btn"
-                                            :class="{ 'btn-success': foodLikes[detail.id] === true, 'btn-outline-success': foodLikes[detail.id] !== true }"
                                             @click="toggleLike(detail.id, true)">
-                                            <i class="bi bi-hand-thumbs-up-fill"></i>
+                                            <i class="bi"
+                                            :class="{
+                                                'bi-hand-thumbs-up-fill': foodLikes[detail.id] === true, // 點讚時為實心
+                                                'bi-hand-thumbs-up': foodLikes[detail.id] !== true,     // 未點讚時為空心
+                                                'text-danger': foodLikes[detail.id] === true,         // 點讚時為藍色
+                                                'text-secondary': foodLikes[detail.id] !== true        // 未點讚時為灰色
+                                            }"></i>
                                         </button>
                                         <button type="button" class="btn"
-                                            :class="{ 'btn-danger': foodLikes[detail.id] === false, 'btn-outline-danger': foodLikes[detail.id] !== false }"
                                             @click="toggleLike(detail.id, false)">
-                                            <i class="bi bi-hand-thumbs-down-fill"></i>
+                                            <i class="bi"
+                                            :class="{
+                                                'bi-hand-thumbs-down-fill': foodLikes[detail.id] === false, // 點倒讚時為實心
+                                                'bi-hand-thumbs-down': foodLikes[detail.id] !== false,   // 未點倒讚時為空心
+                                                'text-danger': foodLikes[detail.id] === false,          // 點倒讚時為紅色
+                                                'text-secondary': foodLikes[detail.id] !== false         // 未點倒讚時為灰色
+                                            }"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -318,22 +328,20 @@ const submitReview = async () => {
 
 /* 點讚/倒讚按鈕組微調 */
 .btn-group .btn {
-    padding: .375rem .75rem; /* 保持標準按鈕大小 */
+    padding: .375rem .75rem;
     font-size: 1rem;
+    background-color: transparent; /* 確保背景是透明的 */
+    border: none; /* 確保沒有邊框 */
 }
 
 .btn-group .btn i {
-    font-size: 1.1rem; /* 圖標大小 */
+    font-size: 1.8rem; /* 你可以稍微調大圖示大小讓它更顯眼 */
+    transition: color 0.15s ease-in-out; /* 添加顏色過渡效果 */
 }
 
-.btn-outline-success {
-    color: #28a745;
-    border-color: #28a745;
-}
-
-.btn-outline-danger {
-    color: #dc3545;
-    border-color: #dc3545;
+/* 可以為未選中的圖示設定一個預設顏色，例如深灰色 */
+.btn-group .btn .bi {
+    color: #6c757d; /* Bootstrap secondary text color */
 }
 
 .btn-outline-secondary {
