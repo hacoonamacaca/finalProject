@@ -1,5 +1,5 @@
 <template>
-  <PopularRestaurants :restaurants="displayedRestaurants" />
+  <PopularRestaurants :restaurants="popularRestaurantsByDistance" />
 
   <SearchSection v-model:initialSearch="searched" @search="updateSearchQuery" />
 
@@ -13,8 +13,7 @@
         :availableCategories="uniqueCategoryNames" />
     </aside>
 
-    <RestaurantListSection :restaurants="displayedRestaurants" @update:favoriteStatus="handleFavoriteStatusUpdate"
-      @fetch-restaurants="fetchStoresByDisplayMode" />
+    <RestaurantListSection :restaurants="displayedRestaurants" @update:favoriteStatus="handleFavoriteStatusUpdate" />
   </div>
 
   <footer class="footer">
@@ -39,22 +38,53 @@ import RestaurantListSection from "@/components/Jimmy/RestaurantListSection.vue"
 import axios from 'axios';
 import { useUserStore } from '@/stores/user';
 import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
+import { useLocationStore } from '@/stores/location';
 
 
 const userStore = useUserStore();
+const locationStore = useLocationStore(); 
 const restaurantDisplayStore = useRestaurantDisplayStore();
+
+
 const API_URL = import.meta.env.VITE_API_URL;
+const SEARCH_RADIUS_KM = 5.0; // 定義熱門餐廳的搜索半徑為 5 公里
 
+// Haversine 公式計算距離 (單位: 公里)
+const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // 地球半徑，單位公里
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // 距離，單位公里
+};
 
-onMounted(() => {
-  // 首次載入時，根據當前模式獲取餐廳
-  fetchStoresByDisplayMode(); // 確保首次載入也遵循顯示模式
-});
-// 當 userId 或顯示模式改變時，重新獲取商店數據
-watch([() => userStore.userId, () => restaurantDisplayStore.showAllRestaurants], () => {
-  console.log('User ID or display mode changed, refetching stores...');
+onMounted(async () => { // 這裡應該是 async，因為 getCurrentLocation 是 async 的
+  // 首次載入時，嘗試獲取當前位置。
+  // 只有當成功獲取位置後，或者已經有緩存位置，才去載入餐廳。
+  if (!locationStore.coordinates) { // 如果沒有座標，嘗試獲取
+    const success = await locationStore.getCurrentLocation();
+    if (!success) {
+      console.warn("無法獲取當前位置，PopularRestaurants可能無法顯示附近店家。");
+    }
+  }
+  // 無論是否成功獲取到當前位置，都嘗試獲取餐廳數據
   fetchStoresByDisplayMode();
-}, { immediate: false }); // immediate: false 防止在組件初始化時觸發兩次 fetch
+});
+
+// 當 userId 或顯示模式改變時，重新獲取商店數據
+// 新增對 locationStore.coordinates 的監聽
+watch([
+  () => userStore.userId,
+  () => restaurantDisplayStore.showAllRestaurants,
+  () => locationStore.coordinates // <-- 新增: 監聽座標變化
+], () => {
+  console.log('User ID, display mode, or coordinates changed, refetching stores...');
+  fetchStoresByDisplayMode();
+}, { immediate: false, deep: true }); // immediate: false 防止在組件初始化時觸發兩次 fetch, deep: true 確保 coordinates 內部變化也能觸發
 
 const isSidebarActive = ref(false);
 const toggleSidebar = () => {
@@ -143,8 +173,22 @@ const filteredRestaurants = computed(() => {
   // 第二步：應用排序
   if (sortOption.value === '評分最高') {
     filtered = filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
-  } else if (sortOption.value === '距離最近' || sortOption.value === '最快送達') {
-    // 假設 deliveryTime 已經在後端計算好並返回
+  } else if (sortOption.value === '距離最近') {
+    // 這裡的「距離最近」應該是針對 RestaurantListSection，
+    // 所以需要在 mappedRestaurants 中計算並提供距離，然後再排序
+    // 這裡需要確保 store 數據中有 lat/lng
+    if (locationStore.coordinates && locationStore.coordinates.lat && locationStore.coordinates.lon) {
+      const userLat = parseFloat(locationStore.coordinates.lat);
+      const userLon = parseFloat(locationStore.coordinates.lon);
+      filtered = filtered.map(store => ({
+        ...store,
+        // 為每個店家計算距離，以便排序
+        distance: calculateDistance(userLat, userLon, parseFloat(store.lat), parseFloat(store.lng))
+      })).sort((a, b) => (a.distance || Infinity) - (b.distance || Infinity));
+    } else {
+      console.warn("無法獲取使用者位置，無法按距離最近排序 RestaurantListSection。");
+    }
+  } else if (sortOption.value === '最快送達') {
     filtered = filtered.sort((a, b) => (a.deliveryTime || Infinity) - (b.deliveryTime || Infinity));
   }
 
@@ -161,10 +205,44 @@ const filteredRestaurants = computed(() => {
     promo: '',
     popularityScore: store.popularityScore != null ? store.popularityScore : (store.score != null ? parseFloat(store.score) * 10 : 0),
     isFavorited: store.isFavorited, // 確保這裡正確映射了 isFavorited
-    isOpen: store.isOpen
+    isOpen: store.isOpen,
+    distance: store.distance // 新增：傳遞距離資訊
   }));
   // console.log('Home.vue: filteredRestaurants (pre-display-mode) 重新計算，部分資料範例:', mappedRestaurants.slice(0, 2).map(r => ({ id: r.id, name: r.name, isFavorited: r.isFavorited })));
   return mappedRestaurants;
+});
+
+// 新增：專門用於 PopularRestaurants 的 computed 屬性
+const popularRestaurantsByDistance = computed(() => {
+  // 確保有使用者位置座標
+  if (!locationStore.coordinates || !locationStore.coordinates.lat || !locationStore.coordinates.lon) {
+    console.log('Home.vue: 無法獲取使用者位置，PopularRestaurants 不進行距離篩選。');
+    return []; // 如果沒有位置資訊，則不顯示熱門餐廳
+  }
+
+  const userLat = parseFloat(locationStore.coordinates.lat);
+  const userLon = parseFloat(locationStore.coordinates.lon);
+
+  let result = allStores.value.map(store => {
+    // 計算每個店家與使用者的距離
+    const distance = calculateDistance(userLat, userLon, parseFloat(store.lat), parseFloat(store.lng));
+    return {
+      ...store,
+      distanceInKilometers: distance // 將距離添加到店家物件中
+    };
+  }).filter(store => {
+    // 篩選出在半徑內的店家
+    return store.distanceInKilometers <= SEARCH_RADIUS_KM;
+  });
+
+  // 對熱門餐廳進行排序：按 distanceInKilometers 升序排列 (距離最近的在前)
+  result.sort((a, b) => (a.distanceInKilometers || Infinity) - (b.distanceInKilometers || Infinity));
+
+  // 限制熱門餐廳的數量，例如只顯示前 20 個
+  result = result.slice(0, 20);
+
+  console.log('Home.vue: popularRestaurantsByDistance (已距離篩選與人氣排序), 數量:', result.length, '部分資料範例:', result.slice(0, 2).map(r => ({ id: r.id, name: r.name, distance: r.distanceInKilometers.toFixed(2), popularity: r.popularityScore })));
+  return result;
 });
 
 // **新增：最終顯示給子組件的餐廳列表**
