@@ -1,10 +1,11 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'; // 導入 onMounted 、watch函數
+import { ref, reactive, onMounted, watch, computed } from 'vue'; // 導入 onMounted 、watch函數
 import SlideOutPanel from '../components/common/SlideOutPanel.vue';
 import apiClient from '../plungins/axios.js'; // 導入 apiClient
+import { uploadImage } from '../plungins/firebase-storage.js' // 導入 firebase
 import PageHeader from '../components/common/PageHeader.vue';
 // import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';  //預定捨棄功能
-import EditItemModal from '../components/menu/EditItemModal.vue';
+import EditItemPanel from '../components/menu/EditItemPanel.vue';
 import CategoryManagement from '../components/menu/CategoryManagement.vue';
 import EditCategoryPanel from '../components/menu/EditCategoryPanel.vue'; 
 // import EditSpecModal from '../components/menu/EditSpecModal.vue';  //預定捨棄功能
@@ -123,12 +124,39 @@ const handleSaveItem = async (itemData) => {
     try {
         let payload; // 先宣告一個 payload 變數
 
+        // 🔥 新增：處理圖片上傳
+        if (itemData.imageFile) {
+            console.log('開始上傳圖片...');
+            try {
+                const imageUrl = await uploadImage(itemData.imageFile);
+                console.log('圖片上傳成功，URL:', imageUrl);
+                itemData.imgResource = imageUrl; // 將圖片 URL 加入到 itemData
+            } catch (uploadError) {
+                console.error('圖片上傳失敗:', uploadError);
+                alert('圖片上傳失敗，請重試');
+                return; // 如果圖片上傳失敗，就不繼續執行
+            }
+        }
+
+        // 🔥 新增：處理圖片刪除
+        if (itemData.deleteExistingImage) {
+            console.log('使用者刪除了既有圖片');
+            itemData.imgResource = ''; // 清空圖片 URL
+            // 注意：這裡可以選擇是否要從 Firebase 刪除舊圖片
+            // 目前先不刪除，避免複雜化
+        }
+
         // 判斷是新增還是編輯
         if (itemData.id) {
             // 【編輯模式】
             // 直接使用 itemData 作為 payload 的基礎
             payload = { ...itemData };
             
+            // 🔥 DEBUG: 加在這裡 - 編輯模式的狀態檢查
+            console.log('=== 編輯模式 Debug ===');
+            console.log('原始 itemData.status:', itemData.status);
+            console.log('payload.status:', payload.status);
+
             // 將 categoryId 轉換為後端需要的 foodClassIds 陣列
             if (payload.categoryId) {
                 payload.foodClassIds = [payload.categoryId];
@@ -137,8 +165,30 @@ const handleSaveItem = async (itemData) => {
             }
             delete payload.categoryId; // 移除掉後端不需要的 categoryId，保持 payload 乾淨
 
+            // 🔥 新增：處理狀態轉換
+            console.log('轉換前 payload.status:', payload.status);
+            payload.isActive = payload.status === '供應中';
+            console.log('轉換後 payload.isActive:', payload.isActive);
+
+            // 🔥 新增：處理圖片欄位轉換
+            if (payload.imageUrl && !payload.imgResource) {
+                payload.imgResource = payload.imageUrl;
+            }
+
+            // 🔥 新增：清理不需要的欄位
+            delete payload.categoryId;
+            delete payload.imageFile;
+            delete payload.deleteExistingImage;
+            delete payload.imageUrl;  // ← 編輯模式也要清除
+            delete payload.status;    // ← 新增：清除前端用的 status
+
             console.log("準備發送 PUT 請求的 payload:", payload);
-            await apiClient.put(`/api/foods/${itemData.id}`, payload);
+            const response = await apiClient.put(`/api/foods/${itemData.id}`, payload);
+
+            // 🔥 新增：檢查 API 回應
+            console.log("API 回應狀態:", response.status);
+            console.log("API 回應資料:", response.data);
+
             alert('品項更新成功！');
 
         } else {
@@ -146,13 +196,35 @@ const handleSaveItem = async (itemData) => {
             // 為 payload 加上 storeId
             payload = { ...itemData, storeId: selectedStore.value };
 
+            // 🔥 DEBUG: 加在這裡 - 新增模式的狀態檢查
+            console.log('=== 新增模式 Debug ===');
+            console.log('原始 itemData.status:', itemData.status);
+            console.log('payload.status:', payload.status);
+
             // 同樣，將 categoryId 轉換為 foodClassIds 陣列
             if (payload.categoryId) {
                 payload.foodClassIds = [payload.categoryId];
             } else {
                 payload.foodClassIds = [];
             }
+            delete payload.categoryId; // 移除掉後端不需要的 categoryId，保持 payload 乾淨
+
+            // 🔥 新增：處理狀態轉換
+            console.log('轉換前 payload.status:', payload.status);
+            payload.isActive = payload.status === '供應中';
+            console.log('轉換後 payload.isActive:', payload.isActive);
+            
+            // 🔥 新增：處理圖片欄位轉換
+            if (payload.imageUrl && !payload.imgResource) {
+                payload.imgResource = payload.imageUrl;
+            }
+
+            // 🔥 新增：清理不需要的欄位
             delete payload.categoryId;
+            delete payload.imageFile; // 移除 imageFile，只保留 imageUrl
+            delete payload.deleteExistingImage; // 移除刪除標記
+            delete payload.imageUrl; //  清除前端用的 imageUrl
+            delete payload.status;    // ← 新增：清除前端用的 status
 
             console.log("準備發送 POST 請求的 payload:", payload);
             await apiClient.post('/api/foods', payload);
@@ -201,9 +273,44 @@ const currentEditingCategory = ref(null);
 
 const openCategoryPanel = (category) => {
     console.log('打開品項類別 Modal，編輯的資料是:', category);
-    currentEditingCategory.value = category ? { ...category } : null;
+    if (category) {
+        // 編輯模式：直接複製資料
+        currentEditingCategory.value = { ...category };
+    } else {
+        // 新增模式：計算新的 sort 值
+        // 1. 找出當前最大的 sort 值
+        const maxSort = categories.length > 0 
+            ? Math.max(...categories.map(c => c.sort || 0)) 
+            : 0;
+        //categories.map(c => c.sort || 0): 遍歷所有類別，取出它們的 sort 值，如果某個類別的 sort 是 null 或 undefined，就當作 0。
+        //這會得到一個像 [1, 3, 2] 這樣的數字陣列。
+        //Math.max(...): ... 是展開運算符，它會把 [1, 3, 2] 展開成 Math.max(1, 3, 2)，這個函式會返回陣列中的最大值（3）。
+        
+        // 2. 建立一個包含預設 sort 值的新物件
+        currentEditingCategory.value = {
+            name: '',
+            description: '',
+            sort: maxSort + 1, // 新的 sort 值
+        };
+    }
     isCategoryPanelOpen.value = true;
 };
+
+const maxCategorySort = computed(() => {
+    if (currentEditingCategory.value?.id) { // 編輯模式
+        return categories.length;
+    } else { // 新增模式
+        return categories.length + 1;
+    }
+
+    // const maxSort = categories.length > 0 
+    //     ? Math.max(...categories.map(c => c.sort || 0)) 
+    //     : 0;
+    
+    // 如果是編輯模式，最大值就是現有的類別數量
+    // 如果是新增模式，最大值是現有數量 + 1
+    // return props.currentEditingCategory?.id ? categories.length : maxSort + 1;
+});
 
 const closeCategoryPanel = () => {
     isCategoryPanelOpen.value = false;
@@ -250,6 +357,13 @@ const handleDeleteCategory = async (categoryId) => {
             closeCategoryPanel();
         }
     }
+};
+const handleUpdateCategoryOrder = (updatedCategories) => {
+    // 更新本地資料
+    categories.splice(0, categories.length, ...updatedCategories);
+    
+    // 如果需要，可以在這裡呼叫 API 儲存新的排序
+    // saveCategoryOrder(updatedCategories);
 };
 
 // =================================================================
@@ -339,16 +453,27 @@ const selectTab = (tab) => {
             </ul>
 
             <div class="mt-4">
-                <MenuOverview v-if="activeTab === 'overview'" :items="items" :categories="categories"
-                    @add-new-item="openItemPanel(null)" @edit-item="openItemPanel" />
+                <MenuOverview v-if="activeTab === 'overview'" 
+                    :items="items" 
+                    :categories="categories"
+                    @add-new-item="openItemPanel(null)" 
+                    @edit-item="openItemPanel" />
 
-                <CategoryManagement v-if="activeTab === 'categories'" :categories="categories" @add-new-category="openCategoryPanel(null)"
-                    @edit-category="openCategoryPanel" />
+                <CategoryManagement v-if="activeTab === 'categories'"
+                    :categories="categories"
+                    @addNewCategory="openCategoryPanel(null)"
+                    @editCategory="openCategoryPanel"
+                    @updateCategoryOrder="handleUpdateCategoryOrder"
+                />
 
-                <!-- <CustomizationSpecs v-if="activeTab === 'specs'" :specs="specs" @add-new-spec="openSpecModal(null)"
-                    @edit-spec="openSpecModal" /> -->
+                <!-- <CustomizationSpecs v-if="activeTab === 'specs'" 
+                    :specs="specs" 
+                    @add-new-spec="openSpecModal(null)"
+                    @edit-spec="openSpecModal" 
+                /> --><!-- 客製化規格暫停開發 -->
             </div>
         </div>
+
 
         <!-- Modals (不受佈局影響，已套用共用面板SlideOutPanel) -->
         <SlideOutPanel v-model:isOpen="isItemPanelOpen"
@@ -359,7 +484,7 @@ const selectTab = (tab) => {
         這樣可以確保每次打開面板時，EditItemPanel 都會重新掛載，
         其內部的 watchEffect 會重新執行，正確地初始化表單資料。
         -->
-            <EditItemModal v-if="isItemPanelOpen" 
+            <EditItemPanel v-if="isItemPanelOpen" 
                 :item="currentEditingItem" 
                 :categories="categories"
                 @close="isItemPanelOpen = false" 
@@ -374,7 +499,8 @@ const selectTab = (tab) => {
         >
         
             <EditCategoryPanel v-if="isCategoryPanelOpen" 
-                :category="currentEditingCategory"  
+                :category="currentEditingCategory" 
+                :max-sort="maxCategorySort" 
                 @close="closeCategoryPanel" 
                 @save="handleSaveCategory"
                 @delete="handleDeleteCategory" 
