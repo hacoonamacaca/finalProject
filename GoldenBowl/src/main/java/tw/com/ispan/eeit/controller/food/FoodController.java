@@ -61,7 +61,6 @@ public class FoodController {
         foodService.deleteFood(id);
         return ResponseEntity.noContent().build(); // 回傳 204 No Content
     }
-    
  // 增加有上架的食物--ted
     @GetMapping("/active/store/{storeId}")
     public ResponseEntity<List<FoodDTO>> findActiveFoodsByStoreId(@PathVariable Integer storeId) {

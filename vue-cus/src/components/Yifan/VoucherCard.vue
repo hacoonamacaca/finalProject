@@ -77,8 +77,13 @@ const formatDate = (dateStr) => {
   transition: box-shadow 0.3s;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+/* 滑鼠經過卡片區塊會滑動 */
 .voucher-card:hover {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 /* 已使用或未達門檻 */
@@ -124,38 +129,19 @@ const formatDate = (dateStr) => {
   background-color: #ffc94d;
   border: none;
   padding: 8px 18px;
-  font-size: 0.95rem;
   font-weight: bold;
-  color: #fff;
+  color: #ffffff;
   border-radius: 6px;
   transition: all 0.3s ease;
 }
 .btn-use:hover:enabled {
-  background-color: #f5c147;
-  box-shadow: 0 0 0 3px #e8b418;
+  background-color: #f7ba1e;
+  color: #5f3300;
 }
 .btn-use:disabled {
   background-color: #e0e0e0;
   color: #888;
   cursor: not-allowed;
   box-shadow: none;
-}
-.nav-link {
-    display: flex;
-    align-items: center;
-    font-size: 15px;
-    color: #6c757d;
-    background-color: transparent;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    transform: translateX(0); 
-}
-
-.nav-link:hover {
-    background-color: #fcebc1;
-    color: #eca300;
-    transform: translateX(4px);
 }
 </style>

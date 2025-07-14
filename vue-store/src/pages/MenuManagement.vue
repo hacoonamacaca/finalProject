@@ -26,7 +26,7 @@ const selectedStore = ref(stores.value[0]?.id || null); // 預設選中第一個
 
 
 // =================================================================
-// 2. 資料源 (Data Sources) - 模擬從後端獲取的資料
+// 2. 資料源 (Data Sources) - 從後端獲取的資料
 // =================================================================
 
 // 新增 categories 陣列
@@ -279,12 +279,37 @@ const selectTab = (tab) => {
             </div>
         </div>
 
-        <!-- Modals (不受佈局影響) -->
-        <EditItemModal v-if="isItemModalOpen" :item="currentEditingItem" :categories="categories"
-            @close="closeItemModal" @save="handleSaveItem" @delete="handleDeleteItem" />
+        <!-- Modals (不受佈局影響，已套用共用面板SlideOutPanel) -->
+        <SlideOutPanel v-model:isOpen="isItemModalOpen"
+            :title="currentEditingItem ? '編輯品項' : '新增品項'">
+        
+        <!-- 
+        只有在 isItemModalOpen 為 true (面板打開) 時，才渲染 EditItemModal。
+        這樣可以確保每次打開面板時，EditItemModal 都會重新掛載，
+        其內部的 watchEffect 會重新執行，正確地初始化表單資料。
+        -->
+            <EditItemModal v-if="isItemModalOpen" 
+                :item="currentEditingItem" 
+                :categories="categories"
+                @close="isItemModalOpen = false" 
+                @save="handleSaveItem"
+                @delete="handleDeleteItem" 
+            />
+        </SlideOutPanel>
 
-        <EditSpecModal v-if="isSpecModalOpen" :spec="currentEditingSpec" @close="closeSpecModal" @save="handleSaveSpec"
-            @delete="handleDeleteSpec" />
+        
+        <SlideOutPanel v-model:isOpen="isSpecModalOpen"
+            :title="currentEditingSpec ? '編輯客製化規格' : '新增客製化規格'">
+        
+        <!-- 同樣只在 isSpecModalOpen 為 true 時，才渲染 EditSpecModal。-->
+
+            <EditSpecModal v-if="isSpecModalOpen" 
+                :spec="currentEditingSpec" 
+                @close="isSpecModalOpen = false" 
+                @save="handleSaveSpec"
+                @delete="handleDeleteSpec" 
+            />
+        </SlideOutPanel>
     </div>
 </template>
 

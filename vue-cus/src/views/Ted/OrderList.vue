@@ -2,17 +2,51 @@
 <script setup>
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
-
+import RatingModal from '@/components/Ted/ReviewModal.vue';
 import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
 import { useRouter } from 'vue-router';
-
-
-const router = useRouter();
 
 const orders=ref([])
 const id = ref(1)
 const userStore = useUserStore(); // 實例化 userStore
+const router = useRouter();
 const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
+
+
+/**
+ * 從後端獲取用戶訂單列表
+ * @param {number} id - 用戶 ID
+ */
+ async function fetchOrders(id) {
+    try {
+        const response = await axios.get(`/api/orders/user/${id}`);
+        // 對於每個訂單，如果沒有 comment 屬性或 likedFood 屬性，則補上預設值，
+        // 確保 ReviewModal 可以安全訪問這些屬性
+        orders.value = response.data.map(order => {
+            // 確保 comment 屬性存在，即使為空也設為 null
+            order.comment = order.comment || null; 
+            if (order.orderDetails) {
+                order.orderDetails = order.orderDetails.map(detail => {
+                    // 確保 likedFood 屬性存在，即使為空也設為 null
+                    detail.likedFood = detail.likedFood || null; 
+                    return detail;
+                });
+            }
+            return order;
+        });
+        console.log("訂單數據加載成功:", orders.value);
+    } catch (error) {
+        console.error("加載訂單失敗:", error);
+    }
+}
+
+// 監聽 RatingModal 發出的更新事件，然後重新獲取訂單數據
+const handleRatingUpdated = () => {
+    console.log("收到 RatingModal 的更新事件，重新加載訂單...");
+    if (userId.value) {
+        fetchOrders(userId.value); // 重新呼叫 fetchOrders 刷新數據
+    }
+};
 
 onMounted(() => {
   // 獲取用戶 ID 從 Pinia
@@ -26,7 +60,6 @@ onMounted(() => {
 
     // orders.value.push(findOrder(userId.value));
   } else {
-     findorder(1)
     console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
     // 您可以導向登入頁面或顯示提示
   }
@@ -35,9 +68,15 @@ onMounted(() => {
 function findorder(id) {
   axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
+
       console.log("訂單數據:", response.data);
       orders.value = response.data
-
+      console.log(orders.value)
+      // response.data.forEach(element => {
+      //   console.log(element)
+      //   orders.value.push(element);
+      // });
+      // console.log(`ordersValue:${orders.value}`)
   }).catch(function (error) {
     console.error("加載訂單失敗:", error);
   })
@@ -48,6 +87,7 @@ function findorder(id) {
 const reorder = (order) => {
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
+
 //頁面跳轉 點擊訂單詳情後跳轉
 const goToOrderDetail = (orderId) => {
   router.push({ name: 'OrderDetail', params: { id: orderId } });
@@ -99,12 +139,13 @@ const goToOrderDetail = (orderId) => {
         </div>
 
         <div >
-            <!-- <RatingModal :order="order" /> -->
+          <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 /* 外部容器，保持與 RestaurantTemplate 中 tab-menu-container 相似的寬度限制 */
@@ -120,11 +161,6 @@ const goToOrderDetail = (orderId) => {
   border: 1px solid #e0e0e0; /* 淺灰色邊框 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 柔和的陰影 */
   transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加過渡效果 */
-  cursor: pointer; /* 添加 pointer 游標，提示可點擊 */
-}
-.order-item-card:hover {
-  transform: translateY(-3px); /* 鼠標懸停時輕微上移 */
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); /* 懸停時陰影加深 */
 }
 
 
