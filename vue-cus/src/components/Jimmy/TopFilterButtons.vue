@@ -1,30 +1,46 @@
 <template>
   <div class="filters">
     <div class="recommendation-buttons">
-      <button v-if="isMorning" @click="emitSearchKeyword('早餐')" class="filter-button">
-        ☀️ 早餐推薦
+      <button
+        v-if="isMorning"
+        @click="toggleSearchKeyword('早餐')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('早餐') }"
+      >
+        早餐推薦
       </button>
-      <button v-else-if="isBrunch" @click="emitSearchKeyword('早午餐')" class="filter-button">
-        🍳 早午餐推薦
+      <button
+        v-else-if="isBrunch"
+        @click="toggleSearchKeyword('早午餐')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('早午餐') }"
+      >
+        早午餐推薦
       </button>
-      <button v-else-if="isSupper" @click="emitSearchKeyword('宵夜')" class="filter-button">
-        🌙 宵夜推薦
-      </button>
-
-      <button v-if="isCold" @click="emitSearchKeyword('熱')" class="filter-button">
-        🍲 熱食推薦
-      </button>
-      <button v-else-if="isHot" @click="emitSearchKeyword('冰')" class="filter-button">
-        🍧 冰品推薦
+      <button
+        v-else-if="isSupper"
+        @click="toggleSearchKeyword('宵夜')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('宵夜') }"
+      >
+        宵夜推薦
       </button>
 
       <button
-        v-for="keyword in randomKeywords"
-        :key="keyword"
-        @click="emitSearchKeyword(keyword)"
-        class="filter-button"
+        v-if="isCold"
+        @click="toggleSearchKeyword('熱')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('熱') }"
       >
-        {{ keyword }}
+        熱食推薦
+      </button>
+      <button
+        v-else-if="isHot"
+        @click="toggleSearchKeyword('冰')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('冰') }"
+      >
+        冰品推薦
+      </button>
+
+      <button v-for="item in randomKeywords" :key="item.searchKeyword" @click="toggleSearchKeyword(item.searchKeyword)" 
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes(item.searchKeyword) }">
+        {{ item.displayText }} 
       </button>
     </div>
 
@@ -86,15 +102,39 @@ const handleSortChange = (event) => {
   emit('update:modelValue', event.target.value);
 };
 
-const emitSearchKeyword = (keyword) => {
-  emit('search-keyword', keyword);
+
+const activeKeywords = ref([]);
+
+const toggleSearchKeyword = (keyword) => { // 這裡的 keyword 就是 searchKeyword
+  if (activeKeywords.value.includes(keyword)) {
+    activeKeywords.value = [];
+    emit('search-keyword', '');
+  } else {
+    activeKeywords.value = [keyword];
+    emit('search-keyword', keyword);
+  }
 };
 
+
 // --- 隨機推薦邏輯 ---
+// 這裡可以新增您特別的顯示名稱和對應的搜索關鍵字
 const allRecommendationKeywords = [
-  '寵物友善', '小孩放電', '觀看直播', '素食', '咖啡廳',
-  '異國料理', '甜點', '外帶', '內用', '聚餐', '小吃',
-  '健康餐', '快速取餐', '氣氛好', '夜景' // 增加更多範例關鍵字
+  { displayText: '毛小孩好去處', searchKeyword: '寵物友善' },
+  { displayText: '小孩放電好所在', searchKeyword: '小孩放電' },
+  { displayText: '一起線上看直播', searchKeyword: '觀看直播' },
+  { displayText: '初一十五要吃菜', searchKeyword: '素食' },
+  { displayText: '精神不濟?', searchKeyword: '咖啡' },
+  { displayText: '想吃點特別的', searchKeyword: '異國料理' },
+  { displayText: '飯後來點甜', searchKeyword: '甜點' },
+  { displayText: '喝酒! 嚕串!', searchKeyword: '燒烤' },
+  { displayText: '痛風也要吃', searchKeyword: '海鮮' },
+  { displayText: '朋友家人聚餐', searchKeyword: '聚餐' },
+  { displayText: '巷口銅板美食', searchKeyword: '超值' },
+  { displayText: '輕食無負擔', searchKeyword: '健康' },
+  { displayText: '趕時間也能吃', searchKeyword: '快速' },
+  { displayText: '氣氛超好拍美照', searchKeyword: '氣氛好' },
+  { displayText: '天啊 已經三點了', searchKeyword: '甜點飲品' },
+  { displayText: '下雨天不想出門', searchKeyword: '外送' }
 ];
 const randomKeywords = ref([]);
 
@@ -126,46 +166,49 @@ watch(() => locationStore.coordinates, (newCoords) => {
   background-color: #fff;
   margin: 20px;
   display: flex;
-  /* 讓主容器的內容（推薦按鈕區塊和排序選項）水平排列，並靠左 */
-  justify-content: flex-start; /* 讓內容靠左 */
-  align-items: center; /* 垂直居中對齊 */
-  flex-wrap: wrap; /* 允許換行 */
-  gap: 15px; /* 主容器內主要區塊間的間距 */
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* 新增一個容器來包裹所有推薦按鈕 */
 .recommendation-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px; /* 按鈕之間的間距 */
-  justify-content: flex-start; /* 確保按鈕在此容器內靠左對齊 */
-  /* 可以讓這個容器盡量佔用空間，讓排序選項在右側 */
-  flex-grow: 1; 
+  gap: 10px;
+  justify-content: flex-start;
+  flex-grow: 1;
 }
-
 
 .filter-button {
   padding: 8px 15px;
-  background-color: #ffba20;
-  color: white;
-  border: none;
+  background-color: white; /* 預設白色背景 */
+  color: #333; /* 預設深色文字 */
+  border: 1px solid #ccc; /* 預設淺灰色邊框 */
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease; /* 過渡效果 */
 }
 
 .filter-button:hover {
-  background-color: #e6a71c;
+  background-color: #f0f0f0; /* 懸停時輕微變灰 */
+}
+
+/* 點擊後的樣式 */
+.filter-button.active {
+  background-color: #ffba20; /* 點擊後變黃色 */
+  color: white; /* 黃色背景搭配白色文字 */
+  border-color: #ffba20; /* 邊框也變黃色 */
 }
 
 .sort-options {
-  display: flex; /* 讓 label 和 select 在一行 */
-  align-items: center; /* 垂直居中對齊 */
-  gap: 5px; /* label 和 select 之間的間距 */
-  flex-shrink: 0; /* 不讓排序選項被壓縮 */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
 }
 
 .sort-options label {
@@ -184,26 +227,23 @@ watch(() => locationStore.coordinates, (newCoords) => {
 
 @media (max-width: 768px) {
   .filters {
-    flex-direction: column; /* 小螢幕下垂直堆疊 */
-    align-items: flex-start; /* 內容靠左對齊 */
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .recommendation-buttons {
-    width: 100%; /* 佔滿寬度 */
-    justify-content: flex-start; /* 小螢幕下按鈕也靠左 */
-    margin-bottom: 10px; /* 與排序選項之間的間距 */
+    width: 100%;
+    justify-content: flex-start;
+    margin-bottom: 10px;
   }
 
   .sort-options {
-    width: 100%; /* 佔滿寬度 */
-    justify-content: flex-start; /* 排序選項靠左 */
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .filter-button {
-    /* 在小螢幕下，可以讓按鈕平均分佈或者仍然靠左，
-        如果需要平均分佈，可以設定 flex-grow: 1; 或 width: auto; 
-        但如果您要嚴格靠左，就不需要 flex-grow: 1; */
-    flex-grow: 0; /* 讓按鈕保持其內容寬度，並靠左排列 */
+    flex-grow: 0;
   }
 }
 </style>
