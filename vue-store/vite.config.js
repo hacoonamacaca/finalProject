@@ -15,4 +15,10 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+    define: {
+      // 新增加整個deinfe 0713 ted
+    // 將 'global' 關鍵字替換為 'window'
+    // 'global' 必須是字串形式
+    'global': 'window',
+  },
 })

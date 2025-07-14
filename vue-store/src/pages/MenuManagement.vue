@@ -1,7 +1,7 @@
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'; // 導入 onMounted 、watch函數
-import SlideOutPanel from '../components/common/SlideOutPanel.vue';
 import apiClient from '../plungins/axios.js'; // 導入 apiClient
+// import { apiService } from '../services/apiService.js'; // 導入 API 服務
 import PageHeader from '../components/common/PageHeader.vue';
 import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';
 import EditItemModal from '../components/menu/EditItemModal.vue';
@@ -29,6 +29,7 @@ const selectedStore = ref(stores.value[0]?.id || null); // 預設選中第一個
 // 2. 資料源 (Data Sources) - 從後端獲取的資料
 // =================================================================
 
+// 新增 categories 陣列
 const categories = reactive([]);
 
 
