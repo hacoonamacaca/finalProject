@@ -1,9 +1,3 @@
-<script setup>
-// 把 Logo 和 Avatar 的導入也移到這裡
-import logoUrl from '../assets/logo.png';
-import avataUrl from '../assets/avata.png';
-</script>
-
 <template>
     <div class="page-wrapper">
         <!-- Header: 在 Flex 容器中，它是一個獨立的區塊 -->
@@ -16,9 +10,26 @@ import avataUrl from '../assets/avata.png';
             </a>
             <!-- 右側使用者資訊 -->
             <div class="d-flex align-items-center gap-3">
-                <span class="text-white fw-semibold">使用者，您好！</span>
-                <img :src="avataUrl" alt="Avatar" class="rounded-circle"
-                    style="height: 40px; width: 40px; object-fit: cover;" />
+                <span class="text-white fw-semibold">
+                    {{ currentUser ? currentUser.ownerFullName || currentUser.ownerEmail || '商家' : '使用者' }}，您好！
+                </span>
+                <!-- 純 Vue 控 dropdown -->
+                <div ref="iconDropdownRef" class="position-relative">
+                    <i
+                        class="bi bi-person-circle text-white"
+                        style="font-size: 2rem; cursor:pointer"
+                        @click="onUserIconClick"
+                    ></i>
+                    <ul
+                        v-if="isLoggedIn && showDropdown"
+                        class="dropdown-menu dropdown-menu-end show"
+                        style="position: absolute; right: 0; top: 110%;"
+                    >
+                        <li>
+                            <a class="dropdown-item" href="#" @click.prevent="logout">登出</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </header>
 
@@ -92,11 +103,108 @@ import avataUrl from '../assets/avata.png';
     </div>
 </template>
 
+<script setup>
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import logoUrl from '../assets/logo.png';
+
+// 響應式資料
+const iconDropdownRef = ref(null)
+const showDropdown = ref(false)
+const currentUser = ref(null)
+
+// 計算屬性
+const isLoggedIn = computed(() => !!currentUser.value?.ownerId)
+
+// 方法
+const loadUserData = () => {
+    const ownerId = localStorage.getItem('ownerId')
+    const ownerFullName = localStorage.getItem('storeFullName')
+    const ownerEmail = localStorage.getItem('storeEmail')
+    
+    if (ownerId) {
+        currentUser.value = {
+            ownerId,
+            ownerFullName,
+            ownerEmail
+        }
+    }
+}
+
+const onUserIconClick = () => {
+    console.log('點擊用戶圖示:', isLoggedIn.value) // 除錯用
+    if (isLoggedIn.value) {
+        showDropdown.value = !showDropdown.value
+        console.log('showDropdown:', showDropdown.value) // 除錯用
+    }
+}
+
+const handleClickOutside = (event) => {
+    if (iconDropdownRef.value && !iconDropdownRef.value.contains(event.target)) {
+        showDropdown.value = false
+    }
+}
+
+const logout = () => {
+    // 清除本地儲存的用戶資料
+    localStorage.removeItem('ownerId')
+    localStorage.removeItem('storeFullName')
+    localStorage.removeItem('storeEmail')
+    localStorage.removeItem('storeId')
+    localStorage.removeItem('storeProfile')
+    
+    // 重設本地狀態
+    currentUser.value = null
+    showDropdown.value = false
+    
+    // 跳轉回 vue-cus 登入頁面
+    const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
+    window.location.href = `${vueCustomerUrl}/store`
+}
+
+// 生命週期
+onMounted(() => {
+    loadUserData()
+    document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside)
+})
+
+</script>
+
+
 <style scoped>
 .brand-title {
     color: #5c3203;
     font-weight: bold;
     font-size: 1.5rem;
+}
+
+.dropdown-menu {
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 120px;
+    z-index: 1050;
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    color: #333;
+    text-decoration: none;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+/* 確保 Bootstrap Icons 正常顯示 */
+.bi-person-circle:hover {
+    opacity: 0.8;
+    transform: scale(1.05);
+    transition: all 0.2s ease;
 }
 
 .page-wrapper {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue'; // 導入 onMounted 、watch函數
+import { ref, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue'; // 導入 onMounted、onBeforeUnmount、watch函數
 import SlideOutPanel from '../components/common/SlideOutPanel.vue';
 import apiClient from '../plungins/axios.js'; // 導入 apiClient
 import { uploadImage } from '../plungins/firebase-storage.js' // 導入 firebase
@@ -21,11 +21,85 @@ import MenuOverview from '../components/menu/MenuOverview.vue';
 const activeTab = ref('overview'); // 'overview', 'categories' 或 'specs'
 
 // 模擬的商店資料
-const stores = ref([
-    { id: 6, name: '香辣火鍋' },
-    { id: 7, name: '義大利小館' },
-]);
-const selectedStore = ref(stores.value[0]?.id || null); // 預設選中第一個店家的 ID
+// const stores = ref([
+//     { id: 1, name: '美味小館' },
+//     { id: 6, name: '香辣火鍋' },
+// ]);
+// 預設選中第一個店家的 ID
+// const selectedStore = ref(stores.value[0]?.id || null); 
+
+// 🔥 NEW: 從 localStorage 取得登入用戶資料
+const currentUser = ref(null)
+const stores = ref([])
+const selectedStore = ref(null)
+
+// 載入用戶資料和店家列表的函數
+const loadUserData = async () => {
+    const ownerId = localStorage.getItem('ownerId')
+    const ownerFullName = localStorage.getItem('storeFullName')
+    const ownerEmail = localStorage.getItem('storeEmail')
+    
+    if (ownerId) {
+        currentUser.value = {
+            ownerId,
+            ownerFullName,
+            ownerEmail
+        }
+        
+        console.log('✅ 載入用戶資料:', currentUser.value)
+
+        // 🔥 NEW: 向後端請求該 owner 的所有 store 資料
+        try {
+            console.log(`🚀 正在為 owner ID: ${ownerId} 獲取店家列表...`)
+            
+            // 🔥 修正 API 路徑：使用正確的 endpoint
+            const storesResponse = await apiClient.get('/api/stores/profile/all', {
+                params: { ownerId: ownerId }
+            })
+            console.log('✅ 成功獲取店家列表:', storesResponse.data)
+            
+            // 更新 stores 陣列
+            stores.value = storesResponse.data.map(store => ({
+                id: store.id,
+                name: store.name || store.storeName || `店家${store.id}`
+            }))
+            
+            // 🔥 NEW: 智慧選擇預設店家
+            if (stores.value.length > 0) {
+                // 優先選擇 localStorage 中記錄的 storeId
+                const savedStoreId = localStorage.getItem('storeId')
+                const savedStore = stores.value.find(store => String(store.id) === String(savedStoreId))
+                
+                if (savedStore) {
+                    selectedStore.value = savedStore.id
+                    console.log('📌 使用 localStorage 中的店家:', savedStore)
+                } else {
+                    // 如果沒有或找不到，就選第一個
+                    selectedStore.value = stores.value[0].id
+                    console.log('📌 選擇第一個店家:', stores.value[0])
+                }
+            }
+            
+            console.log('🏪 最終店家狀態:', {
+                stores: stores.value,
+                selectedStore: selectedStore.value
+            })
+            
+        } catch (error) {
+            console.error('❌ 獲取店家列表失敗:', error)
+            error.value = `無法載入店家資料：${error.response?.data?.message || error.message}`
+            // 發生錯誤時清空資料
+            stores.value = []
+            selectedStore.value = null
+        }
+    } else {
+        console.warn('⚠️ 找不到 ownerId')
+        // 清空資料
+        currentUser.value = null
+        stores.value = []
+        selectedStore.value = null
+    }
+}
 
 
 // =================================================================
@@ -71,7 +145,16 @@ const fetchMenuData = async (storeId) => {
 
         // 【修改】使用 .splice(0) 和解構賦值來安全地更新 reactive 陣列
         categories.splice(0, categories.length, ...categoriesResponse.data);
-        items.splice(0, items.length, ...itemsResponse.data);
+
+        // 🔥 NEW: 轉換 items 資料格式，確保與前端元件相容
+        const formattedItems = itemsResponse.data.map(item => ({
+            ...item,
+            status: item.isActive ? '供應中' : '停售',  // 轉換後端的 isActive 為前端的 status
+            categoryId: item.foodClassIds?.[0] || null, // 取第一個分類ID作為 categoryId
+            imageUrl: item.imgResource // 確保圖片欄位一致
+        }));
+
+        items.splice(0, items.length, ...formattedItems);
         // specs.splice(0, specs.length, ...specsResponse.data);
 
         console.log('✅ 成功獲取分類:', categories);
@@ -92,14 +175,47 @@ const fetchMenuData = async (storeId) => {
 // =================================================================
 // 4. 生命週期鉤子和監聽器
 // =================================================================
-onMounted(() => {
-    fetchMenuData(selectedStore.value);
+// onMounted(() => {
+//     fetchMenuData(selectedStore.value);
+// });
+
+// 監聽 selectedStore 的變化，當使用者切換店家時，重新獲取資料
+// watch(selectedStore, (newStoreId) => {
+//     fetchMenuData(newStoreId);
+// });
+
+onMounted(async () => {
+    // 🔥 NEW: 先載入用戶資料，再載入菜單資料
+    await loadUserData()
+    
+    // 如果有選中的店家，就載入菜單資料
+    if (selectedStore.value) {
+        await fetchMenuData(selectedStore.value)
+    }
 });
 
-// 【新增】監聽 selectedStore 的變化，當使用者切換店家時，重新獲取資料
+// 【修改】監聽 selectedStore 的變化，當使用者切換店家時，重新獲取資料
 watch(selectedStore, (newStoreId) => {
-    fetchMenuData(newStoreId);
+    if (newStoreId) {
+        fetchMenuData(newStoreId);
+    }
 });
+
+// 🔥 NEW: 監聽 localStorage 變化 (當用戶重新登入時)
+const handleStorageChange = async () => {
+    await loadUserData()
+    if (selectedStore.value) {
+        await fetchMenuData(selectedStore.value)
+    }
+}
+
+// 監聽 storage 事件 (跨分頁同步)
+window.addEventListener('storage', handleStorageChange)
+
+// 清理事件監聽器
+onBeforeUnmount(() => {
+    window.removeEventListener('storage', handleStorageChange)
+})
 
 
 // =================================================================
@@ -303,13 +419,6 @@ const maxCategorySort = computed(() => {
         return categories.length + 1;
     }
 
-    // const maxSort = categories.length > 0 
-    //     ? Math.max(...categories.map(c => c.sort || 0)) 
-    //     : 0;
-    
-    // 如果是編輯模式，最大值就是現有的類別數量
-    // 如果是新增模式，最大值是現有數量 + 1
-    // return props.currentEditingCategory?.id ? categories.length : maxSort + 1;
 });
 
 const closeCategoryPanel = () => {
@@ -416,16 +525,62 @@ const selectTab = (tab) => {
         <PageHeader title="菜單管理">
             <!-- 這是要 "塞" 進插槽的內容 -->
             <template #actions>
-                <select class="form-select" v-model="selectedStore" style="width: auto; min-width: 180px;">  <!-- 切換店鋪下拉選單 -->
+                <!-- 切換店鋪下拉選單 -->
+                <!-- <select class="form-select" v-model="selectedStore" style="width: auto; min-width: 180px;">  
                     <option v-for="store in stores" :key="store.id" :value="store.id">
                         {{ store.name }}
                     </option>
-                </select>
+                </select> -->
+
+                <!-- 🔥 NEW: 顯示當前登入的用戶資訊 -->
+                <div v-if="currentUser" class="d-flex align-items-center gap-3">
+                    <span class="text-muted small">
+                        管理者：{{ currentUser.ownerFullName || currentUser.ownerEmail }}
+                    </span>
+                    
+                    <!-- 🔥 NEW: 支援多店家選擇 -->
+                    <select v-if="stores.length > 1" 
+                            class="form-select" 
+                            v-model="selectedStore" 
+                            style="width: auto; min-width: 200px;">
+                        <option v-for="store in stores" :key="store.id" :value="store.id">
+                            {{ store.name }}
+                        </option>
+                    </select>
+                    
+                    <!-- 單一店家時顯示店家名稱 -->
+                    <div v-else-if="stores.length === 1" class="badge bg-primary fs-6">
+                        {{ stores[0].name }}
+                    </div>
+
+                    <!-- 🔥 NEW: 顯示載入中狀態 -->
+                    <div v-else-if="currentUser && stores.length === 0" class="badge bg-secondary">
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        載入店家中...
+                    </div>
+                </div>
+                
+                <!-- 🔥 NEW: 如果沒有登入資料，顯示提示 -->
+                <div v-else class="alert alert-warning mb-0" role="alert">
+                    <small>⚠️ 未找到登入資料，請重新登入</small>
+                </div>
             </template>
         </PageHeader>
 
-        <!-- 在列表區域的外面，加上 loading 和 error 的判斷 -->
-        <div v-if="isLoading" class="text-center p-5">
+        <!-- 使用完整的條件判斷鏈，確保邏輯正確 -->
+        <div v-if="!selectedStore && !isLoading" class="alert alert-info">
+            <h5>📋 沒有店家資料</h5>
+            <p class="mb-0">
+                請確認您已正確登入，並且帳號關聯了店家資料。<br>
+                <small class="text-muted">
+                    測試用戶可以在 Console 中執行 <code>setTempLogin(1)</code> 來設定測試資料。
+                </small>
+            </p>
+        </div>
+        
+        <div v-else-if="isLoading" class="text-center p-5">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
