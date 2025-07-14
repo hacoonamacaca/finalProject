@@ -1,17 +1,16 @@
 <template>
     <div>
-        <button class="btn btn-warning btn-sm rounded-pill px-3" @click="openModal">
+        <button class="btn btn-warning btn-sm rounded-pill px-3" @click.stop="openModal">
             <i class="bi bi-star-fill me-1"></i> 評分
         </button>
 
         <div class="modal fade" id="ratingModal" tabindex="-1" aria-labelledby="ratingModalLabel" aria-hidden="true"
             ref="ratingModalRef">
             <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
+                <div class="modal-content" @click.stop>
                     <div class="modal-header bg-primary text-black">
                         <h5 class="modal-title" id="ratingModalLabel">評價訂單 - {{ order.store?.name || '未知店家' }}</h5>
-                        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
+                        <button type="button" class="btn-close btn-close-black" data-bs-dismiss="modal" aria-label="Close" @click.stop="closeModal"></button>
                     </div>
 
                     <div class="modal-body p-4">
@@ -29,8 +28,8 @@
                             <div class="star-rating">
                                 <i v-for="star in 5" :key="star" class="bi"
                                     :class="{ 'bi-star-fill text-warning': star <= currentRating || star <= hoverRating, 'bi-star': star > currentRating && star > hoverRating }"
-                                    @mouseover="setHoverRating(star)" @mouseleave="resetHoverRating"
-                                    @click="setRating(star)">
+                                    @mouseover.stop="setHoverRating(star)" @mouseleave.stop="resetHoverRating"
+                                    @click.stop="setRating(star)">
                                 </i>
                                 <span class="ms-2 text-muted">({{ currentRating }} / 5)</span>
                             </div>
@@ -49,7 +48,7 @@
                                     </div>
                                     <div class="btn-group" role="group">
                                         <button type="button" class="btn"
-                                            @click="toggleLike(detail.id, true)">
+                                            @click.stop="toggleLike(detail.id, true)">
                                             <i class="bi"
                                             :class="{
                                                 'bi-hand-thumbs-up-fill': foodLikes[detail.id] === true, // 點讚時為實心
@@ -59,7 +58,7 @@
                                             }"></i>
                                         </button>
                                         <button type="button" class="btn"
-                                            @click="toggleLike(detail.id, false)">
+                                            @click.stop="toggleLike(detail.id, false)">
                                             <i class="bi"
                                             :class="{
                                                 'bi-hand-thumbs-down-fill': foodLikes[detail.id] === false, // 點倒讚時為實心
@@ -82,8 +81,8 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                        <button type="button" class="btn btn-primary" @click="submitReview">提交評價</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" @click.stop="closeModal">取消</button>
+                        <button type="button" class="btn btn-primary" @click.stop="submitReview">提交評價</button>
                     </div>
                 </div>
             </div>

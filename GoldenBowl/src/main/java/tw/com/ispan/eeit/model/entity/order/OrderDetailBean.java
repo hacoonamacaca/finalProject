@@ -60,7 +60,10 @@ public class OrderDetailBean {
 
 	// ------------多對多關聯表--------------------------------------
 	@ManyToMany(fetch = FetchType.LAZY)
-	@JoinTable(name = "order_detail_spec", joinColumns = @JoinColumn(name = "spec_id"), inverseJoinColumns = @JoinColumn(name = "order_detail_id"))
+	@JoinTable(
+			name="order_detail_spec",
+			joinColumns=@JoinColumn(name="spec_id"),
+			inverseJoinColumns =@JoinColumn(name="order_detail_id"))
 	@JsonManagedReference
 	private List<SpecBean> specs;
 }

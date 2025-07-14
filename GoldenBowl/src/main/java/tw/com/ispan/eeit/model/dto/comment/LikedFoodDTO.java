@@ -5,7 +5,11 @@ import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.LikedFoodBean; // 引入 LikedFoodBean
+import tw.com.ispan.eeit.model.entity.food.FoodBean;
+import tw.com.ispan.eeit.model.entity.order.OrderDetailBean;
+
 import org.hibernate.Hibernate; // 引入 Hibernate 工具類，用於判斷延遲加載是否初始化
 
 @Data
@@ -64,5 +68,19 @@ public class LikedFoodDTO {
         }
 
         return dto;
+    }
+
+    public LikedFoodBean toLikedFoodBean(UserBean userBean, FoodBean foodBean, OrderDetailBean orderDetailBean) {
+        LikedFoodBean bean = new LikedFoodBean();
+        bean.setId(this.id); // 如果是更新現有資料，id 會被使用；如果是新增，id 通常由資料庫生成
+        bean.setIsLiked(this.isLiked);
+        bean.setUpdatedTime(this.updatedTime != null ? this.updatedTime : LocalDateTime.now()); // 如果 DTO 沒有提供，則用當前時間
+
+        // 設定關聯的 Bean 物件
+        bean.setUser(userBean);
+        bean.setFood(foodBean);
+        bean.setOrderDetail(orderDetailBean);
+
+        return bean;
     }
 }
