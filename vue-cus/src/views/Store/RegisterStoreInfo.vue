@@ -61,6 +61,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
+import { uploadFilesToFirebase } from '@/utils/uploadToFirebase.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -75,13 +76,11 @@ const categories = ref([])
 
 // 處裡多檔案選擇
 function onFileChange(e) {
-    files.value = e.target.files;
+    files.value = Array.from(e.target.files)
 }
 
 onMounted(async () => {
     userStore.syncFromStorage()
-
-    // 驗證 ownerId
     let ownerId = route.query.ownerId || userStore.ownerId || localStorage.getItem('ownerId')
     if (!ownerId) {
         alert('請先註冊或登入')
@@ -90,13 +89,11 @@ onMounted(async () => {
     }
     userStore.setOwnerId(ownerId + '')
 
-    // 餐廳名稱和其他欄位（你可以依需求多補）
     storeName.value = route.query.storeName || localStorage.getItem('registerStoreName') || ''
     phone.value = route.query.phone || localStorage.getItem('registerPhone') || ''
     storeIntro.value = route.query.storeIntro || ''
     storeCategory.value = route.query.storeCategory || ''
 
-    // 載入分類
     try {
         const res = await axios.get('/api/categories')
         categories.value = res.data
@@ -114,30 +111,28 @@ async function onSubmit() {
         return
     }
 
-    // 建立 FormData（多筆欄位 + 多張照片）
-    const formData = new FormData()
-    formData.append('ownerId', ownerId + '')
-    formData.append('name', storeName.value)
-    formData.append('storeCategory', storeCategory.value)
-    formData.append('storeIntro', storeIntro.value)
-    formData.append('phone', phone.value)
-
+    // 1. 先上傳所有圖片到 Firebase，取得網址
+    let photoUrls = []
     if (files.value && files.value.length > 0) {
-        for (let i = 0; i < files.value.length; i++) {
-            formData.append('photos', files.value[i])
-        }
+        photoUrls = await uploadFilesToFirebase(files.value)
     }
-    
+
+    // 2. 準備 payload
+    const payload = {
+        ownerId: ownerId + '',
+        name: storeName.value,
+        storeCategory: storeCategory.value,
+        storeIntro: storeIntro.value,
+        phone: phone.value,
+        photo: photoUrls.join(';') // 多張用分號隔開，後端存 photo 欄
+    }
+
     try {
-        const res = await axios.post('/api/stores/registerInfo', formData)
-        console.log('registerInfo 回傳:', res.data)
+        const res = await axios.post('/api/stores/registerInfo', payload)
         if (res.data.success) {
             localStorage.setItem('registerStoreId', res.data.storeId + '')
             localStorage.setItem('registerStoreName', storeName.value)
             localStorage.setItem('registerPhone', phone.value)
-            // userStore.setOwnerId(res.data.ownerId)
-            // 這裡也 print 一下你要跳的 storeId
-            console.log('即將跳轉 verifyAddress, storeId:', res.data.storeId)
             router.push({
                 path: '/verifyAddress',
                 query: { ownerId: ownerId + '', storeId: res.data.storeId + '' }
@@ -147,10 +142,8 @@ async function onSubmit() {
         }
     } catch (e) {
         if (e.response) {
-            console.error('錯誤response', e.response)
             alert('伺服器錯誤 (HTTP ' + e.response.status + ')：' + (e.response.data?.message || ''))
         } else {
-            console.error('發送失敗:', e)
             alert('伺服器錯誤，請稍後再試')
         }
     }

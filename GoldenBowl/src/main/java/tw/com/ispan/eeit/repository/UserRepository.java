@@ -10,7 +10,7 @@ import tw.com.ispan.eeit.model.entity.UserBean;
 
 @Repository
 public interface UserRepository extends JpaRepository<UserBean, Integer> {
-	
+
 	//用Email查詢(最常用於登入/驗證)
 	Optional<UserBean> findByEmail(String email);
 	
@@ -25,5 +25,4 @@ public interface UserRepository extends JpaRepository<UserBean, Integer> {
 	List<UserBean> findByIsActive(Boolean isActive);
 	//依驗證狀態查詢
 	List<UserBean> findByIsVerify(Boolean isVerify);
-	
 }

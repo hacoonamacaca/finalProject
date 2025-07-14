@@ -92,7 +92,9 @@ public class OwnerController {
         if (updated == null) {
             return Map.of("success", false, "message", "找不到此帳號");
         }
-        return Map.of("success", true, "owner", updated);
+        // 直接呼叫 service 的 DTO 方法
+        OwnerDTO dto = ownerService.toDTO(updated);
+        return Map.of("success", true, "owner", dto);
     }
 
     // 刪除（Delete）

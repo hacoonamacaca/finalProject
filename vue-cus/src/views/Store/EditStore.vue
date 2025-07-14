@@ -71,7 +71,9 @@ const localProfile = reactive({
     intro: '',
     phone: '',
     email: '',
-    isEmailVerified: false
+    isEmailVerified: false,
+    lat: null,
+    lon: null,
 })
 
 onMounted(async () => {
@@ -88,6 +90,8 @@ watchEffect(() => {
         localProfile.phone = p.phone || ''
         localProfile.email = p.email || ''
         localProfile.isEmailVerified = p.isEmailVerified || false
+        localProfile.lat = p.lat ?? null
+        localProfile.lon = p.lon ?? null
     }
 })
 
@@ -131,6 +135,8 @@ async function handleSave() {
             phone: localProfile.phone,
             email: localProfile.email,
             photo: photoUrl, // 存網址
+            lat: localProfile.lat,
+            lon: localProfile.lon,
         });
         if (resp.data) {
             alert('儲存成功！')

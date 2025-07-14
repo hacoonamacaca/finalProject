@@ -46,6 +46,7 @@ public class StoreDTO {
 
     // 這個構造函數用於將 StoreBean 轉換為 StoreDTO
     public StoreDTO(StoreBean store) {
+    	System.out.println("=== 進入 StoreDTO 建構子 ===");
         this.id = store.getId();
         this.ownerId = store.getOwner() != null ? store.getOwner().getId() : null;
         this.name = store.getName();
@@ -124,5 +125,10 @@ public class StoreDTO {
             this.content = comment.getContent();
             this.score = comment.getScore();
         }
+    }
+    @com.fasterxml.jackson.annotation.JsonProperty("score") // 或直接用 @JsonProperty 如果有 import
+    public String getScoreStr() {
+        if (score == null) return null;
+        return String.format("%.1f", score);
     }
 }
