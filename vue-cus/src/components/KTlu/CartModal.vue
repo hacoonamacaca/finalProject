@@ -112,7 +112,7 @@
 
 <script setup>
 import { computed } from 'vue'
-// import '@/assets/css/restaurant-theme.css'
+import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
     cartByRestaurant: {
@@ -196,7 +196,6 @@ const formatOptions = (optionValue) => {
 </script>
 
 <style scoped>
-@import '../../assets/css/restaurant-theme.css';
 
 .cart-modal-overlay {
     position: fixed;
