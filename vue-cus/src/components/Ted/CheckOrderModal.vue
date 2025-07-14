@@ -210,13 +210,30 @@ const removeItem = (id) => {
 
 const emitAddToCart = () => {
   if (internalOrderItems.value.length > 0) {
+    const now = new Date()
+    const formattedTime = now.toLocaleString('zh-TW', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false, // 顯示 24 小時制
+      timeZone: 'Asia/Taipei' // 明確指定時區為台灣 (UTC+8)
+    });
+    
+    const createTime = formattedTime.toString().replace(" ", "T").replace(/\//g, "-")
+    // formattedTime= formattedTime.replace(" ", "T");
+  console.log("格式化後的台灣時間:", formattedTime.toString().replace(" ", "T").replace(/\//g, "-"));
+      // console.log(new Date().toTimeString)
+      // console.log(new Date().toTimeString)
    const body={
 
       content:content.value,
       status:'Pending',
-      create_time:new Date().toISOString().slice(0, 19) ,
+      create_time:createTime ,
       method:paymentMethod.value,
-      pickup_time:new Date().toISOString().slice(0, 11)+currentTime.value
+      pickup_time:createTime.slice(0, 11)+currentTime.value
       // 設定取餐時間
     }
     //增加備註、訂單狀態、付款方式、取餐時間

@@ -70,7 +70,7 @@ public class OrderController {
 
 
     // 更新現有訂單
-    @PutMapping("/{id}")
+    @PutMapping("/status/{id}")
     public ResponseEntity<OrderBean> updateOrderStatus(@PathVariable Integer id, @RequestBody OrderDTO order) {
     	System.out.println(order.getId());
     	System.out.println(order.getContent());
