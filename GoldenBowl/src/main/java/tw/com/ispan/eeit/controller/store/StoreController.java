@@ -1,6 +1,5 @@
 package tw.com.ispan.eeit.controller.store;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,11 +16,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import tw.com.ispan.eeit.model.dto.store.StoreDTO;
+import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.service.store.StoreService;
 
@@ -32,6 +30,9 @@ public class StoreController {
     @Autowired
     private StoreService storeService;
 
+    /**
+     * 獲取所有商店（支援搜尋）
+     */
     @GetMapping
     public ResponseEntity<List<StoreDTO>> getAllStores(@RequestParam(required = false) String search) {
         List<StoreBean> stores;
@@ -49,6 +50,9 @@ public class StoreController {
         return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
     }
 
+    /**
+     * 根據商店ID獲取單一商店
+     */
     @GetMapping("/{id}")
     public ResponseEntity<StoreDTO> getStoreById(@PathVariable Integer id) {
         Optional<StoreBean> storeOptional = storeService.getStoreById(id);
@@ -58,6 +62,9 @@ public class StoreController {
         }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    /**
+     * 創建新商店
+     */
     @PostMapping
     public ResponseEntity<StoreDTO> createStore(@RequestBody StoreDTO storeDto) {
         // 將 StoreDTO 轉換回 StoreBean 以便 service 層處理
@@ -88,6 +95,9 @@ public class StoreController {
         return new ResponseEntity<>(createdStoreDTO, HttpStatus.CREATED);
     }
 
+    /**
+     * 更新商店資訊
+     */
     @PutMapping("/{id}")
     public ResponseEntity<StoreDTO> updateStore(@PathVariable Integer id, @RequestBody StoreDTO storeDetailsDto) {
         // 將 StoreDTO 轉換回 StoreBean 以便 service 層處理更新
@@ -96,6 +106,15 @@ public class StoreController {
         storeToUpdate.setPhoto(storeDetailsDto.getPhoto());
         storeToUpdate.setScore(storeDetailsDto.getScore());
         storeToUpdate.setIsOpen(storeDetailsDto.getIsOpen());
+        storeToUpdate.setAddress(storeDetailsDto.getAddress());
+        storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
+        storeToUpdate.setLat(storeDetailsDto.getLat());
+        storeToUpdate.setLon(storeDetailsDto.getLon());
+        
+        OwnerBean owner = new OwnerBean();
+        owner.setPhone(storeDetailsDto.getPhone());
+        owner.setEmail(storeDetailsDto.getEmail());
+        storeToUpdate.setOwner(owner);
         // 同樣，對於關聯集合的更新，你需要根據業務邏輯處理
         // 例如，如果前端傳入新的 categoryNames，你可能需要在 service 層更新 StoreBean 的 categories 集合
         // storeDetailsDto.getCategoryNames(); // <-- 這裡會包含前端傳來的類別名稱
@@ -110,6 +129,9 @@ public class StoreController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
+    /**
+     * 刪除商店
+     */
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteStore(@PathVariable Integer id) {
         if (storeService.deleteStore(id)) {
@@ -118,15 +140,20 @@ public class StoreController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    // 支援多張照片的註冊
-    @PostMapping(value = "/registerInfo", consumes = "multipart/form-data")
+    /**
+     * 商店註冊
+     */
+    @PostMapping("/registerInfo")
     public Map<String, Object> register(
-            @RequestParam("ownerId") Integer ownerId,
-            @RequestParam("name") String name,
-            @RequestParam("storeCategory") String storeCategory,
-            @RequestParam("storeIntro") String intro,
-            @RequestPart(value = "photos", required = false) List<MultipartFile> photos) {
+            @RequestBody Map<String, Object> map) {
         // 驗證必填
+        Integer ownerId = (map.get("ownerId") != null) ? Integer.parseInt(map.get("ownerId").toString()) : null;
+        String name = (String) map.get("name");
+        String storeCategory = (String) map.get("storeCategory");
+        String intro = (String) map.get("storeIntro");
+        String photo = (String) map.get("photo"); // 這裡收到的是分號分隔或單一 firebase 下載網址
+        // 你也可以改成 List<String> photoUrls = (List<String>) map.get("photoUrls"); 如果前端直接送 array
+
         if (ownerId == null) {
             return Map.of("success", false, "message", "ownerId 不可為空");
         }
@@ -137,27 +164,17 @@ public class StoreController {
             return Map.of("success", false, "message", "請選擇餐廳類型");
         }
 
-        // 儲存照片（多檔案路徑用 ; 連接）
-        StringBuilder photoPaths = new StringBuilder();
-        if (photos != null && !photos.isEmpty()) {
-            for (MultipartFile photo : photos) {
-                String path = savePhoto(photo); // 你可以自訂上傳位置與網址
-                if (!path.isBlank()) {
-                    photoPaths.append(path).append(";");
-                }
-            }
-        }
-        // 去掉最後一個分號
-        String photoPathStr = photoPaths.length() > 0 ? photoPaths.substring(0, photoPaths.length() - 1) : "";
-
         // 呼叫 Service
-        StoreBean store = storeService.registerStore(ownerId, name, storeCategory, intro, photoPathStr);
+        StoreBean store = storeService.registerStore(ownerId, name, storeCategory, intro, photo);
         if (store == null || store.getId() == null) {
             return Map.of("success", false, "message", "註冊失敗");
         }
         return Map.of("success", true, "storeId", store.getId());
     }
 
+    /**
+     * 更新商店地址
+     */
     @PostMapping("/updateAddress")
     public Map<String, Object> updateAddress(@RequestBody Map<String, Object> map) {
         Object storeIdObj = map.get("storeId");
@@ -172,38 +189,153 @@ public class StoreController {
         }
         String address = (String) map.get("address");
 
-        Double lat = null, lng = null;
+        Double lat = null, lon = null;
         try {
             if (map.get("lat") != null && !((String) map.get("lat")).isBlank())
                 lat = Double.parseDouble((String) map.get("lat"));
             if (map.get("lon") != null && !((String) map.get("lon")).isBlank())
-                lng = Double.parseDouble((String) map.get("lon"));
+                lon = Double.parseDouble((String) map.get("lon"));
         } catch (Exception e) {
             return Map.of("success", false, "message", "經緯度格式錯誤");
         }
 
-        boolean ok = storeService.updateAddress(storeId, address, lat, lng);
+        boolean ok = storeService.updateAddress(storeId, address, lat, lon);
         return Map.of("success", ok);
     }
-
-    // 照片存檔範例
-    private String savePhoto(MultipartFile file) {
-        try {
-            String folder = "uploads/photos";
-            File dir = new File(folder);
-            if (!dir.exists())
-                dir.mkdirs();
-
-            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-            File dest = new File(folder + fileName);
-            file.transferTo(dest);
-
-            // 回傳完整網址（這裡假設 domain 你自己決定）
-            String domain = "https://localhost:8080";
-            return domain + "/photos/" + fileName;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "";
+    
+    // ========== 以下為支援多店主的新端點 ==========
+    
+    /**
+     * 獲取Owner的主要Store（最新建立的）- 保持向下兼容
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<StoreDTO> getMyStoreProfile(@RequestParam Integer ownerId) {
+        // ownerId 可以從 JWT 或 session 取得，不要讓前端直接傳（安全性問題）
+        // 這邊為示範，暫時用 query 參數帶
+    	if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+
+        Optional<StoreBean> storeOptional = storeService.getMainStoreByOwnerId(ownerId);
+        if (storeOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
+        return new ResponseEntity<>(storeDTO, HttpStatus.OK);
+    }
+    
+    /**
+     * 獲取Owner的所有Store
+     */
+    @GetMapping("/profile/all")
+    public ResponseEntity<List<StoreDTO>> getAllMyStores(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<StoreBean> stores = storeService.getStoresByOwnerId(ownerId);
+        if (stores.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        List<StoreDTO> storeDTOs = stores.stream()
+                .map(StoreDTO::new)
+                .collect(Collectors.toList());
+        
+        return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
+    }
+
+    /**
+     * 獲取Owner的第一個Store（最早建立的）
+     */
+    @GetMapping("/profile/first")
+    public ResponseEntity<StoreDTO> getMyFirstStore(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<StoreBean> storeOptional = storeService.getFirstStoreByOwnerId(ownerId);
+        if (storeOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
+        return new ResponseEntity<>(storeDTO, HttpStatus.OK);
+    }
+
+    /**
+     * 獲取Owner的Store摘要資訊
+     */
+    @GetMapping("/profile/summary")
+    public ResponseEntity<Map<String, Object>> getMyStoresSummary(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<StoreBean> stores = storeService.getStoresByOwnerId(ownerId);
+        if (stores.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Map<String, Object> summary = Map.of(
+            "ownerId", ownerId,
+            "totalStores", stores.size(),
+            "stores", stores.stream()
+                    .map(store -> Map.of(
+                        "id", store.getId(),
+                        "name", store.getName(),
+                        "isOpen", store.getIsOpen() != null ? store.getIsOpen() : false,
+                        "score", store.getScore() != null ? store.getScore() : 0.0,
+                        "createdTime", store.getCreatedTime()
+                    ))
+                    .collect(Collectors.toList())
+        );
+
+        return new ResponseEntity<>(summary, HttpStatus.OK);
+    }
+
+    /**
+     * 根據StoreId和OwnerId獲取特定Store（安全檢查）
+     */
+    @GetMapping("/profile/store/{storeId}")
+    public ResponseEntity<StoreDTO> getSpecificStore(
+            @PathVariable Integer storeId, 
+            @RequestParam Integer ownerId) {
+        
+        if (ownerId == null || storeId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        // 檢查Store是否屬於該Owner
+        if (!storeService.isStoreOwnedByOwner(storeId, ownerId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+
+        Optional<StoreBean> storeOptional = storeService.getStoreById(storeId);
+        if (storeOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
+        return new ResponseEntity<>(storeDTO, HttpStatus.OK);
+    }
+
+    /**
+     * 獲取Owner的Store數量
+     */
+    @GetMapping("/profile/count")
+    public ResponseEntity<Map<String, Object>> getMyStoreCount(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        long count = storeService.getStoreCountByOwnerId(ownerId);
+        Map<String, Object> result = Map.of(
+            "ownerId", ownerId,
+            "storeCount", count
+        );
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 }

@@ -65,7 +65,8 @@ public class StoreBean {
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
     private Point storeCoords;
 
-    private Double lng;
+    @Column(name = "lng")
+    private Double lon;
 
     private Double lat;
 
