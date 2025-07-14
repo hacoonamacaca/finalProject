@@ -38,7 +38,16 @@
 			<artifactId>spring-boot-starter-data-mongodb</artifactId>
 		</dependency>
 	-->
-			<dependency>
+		<dependency>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-starter-websocket</artifactId>
+	    </dependency>
+	    <dependency>
+	        <groupId>com.fasterxml.jackson.core</groupId>
+	        <artifactId>jackson-databind</artifactId>
+	    </dependency>
+	 <!--用作監控如果有使用者新增訂單後 會在vue-store直接顯現-->   
+		<dependency>
 			<groupId>org.locationtech.jts</groupId>
 			<artifactId>jts-core</artifactId>
 			<version>1.19.0</version>

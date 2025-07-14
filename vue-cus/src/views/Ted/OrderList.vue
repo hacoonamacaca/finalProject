@@ -2,8 +2,12 @@
 <script setup>
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
-import RatingModal from '@/components/Ted/ReviewModal.vue';
+
 import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
+import { useRouter } from 'vue-router';
+
+
+const router = useRouter();
 
 const orders=ref([])
 const id = ref(1)
@@ -31,15 +35,9 @@ onMounted(() => {
 function findorder(id) {
   axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
-
       console.log("訂單數據:", response.data);
       orders.value = response.data
-      console.log(orders.value)
-      // response.data.forEach(element => {
-      //   console.log(element)
-      //   orders.value.push(element);
-      // });
-      // console.log(`ordersValue:${orders.value}`)
+
   }).catch(function (error) {
     console.error("加載訂單失敗:", error);
   })
@@ -50,6 +48,11 @@ function findorder(id) {
 const reorder = (order) => {
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
+//頁面跳轉 點擊訂單詳情後跳轉
+const goToOrderDetail = (orderId) => {
+  router.push({ name: 'OrderDetail', params: { id: orderId } });
+};
+
 </script>
 
 <template>
@@ -61,6 +64,7 @@ const reorder = (order) => {
       v-for="order in orders"
       :key="order.id"
       class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
+      @click="goToOrderDetail(order.id)"
     >
       <img
         :src="order.store.photo"
@@ -89,13 +93,13 @@ const reorder = (order) => {
         </div>
 
         <div class="d-flex justify-content-end align-items-center mt-3">
-          <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click="reorder(order)">
+          <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click.stop="reorder(order)">
             選擇想要重新訂購的項目
           </button>
         </div>
 
         <div >
-            <RatingModal :order="order" />
+            <!-- <RatingModal :order="order" /> -->
         </div>
       </div>
     </div>
@@ -116,12 +120,13 @@ const reorder = (order) => {
   border: 1px solid #e0e0e0; /* 淺灰色邊框 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 柔和的陰影 */
   transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加過渡效果 */
+  cursor: pointer; /* 添加 pointer 游標，提示可點擊 */
+}
+.order-item-card:hover {
+  transform: translateY(-3px); /* 鼠標懸停時輕微上移 */
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12); /* 懸停時陰影加深 */
 }
 
-/* .order-item-card:hover {
-  transform: translateY(-3px); 鼠標懸停時輕微上移 
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);  懸停時陰影加深 
-}*/
 
 /* 圓角類，Bootstrap 預設的 rounded-lg 已經很不錯 */
 .rounded-lg {

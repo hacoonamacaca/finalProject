@@ -31,6 +31,7 @@ public class FoodController {
     public ResponseEntity<FoodDTO> createFood(@Valid @RequestBody FoodRequest request) {
         FoodDTO createdFood = foodService.createFood(request);
         URI location = URI.create("/api/foods/" + createdFood.getId());
+        
         return ResponseEntity.created(location).body(createdFood);
     }
 

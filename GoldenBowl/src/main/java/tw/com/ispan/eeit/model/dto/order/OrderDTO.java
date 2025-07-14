@@ -11,6 +11,8 @@ import tw.com.ispan.eeit.model.entity.comment.CommentBean;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
+import tw.com.ispan.eeit.util.DatetimeConvert;
+import tw.com.ispan.eeit.util.StatusConvert;
 
 @Data
 public class OrderDTO {
@@ -18,9 +20,9 @@ public class OrderDTO {
     private Integer promotionId; // 只返回促銷ID，或者可以是一個 PromotionDto
     private Integer total;
     private String status;
-    private LocalDateTime createTime;
+    private String createTime;
     private String content;
-    private LocalDateTime pickupTime;
+    private String pickupTime;
     // 外部連結的部分
 
     private OrderUserDto User; // 一個存在在OrderDTO內的 UserDto
@@ -68,10 +70,12 @@ public class OrderDTO {
         OrderDTO orderDto = new OrderDTO();
         orderDto.setId(orderBean.getId());
         orderDto.setTotal(orderBean.getTotal());
-        orderDto.setStatus(orderBean.getStatus());
-        orderDto.setCreateTime(orderBean.getCreateTime());
+        orderDto.setStatus(StatusConvert.toDTO(orderBean.getStatus()));
+        orderDto.setCreateTime(
+        		DatetimeConvert.toString(orderBean.getCreateTime(),"M月d日 EEEE HH時mm分"));
         orderDto.setContent(orderBean.getContent());
-        orderDto.setPickupTime(orderBean.getPickupTime());
+        orderDto.setPickupTime(
+        		DatetimeConvert.toString(orderBean.getPickupTime(),"M月d日 EEEE HH時mm分"));
 
         // 複製 User 資訊
         // 檢查關聯是否已初始化且不為 null，避免 LazyInitializationException
@@ -132,9 +136,11 @@ public class OrderDTO {
         orderBean.setPromotion(promotionBean); // 假設 OrderBean 有 promotionId
         orderBean.setTotal(this.total);
         orderBean.setStatus(this.status);
-        orderBean.setCreateTime(this.createTime);
+        orderBean.setCreateTime(
+        		DatetimeConvert.parse(this.createTime,"yyyy-MM-dd'T'HH:mm:ss"));
         orderBean.setContent(this.content);
-        orderBean.setPickupTime(this.pickupTime);
+        orderBean.setPickupTime(
+        		DatetimeConvert.parse(this.pickupTime,"yyyy-MM-dd'T'HH:mm"));
 
         // 轉換 User (如果存在)
         if (this.User != null) {

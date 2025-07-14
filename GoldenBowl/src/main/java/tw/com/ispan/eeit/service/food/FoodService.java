@@ -39,7 +39,7 @@ public class FoodService {
         if (foodClasses.size() != request.getFoodClassIds().size()) {
             throw new ResourceNotFoundException("部分食物分類不存在，請確認 ID 是否正確。");
         }
-
+        
         FoodBean newFood = new FoodBean();
         newFood.setStore(store);
         newFood.setName(request.getName());

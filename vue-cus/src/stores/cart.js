@@ -149,10 +149,10 @@ export const useCartStore = defineStore('cart', () => {
         const orderData = {
             restaurant: restaurantCart.restaurant,
             // 餐廳資訊
-            orderDetail: [...restaurantCart.items],
+            orderDetails: [...restaurantCart.items],
             total: getRestaurantTotal(restaurantId),
             status: restaurantCart.status,
-            create_time: new Date().toISOString().slice(0, 16),
+            create_time:restaurantCart.create_time,
             content: restaurantCart.content,
             pickup_time: restaurantCart.pickup_time,
 
