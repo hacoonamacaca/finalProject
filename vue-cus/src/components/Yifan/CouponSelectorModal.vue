@@ -127,9 +127,8 @@ const activeTab = ref('all')
 const manualCode = ref('')
 
 const filteredPromotions = computed(() => {
-  return activeTab.value === 'all'
-    ? props.promotions
-    : props.promotions.filter(p => p.type === activeTab.value)
+  if (activeTab.value === 'all') return props.promotions
+  return props.promotions.filter(p => p.types?.includes(activeTab.value))
 })
 
 watch(() => props.show, (newVal) => {

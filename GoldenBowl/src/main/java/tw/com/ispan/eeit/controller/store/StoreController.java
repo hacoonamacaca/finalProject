@@ -33,29 +33,30 @@ public class StoreController {
     private StoreService storeService;
 
     @GetMapping
-    public ResponseEntity<List<StoreDTO>> getAllStores(@RequestParam(required = false) String search) {
-        List<StoreBean> stores;
+    public ResponseEntity<List<StoreDTO>> getAllStores(
+            @RequestParam(value = "userId", required = false) Integer userId, // 新增 userId 參數
+            @RequestParam(value = "search", required = false) String search) {
+        
+        List<StoreDTO> storeDTOs;
         if (search != null && !search.trim().isEmpty()) {
-            // 如果提供了搜尋參數，則呼叫搜尋方法
-            stores = storeService.searchStores(search.trim());
+            // 調用帶有 userId 參數的 searchStores 方法
+            storeDTOs = storeService.searchStores(userId, search.trim());
         } else {
-            // 否則，獲取所有商店
-            stores = storeService.getAllStores();
+            // 調用帶有 userId 參數的 getAllStores 方法
+            storeDTOs = storeService.getAllStores(userId);
         }
-
-        List<StoreDTO> storeDTOs = stores.stream()
-                .map(StoreDTO::new) // 將 StoreBean 轉換為 StoreDTO
-                .collect(Collectors.toList());
         return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StoreDTO> getStoreById(@PathVariable Integer id) {
-        Optional<StoreBean> storeOptional = storeService.getStoreById(id);
-        return storeOptional.map(storeBean -> {
-            StoreDTO storeDTO = new StoreDTO(storeBean); // 將 StoreBean 轉換為 StoreDTO
+    public ResponseEntity<StoreDTO> getStoreById(
+            @PathVariable Integer id,
+            @RequestParam(value = "userId", required = false) Integer userId) { // 新增 userId 參數
+        StoreDTO storeDTO = storeService.getStoreById(id, userId); // 傳遞 userId
+        if (storeDTO != null) {
             return new ResponseEntity<>(storeDTO, HttpStatus.OK);
-        }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @PostMapping
@@ -205,5 +206,23 @@ public class StoreController {
             e.printStackTrace();
             return "";
         }
+    }
+
+    // 新增：收藏餐廳
+    @PostMapping("/{storeId}/favorite/{userId}")
+    public ResponseEntity<Map<String, Boolean>> addFavoriteStore(
+            @PathVariable Integer storeId,
+            @PathVariable Integer userId) {
+        boolean success = storeService.addStoreToFavorites(userId, storeId);
+        return new ResponseEntity<>(Map.of("success", success), success ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
+    }
+
+    // 新增：取消收藏餐廳
+    @DeleteMapping("/{storeId}/favorite/{userId}")
+    public ResponseEntity<Map<String, Boolean>> removeFavoriteStore(
+            @PathVariable Integer storeId,
+            @PathVariable Integer userId) {
+        boolean success = storeService.removeStoreFromFavorites(userId, storeId);
+        return new ResponseEntity<>(Map.of("success", success), success ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
 }

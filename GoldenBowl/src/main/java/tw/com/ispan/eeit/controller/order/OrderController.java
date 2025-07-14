@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.controller.order;
 
 import java.util.List;
 
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
-import tw.com.ispan.eeit.model.dto.order.OrderRequestDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
+import tw.com.ispan.eeit.service.UserService;
 import tw.com.ispan.eeit.service.order.OrderService;
 
 @RestController
@@ -24,40 +25,33 @@ import tw.com.ispan.eeit.service.order.OrderService;
 public class OrderController {
 
     private final OrderDetailController orderDetailController;
-
-    @Autowired
-    private OrderService orderService;
-
-    OrderController(OrderDetailController orderDetailController) {
-        this.orderDetailController = orderDetailController;
-    }
-
-// 苡帆要測試優惠券使用紀錄功能，若有問題再解開註解
-//    // 創建新訂單
-//    @PostMapping
-//    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderBean orders) {
-//    	System.out.println(orders.getTotal());
-////    	JSONObject obj = new JSONObject(body);
-////    	OrderBean order = new OrderBean();
-//    	System.out.println(orders.getTotal());
-//    	OrderBean order = new OrderBean();
-//        OrderBean createdOrder = orderService.createOrder(order);
-//        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
-//    }
-
-// 苡帆要測試優惠券使用紀錄功能，若有問題再解開註解
-    //改成用 OrderRequestDTO 接收資料：
-    @PostMapping
-    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderRequestDTO dto) {
-        OrderDTO createdOrder = orderService.createOrderFromRequest(dto);
-        return new ResponseEntity<>(createdOrder, HttpStatus.CREATED);
-    }
-
-
     
-    // 根據 ID 獲取單一訂單
+  
+    private OrderService orderService;
+   
+    private UserService userService;
+    
+    public OrderController(OrderDetailController orderDetailController, OrderService orderService,
+			UserService userService) {
+		super();
+		this.orderDetailController = orderDetailController;
+		this.orderService = orderService;
+		this.userService = userService;
+	}
+
+	// 創建新訂單
+    @PostMapping
+    // 修改參數為 OrderDTO
+    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orderDTO) {
+        // 調用 Service 層，它會返回 Optional<OrderBean>
+        return orderService.createOrder(orderDTO)
+                .map(createdOrderBean -> ResponseEntity.status(HttpStatus.CREATED).body(createdOrderBean))
+                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()); // 如果創建失敗，可能是 DTO 數據有問題
+    }
+
+    // 根據 訂單ID 獲取單一訂單
     @GetMapping("/{id}")
-    public ResponseEntity<OrderBean> getOrderById(@PathVariable Integer id) {
+    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Integer id) {
         return orderService.findOrderById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -73,7 +67,28 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-    // 根據用戶 ID 獲取訂單列表 (示例)
+
+
+    // 更新現有訂單
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderBean> updateOrderStatus(@PathVariable Integer id, @RequestBody OrderDTO order) {
+    	System.out.println(order.getId());
+    	System.out.println(order.getContent());
+        return orderService.updateOrderStatus(id, order)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    // 刪除訂單 可執行
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
+        if (orderService.deleteOrder(id)) {
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+        return ResponseEntity.notFound().build(); // 404 Not Found
+    }
+    
+    // 根據用戶 ID 獲取訂單列表 
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderDTO>> getOrdersByUserId(@PathVariable Integer userId) {
         List<OrderDTO> orders = orderService.findOrdersByUserId(userId);
@@ -82,21 +97,51 @@ public class OrderController {
         }
         return ResponseEntity.ok(orders);
     }
+    
+	    
+	//	尋找歷史訂單(使用者)
+	@GetMapping("/user/history/{userId}")
+	public ResponseEntity<List<OrderDTO>> getHistoryOrdersByUserId
+	(@PathVariable Integer userId) {
+	//	JSONObject obj = new JSONObject(body);
+	//	String status = obj.isNull("status") ? "" : obj.getString("status");
+	//	System.out.println(status);
+		
+	    List<OrderDTO> orders = orderService.findHistoryByUserId(userId);
+	    if (orders.isEmpty()) {
+	        return ResponseEntity.noContent().build();
+	    }
+	    return ResponseEntity.ok(orders);
+	}
 
-    // 更新現有訂單
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderBean> updateOrder(@PathVariable Integer id, @RequestBody OrderBean order) {
-        return orderService.updateOrder(id, order)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    // 刪除訂單
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Integer id) {
-        if (orderService.deleteOrder(id)) {
-            return ResponseEntity.noContent().build(); // 204 No Content
-        }
-        return ResponseEntity.notFound().build(); // 404 Not Found
-    }
+	//	尋找未完成的訂單(使用者)
+	@GetMapping("/user/uncomplete/{userId}")
+	public ResponseEntity<List<OrderDTO>> getUncompleteOrdersByUserId
+	(@PathVariable Integer userId) {
+	//	JSONObject obj = new JSONObject(body);
+	//	String status = obj.isNull("status") ? "" : obj.getString("status");
+	//	System.out.println(status);
+		
+	    List<OrderDTO> orders = orderService.findUncompleteByUserId(userId);
+	    if (orders.isEmpty()) {
+	        return ResponseEntity.noContent().build();
+	    }
+	    return ResponseEntity.ok(orders);
+	}
+	
+	@GetMapping("/store/{storeId}")
+	public ResponseEntity<List<OrderDTO>> getOrderByStoreId(@PathVariable Integer storeId){
+		 List<OrderDTO> orders = orderService.findOrderByStoreId(storeId);
+		    if (orders.isEmpty()) {
+		        return ResponseEntity.noContent().build();
+		    }
+		
+		return ResponseEntity.ok(orders);
+//		return ResponseEntity.ok(orders);
+	}
+    
+    
+    
+    
+    
 }

@@ -10,6 +10,34 @@
     </button>
 
     <p>已選擇：{{ selected?.title || '尚未選擇' }}</p>
+<!-- ✅ 訂單明細區塊 -->
+
+<div class="mt-4 p-4 border rounded-3 bg-light">
+  <h5 class="fw-bold mb-3">訂單明細</h5>
+
+  <div v-if="selected" class="d-flex align-items-center mb-3">
+    <img :src="selected.imageUrl" alt="券圖片" style="width: 60px; height: auto;" class="me-3" />
+    <div>
+      <p class="mb-1 fw-bold">{{ selected.title }}</p>
+      <p class="mb-1">折扣類型：{{ selected.discountType }}</p>
+      <p class="mb-1">折扣數值：{{ selected.discountValue }}</p>
+      <p class="mb-1">使用門檻：{{ selected.minSpend }}</p>
+      <p class="mb-1">
+        有效期限：
+        {{ selected.startTime }} ～ {{ selected.endTime }}
+      </p>
+    </div>
+  </div>
+  <div v-else class="text-muted mb-3">尚未選擇優惠券</div>
+
+  <p class="mb-1">原價：{{ cartAmount }} 元</p>
+  <p class="mb-1 text-success fw-bold">
+    折扣金額：
+    {{ selected ? '-' + (cartAmount - discountedTotal) : '0' }} 元
+  </p>
+  <p class="mb-0 text-danger fw-bold">應付金額：{{ discountedTotal }} 元</p>
+</div>
+
 
     <!-- 彈窗元件 -->
     <CouponSelectorModal
@@ -28,10 +56,6 @@
 </template>
 
 <script setup>
-
-// 💡 模擬登入使用者與購物車商店
-const currentUser = { id: 2 }
-const currentStore = { id: 3 }
 
 import { ref, computed } from 'vue'
 import axios from '@/plungins/axios.js'
@@ -58,8 +82,13 @@ const discountedTotal = computed(() => {
 const show = ref(false)
 // 已選擇的券
 const selected = ref(null)
-// 購物車金額（範例）
-const cartAmount = ref(1000)
+// ‼️‼️‼️ 優惠券的使用門檻
+const cartAmount = ref(1000)         // ✅ 測試門檻用的消費金額
+const currentUser = { id: 5 }        // ✅ 測試用的會員 ID
+const currentStore = { id: 2 }       // ✅ 測試用的店家 ID
+// const currentTag = { id: 4 }         // ✅ 餐點類別 ID（如果後端有支援）
+// const currentPlan = { id: 1 }        // ✅ 會員方案 ID（例如黃金會員）
+
 
 
 // 優惠券列表（從後端載入）
@@ -75,33 +104,50 @@ const openCouponModal = async () => {
     amount: cartAmount.value
   }
 })
+console.log('🎯 後端回傳幾筆券：', response.data.length)
+console.log('🎯 回傳資料：', response.data)
 
-    promotionList.value = response.data.map(item => {
-      let imageUrl = globalImg
-      let iconClass = 'fas fa-globe'
-      let type = 'global'
 
-      if (item.store?.id) {
-        imageUrl = restaurantImg
-        iconClass = 'fas fa-utensils'
-        type = 'restaurant'
-      } else if (item.tag?.id) {
-        imageUrl = foodImg
-        iconClass = 'fas fa-hamburger'
-        type = 'food'
-      } else if (item.plan?.id) {
-        imageUrl = memberImg
-        iconClass = 'fas fa-crown'
-        type = 'member'
-      }
+promotionList.value = response.data.map(item => {
+  const types = []
+  let imageUrl = globalImg
+  let iconClass = 'fas fa-globe'
 
-      return {
-        ...item,
-        iconClass,
-        imageUrl,
-        type
-      }
-    })
+  if (item.storeId) {
+    types.push('restaurant')
+    imageUrl = restaurantImg
+    iconClass = 'fas fa-utensils'
+  }
+  if (item.tagName) {
+    types.push('food')
+    imageUrl = foodImg
+    iconClass = 'fas fa-hamburger'
+  }
+  if (item.planId) {
+    types.push('member')
+    imageUrl = memberImg
+    iconClass = 'fas fa-crown'
+  }
+  if (types.length === 0) {
+    types.push('global')
+    imageUrl = globalImg
+    iconClass = 'fas fa-globe'
+  }
+
+  return {
+    ...item,
+    iconClass,
+    imageUrl,
+    types // 確保這裡是陣列（分類用）
+  }
+})
+
+
+// 🔍 debug 印出每張券的 types 分類
+console.log('🧾 每張券分類 types：')
+promotionList.value.forEach(p => {
+  console.log(`📌 ${p.title}：`, p.types)
+})
 
     show.value = true
   } catch (error) {
@@ -120,7 +166,6 @@ const handleSelected = (promotion) => {
 //訂單結帳
 const submitOrder = async () => {
   if (!selected.value) {
-    // ⚠️ 未選擇優惠券的提醒
     Swal.fire({
       icon: 'warning',
       title: '請先選擇優惠券',
@@ -138,22 +183,39 @@ const submitOrder = async () => {
   }
 
   try {
+    // 送出訂單
     const res = await axios.post('/api/orders', orderPayload, {
       headers: { 'Content-Type': 'application/json' }
     })
+
+    const orderId = res.data.id
+    console.log('✅ 訂單送出成功，訂單編號：', orderId)
+
+    // 🎯 測試：查詢這筆訂單可用的優惠券
+    const availableRes = await axios.get('/promotions/available', {
+      params: {
+        userId: currentUser.id,
+        storeId: currentStore.id,
+        amount: discountedTotal.value // 或 res.data.total
+      }
+    })
+
+    console.log('🎟️ 此訂單可用的優惠券清單：', availableRes.data)
 
     // ✅ 成功彈窗
     Swal.fire({
       icon: 'success',
       title: '訂單送出成功！',
-      html: `訂單編號：<strong>${res.data.id}</strong>`,
+      html: `
+        訂單編號：<strong>${orderId}</strong><br/>
+        查詢可用優惠券：<br/>
+        共 ${availableRes.data.length} 張
+      `,
       confirmButtonText: '太好了！'
     })
 
   } catch (err) {
-    console.error('送出訂單失敗', err)
-
-    // ❌ 失敗提示
+    console.error('❌ 訂單送出失敗', err)
     Swal.fire({
       icon: 'error',
       title: '訂單送出失敗',
@@ -162,6 +224,8 @@ const submitOrder = async () => {
     })
   }
 }
+
+
 </script>
 
 <style scoped>
