@@ -64,17 +64,36 @@ const resetFilters = () => {
   alert('重設功能待實現');
 };
 
+const updateStatus=(orderId, status) =>{
+    const body = {
+    id: orderId,
+    status
+  }
+  axios.put(`/api/orders/status/${orderId}`,body)
+    .then(function (response) {
+    console.log('修改編號的訂單', orderId)
+    console.log('修改編號的狀態', status)
+
+  }).catch(function (error) {
+    console.log(error)
+  })
+
+}
+
 //取消訂單
 const cancelOrder = (orderId) => {
   console.log('取消編號的訂單',orderId)
+  updateStatus(orderId, 'cancelled')
 }
 const confirmOrder = (orderId) => {
   console.log('確認編號的訂單',orderId)
+  updateStatus(orderId, 'perparing')
+  
 }
 const completeOrder = (orderId) => {
   console.log('完成編號的訂單',orderId)
+  updateStatus(orderId, 'completed')
 }
-
 </script>
 
 <template>
