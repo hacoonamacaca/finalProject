@@ -11,10 +11,12 @@ import org.springframework.stereotype.Component;
 
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.reservation.TableBean;
+import tw.com.ispan.eeit.model.entity.reservation.TimeSettingBean;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.repository.UserRepository;
 import tw.com.ispan.eeit.repository.reservation.TableRepository;
+import tw.com.ispan.eeit.repository.reservation.TimeSettingRepository;
 import tw.com.ispan.eeit.repository.store.OpenHourRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
 import tw.com.ispan.eeit.service.reservation.ReservationService;
@@ -33,6 +35,9 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     @Autowired
     private OpenHourRepository openHourRepository;
+
+    @Autowired
+    private TimeSettingRepository timeSettingRepository;
 
     @Autowired
     private ReservationService reservationService;
@@ -66,7 +71,10 @@ public class DatabaseInitializer implements CommandLineRunner {
         // 4. 設定營業時間
         createOpenHours(testStore);
 
-        // 5. 生成時段資料
+        // 5. 建立時段設定
+        createTimeSetting(testStore);
+
+        // 6. 生成時段資料
         reservationService.generateTimeSlotsForRestaurant(testStore.getId(), 30);
 
         System.out.println("測試資料初始化完成！");
@@ -141,5 +149,14 @@ public class DatabaseInitializer implements CommandLineRunner {
 
             openHourRepository.save(openHour);
         }
+    }
+
+    private void createTimeSetting(StoreBean store) {
+        TimeSettingBean timeSetting = new TimeSettingBean();
+        timeSetting.setStoreId(store.getId());
+        timeSetting.setInterval(30); // 30分鐘間隔
+        timeSetting.setMealTime(120); // 120分鐘用餐時間
+
+        timeSettingRepository.save(timeSetting);
     }
 }

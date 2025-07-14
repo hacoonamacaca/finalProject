@@ -538,7 +538,7 @@ const submit = async () => {
             // 重新載入時間段數據
             await fetchTimeSlots()
         } else {
-            throw new Error(result.message || '預約失敗')
+            throw new Error(result.errorMessage || '預約失敗')
         }
     } catch (error) {
         console.error('預約失敗:', error)

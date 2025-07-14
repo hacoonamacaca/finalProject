@@ -312,7 +312,10 @@ const saveEdit = async () => {
             body: JSON.stringify(editForm.value)
         })
 
-        if (response.ok) {
+        const result = await response.json()
+        console.log('修改預約響應:', result)
+
+        if (result.success) {
             await Swal.fire({
                 title: '修改成功',
                 text: '預約資訊已更新',
@@ -325,17 +328,21 @@ const saveEdit = async () => {
                 records.value[index] = { ...records.value[index], ...editForm.value }
             }
 
+            // 只有在成功時才關閉表單
             editModalVisible.value = false
+            editingRecord.value = null
         } else {
-            throw new Error('修改失敗')
+            // 失敗時不關閉表單，讓用戶可以修正
+            throw new Error(result.errorMessage || '修改失敗')
         }
     } catch (error) {
         console.error('修改預約失敗:', error)
         await Swal.fire({
             title: '修改失敗',
-            text: '請稍後再試',
+            text: error.message || '請稍後再試',
             icon: 'error'
         })
+        // 失敗時不關閉表單，讓用戶可以修正錯誤
     } finally {
         saving.value = false
     }
@@ -405,6 +412,9 @@ const confirmRecord = async (record) => {
             })
         })
 
+        const result = await response.json()
+        console.log('確認預約響應:', result)
+
         if (response.ok) {
             await Swal.fire({
                 title: '確認成功',
@@ -418,15 +428,14 @@ const confirmRecord = async (record) => {
                 records.value[index].status = 'CONFIRMED'
             }
         } else {
-            const errorText = await response.text()
-            console.error('確認預約失敗，狀態碼:', response.status, '錯誤訊息:', errorText)
-            throw new Error(`確認失敗: ${response.status}`)
+            const errorMessage = result.errorMessage || `確認失敗: ${response.status}`
+            throw new Error(errorMessage)
         }
     } catch (error) {
         console.error('確認預約失敗:', error)
         await Swal.fire({
             title: '確認失敗',
-            text: '請稍後再試',
+            text: error.message || '請稍後再試',
             icon: 'error'
         })
     }

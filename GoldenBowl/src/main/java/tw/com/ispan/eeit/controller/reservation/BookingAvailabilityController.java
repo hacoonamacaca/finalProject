@@ -13,12 +13,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
 import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService;
-import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService.BookingAvailabilityResult;
-import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
+import tw.com.ispan.eeit.service.reservation.BookingAvailabilityResult;
+import tw.com.ispan.eeit.model.dto.reservation.ReservationDTO;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
+import tw.com.ispan.eeit.service.reservation.ReservationService;
 
 @RestController
 @RequestMapping("/api/booking")
@@ -26,6 +28,9 @@ public class BookingAvailabilityController {
 
     @Autowired
     private BookingAvailabilityService bookingAvailabilityService;
+
+    @Autowired
+    private ReservationService reservationService;
 
     /**
      * 檢查特定時間是否可預約
@@ -62,13 +67,8 @@ public class BookingAvailabilityController {
                         return bookingAvailabilityService
                                 .checkBookingAvailability(storeId, date, time, guests, duration);
                     } catch (Exception e) {
-                        BookingAvailabilityResult errorResult = new BookingAvailabilityResult();
-                        errorResult.setAvailable(false);
-                        errorResult.setReason("時間格式錯誤: " + timeStr);
-                        errorResult.setStoreId(storeId);
-                        errorResult.setDate(date);
-                        errorResult.setGuests(guests);
-                        return errorResult;
+                        return BookingAvailabilityResult.systemError("時間格式錯誤: " + timeStr,
+                                storeId, date, null, guests);
                     }
                 })
                 .toList();
@@ -86,7 +86,7 @@ public class BookingAvailabilityController {
             @RequestParam Integer guests) {
 
         List<TimeSlot> availableSlots = bookingAvailabilityService
-                .getAvailableTimeSlotsForDate(storeId, date, guests);
+                .getAvailableTimeSlots(storeId, date, guests);
 
         // 轉換為簡化的DTO，只包含必要的時段資訊
         List<Map<String, Object>> simplifiedSlots = availableSlots.stream()
@@ -142,23 +142,23 @@ public class BookingAvailabilityController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
 
         // 使用 service 層來獲取已預訂的預約
-        List<ReservationBean> bookedReservations = bookingAvailabilityService.getBookedReservations(storeId, date);
+        List<ReservationDTO> bookedReservations = bookingAvailabilityService.getBookedReservations(storeId, date);
 
         // 轉換為簡化的DTO，只包含必要的時段資訊
         List<Map<String, Object>> bookedSlots = bookedReservations.stream()
                 .filter(reservation -> {
                     // 只返回有效狀態的預約（CONFIRMED, PENDING）
-                    return reservation.getStatus() == ReservationStatus.CONFIRMED ||
-                            reservation.getStatus() == ReservationStatus.PENDING;
+                    return reservation.status() == ReservationStatus.CONFIRMED ||
+                            reservation.status() == ReservationStatus.PENDING;
                 })
                 .map(reservation -> {
                     Map<String, Object> slotMap = new java.util.HashMap<>();
-                    slotMap.put("id", reservation.getId());
+                    slotMap.put("id", reservation.id());
                     slotMap.put("storeId", storeId);
-                    slotMap.put("date", reservation.getReservedDate());
-                    slotMap.put("startTime", reservation.getReservedTime());
-                    slotMap.put("guests", reservation.getGuests());
-                    slotMap.put("status", reservation.getStatus());
+                    slotMap.put("date", reservation.reservedDate());
+                    slotMap.put("startTime", reservation.reservedTime());
+                    slotMap.put("guests", reservation.guests());
+                    slotMap.put("status", reservation.status());
                     return slotMap;
                 })
                 .toList();
@@ -179,6 +179,33 @@ public class BookingAvailabilityController {
             Map<String, Object> errorResponse = new java.util.HashMap<>();
             errorResponse.put("error", true);
             errorResponse.put("message", "獲取日曆元數據失敗: " + e.getMessage());
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+    }
+
+    /**
+     * 手動生成餐廳時段資料
+     * POST /api/booking/generate-timeslots/{storeId}
+     */
+    @PostMapping("/generate-timeslots/{storeId}")
+    public ResponseEntity<Map<String, Object>> generateTimeSlots(
+            @PathVariable Integer storeId,
+            @RequestParam(defaultValue = "30") Integer days) {
+        try {
+            // 使用 ReservationService 生成時段
+            reservationService.generateTimeSlotsForRestaurant(storeId, days);
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("success", true);
+            response.put("message", "成功生成餐廳 " + storeId + " 的 " + days + " 天時段資料");
+            response.put("storeId", storeId);
+            response.put("days", days);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new java.util.HashMap<>();
+            errorResponse.put("error", true);
+            errorResponse.put("message", "生成時段失敗: " + e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }

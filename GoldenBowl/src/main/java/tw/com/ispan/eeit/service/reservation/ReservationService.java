@@ -33,7 +33,8 @@ import tw.com.ispan.eeit.repository.reservation.TimeSlotRepository;
 import tw.com.ispan.eeit.repository.store.OpenHourRepository;
 import tw.com.ispan.eeit.repository.store.SpecialHoursRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
-import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService.BookingAvailabilityResult;
+import tw.com.ispan.eeit.service.reservation.BookingAvailabilityService;
+import tw.com.ispan.eeit.service.reservation.ReservationBuilder;
 
 @Service
 public class ReservationService {
@@ -65,8 +66,11 @@ public class ReservationService {
     @Autowired
     private BookingAvailabilityService bookingAvailabilityService;
 
+    @Autowired
+    private TableAllocationService tableAllocationService;
+
     /**
-     * 創建訂位 - 使用新的可用性檢查邏輯
+     * 🔐 核心方法：創建訂位 - 使用 Builder 模式
      */
     public ReservationBean createReservation(
             Integer userId,
@@ -88,45 +92,34 @@ public class ReservationService {
         BookingAvailabilityResult availabilityResult = bookingAvailabilityService
                 .checkBookingAvailability(storeId, reservedDate, reservedTime, guests, duration);
 
-        if (!availabilityResult.isAvailable()) {
-            throw new RuntimeException("預約失敗: " + availabilityResult.getReason());
+        if (!availabilityResult.available()) {
+            throw new RuntimeException("預約失敗: " + availabilityResult.reason());
         }
 
-        // 組合日期和時間
-        LocalDateTime reservedDateTime = LocalDateTime.of(reservedDate, reservedTime);
+        // 使用 Builder 模式創建預約
+        ReservationBean reservation = ReservationBuilder.buildPendingReservation(
+                userId, storeId, reservedDate, reservedTime, guests, duration, content);
 
-        // 查找可用桌位
-        List<TableBean> availableTables = tableRepository.findAvailableTablesByStoreIdAndMinSeats(storeId, guests);
-        if (availableTables.isEmpty()) {
-            throw new RuntimeException("沒有足夠的桌位");
-        }
-
-        // 創建訂位
-        ReservationBean reservation = new ReservationBean();
-        reservation.setUserId(userId);
-        reservation.setStoreId(storeId);
-        reservation.setReservedDate(reservedDate);
-        reservation.setReservedTime(reservedTime);
-        reservation.setGuests(guests);
-        reservation.setDuration(duration);
-        reservation.setContent(content);
-        reservation.setStatus(ReservationStatus.PENDING);
-        reservation.setCreatedAt(LocalDateTime.now());
-        reservation.setUpdatedAt(LocalDateTime.now());
-
-        // 使用智能桌位分配邏輯
+        // 使用桌位分配服務
         try {
-            List<TableBean> allocatedTables = allocateTablesForReservation(
-                    storeId, guests, reservedDate, reservedTime, duration);
+            TableAllocationService.TableAllocationResult allocationResult = tableAllocationService
+                    .allocateTables(storeId, guests, reservedDate, reservedTime, duration);
 
-            System.out.println("成功分配桌位: " + allocatedTables.size() + "個");
-            for (TableBean table : allocatedTables) {
+            if (!allocationResult.success()) {
+                throw new RuntimeException("桌位分配失敗: " + allocationResult.message());
+            }
+
+            System.out.println("成功分配桌位: " + allocationResult.tables().size() + "個");
+            System.out.println("使用策略: " + allocationResult.strategyUsed());
+
+            for (TableBean table : allocationResult.tables()) {
                 System.out.println("分配的桌位ID: " + table.getId() + ", 座位數: " + table.getSeats());
             }
 
             // 暫時不設置桌位關聯，先讓預約功能正常運作
-            // Set<TableBean> tableSet = new HashSet<>(allocatedTables);
+            // Set<TableBean> tableSet = new HashSet<>(allocationResult.tables());
             // reservation.setTables(tableSet);
+
         } catch (Exception e) {
             System.err.println("桌位分配失敗詳細錯誤: " + e.getClass().getSimpleName() + " - " + e.getMessage());
             e.printStackTrace();
@@ -137,21 +130,21 @@ public class ReservationService {
     }
 
     /**
-     * 查詢用戶的訂位記錄
+     * 🔐 核心方法：查詢用戶的訂位記錄
      */
     public List<ReservationBean> getUserReservations(Integer userId) {
         return reservationRepository.findByUserIdOrderByReservedDateDesc(userId);
     }
 
     /**
-     * 查詢餐廳的訂位記錄
+     * 🔐 核心方法：查詢餐廳的訂位記錄
      */
     public List<ReservationBean> getStoreReservations(Integer storeId) {
-        return reservationRepository.findByStoreIdOrderByReservedDateDesc(storeId);
+        return reservationRepository.findByStoreId(storeId);
     }
 
     /**
-     * 更新訂位狀態
+     * 🔐 核心方法：更新訂位狀態
      */
     public ReservationBean updateReservationStatus(Integer reservationId, ReservationStatus status) {
         ReservationBean reservation = reservationRepository.findById(reservationId)
@@ -163,7 +156,7 @@ public class ReservationService {
     }
 
     /**
-     * 取消訂位
+     * 🔐 核心方法：取消訂位
      */
     public boolean cancelReservation(Integer reservationId, Integer userId) {
         ReservationBean reservation = reservationRepository.findById(reservationId)
@@ -181,21 +174,25 @@ public class ReservationService {
     }
 
     /**
-     * 檢查指定時間是否有可用桌位 - 優化版本
+     * 🔐 核心方法：檢查指定時間是否有可用桌位
      */
     public boolean checkAvailability(Integer storeId, LocalDate date, LocalTime time, Integer guests) {
-        return checkAvailabilityWithDetails(storeId, date, time, guests, null).isAvailable();
+        return checkAvailabilityWithDetails(storeId, date, time, guests, null).available();
     }
 
     /**
-     * 檢查指定時間是否有可用桌位 - 返回詳細結果
+     * 🔐 核心方法：檢查指定時間是否有可用桌位 - 返回詳細結果
      */
     public BookingAvailabilityResult checkAvailabilityWithDetails(
             Integer storeId, LocalDate date, LocalTime time, Integer guests, Integer duration) {
         return bookingAvailabilityService.checkBookingAvailability(storeId, date, time, guests, duration);
     }
 
-    // 根據時段可用性檢查可預約性
+    // ========== 桌位管理方法 ==========
+
+    /**
+     * 根據時段可用性檢查可預約性
+     */
     public List<TableBean> getAvailableTables(Integer storeId, Integer minSeats) {
         return tableRepository.findAvailableTablesByStoreIdAndMinSeats(storeId, minSeats);
     }
@@ -247,41 +244,76 @@ public class ReservationService {
                 .orElseThrow(() -> new RuntimeException("桌位不存在: " + tableId));
     }
 
-    public boolean isTableAvailable(Integer tableId, LocalDateTime startTime, int duration) {
+    public boolean isTableAvailable(Integer tableId, LocalTime startTime, int duration) {
         TableBean table = getTableById(tableId);
         if (!table.getStatus())
             return false;
 
-        LocalDateTime endTime = startTime.plusMinutes(duration);
+        LocalTime endTime = startTime.plusMinutes(duration);
+        // 這裡假設日期為今天，實際應根據需求傳入正確日期
+        LocalDate today = LocalDate.now();
         List<ReservationBean> conflictingReservations = reservationRepository
-                .findConflictingReservations(table.getStore().getId(), startTime.toLocalDate(), startTime, endTime);
+                .findConflictingReservations(table.getStore().getId(), today, startTime, endTime);
 
         return conflictingReservations.isEmpty();
     }
 
-    // 新增方法：取得可用時段 - 使用 DTO
+    // ========== 時段查詢方法（優化版） ==========
+
+    /**
+     * 取得可用時段 - 使用 DTO，加上條件控制
+     */
     public List<TimeSlotSimpleDTO> getAvailableTimeSlots(Integer storeId) {
         StoreBean store = storeRepository.findById(storeId).orElse(null);
         if (store == null) {
-            return new ArrayList<>();
+            return List.of();
         }
 
         List<TimeSlot> timeSlots = timeSlotRepository.findAvailableTimeSlotsByStore(store);
         return convertToTimeSlotSimpleDTO(timeSlots, storeId);
     }
 
-    // 新增方法：取得簡化的時段資料 - 使用 DTO
+    /**
+     * 取得簡化的時段資料 - 加上條件控制
+     */
     public List<TimeSlotSimpleDTO> getAvailableTimeSlotsSimple(Integer storeId) {
         StoreBean store = storeRepository.findById(storeId).orElse(null);
         if (store == null) {
-            return new ArrayList<>();
+            return List.of();
         }
 
         List<TimeSlot> timeSlots = timeSlotRepository.findAvailableTimeSlotsByStore(store);
         return convertToTimeSlotSimpleDTO(timeSlots, storeId);
     }
 
-    // 工具方法：轉換 TimeSlot 為 TimeSlotSimpleDTO
+    /**
+     * 取得可用時段（根據人數篩選）
+     */
+    public List<TimeSlotSimpleDTO> getAvailableTimeSlotsByGuests(Integer storeId, Integer guests) {
+        StoreBean store = storeRepository.findById(storeId).orElse(null);
+        if (store == null) {
+            return List.of();
+        }
+
+        List<TimeSlot> timeSlots = timeSlotRepository.findAvailableTimeSlotsByStore(store);
+
+        // 根據人數篩選並排序
+        return timeSlots.stream()
+                .filter(slot -> {
+                    BookingAvailabilityResult result = bookingAvailabilityService
+                            .checkBookingAvailability(storeId, slot.getDay(), slot.getStartTime(), guests, 120);
+                    return result.available();
+                })
+                .sorted(Comparator.comparing(TimeSlot::getStartTime))
+                .map(slot -> convertToTimeSlotSimpleDTO(slot, storeId))
+                .toList();
+    }
+
+    // ========== 工具方法 ==========
+
+    /**
+     * 工具方法：轉換 TimeSlot 為 TimeSlotSimpleDTO
+     */
     private List<TimeSlotSimpleDTO> convertToTimeSlotSimpleDTO(List<TimeSlot> timeSlots, Integer storeId) {
         return timeSlots.stream()
                 .map(slot -> new TimeSlotSimpleDTO(
@@ -294,7 +326,9 @@ public class ReservationService {
                 .toList();
     }
 
-    // 工具方法：轉換單個 TimeSlot 為 TimeSlotSimpleDTO
+    /**
+     * 工具方法：轉換單個 TimeSlot 為 TimeSlotSimpleDTO
+     */
     private TimeSlotSimpleDTO convertToTimeSlotSimpleDTO(TimeSlot timeSlot, Integer storeId) {
         return new TimeSlotSimpleDTO(
                 timeSlot.getId(),
@@ -304,6 +338,8 @@ public class ReservationService {
                 timeSlot.getEndTime(),
                 timeSlot.getIsActive());
     }
+
+    // ========== 其他方法保持不變 ==========
 
     // 新增方法：創建訂位（重載版本）
     public ReservationBean createReservation(ReservationBean reservation, List<Integer> tableIds) {
@@ -600,7 +636,7 @@ public class ReservationService {
 
     // TimeSlot 相關方法 - 更新為使用 DTO
     public List<TimeSlotSimpleDTO> getAvailableTimeSlotsByDate(Integer storeId, LocalDate date, Integer guests) {
-        List<TimeSlot> timeSlots = bookingAvailabilityService.getAvailableTimeSlotsForDate(storeId, date, guests);
+        List<TimeSlot> timeSlots = bookingAvailabilityService.getAvailableTimeSlots(storeId, date, guests);
         return convertToTimeSlotSimpleDTO(timeSlots, storeId);
     }
 

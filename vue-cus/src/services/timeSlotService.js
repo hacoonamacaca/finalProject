@@ -175,6 +175,22 @@ export const createReservation = async (reservationData) => {
         const response = await axios.post('/api/reservations', reservationData)
 
         console.log('createReservation - API 響應:', response.data)
+
+        // 檢查新的 ApiResponse 格式
+        if (response.data && typeof response.data === 'object') {
+            if (response.data.success !== undefined) {
+                // 新的 ApiResponse 格式
+                return response.data
+            } else {
+                // 舊格式，包裝成新格式
+                return {
+                    success: true,
+                    data: response.data,
+                    errorMessage: null
+                }
+            }
+        }
+
         return response.data
     } catch (error) {
         console.error('創建預約失敗:', error)
@@ -183,6 +199,16 @@ export const createReservation = async (reservationData) => {
             response: error.response?.data,
             status: error.response?.status
         })
+
+        // 返回錯誤格式
+        if (error.response?.data && error.response.data.errorMessage) {
+            return {
+                success: false,
+                data: null,
+                errorMessage: error.response.data.errorMessage
+            }
+        }
+
         throw error
     }
 }

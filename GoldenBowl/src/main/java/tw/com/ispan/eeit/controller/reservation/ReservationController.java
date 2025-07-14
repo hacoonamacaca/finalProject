@@ -1,6 +1,7 @@
 package tw.com.ispan.eeit.controller.reservation;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -14,6 +15,10 @@ import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
 import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
 import tw.com.ispan.eeit.service.reservation.ReservationService;
+import tw.com.ispan.eeit.model.dto.reservation.ReservationDTO;
+import tw.com.ispan.eeit.model.dto.reservation.ReservationSearchRequest;
+import tw.com.ispan.eeit.service.reservation.ReservationQueryService;
+import tw.com.ispan.eeit.model.dto.common.ApiResponse;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -25,6 +30,38 @@ public class ReservationController {
 
     @Autowired
     private ReservationService reservationService;
+
+    @Autowired
+    private ReservationQueryService reservationQueryService;
+
+    /**
+     * 創建新預約
+     */
+    @PostMapping
+    public ResponseEntity<ApiResponse<ReservationBean>> createReservation(@RequestBody ReservationDTO request) {
+        try {
+            // 檢查是否為創建預約的請求（有 userId 和 storeId）
+            if (request.userId() == null || request.storeId() == null) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("缺少必要參數：userId 或 storeId"));
+            }
+
+            ReservationBean reservation = reservationService.createReservation(
+                    request.userId(),
+                    request.storeId(),
+                    request.reservedDate(),
+                    request.reservedTime(),
+                    request.guests(),
+                    request.duration(),
+                    request.content());
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.success(reservation));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(ApiResponse.error("預約創建失敗: " + e.getMessage()));
+        }
+    }
 
     /**
      * 取得用戶的所有預約紀錄
@@ -58,21 +95,34 @@ public class ReservationController {
      * 修改預約資訊
      */
     @PutMapping("/{id}")
-    public ResponseEntity<ReservationBean> updateReservation(
+    public ResponseEntity<ApiResponse<ReservationBean>> updateReservation(
             @PathVariable Integer id,
             @RequestBody ReservationUpdateRequest request) {
         try {
             Optional<ReservationBean> existingReservation = reservationRepository.findById(id);
             if (existingReservation.isEmpty()) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(ApiResponse.error("預約不存在"));
             }
 
             ReservationBean reservation = existingReservation.get();
 
-            // 檢查是否可以修改（未過期且狀態為已確認）
+            // 添加調試日誌
+            System.out.println("=== 修改預約調試資訊 ===");
+            System.out.println("預約ID: " + id);
+            System.out.println("預約日期: " + reservation.getReservedDate());
+            System.out.println("預約狀態: " + reservation.getStatus());
+            System.out.println("今天日期: " + LocalDate.now());
+            System.out.println("是否為今天或未來: " + (reservation.getReservedDate().isAfter(LocalDate.now())
+                    || reservation.getReservedDate().isEqual(LocalDate.now())));
+            System.out.println("狀態是否允許編輯: " + (ReservationStatus.PENDING.equals(reservation.getStatus())
+                    || ReservationStatus.CONFIRMED.equals(reservation.getStatus())));
+            System.out.println("canEditReservation 結果: " + canEditReservation(reservation));
+
+            // 檢查是否可以修改（未過期且狀態為待確認或已確認）
             if (!canEditReservation(reservation)) {
                 return ResponseEntity.badRequest()
-                        .body(null); // 可以返回錯誤訊息
+                        .body(ApiResponse.error("此預約不可編輯"));
             }
 
             // 更新預約資訊
@@ -84,9 +134,10 @@ public class ReservationController {
             }
 
             ReservationBean updatedReservation = reservationRepository.save(reservation);
-            return ResponseEntity.ok(updatedReservation);
+            return ResponseEntity.ok(ApiResponse.success(updatedReservation));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("修改預約失敗: " + e.getMessage()));
         }
     }
 
@@ -211,26 +262,82 @@ public class ReservationController {
     }
 
     /**
+     * 通用搜尋 API
+     */
+    @GetMapping("/search")
+    public ResponseEntity<List<ReservationDTO>> search(@ModelAttribute ReservationSearchRequest request) {
+        return ResponseEntity.ok(reservationQueryService.searchReservations(request));
+    }
+
+    /**
+     * 查詢用戶未來預約
+     */
+    @GetMapping("/user/{userId}/upcoming")
+    public ResponseEntity<List<ReservationBean>> getUserUpcomingReservations(
+            @PathVariable Integer userId) {
+        return ResponseEntity.ok(reservationQueryService.findUpcomingReservationsByUserId(userId));
+    }
+
+    /**
+     * 查詢用戶歷史預約
+     */
+    @GetMapping("/user/{userId}/historical")
+    public ResponseEntity<List<ReservationBean>> getUserHistoricalReservations(
+            @PathVariable Integer userId) {
+        return ResponseEntity.ok(reservationQueryService.findHistoricalReservationsByUserId(userId));
+    }
+
+    /**
+     * 查詢餐廳未來預約
+     */
+    @GetMapping("/store/{storeId}/upcoming")
+    public ResponseEntity<List<ReservationBean>> getStoreUpcomingReservations(
+            @PathVariable Integer storeId) {
+        return ResponseEntity.ok(reservationQueryService.findUpcomingReservationsByStoreId(storeId));
+    }
+
+    /**
+     * 查詢特定狀態的預約
+     */
+    @GetMapping("/status/{status}")
+    public ResponseEntity<List<ReservationDTO>> getReservationsByStatus(
+            @PathVariable ReservationStatus status) {
+        return ResponseEntity.ok(reservationQueryService.findReservationsByStatus(status));
+    }
+
+    /**
+     * 查詢特定日期的預約
+     */
+    @GetMapping("/date/{date}")
+    public ResponseEntity<List<ReservationDTO>> getReservationsByDate(
+            @PathVariable LocalDate date) {
+        return ResponseEntity.ok(reservationQueryService.findReservationsByDate(date));
+    }
+
+    /**
      * 檢查是否可以編輯預約
      */
     private boolean canEditReservation(ReservationBean reservation) {
-        // 檢查是否未過期且狀態為已確認
+        // 檢查是否為今天或未來日期，且狀態為待確認或已確認
         LocalDate today = LocalDate.now();
         LocalDate reservedDate = reservation.getReservedDate();
 
-        return reservedDate.isAfter(today) && "CONFIRMED".equals(reservation.getStatus());
+        return (reservedDate.isAfter(today) || reservedDate.isEqual(today)) &&
+                (ReservationStatus.PENDING.equals(reservation.getStatus()) ||
+                        ReservationStatus.CONFIRMED.equals(reservation.getStatus()));
     }
 
     /**
      * 檢查是否可以取消預約
      */
     private boolean canCancelReservation(ReservationBean reservation) {
-        // 檢查是否未過期且狀態為待確認或已確認
+        // 檢查是否為今天或未來日期，且狀態為待確認或已確認
         LocalDate today = LocalDate.now();
         LocalDate reservedDate = reservation.getReservedDate();
 
-        return reservedDate.isAfter(today) &&
-                ("PENDING".equals(reservation.getStatus()) || "CONFIRMED".equals(reservation.getStatus()));
+        return (reservedDate.isAfter(today) || reservedDate.isEqual(today)) &&
+                (ReservationStatus.PENDING.equals(reservation.getStatus()) ||
+                        ReservationStatus.CONFIRMED.equals(reservation.getStatus()));
     }
 
     /**
@@ -238,7 +345,7 @@ public class ReservationController {
      */
     private boolean canConfirmReservation(ReservationBean reservation) {
         // 只有待確認狀態的預約可以確認
-        return "PENDING".equals(reservation.getStatus());
+        return ReservationStatus.PENDING.equals(reservation.getStatus());
     }
 
     /**
@@ -249,12 +356,12 @@ public class ReservationController {
         LocalDate today = LocalDate.now();
         LocalDate reservedDate = reservation.getReservedDate();
 
-        return "CONFIRMED".equals(reservation.getStatus()) &&
+        return ReservationStatus.CONFIRMED.equals(reservation.getStatus()) &&
                 (reservedDate.isBefore(today) || reservedDate.isEqual(today));
     }
 
     /**
-     * 預約更新請求 DTO
+     * 修改預約資訊請求 DTO
      */
     public static class ReservationUpdateRequest {
         private Integer guests;
