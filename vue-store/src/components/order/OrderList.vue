@@ -13,6 +13,10 @@ const emit = defineEmits(['select-order']);
 const selectOrder = (order) => {
   emit('select-order', order);
 };
+
+
+
+
 </script>
 
 <template>
@@ -31,14 +35,14 @@ const selectOrder = (order) => {
         <tbody>
           <tr v-for="order in orders" :key="order.id" @click="selectOrder(order)" class="cursor-pointer border-bottom rounded-3 overflow-hidden">
             <td>{{ order.id }}</td> 
-            <td>{{ order.time }}</td>
+            <td>{{ order.pickupTime }}</td>
             <td>{{ order.method }}</td>
-            <td>{{ order.customerName }} </td>
+            <td>{{ order.user.name }} </td>
             <td>{{ order.status }}</td>
           </tr> 
         
           <tr v-if="orders.length === 0">
-            <td colspan="5" class="text-center py-4 text-muted">沒有找到訂單。</td>
+            <td colspan="5" class="text-center py-4 text-muted">目前沒有訂單。</td>
           </tr>
         </tbody>
       </table>

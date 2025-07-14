@@ -147,13 +147,37 @@ const fetchMenuData = async (storeId) => {
         categories.splice(0, categories.length, ...categoriesResponse.data);
 
         // 🔥 NEW: 轉換 items 資料格式，確保與前端元件相容
-        const formattedItems = itemsResponse.data.map(item => ({
-            ...item,
-            status: item.isActive ? '供應中' : '停售',  // 轉換後端的 isActive 為前端的 status
-            categoryId: item.foodClassIds?.[0] || null, // 取第一個分類ID作為 categoryId
-            imageUrl: item.imgResource // 確保圖片欄位一致
-        }));
+        const formattedItems = itemsResponse.data.map(item => {
+            console.log('🔍 處理 item 資料:', item); // 除錯：查看原始資料
 
+            // 🔥 關鍵修正：通過 categoryName 找到對應的 categoryId
+            let categoryId = null;
+            if (item.categoryName) {
+                const matchedCategory = categoriesResponse.data.find(cat => 
+                    cat.name === item.categoryName
+                );
+                if (matchedCategory) {
+                    categoryId = matchedCategory.id;
+                    console.log(`   📋 找到分類匹配: "${item.categoryName}" → ID: ${categoryId}`);
+                } else {
+                    console.warn(`   ⚠️ 找不到分類: "${item.categoryName}"`);
+                }
+            } else if (item.foodClassIds && item.foodClassIds.length > 0) {
+                // 備用：如果有 foodClassIds，使用第一個
+                categoryId = item.foodClassIds[0];
+                console.log(`   📋 使用 foodClassIds: ${categoryId}`);
+            }
+
+            return {
+                ...item,
+                status: item.isActive ? '供應中' : '停售',  // 轉換後端的 isActive 為前端的 status
+                categoryId: categoryId, // 🔥 使用找到的 categoryId
+                imgResource: item.imgResource || item.imageUrl || item.image || '', // 確保圖片欄位存在
+                imageUrl: item.imgResource || item.imageUrl || item.image || '' // 備用圖片欄位
+            };
+        });
+
+        console.log('✅ 格式化後的 items:', formattedItems);
         items.splice(0, items.length, ...formattedItems);
         // specs.splice(0, specs.length, ...specsResponse.data);
 
@@ -185,7 +209,7 @@ const fetchMenuData = async (storeId) => {
 // });
 
 onMounted(async () => {
-    // 🔥 NEW: 先載入用戶資料，再載入菜單資料
+    // 🔥 NEW: 先載入資料和店家列表，再載入菜單資料
     await loadUserData()
     
     // 如果有選中的店家，就載入菜單資料
@@ -195,9 +219,19 @@ onMounted(async () => {
 });
 
 // 【修改】監聽 selectedStore 的變化，當使用者切換店家時，重新獲取資料
-watch(selectedStore, (newStoreId) => {
-    if (newStoreId) {
-        fetchMenuData(newStoreId);
+watch(selectedStore, async (newStoreId, oldStoreId) => {
+    console.log('👀 監聽到 selectedStore 變化:', { 
+        from: oldStoreId, 
+        to: newStoreId 
+    });
+    
+    if (newStoreId && newStoreId !== oldStoreId) {
+        console.log(`🔄 切換店家：從 ${oldStoreId} 到 ${newStoreId}，重新載入資料`);
+        await fetchMenuData(newStoreId);
+        
+        // 🔥 NEW: 更新 localStorage 中的 storeId
+        localStorage.setItem('storeId', String(newStoreId));
+        console.log('💾 已更新 localStorage 中的 storeId:', newStoreId);
     }
 });
 

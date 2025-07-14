@@ -49,7 +49,7 @@
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="/menu" class="nav-link" active-class="active-link">
+                                <router-link to="/store/menu" class="nav-link" active-class="active-link">
                                     <i class="fas fa-utensils fa-fw me-2"></i> 菜單管理
                                 </router-link>
                             </li>
@@ -66,7 +66,7 @@
                         <h6 class="section-title">主要功能設定</h6>
                         <ul class="nav flex-column mb-2">
                             <li class="nav-item">
-                                <router-link to="/orders" class="nav-link" active-class="active-link">
+                                <router-link to="/store/orders" class="nav-link" active-class="active-link">
                                     <i class="fas fa-file-invoice fa-fw me-2"></i> 訂單管理
                                 </router-link>
                             </li>
@@ -76,7 +76,7 @@
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="/hours" class="nav-link" active-class="active-link">
+                                <router-link to="/store/hours" class="nav-link" active-class="active-link">
                                     <i class="fas fa-clock fa-fw me-2"></i> 營業時間
                                 </router-link>
                             </li>

@@ -1,6 +1,8 @@
 <script setup>
 import { computed, watch, nextTick } from 'vue';
 import { Collapse } from 'bootstrap'; // 導入 Bootstrap 的 Collapse 模組
+import Swal from 'sweetalert2';
+import axios from '@/plungins/axios.js';
 
 const props = defineProps({
   order: {
@@ -9,34 +11,53 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['close-detail']);
+const emit = defineEmits(['cancel-order','close-Sidebar','confirm-order','complete-order']);
 
-// 計算訂單總金額
-const orderTotalAmount = computed(() => {
-  if (!props.order || !props.order.items) return 0;
-  return props.order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-});
 
-// 計算訂單總數量
-const orderTotalQuantity = computed(() => {
-  if (!props.order || !props.order.items) return 0;
-  return props.order.items.reduce((sum, item) => sum + item.quantity, 0);
-});
-
-const closeDetail = () => {
-  emit('close-detail');
-};
 
 // 新增的取消訂單方法
 const cancelOrder = () => {
   // 這裡可以添加確認對話框，例如使用自定義模態框，而不是 alert
-  // alert('取消訂單功能待實現');
-  if (confirm('確定要取消此訂單嗎？')) { // 臨時使用 confirm，實際專案中請使用自定義模態框
-    emit('cancel-order', props.order.id); // 發送事件到父組件，傳遞訂單ID
-    closeDetail(); // 取消後關閉詳情面板
-  }
+  Swal.fire({
+  title: "確定取消訂單?",
+  text: "取消後無法修改狀態",
+  icon: "warning",
+  showCancelButton: true,
+  confirmButtonColor: "#d33" ,
+  cancelButtonColor: "#3085d6",
+  confirmButtonText: "取消",
+  cancelButtonText: "再考慮",
+  allowOutsideClick: false // 禁止点击外部区域关闭
+  }).then((result) => {
+    if (result.isConfirmed) {
+      emit('cancel-order', props.order.id); // 發送事件到父組件，傳遞訂單ID
+      Swal.fire({
+        title: "取消成功",
+        text: "訂單已取消",
+        icon: "success",
+        timer: 1200 
+      }).then((timerResult) => {
+        // 這個 .then() 會在 timer 結束後觸發
+        if (timerResult.dismiss === Swal.DismissReason.timer||timerResult) {
+          emit('close-Sidebar') // 計時器結束後，關閉詳情面板
+        }
+
+
+      })
+    }
+});
+
 };
 
+const confirmOrder = () => {
+  props.order.status = '準備中';
+  emit('confirm-order', props.order.id)
+ 
+};
+const completeOrder = () => {
+  props.order.status = '已完成';
+  emit('complete-order', props.order.id)
+};
 
 // 監聽 order 屬性的變化，用於手動控制手風琴狀態
 watch(() => props.order, (newOrder) => {
@@ -62,10 +83,7 @@ watch(() => props.order, (newOrder) => {
 
 <template>
   <div v-if="order" class="h-100 d-flex flex-column p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h4 class="mb-0">{{ order.customerName }}</h4>
-      <button class="btn-close" @click="closeDetail"></button>
-    </div>
+
 
     <div class="flex-grow-1 overflow-auto pe-2">
       <div class="d-flex align-items-center mb-4">
@@ -73,41 +91,44 @@ watch(() => props.order, (newOrder) => {
           <i class="fas fa-user"></i>
         </div>
         <div>
-          <p class="mb-0 fw-bold">{{ order.customerName }}</p>
-          <p class="mb-0 text-muted small">{{ order.timeline.length }} 份訂單</p>
+          <p class="mb-0 fw-bold">{{ order.user.name }}</p>
+          <!-- <p class="mb-0 text-muted small">{{ order.timeline.length }} 份訂單</p> -->
         </div>
       </div>
 
       <hr>
 
       <h5 class="mb-3">訂單 {{ order.id }}</h5>
-      <p class="text-muted small mb-4">取餐時間：{{ order.date }}, {{ order.time }}</p>
+      <p class="text-muted small mb-4">取餐時間：{{ order.pickupTime }}</p>
 
-      <div v-for="item in order.items" :key="item.name" class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
+      <div v-for="item in order.orderDetails" :key="item.name" class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
         <div class="d-flex align-items-baseline">
           <span class="badge bg-secondary rounded-pill me-2">{{ item.quantity }}</span>
           <div>
-            <p class="mb-0 fw-bold">{{ item.name }}</p>
-            <p v-if="item.note" class="mb-0 text-muted small">規格: {{ item.note }}</p>
+            <p class="mb-0 fw-bold">{{ item.food.name }}</p>
+            <!-- <p v-if="item.note" class="mb-0 text-muted small">規格: {{ item.note }}</p> -->
           </div>
         </div>
-        <p class="mb-0 fw-bold text-end">NT$ {{ item.price.toFixed(2) }}</p>
+        <p class="mb-0 fw-bold text-end">NT$ {{ item.price }}</p>
       </div>
       <!-- v-if="order.note" -->
       <div  class="mt-auto pt-3 border-top mb-3 p-3 bg-light rounded">
         <h6 class="mb-2 fw-bold">備註:</h6>
-        <p class="mb-0 text-muted small">麻煩多給我一副餐具{{ order.note }}</p>
+        <p class="mb-0 text-muted small">麻煩多給我一副餐具{{ order.content }}</p>
       </div>
 
     </div>
 
     <div class="mt-auto pt-3 border-top">
       <div class="d-flex justify-content-between mb-2">
-        <span class="fw-bold">總計 ({{ orderTotalQuantity }} 項)</span>
-        <span class="fw-bold">NT$ {{ orderTotalAmount.toFixed(2) }}</span>
+        <span class="fw-bold">總計 ({{ order.orderDetails.length }} 項)</span>
+        <span class="fw-bold">NT$ {{ order.total }}</span>
       </div>
-      <div class="d-flex gap-2"> <button class="btn btn-outline-danger w-100 py-3 rounded-pill fw-bold" @click="cancelOrder">取消訂單</button>
-        <button class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold">確認訂單
+      <div class="d-flex gap-2"> 
+        <button v-if="order.status!='已取消' && order.status!='已完成' " class="btn btn-outline-danger w-100 py-3 rounded-pill fw-bold" @click="cancelOrder">取消訂單</button>
+        <button v-if="order.status=='待確認'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="confirmOrder">確認訂單
+        </button>
+        <button v-if="order.status=='準備中'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="completeOrder">完成訂單，代取餐
         </button>
       </div>
     </div>
@@ -126,7 +147,12 @@ watch(() => props.order, (newOrder) => {
 .btn-close {
   font-size: 1.25rem;
 }
-
+.my-swal-popup {
+  z-index: 1060 !important;
+}
+.my-swal-backdrop {
+  z-index: 1055 !important;
+}
 
 
 /* 時間線段 satart */
