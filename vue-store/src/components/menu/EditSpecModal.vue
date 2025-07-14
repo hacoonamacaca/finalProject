@@ -1,81 +1,5 @@
-<template>
-    <!-- Modal 的背景遮罩 -->
-    <div class="modal-backdrop fade show"></div>
-    <!-- Modal 主體 -->
-    <div class="modal fade show d-block" tabindex="-1">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">{{ title }}</h5>
-                    <button type="button" class="btn-close" @click="handleClose"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- 規格設定 -->
-                    <h6 class="mb-3">客製化規格設定</h6>
-
-                    <div class="mb-3">
-                        <label class="form-label">規格名稱*</label>
-                        <input type="text" class="form-control" v-model="form.name">
-                    </div>
-
-                    <div class="row mb-4">
-                        <div class="col">
-                            <label class="form-label">最少選擇*</label>
-                            <input type="number" class="form-control" v-model.number="form.minSelection" min="0">
-                            <!--最小值為0-->
-                        </div>
-                        <div class="col">
-                            <label class="form-label">最多選擇</label>
-                            <input type="number" class="form-control" v-model.number="form.maxSelection" min="1">
-                            <!--最小值為1-->
-                        </div>
-                    </div>
-
-                    <!-- 規格選項列表 -->
-                    <h6 class="mb-3">客製化規格選項</h6>
-                    <!-- 使用 v-for 遍歷 form.options 陣列 -->
-                    <div v-for="(option, index) in form.options" :key="option.id || index"
-                        class="row align-items-center mb-3">
-                        <div class="col-4">
-                            <label v-if="index === 0" class="form-label">選項名稱*</label>
-                            <input type="text" class="form-control" placeholder="例如: 全糖" v-model="option.name">
-                        </div>
-                        <div class="col-3">
-                            <label v-if="index === 0" class="form-label">加價*</label>
-                            <input type="number" class="form-control" placeholder="0" v-model.number="option.price"
-                                min="0">
-                        </div>
-                        <div class="col-4">
-                            <label v-if="index === 0" class="form-label">供應狀態*</label>
-                            <select class="form-select" v-model="option.status">
-                                <option>供應中</option>
-                                <option>暫停供應</option>
-                            </select>
-                        </div>
-                        <div class="col-1 d-flex align-items-end">
-                            <button class="btn btn-outline-danger btn-sm" @click="removeOption(index)">🗑️</button>
-                        </div>
-                    </div>
-                    <!-- 新增選項按鈕 -->
-                    <button class="btn btn-outline-primary btn-sm" @click="addOption">⊕ 新增客製化選項</button>
-                </div>
-
-                <div class="modal-footer justify-content-between">
-                    <!-- 條件應該是 props.spec ，不是 spec -->
-                    <button v-if="props.spec" type="button" class="btn btn-danger" @click="handleDelete">刪除規格</button>
-                    <div v-else></div> <!-- 占位符，讓按鈕保持在右邊 -->
-                    <div>
-                        <button type="button" class="btn btn-secondary me-2" @click="handleClose">取消</button>
-                        <button type="button" class="btn btn-primary" @click="handleSave">確定提交</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script setup>
-import { ref, watchEffect, computed } from 'vue';
+import { ref, watchEffect } from 'vue';
 
 // 1. 定義 Props：只接收 spec 物件
 const props = defineProps({
@@ -113,7 +37,7 @@ watchEffect(() => {
 });
 
 // 5. 動態標題
-const title = computed(() => props.spec ? '編輯客製化規格' : '新增客製化規格');
+// const title = computed(() => props.spec ? '編輯客製化規格' : '新增客製化規格');
 
 // 6. 新增/刪除選項的方法
 const addOption = () => {
@@ -138,13 +62,88 @@ const handleSave = () => {
 
 const handleDelete = () => {
     // 把要刪除的 id 傳回去
-    // if (props.spec && props.spec.id) {
     if (props.spec?.id) {  // 使用可選鏈 ?. 更安全
         emit('delete', props.spec.id);
     }
 };
 
+// 這個 handleClose 主要是為了讓父組件能接收到關閉訊號，例如在儲存成功後觸發
 const handleClose = () => {
     emit('close');
 };
 </script>
+
+<template>
+    <div>
+        <form @submit.prevent="handleSave">
+            <!-- 規格設定 -->
+            <h6 class="mb-3">客製化規格設定</h6>
+            <div class="mb-3">
+                <label for="specName" class="form-label">規格名稱*</label>
+                <input type="text" id="specName" class="form-control" v-model="form.name" required>
+            </div>
+            <div class="row mb-4">
+                <div class="col">
+                    <label for="minSelect" class="form-label">最少選擇*</label>
+                    <input type="number" id="minSelect" class="form-control" v-model.number="form.minSelect" min="0" required>
+                </div>
+                <div class="col">
+                    <label for="maxSelect" class="form-label">最多選擇*</label>
+                    <input type="number" id="maxSelect" class="form-control" v-model.number="form.maxSelection" min="1" required>
+                </div>
+            </div>
+
+            <hr class="my-4">
+
+            <!-- 規格選項列表 -->
+            <h6 class="mb-3">客製化規格選項</h6>
+
+            <!-- 1. 將標籤作為一個固定的表頭 -->
+            <div class="row gx-2 mb-2 d-none d-md-flex">
+                <div class="col-4"><small class="text-muted">選項名稱*</small></div>
+                <div class="col-3"><small class="text-muted">加價*</small></div>
+                <div class="col-4"><small class="text-muted">供應狀態*</small></div>
+                <div class="col-1"></div>
+            </div>
+
+            <!-- 2. 使用 v-for 遍歷選項 -->
+            <div v-for="(option, index) in form.options" :key="option.id || index" class="row gx-2 align-items-center mb-2">
+                <div class="col-12 col-md-4 mb-2 mb-md-0">
+                    <input type="text" class="form-control" placeholder="例如: 全糖" v-model="option.name" required>
+                </div>
+                <div class="col-12 col-md-3 mb-2 mb-md-0">
+                    <input type="number" class="form-control" placeholder="0" v-model.number="option.price" min="0" required>
+                </div>
+                <div class="col-12 col-md-4 mb-2 mb-md-0">
+                    <select class="form-select" v-model="option.status">
+                        <option value="供應中">供應中</option>
+                        <option value="暫停供應">暫停供應</option>
+                    </select>
+                </div>
+                <div class="col-12 col-md-1 d-flex justify-content-end">
+                    <button type="button" class="btn btn-outline-danger btn-sm" @click="removeOption(index)" :disabled="form.options.length <= 1">
+                        🗑️
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. 新增選項按鈕 -->
+            <div class="mt-3">
+                <button type="button" class="btn btn-outline-primary btn-sm" @click="addOption">
+                    ⊕ 新增客製化選項
+                </button>
+            </div>
+
+            <!-- 4. 頁腳按鈕區，用一個固定的容器把它推到最下面 -->
+            <hr class="my-4">
+            <div class="d-flex justify-content-between">
+                <button v-if="props.spec" type="button" class="btn btn-danger" @click="handleDelete">刪除規格</button>
+                <div v-else></div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-secondary" @click="handleClose">取消</button>
+                    <button type="submit" class="btn btn-primary">確定提交</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</template>

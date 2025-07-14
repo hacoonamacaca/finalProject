@@ -21,18 +21,12 @@ import tw.com.ispan.eeit.repository.store.StoreRepository;
 
 @Service
 public class PromotionService {
-	
-	@Autowired
+
+    @Autowired
     private PromotionRepository promotionRepository;
-	
-	@Autowired
-	private StoreRepository storeRepository;
-
-	@Autowired
-	private TagRepository tagRepository;
-
-	@Autowired
-	private PlanRepository planRepository;
+    private StoreRepository storeRepository;
+    private TagRepository tagRepository;
+    private PlanRepository planRepository;
     
     // 查詢全部優惠券（後台管理）
     public List<PromotionBean> findAll() {
@@ -69,7 +63,7 @@ public class PromotionService {
         bean.setUserUsageLimit(dto.getUserUsageLimit());
         bean.setStatus("ACTIVE");
         bean.setCreatedTime(LocalDateTime.now());
-        
+
         // ✅ 預設時間區間
         bean.setStartTime(dto.getStartTime() != null ? dto.getStartTime() : LocalDateTime.now().minusHours(1));
         bean.setEndTime(dto.getEndTime() != null ? dto.getEndTime() : LocalDateTime.now().plusDays(7));
