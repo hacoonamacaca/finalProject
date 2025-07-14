@@ -3,6 +3,11 @@
 
   <SearchSection v-model:initialSearch="searched" @search="updateSearchQuery" />
 
+  <TopFilterButtons
+    v-model="sortOption"
+    @search-keyword="handleTopFilterSearch"
+  />
+
   <div class="filter-toggle" @click="toggleSidebar">篩選條件</div>
   <div class="content-container">
     <aside class="sidebar" :class="{ active: isSidebarActive }">
@@ -62,6 +67,7 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     return R * c; // 距離，單位公里
 };
 
+
 onMounted(async () => { // 這裡應該是 async，因為 getCurrentLocation 是 async 的
   // 首次載入時，嘗試獲取當前位置。
   // 只有當成功獲取位置後，或者已經有緩存位置，才去載入餐廳。
@@ -102,6 +108,26 @@ const updateSearchQuery = (searchTerm) => {
   fetchStoresByDisplayMode(); // 當搜尋詞改變時，重新從後端獲取資料
 };
 
+const resetSidebarFilters = () => {
+  filters.value.category = [];
+  filters.value.minscore = 0;
+  filters.value.isOpen = false;
+};
+
+// 處理來自 TopFilterButtons 的搜尋關鍵字
+const handleTopFilterSearch = (keyword) => {
+  console.log('Home.vue: 收到 TopFilterButtons 發出的搜尋關鍵字:', keyword);
+
+  // 清空所有側邊欄篩選，確保推薦搜尋的獨立性
+  resetSidebarFilters();
+
+  // 將關鍵字設定給實際的搜尋參數 `searchQuery`
+  searchQuery.value = keyword;
+  // **不修改 `searched.value`，這樣搜尋欄位的顯示就不會改變**
+
+  // 直接觸發重新獲取資料
+  fetchStoresByDisplayMode();
+};
 
 // 餐廳數據 (從後端取得)
 const allStores = ref([]); // 存放從後端取得的原始 Store 數據
