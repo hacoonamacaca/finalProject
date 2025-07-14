@@ -7,17 +7,27 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import tw.com.ispan.eeit.model.dto.plan.PlanDTO;
+import tw.com.ispan.eeit.model.dto.promotion.PromotionCreateDTO;
 import tw.com.ispan.eeit.model.dto.promotion.PromotionDTO;
+import tw.com.ispan.eeit.model.dto.promotion.PromotionUpdateDTO;
+import tw.com.ispan.eeit.model.entity.food.TagBean;
+import tw.com.ispan.eeit.model.entity.plan.PlanBean;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
+import tw.com.ispan.eeit.model.entity.store.StoreBean;
+import tw.com.ispan.eeit.repository.food.TagRepository;
+import tw.com.ispan.eeit.repository.plan.PlanRepository;
 import tw.com.ispan.eeit.repository.promotion.PromotionRepository;
+import tw.com.ispan.eeit.repository.store.StoreRepository;
 
 @Service
 public class PromotionService {
 
     @Autowired
     private PromotionRepository promotionRepository;
-
+    private StoreRepository storeRepository;
+    private TagRepository tagRepository;
+    private PlanRepository planRepository;
+    
     // 查詢全部優惠券（後台管理）
     public List<PromotionBean> findAll() {
         return promotionRepository.findAll();
@@ -41,40 +51,60 @@ public class PromotionService {
     }
 
     // 新增優惠券
-    public PromotionBean create(PromotionBean promotion) {
-        promotion.setCreatedTime(LocalDateTime.now());
-        promotion.setUpdatedTime(LocalDateTime.now());
-        return promotionRepository.save(promotion);
-    }
+    public PromotionBean createFromDTO(PromotionCreateDTO dto) {
+        PromotionBean bean = new PromotionBean();
+        bean.setTitle(dto.getTitle());
+        bean.setDescription(dto.getDescription());
+        bean.setDiscountType(dto.getDiscountType());
+        bean.setDiscountValue(dto.getDiscountValue());
+        bean.setMinSpend(dto.getMinSpend());
+        bean.setCode(dto.getCode());
+        bean.setMaxUsage(dto.getMaxUsage());
+        bean.setUserUsageLimit(dto.getUserUsageLimit());
+        bean.setStatus("ACTIVE");
+        bean.setCreatedTime(LocalDateTime.now());
 
-    // 修改優惠券
-    public PromotionBean update(Integer id, PromotionBean newData) {
-        Optional<PromotionBean> optional = promotionRepository.findById(id);
+        // ✅ 預設時間區間
+        bean.setStartTime(dto.getStartTime() != null ? dto.getStartTime() : LocalDateTime.now().minusHours(1));
+        bean.setEndTime(dto.getEndTime() != null ? dto.getEndTime() : LocalDateTime.now().plusDays(7));
 
-        if (optional.isPresent()) {
-            PromotionBean p = optional.get();
-            p.setTitle(newData.getTitle());
-            p.setDescription(newData.getDescription());
-            p.setDiscountType(newData.getDiscountType());
-            p.setDiscountValue(newData.getDiscountValue());
-            p.setMinSpend(newData.getMinSpend());
-            p.setStartTime(newData.getStartTime());
-            p.setEndTime(newData.getEndTime());
-            p.setPlan(newData.getPlan());
-            p.setStore(newData.getStore());
-            p.setTag(newData.getTag());
-            p.setCode(newData.getCode());
-            p.setMaxUsage(newData.getMaxUsage());
-            p.setUserUsageLimit(newData.getUserUsageLimit());
-            p.setStatus(newData.getStatus());
-            p.setUpdatedTime(LocalDateTime.now());
-            p.setCreatedTime(null); // 防止意外改到原本建立時間
-
-            return promotionRepository.save(p);
+        // 關聯條件綁定
+        if (dto.getStoreId() != null) {
+            StoreBean store = storeRepository.findById(dto.getStoreId()).orElse(null);
+            bean.setStore(store);
         }
 
-        return null;
+        if (dto.getTagId() != null) {
+            TagBean tag = tagRepository.findById(dto.getTagId()).orElse(null);
+            bean.setTag(tag);
+        }
+
+        if (dto.getPlanId() != null) {
+            PlanBean plan = planRepository.findById(dto.getPlanId()).orElse(null);
+            bean.setPlan(plan);
+        }
+
+        return promotionRepository.save(bean);
     }
+
+
+    // 修改優惠券
+    public PromotionBean updateFromDTO(Integer id, PromotionUpdateDTO dto) {
+        PromotionBean p = promotionRepository.findById(id).orElseThrow();
+
+        p.setTitle(dto.getTitle());
+        p.setDescription(dto.getDescription());
+        // ... 依序更新欄位
+
+        // 如果關聯 id 有傳才更新關聯
+        if (dto.getStoreId() != null) {
+            StoreBean store = storeRepository.findById(dto.getStoreId()).orElse(null);
+            p.setStore(store);
+        }
+
+        return promotionRepository.save(p);
+    }
+
 
     // 刪除優惠券
     public void deleteById(Integer id) {

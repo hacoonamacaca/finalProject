@@ -27,7 +27,7 @@
         <UserDropdown v-if="isLoggedIn" />
       </div>
       <div class="nav-items">
-        <a href="#" @click.prevent="restaurantDisplayStore.toggleDisplayMode()"
+        <a v-if="route.path === '/search'" href="#" @click.prevent="restaurantDisplayStore.toggleDisplayMode()"
           :title="restaurantDisplayStore.showAllRestaurants ? '顯示已收藏' : '顯示全部'"
           class="nav-item d-flex align-items-center gap-2">
           <i :class="restaurantDisplayStore.showAllRestaurants ? 'fas fa-heart' : 'fas fa-store'"></i>
@@ -56,9 +56,15 @@
     </div>
   </header>
 
+  
+  <!-- 購物車模態框 -->
   <CartModal v-if="isCartVisible" :cartByRestaurant="cartByRestaurant" :totalAmount="totalAmount" @close="hideCart"
     @update-quantity="updateQuantity" @remove-item="removeItem" @checkout-restaurant="handleCheckoutRestaurant"
-    @checkout-all="handleCheckoutAll" @clear-restaurant="clearRestaurant" />
+    @clear-restaurant="clearRestaurant" />
+    <!-- 預備結帳畫面  ted--> 
+  <CheckOrderModal :isVisible="isCheckOrderVisible" :orderItems="currentCheckoutItems" :restId="Number(restId)" 
+    @add-to-cart="handleConfirmCheckout" @close="hideCheckOrderModal" />
+
   <section class="popout" v-if="showPopout">
     <div class="popout-content">
       <button class="close-btn" @click="showPopout = false">✕</button>
@@ -73,11 +79,15 @@ import { ref, onMounted, watch, computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
 import NotificationList from '@/components/Yifan/NotificationList.vue';
+import CheckOrderModal from '@/components/Ted/CheckOrderModal.vue'; // 引入 CheckOrderModal ted
+
 import CartModal from '@/components/KTlu/CartModal.vue';
 import { useCartStore } from '@/stores/cart';
 import { useLocationStore } from '@/stores/location'; // <-- 導入新的 location store
 import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
-
+import Swal from 'sweetalert2';
+import { useUserStore } from '@/stores/user.js'; 
+import axios from '@/plungins/axios.js';
 
 // 購物車 store
 const cartStore = useCartStore();
@@ -97,6 +107,10 @@ const cartByRestaurant = computed(() => cartStore.cartByRestaurant);
 const totalAmount = computed(() => cartStore.totalAmount);
 const isCartVisible = computed(() => cartStore.isCartVisible);
 
+const userStore = useUserStore(); // 實例化 userStore
+const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
+
+
 
 const showDropdown = ref(false);
 const showCart = () => cartStore.showCart();
@@ -104,26 +118,96 @@ const hideCart = () => cartStore.hideCart();
 const updateQuantity = (itemId, newQuantity, restaurantId) => cartStore.updateQuantity(itemId, newQuantity, restaurantId);
 const removeItem = (itemId, restaurantId) => cartStore.removeItem(itemId, restaurantId);
 const clearRestaurant = (restaurantId) => cartStore.clearRestaurantCart(restaurantId);
+const getRestaurantCart = (restaurantId) => cartStore.getRestaurantCart(restaurantId);
+// 訂單確認模態框相關狀態 (新增) ted
+const isCheckOrderVisible = ref(false);
+const currentCheckoutItems = ref([]); // 用於儲存要傳遞給 CheckOrderModal 的商品
+const restId=ref(1);
+// 儲存準備結帳的訂單
+const getCheckOrder =()=>restId;
 
+
+
+
+
+// 更新的版本 ted準備CheckOrderModal
 const handleCheckoutRestaurant = (restaurantId) => {
-  const orderData = cartStore.checkoutSingleRestaurant(restaurantId);
-  if (orderData) {
-    console.log('單一餐廳結帳：', orderData);
-    cartStore.hideCart();
-    // 可以導航到結帳頁面
-    // router.push('/checkout', { state: { orderData } });
+
+  const restaurantCart = cartStore.cartByRestaurant[restaurantId];
+  if (restaurantCart && restaurantCart.items.length > 0) {
+    currentCheckoutItems.value = JSON.parse(JSON.stringify(restaurantCart.items)); // 深拷貝一份商品數據
+    hideCart(); // 隱藏購物車模態框
+    isCheckOrderVisible.value = true; // 顯示訂單確認模態框
+    restId.value = (restaurantId);
+
+  } else {
+    Swal.fire({
+      icon: 'warning', // 警告圖示，也可以是 'error', 'success', 'info', 'question'
+      title: '無法結帳', // 標題
+      text: '該餐廳購物車是空的，無法結帳！', // 內容文字
+      confirmButtonText: '確定', // 確認按鈕的文字
+      customClass: {
+        confirmButton: 'my-swal-confirm-button' // 可以為按鈕添加自定義 CSS 類別
+      }
+    });
   }
+};
+// ted 新增訂單
+const handleConfirmCheckout = (restaruantId,orderData) => {
+  // 結帳送出訂單
+  if (!userId.value) { userId.value = 4 }
+  //如果沒辦法取得userId.value暫時給值 4
+  const body = {
+    user :{
+    id: userId.value // 假設您的 Pinia store 中有 userId 屬性
+
+    }
+  }
+  // 將 body 的屬性複製到 existingObject (修改 existingObject)
+  // Object.assign(target, source1, source2, ...);
+  Object.assign( getRestaurantCart(restaruantId), orderData,body);
+  isCheckOrderVisible.value = false;
+
+  const order =cartStore.checkoutSingleRestaurant(restaruantId)
+  // 寫上ajax
+  axios.post('/api/orders', order)
+
+
+
+
+
+
+
+
+  console.log('ajax使用',order)
+ 
+  Swal.fire({
+    icon: 'success', // 成功圖示
+    title: '訂單已送出！', // 標題
+    text: `您的訂單已成功送出。`, // 內容文字，可包含餐廳ID
+    confirmButtonText: '確定', // 確認按鈕的文字
+    customClass: {
+      confirmButton: 'my-swal-confirm-button' // 可以為按鈕添加自定義 CSS 類別
+    }
+  }).then((result) => {
+    // 如果需要，可以在用戶點擊「確定」按鈕後執行其他邏輯
+    if (result.isConfirmed) {
+      console.log(`用戶確認了訂單送出，餐廳ID為: ${restaruantId}`);
+      // 例如：導航到訂單歷史頁面，或者關閉模態框等
+      // router.push('/orders');
+    }
+  });
 };
 
-const handleCheckoutAll = () => {
-  const orders = cartStore.checkoutAllRestaurants();
-  if (orders.length > 0) {
-    console.log('全部餐廳結帳：', orders);
-    cartStore.hideCart();
-    // 可以導航到結帳頁面
-    // router.push('/checkout', { state: { orders } });
-  }
+
+// ted
+const hideCheckOrderModal = () => {
+  isCheckOrderVisible.value = false;
+  currentCheckoutItems.value = []; // 清空數據
+  restId.value ={};
 };
+
+
 
 // 控制漢堡選單 (保持不變)
 const toggleMenu = () => {
@@ -184,6 +268,7 @@ const handleClickOutside = (event) => {
 // --- Lifecycle Hooks ---
 onMounted(() => {
     document.addEventListener('click', handleClickOutside);
+    userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
     // 這裡不再需要特別從路由設定地址，因為 locationStore 在初始化時會從 localStorage 讀取
     // 只有當路由的 address 參數存在且與 store 中的地址不同時，才更新 store
     if (route.query.address && route.query.address !== locationStore.address) {
