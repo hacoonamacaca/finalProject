@@ -85,6 +85,13 @@ public class ReportService {
         ReportResponseDTO dto = new ReportResponseDTO();
         BeanUtils.copyProperties(reportBean, dto); // 複製相同名稱的屬性
 
+        if (reportBean.getReportType() != null) {
+            dto.setReportTypeName(reportBean.getReportType().getType());
+        } else {
+            System.err.println("Warning: reportType is null for Report ID: " + reportBean.getId());
+            dto.setReportTypeName(null); // 或者設置為 "Unknown Type"
+        }
+
         if (reportBean.getComment() != null) {
             // 觸發 CommentBean 的載入 (如果它是 LAZY)
             dto.setCommentContent(reportBean.getComment().getContent()); // 假設 CommentBean 有 getContent() 方法

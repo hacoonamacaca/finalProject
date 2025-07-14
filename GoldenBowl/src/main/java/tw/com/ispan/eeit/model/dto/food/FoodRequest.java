@@ -29,9 +29,7 @@ public class FoodRequest {
     private Integer stock;
 
     private String imgResource;
-    
-    private Boolean isActive;
-    
+
     // 接收食物所屬的分類 ID 列表
     // 一個食物可以屬於多個分類
     @NotEmpty(message = "食物分類不可為空")

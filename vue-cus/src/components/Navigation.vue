@@ -165,6 +165,7 @@ const handleCheckoutRestaurant = (restaurantId) => {
     });
   }
 };
+
 // ted 新增訂單
 const handleConfirmCheckout = (restaruantId,orderData) => {
   // 結帳送出訂單
@@ -211,6 +212,8 @@ const handleConfirmCheckout = (restaruantId,orderData) => {
     }
   });
 };
+
+
 // ted
 const hideCheckOrderModal = () => {
   isCheckOrderVisible.value = false;

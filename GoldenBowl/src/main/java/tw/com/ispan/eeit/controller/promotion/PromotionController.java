@@ -14,7 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import tw.com.ispan.eeit.model.dto.promotion.PromotionCreateDTO;
 import tw.com.ispan.eeit.model.dto.promotion.PromotionDTO;
+import tw.com.ispan.eeit.model.dto.promotion.PromotionUpdateDTO;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.service.promotion.PromotionService;
 
@@ -27,11 +29,20 @@ public class PromotionController {
     private PromotionService promotionService;
 
     // 查全部（後台管理用，回傳 Entity）
+//    @GetMapping
+//    public List<PromotionDTO> findAll() {
+//        return promotionService.findAll().stream().map(promotionService::toDTO).toList(); // ✅
+//    }
+
     @GetMapping
     public List<PromotionDTO> findAll() {
-        return promotionService.findAll().stream().map(promotionService::toDTO).toList(); // ✅
+        List<PromotionDTO> result = promotionService.findAll().stream().map(promotionService::toDTO).toList();
+        System.out.println("⭐ 後台撈到幾筆優惠券：" + result.size());
+        return result;
     }
 
+    
+    
     // 查單筆（回傳 DTO）
     @GetMapping("/{id}")
     public PromotionDTO findById(@PathVariable Integer id) {
@@ -51,16 +62,15 @@ public class PromotionController {
     }
 
     // 新增優惠券
-    @PostMapping
-    public PromotionBean create(@RequestBody PromotionBean promotion) {
-        return promotionService.create(promotion);
+    @PostMapping("")
+    public PromotionBean create(@RequestBody PromotionCreateDTO dto) {
+        return promotionService.createFromDTO(dto);
     }
 
     // 修改優惠券
     @PutMapping("/{id}")
-    public PromotionDTO update(@PathVariable Integer id, @RequestBody PromotionBean newData) {
-        PromotionBean updated = promotionService.update(id, newData);
-        return promotionService.toDTO(updated); // ⭐ 將更新後的 Entity 轉成 DTO 回傳
+    public PromotionBean update(@PathVariable Integer id, @RequestBody PromotionUpdateDTO dto) {
+        return promotionService.updateFromDTO(id, dto);
     }
 
     // 刪除優惠券

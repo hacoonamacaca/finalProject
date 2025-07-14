@@ -20,16 +20,12 @@ public class FoodDTO {
 	private String storeName;
 	private Integer storeId;
 	private List<String> tagNames;
-	
-	
-	
-	
+
 	// 新增food資料需要的映射 by kinan
 	private Boolean isActive;
 	private Integer stock;
 	private String categoryName;
 	private Integer categoryId;
-	
 
 	// ... 其他食物屬性
 	public static FoodDTO fromEntity(FoodBean foodBean) {

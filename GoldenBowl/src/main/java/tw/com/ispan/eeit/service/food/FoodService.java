@@ -39,7 +39,7 @@ public class FoodService {
         if (foodClasses.size() != request.getFoodClassIds().size()) {
             throw new ResourceNotFoundException("部分食物分類不存在，請確認 ID 是否正確。");
         }
-        
+
         FoodBean newFood = new FoodBean();
         newFood.setStore(store);
         newFood.setName(request.getName());
@@ -72,9 +72,7 @@ public class FoodService {
                 .orElseThrow(() -> new ResourceNotFoundException("找不到食物，ID: " + id));
         return convertToDTO(foodBean);
     }
-    
-    
-    
+
     // --- Read (List by Store) ---
     public List<FoodDTO> findFoodsByStoreId(Integer storeId) {
         // 可以在這裡加一個檢查，確認店家是否存在
@@ -84,18 +82,7 @@ public class FoodService {
         List<FoodBean> foodBeans = foodRepository.findByStoreId(storeId);
         return foodBeans.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
-//  增加有上架的食物--ted
-    public List<FoodDTO> findActiveFoodsByStoreId(Integer storeId) {
-        // 可以在這裡加一個檢查，確認店家是否存在
-        if (!storeRepository.existsById(storeId)) {
-            throw new ResourceNotFoundException("找不到店家，ID: " + storeId);
-        }
-        List<FoodBean> foodBeans = foodRepository.findActiveFoodsByStoreId(storeId);
-        return foodBeans.stream().map(this::convertToDTO).collect(Collectors.toList());
-    }
-    
-    
-    
+
     // --- Update ---
     @Transactional
     public FoodDTO updateFood(Integer id, FoodRequest request) {
@@ -165,12 +152,16 @@ public class FoodService {
             dto.setCategoryName(primaryClassification.getFoodClass().getName());
             dto.setCategoryId(primaryClassification.getFoodClass().getId());
         }
-        if(foodBean.getTags()!= null && !foodBean.getClassifications().isEmpty()) {
-            dto.setTagNames(foodBean.getTags().stream()
-                    .map(tagBean -> tagBean.getName()) // 假設您的 TagBean 有 getName() 方法
-                    .collect(Collectors.toList()));
-        }
 
         return dto;
+    }
+//  增加有上架的食物--ted
+    public List<FoodDTO> findActiveFoodsByStoreId(Integer storeId) {
+        // 可以在這裡加一個檢查，確認店家是否存在
+        if (!storeRepository.existsById(storeId)) {
+            throw new ResourceNotFoundException("找不到店家，ID: " + storeId);
+        }
+        List<FoodBean> foodBeans = foodRepository.findActiveFoodsByStoreId(storeId);
+        return foodBeans.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 }

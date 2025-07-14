@@ -3,7 +3,6 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import apiClient from '../../plungins/axios.js'; // 導入 apiClient
 // import ItemDetailModal from './ItemDetailModal.vue'
-import CartModal from './CartModal.vue'
 import { useCartStore } from '@/stores/cart'
 import '@/assets/css/restaurant-theme.css'
 

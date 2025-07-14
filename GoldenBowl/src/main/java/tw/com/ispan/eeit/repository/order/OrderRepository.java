@@ -82,6 +82,14 @@ public interface OrderRepository extends JpaRepository<OrderBean, Integer> {
             + "ORDER By o.pickupTime DESC")
     List<OrderBean> findByStore_Id(@Param("storeId")Integer storeId);
 //  尋找店家的所有訂單
+
     
+    
+    // 優惠券使用次數統計（給 Promotion 使用限制邏輯用）
+       @Query("SELECT COUNT(o) FROM OrderBean o WHERE o.user.id = :userId AND o.promotion.id = :promotionId AND o.status = 'completed'")
+       int countUsageByUserAndPromotion(@Param("userId") Integer userId, @Param("promotionId") Integer promotionId);
+
+       @Query("SELECT COUNT(o) FROM OrderBean o WHERE o.promotion.id = :promotionId AND o.status = 'completed'")
+       int countUsageByPromotion(@Param("promotionId") Integer promotionId);
     
 }

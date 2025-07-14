@@ -31,7 +31,6 @@ public class FoodController {
     public ResponseEntity<FoodDTO> createFood(@Valid @RequestBody FoodRequest request) {
         FoodDTO createdFood = foodService.createFood(request);
         URI location = URI.create("/api/foods/" + createdFood.getId());
-        
         return ResponseEntity.created(location).body(createdFood);
     }
 
@@ -48,14 +47,6 @@ public class FoodController {
         List<FoodDTO> foods = foodService.findFoodsByStoreId(storeId);
         return ResponseEntity.ok(foods);
     }
-    
-    // 增加有上架的食物--ted
-    @GetMapping("/active/store/{storeId}")
-    public ResponseEntity<List<FoodDTO>> findActiveFoodsByStoreId(@PathVariable Integer storeId) {
-        List<FoodDTO> foods = foodService.findActiveFoodsByStoreId(storeId);
-        return ResponseEntity.ok(foods);
-    }
-    
 
     // --- Update ---
     @PutMapping("/{id}")
@@ -69,5 +60,12 @@ public class FoodController {
     public ResponseEntity<Void> deleteFood(@PathVariable Integer id) {
         foodService.deleteFood(id);
         return ResponseEntity.noContent().build(); // 回傳 204 No Content
+    }
+    
+ // 增加有上架的食物--ted
+    @GetMapping("/active/store/{storeId}")
+    public ResponseEntity<List<FoodDTO>> findActiveFoodsByStoreId(@PathVariable Integer storeId) {
+        List<FoodDTO> foods = foodService.findActiveFoodsByStoreId(storeId);
+        return ResponseEntity.ok(foods);
     }
 }

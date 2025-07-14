@@ -15,7 +15,6 @@ public interface FoodRepository extends JpaRepository<FoodBean, Integer> {
     List<FoodBean> findByStoreId(Integer storeId);
     
     
-    
 //  增加有上架的食物--ted
     @Query("SELECT f FROM FoodBean f WHERE f.store.id = :storeId AND f.isActive = TRUE")
     List<FoodBean> findActiveFoodsByStoreId(@Param("storeId") Integer storeId);

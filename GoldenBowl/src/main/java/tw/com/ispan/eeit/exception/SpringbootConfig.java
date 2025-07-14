@@ -19,4 +19,3 @@ public class SpringbootConfig implements WebMvcConfigurer {
                                 .allowedMethods("GET", "POST", "PUT", "DELETE");
         }
 }
-//同源政策

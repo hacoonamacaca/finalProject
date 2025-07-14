@@ -104,7 +104,7 @@ public class FoodBean {
     // "food_id"), inverseJoinColumns = @JoinColumn(name = "food_class_id"))
     // @JsonBackReference
     // private List<FoodClassBean> foodClasses;
-    
+
     @OneToMany(mappedBy = "food", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     @ToString.Exclude
