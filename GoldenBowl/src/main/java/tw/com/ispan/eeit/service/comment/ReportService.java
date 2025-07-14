@@ -18,6 +18,24 @@ import tw.com.ispan.eeit.repository.comment.ReportRepository;
 
 @Service
 @Transactional // 確保所有 Service 方法都在事務中運行
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import jakarta.transaction.Transactional;
+import tw.com.ispan.eeit.model.dto.comment.ReportRequestDTO;
+import tw.com.ispan.eeit.model.dto.comment.ReportResponseDTO;
+import tw.com.ispan.eeit.model.entity.comment.ReportBean;
+import tw.com.ispan.eeit.repository.comment.CommentRepository;
+import tw.com.ispan.eeit.repository.comment.ReportRepository;
+
+@Service
+@Transactional // 確保所有 Service 方法都在事務中運行
 public class ReportService {
 
     @Autowired

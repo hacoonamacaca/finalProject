@@ -20,6 +20,7 @@
           </p>
         </div>
       </div>
+      </div>
     </div>
   </section>
   <section class="popular-section" v-else-if="locationStore.address && restaurants.length === 0">
@@ -51,7 +52,15 @@ const props = defineProps({
     required: true,
     default: () => [],
   },
+    default: () => [],
+  },
 });
+
+const router = useRouter(); // 初始化 useRouter
+
+// 控制評論模態框顯示的狀態
+const showCommentModal = ref(false);
+const selectedStoreId = ref(null); // 用於儲存當前點擊的餐廳 ID
 
 const router = useRouter(); // 初始化 useRouter
 const locationStore = useLocationStore(); 
@@ -86,7 +95,27 @@ const openCommentModal = (storeId) => {
   margin-bottom: 15px;
   color: #333;
 }
+.popular-section {
+  padding: 10px;
+  background-color: #fff;
+  margin: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
+.popular-section h2 {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.restaurant-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 10px;
+  padding-bottom: 5px; /* 為滾動條留出空間 */
+  -webkit-overflow-scrolling: touch; /* 提升 iOS 上的滾動體驗 */
+}
 .restaurant-scroll {
   display: flex;
   overflow-x: auto;
@@ -104,7 +133,25 @@ const openCommentModal = (storeId) => {
   background: #f1f1f1; /* 滾動條軌道背景 */
   border-radius: 10px;
 }
+/* 自定義滾動條樣式 */
+.restaurant-scroll::-webkit-scrollbar {
+  height: 6px; /* 滾動條高度 */
+}
 
+.restaurant-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1; /* 滾動條軌道背景 */
+  border-radius: 10px;
+}
+
+.restaurant-scroll::-webkit-scrollbar-thumb {
+  background-color: #ffba20; /* 滾動條滑塊顏色 */
+  border-radius: 10px;
+  border: 1px solid #f1f1f1; /* 滑塊邊框 */
+}
+
+.restaurant-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #e6a000; /* 滑塊懸停顏色 */
+}
 .restaurant-scroll::-webkit-scrollbar-thumb {
   background-color: #ffba20; /* 滾動條滑塊顏色 */
   border-radius: 10px;
@@ -137,7 +184,16 @@ const openCommentModal = (storeId) => {
   object-fit: cover; /* 圖片裁剪並覆蓋 */
   border-bottom: 1px solid #eee; /* 圖片底部邊框 */
 }
+.restaurant-card img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover; /* 圖片裁剪並覆蓋 */
+  border-bottom: 1px solid #eee; /* 圖片底部邊框 */
+}
 
+.restaurant-card .info {
+  padding: 7.5px 10px; /* 調整內邊距 */
+}
 .restaurant-card .info {
   padding: 7.5px 10px; /* 調整內邊距 */
 }

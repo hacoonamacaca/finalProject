@@ -1,4 +1,4 @@
-<template>
+<template><!--CartModal.vue-->
     <div class="cart-modal-overlay goldenbowl-restaurant-theme" @click="closeModal">
         <div class="cart-modal-content" @click.stop>
             <div class="cart-header">
@@ -46,56 +46,6 @@
 
                                 <div class="item-details">
                                     <h5 class="item-name">{{ item.name }}</h5>
-
-                                    <!-- 显示冰量 -->
-                                    <div v-if="item.selectedIceLevel" class="item-specification">
-                                        <span class="spec-label">冰量：</span>
-                                        <span class="spec-value">{{ formatIceLevel(item.selectedIceLevel) }}</span>
-                                    </div>
-
-                                    <!-- 显示甜度 -->
-                                    <div v-if="item.selectedSweetnessLevel" class="item-specification">
-                                        <span class="spec-label">甜度：</span>
-                                        <span class="spec-value">{{ formatSweetnessLevel(item.selectedSweetnessLevel)
-                                        }}</span>
-                                    </div>
-
-                                    <!-- 显示尺寸 -->
-                                    <div v-if="item.selectedSizeLevel" class="item-specification">
-                                        <span class="spec-label">尺寸：</span>
-                                        <span class="spec-value">{{ formatSizeLevel(item.selectedSizeLevel) }}</span>
-                                    </div>
-
-                                    <!-- 显示溫度 -->
-                                    <div v-if="item.selectedTemperatureLevel" class="item-specification">
-                                        <span class="spec-label">溫度：</span>
-                                        <span class="spec-value">{{
-                                            formatTemperatureLevel(item.selectedTemperatureLevel) }}</span>
-                                    </div>
-
-                                    <!-- 显示配料 -->
-                                    <div v-if="item.selectedToppings && item.selectedToppings.length > 0"
-                                        class="item-specification">
-                                        <span class="spec-label">配料：</span>
-                                        <span class="spec-value">{{ formatToppings(item.selectedToppings) }}</span>
-                                    </div>
-
-                                    <!-- 显示其他选项 -->
-                                    <div v-if="item.selectedOptions && hasSelectedOptions(item.selectedOptions)"
-                                        class="item-options">
-                                        <div v-for="(optionValue, optionId) in item.selectedOptions" :key="optionId">
-                                            <span v-if="optionValue && optionValue.length > 0" class="option-text">
-                                                {{ formatOptions(optionValue) }}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <!-- 显示备注 -->
-                                    <div v-if="item.notes" class="item-notes">
-                                        <span class="notes-label">備註：</span>
-                                        <span class="notes-text">{{ item.notes }}</span>
-                                    </div>
-
                                     <div class="item-price">NT${{ item.price }}</div>
                                 </div>
 
@@ -109,13 +59,14 @@
                                             @click="updateQuantity(item.id, item.quantity + 1, restaurantId)">+</button>
                                     </div>
 
-                                    <button class="remove-btn" @click="removeItem(item.id, restaurantId)" title="移除商品">
-                                        <i class="pi pi-trash"></i>
-                                    </button>
+                                    
                                 </div>
 
                                 <div class="item-total">
                                     NT${{ item.price * item.quantity }}
+                                    <button class="remove-btn" @click="removeItem(item.id, restaurantId)" title="移除商品">
+                                        <i class="pi pi-trash"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -130,7 +81,7 @@
             </div>
 
             <div v-if="restaurantCount > 0" class="cart-footer">
-                <div class="cart-summary">
+                <!-- <div class="cart-summary">
                     <div class="summary-row">
                         <span>餐廳數量</span>
                         <span>{{ restaurantCount }} 家</span>
@@ -139,15 +90,11 @@
                         <span>商品小計</span>
                         <span>NT${{ totalAmount }}</span>
                     </div>
-                    <div class="summary-row">
-                        <span>外送費</span>
-                        <span>NT${{ deliveryFee }}</span>
-                    </div>
                     <div class="summary-row total-row">
                         <span>總計</span>
                         <span>NT${{ totalAmount + deliveryFee }}</span>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="cart-actions">
                     <button class="continue-shopping-btn" @click="closeModal">
@@ -155,8 +102,12 @@
                     </button>
                 </div>
             </div>
+
+
         </div>
     </div>
+
+    
 </template>
 
 <script setup>
@@ -173,9 +124,9 @@ const props = defineProps({
         required: true
     }
 })
-
+// 移除 'checkout-all' 事件定義 ted ted
 const emit = defineEmits(['close', 'update-quantity', 'remove-item', 'checkout-restaurant', 'clear-restaurant'])
-
+// 定義事件
 // 计算属性
 const totalItems = computed(() => {
     return Object.values(props.cartByRestaurant).reduce((total, restaurantCart) => {
@@ -204,11 +155,12 @@ const updateQuantity = (itemId, newQuantity, restaurantId) => {
 const removeItem = (itemId, restaurantId) => {
     emit('remove-item', itemId, restaurantId)
 }
-
+// 結帳此餐廳
 const checkoutRestaurant = (restaurantId) => {
     emit('checkout-restaurant', restaurantId)
+    console.log('發送事件結帳此餐廳')
 }
-
+// 清空購物車
 const clearRestaurant = (restaurantId) => {
     emit('clear-restaurant', restaurantId)
 }
@@ -239,58 +191,7 @@ const formatOptions = (optionValue) => {
     return optionValue
 }
 
-const formatIceLevel = (iceLevel) => {
-    const iceLevelMap = {
-        'more': '多冰',
-        'normal': '正常冰',
-        'less': '少冰',
-        'light': '微冰',
-        'none': '去冰'
-    }
-    return iceLevelMap[iceLevel] || iceLevel
-}
 
-const formatSweetnessLevel = (sweetnessLevel) => {
-    const sweetnessMap = {
-        'less': '少糖',
-        'normal': '正常糖',
-        'more': '多糖',
-        'extra': '加糖'
-    }
-    return sweetnessMap[sweetnessLevel] || sweetnessLevel
-}
-
-const formatSizeLevel = (sizeLevel) => {
-    const sizeMap = {
-        'small': '小杯',
-        'medium': '中杯',
-        'large': '大杯',
-        'extra': '特大杯'
-    }
-    return sizeMap[sizeLevel] || sizeLevel
-}
-
-const formatTemperatureLevel = (temperatureLevel) => {
-    const temperatureMap = {
-        'hot': '熱',
-        'warm': '溫',
-        'cold': '冰',
-        'extra': '常溫'
-    }
-    return temperatureMap[temperatureLevel] || temperatureLevel
-}
-
-const formatToppings = (toppings) => {
-    const toppingMap = {
-        'pearl': '珍珠',
-        'taro': '小芋圓',
-        'crystal': '寒天晶球',
-        'jelly': '金萱茶凍',
-        'grass': '仙草',
-        'pudding': '布丁'
-    }
-    return toppings.map(topping => toppingMap[topping] || topping).join('、')
-}
 
 </script>
 
@@ -307,7 +208,7 @@ const formatToppings = (toppings) => {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
+    z-index: 3500;
     padding: 1rem;
 }
 

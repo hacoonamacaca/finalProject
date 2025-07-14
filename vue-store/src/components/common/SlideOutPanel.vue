@@ -81,7 +81,7 @@ const handleClose = () => {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2000; /* 使用一個非常高的 z-index */
+  z-index: 1000; /* 使用一個非常高的 z-index */
 }
 
 /* 面板主體樣式 */
@@ -94,7 +94,7 @@ const handleClose = () => {
     max-width: 500px;
     background-color: white;
     box-shadow: -0.5rem 0 1rem rgba(0,0,0,.15);
-  z-index: 2001; /* 必須比遮罩層高 */
+  z-index: 1001; /* 必須比遮罩層高 */
     display: flex;
     flex-direction: column;
 }

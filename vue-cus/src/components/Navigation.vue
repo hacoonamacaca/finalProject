@@ -1,4 +1,4 @@
-<template>
+<template><!--Navigation.vue--><!--定錨 大修改-->
   <header class="navbar">
     <a class="navbar-brand d-flex align-items-center gap-3" style="cursor: pointer" @click="$router.push('/search')">
       <img src="@/assets/logo.png" alt="Logo" height="80" />
@@ -58,7 +58,12 @@
 
   <CartModal v-if="isCartVisible" :cartByRestaurant="cartByRestaurant" :totalAmount="totalAmount" @close="hideCart"
     @update-quantity="updateQuantity" @remove-item="removeItem" @checkout-restaurant="handleCheckoutRestaurant"
-    @checkout-all="handleCheckoutAll" @clear-restaurant="clearRestaurant" />
+    @clear-restaurant="clearRestaurant" />
+    <!-- 預備結帳畫面  ted-->
+ 
+  <CheckOrderModal :isVisible="isCheckOrderVisible" :orderItems="currentCheckoutItems" :restId="Number(restId)" 
+    @add-to-cart="handleConfirmCheckout" @close="hideCheckOrderModal" />
+
   <section class="popout" v-if="showPopout">
     <div class="popout-content">
       <button class="close-btn" @click="showPopout = false">✕</button>
@@ -74,6 +79,7 @@ import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
 import NotificationList from '@/components/Yifan/NotificationList.vue';
 import CartModal from '@/components/KTlu/CartModal.vue';
+import CheckOrderModal from '@/components/Ted/CheckOrderModal.vue'; // 引入 CheckOrderModal ted
 import { useCartStore } from '@/stores/cart';
 import { useLocationStore } from '@/stores/location'; // <-- 導入新的 location store
 import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
@@ -94,6 +100,7 @@ const router = useRouter();
 // 購物車相關的計算屬性和方法 (保持不變)
 const cartCount = computed(() => cartStore.cartCount);
 const cartByRestaurant = computed(() => cartStore.cartByRestaurant);
+// 回傳所有餐廳參數
 const totalAmount = computed(() => cartStore.totalAmount);
 const isCartVisible = computed(() => cartStore.isCartVisible);
 
@@ -104,14 +111,35 @@ const hideCart = () => cartStore.hideCart();
 const updateQuantity = (itemId, newQuantity, restaurantId) => cartStore.updateQuantity(itemId, newQuantity, restaurantId);
 const removeItem = (itemId, restaurantId) => cartStore.removeItem(itemId, restaurantId);
 const clearRestaurant = (restaurantId) => cartStore.clearRestaurantCart(restaurantId);
+const getRestaurantCart = (restaurantId) => cartStore.getRestaurantCart(restaurantId);
+// 訂單確認模態框相關狀態 (新增) ted
+const isCheckOrderVisible = ref(false);
+const currentCheckoutItems = ref([]); // 用於儲存要傳遞給 CheckOrderModal 的商品
 
+const restId=ref(1);
+// 儲存準備結帳的訂單
+const getCheckOrder =()=>restId;
+// const handleCheckoutRestaurant = (restaurantId) => {
+//   const orderData = cartStore.checkoutSingleRestaurant(restaurantId);
+//   if (orderData) {
+//     console.log('單一餐廳結帳：', orderData);
+//     cartStore.hideCart();
+//     // 可以導航到結帳頁面
+//     // router.push('/checkout', { state: { orderData } });
+//   }
+// };
+// 更新的版本 ted準備CheckOrderModal
 const handleCheckoutRestaurant = (restaurantId) => {
-  const orderData = cartStore.checkoutSingleRestaurant(restaurantId);
-  if (orderData) {
-    console.log('單一餐廳結帳：', orderData);
-    cartStore.hideCart();
-    // 可以導航到結帳頁面
-    // router.push('/checkout', { state: { orderData } });
+
+  const restaurantCart = cartStore.cartByRestaurant[restaurantId];
+  if (restaurantCart && restaurantCart.items.length > 0) {
+    currentCheckoutItems.value = JSON.parse(JSON.stringify(restaurantCart.items)); // 深拷貝一份商品數據
+    hideCart(); // 隱藏購物車模態框
+    isCheckOrderVisible.value = true; // 顯示訂單確認模態框
+    restId.value = (restaurantId);
+
+  } else {
+    alert('該餐廳購物車是空的，無法結帳！');
   }
 };
 
@@ -219,6 +247,8 @@ const getLogin = () => {
   font-weight: bold;
   font-size: 1.5rem;
 }
+
+
 
 .navbar {
   background-color: #ffba20;

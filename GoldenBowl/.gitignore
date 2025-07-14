@@ -4,6 +4,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+###取消git 的文件###
+gmailLogin.txt
+
 ### STS ###
 .apt_generated
 .classpath

@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,10 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
+    // 根據 ID 查找評論 (返回 DTO)
+    public Optional<CommentResponseDTO> findCommentDtoById(Integer id) {
+        return commentRepository.findById(id)
+                .map(this::convertToDto); // 使用轉換方法
     // 根據 ID 查找評論 (返回 DTO)
     public Optional<CommentResponseDTO> findCommentDtoById(Integer id) {
         return commentRepository.findById(id)
@@ -96,6 +101,30 @@ public class CommentService {
         }
         commentRepository.deleteById(id);
 
+    }
+
+    // **新增：將 CommentBean 轉換為 CommentResponseDTO 的私有方法**
+    private CommentResponseDTO convertToDto(CommentBean commentBean) {
+        CommentResponseDTO dto = new CommentResponseDTO();
+        dto.setId(commentBean.getId());
+        dto.setContent(commentBean.getContent());
+        dto.setScore(commentBean.getScore());
+        dto.setCreateTime(commentBean.getCreateTime());
+        dto.setReply(commentBean.getReply());
+        dto.setReplyUpdateTime(commentBean.getReplyUpdateTime());
+        dto.setIsHidden(commentBean.getIsHidden());
+
+        // 從 UserBean 中獲取使用者名稱和 ID
+        if (commentBean.getUser() != null) {
+            dto.setUserId(commentBean.getUser().getId());
+            dto.setUserName(commentBean.getUser().getName()); // 假設 UserBean 有 getName() 方法
+        } else {
+            // 如果 user 是 null (例如，評論的 user_id 在資料庫中為空或沒有關聯), 則設置為預設值
+            dto.setUserName("匿名使用者");
+            dto.setUserId(null);
+        }
+
+        return dto;
     }
 
     // **新增：將 CommentBean 轉換為 CommentResponseDTO 的私有方法**

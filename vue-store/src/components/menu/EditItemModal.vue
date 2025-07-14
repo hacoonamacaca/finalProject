@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watchEffect} from 'vue';
+import { ref, watchEffect, computed } from 'vue';
 
 const props = defineProps({
     item: {
@@ -36,7 +36,7 @@ watchEffect(() => {
     }
 });
 
-// const title = computed(() => props.item ? '編輯品項' : '新增品項');
+const title = computed(() => props.item ? '編輯品項' : '新增品項');
 
 const handleSave = () => {
     // 把表單資料透過 event 傳回給父組件
@@ -45,12 +45,11 @@ const handleSave = () => {
 
 const handleDelete = () => {
     // 把要刪除的 id 傳回去
-    if (props.item?.id) { // 使用可選鏈 ?. 更安全
+    if (props.item && props.item.id) {
         emit('delete', props.item.id);
     }
 };
 
-// 這個 handleClose 主要是為了讓父組件能接收到關閉訊號，例如在儲存成功後觸發
 const handleClose = () => {
     emit('close');
 };
@@ -59,68 +58,80 @@ const handleClose = () => {
 
 
 <template>
-    <div>
-        <!-- 表單的主體內容 -->
-        <form @submit.prevent="handleSave">
-            <!-- 品項內容 -->
-            <h6 class="mb-3">品項內容</h6>
-            <div class="text-center mb-3">
-                <div class="border rounded d-flex justify-content-center align-items-center bg-light" style="width: 150px; height: 150px; margin: auto; cursor: pointer;">
-                <span v-if="!form.img" class="fs-1 text-muted">+</span>
-                <img v-else :src="form.img" class="img-fluid rounded">
+    <!-- Modal 的背景遮罩 -->
+    <div class="modal-backdrop fade show"></div>
+    <!-- Modal 主體 -->
+    <div class="modal fade show d-block" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ title }}</h5>
+                    <button type="button" class="btn-close" @click="handleClose"></button>
                 </div>
-                <small class="form-text text-muted">請上傳建議尺寸的圖片</small>
-            </div>
+                <div class="modal-body">
+                    <!-- 品項內容 -->
+                    <h6>品項內容</h6>
+                    <div class="text-center mb-3">
+                        <div class="border rounded d-flex justify-content-center align-items-center"
+                            style="width: 150px; height: 150px; margin: auto; cursor: pointer;">
+                            <span v-if="!form.img" class="fs-1">+</span>
+                            <img v-else :src="form.img" class="img-fluid">
+                        </div>
+                        <small class="form-text text-muted">請上傳低於1000*731像素，大小在200kb-20mb之間的(.JPG)圖片檔案</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">品項名稱*</label>
+                        <input type="text" class="form-control" v-model="form.name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">價格*</label>
+                        <input type="number" class="form-control" v-model.number="form.price" min="0"> <!--最小值為0-->
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label class="form-label">供應狀態*</label>
+                            <select class="form-select" v-model="form.status">
+                                <option>供應中</option>
+                                <option>暫停供應</option>
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label class="form-label">庫存</label>
+                            <input type="number" class="form-control" v-model.number="form.stock" min="0"> <!--最小值為0-->
+                        </div>
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label">品項名稱*</label>
-                <input type="text" class="form-control" v-model="form.name" required>
-            </div>
-            
-            <div class="mb-3">
-                <label class="form-label">品項類別*</label>
-                <select class="form-select" v-model="form.categoryId" required>
-                <option v-for="category in categories" :key="category.id" :value="category.id">
-                    {{ category.name }}
-                </option>
-                </select>
-            </div>
-            
-            <div class="row mb-3">
-                <div class="col">
-                <label class="form-label">價格*</label>
-                <input type="number" class="form-control" v-model.number="form.price" min="0" required>
+                    <div class="mb-3 mt-3"> <!-- 多加一個 mt-3 來增加與上方欄位的間距 -->
+                        <label class="form-label">品項類別*</label>
+                        <select class="form-select" v-model="form.categoryId"> <!-- <--- 綁定到 form.categoryId -->
+                            <!-- 使用 v-for 來動態生成選項 -->
+                            <option v-for="category in categories" :key="category.id" :value="category.id">
+                            {{ category.name }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="form-label">品項敘述*</label>
+                        <textarea class="form-control" rows="3" v-model="form.description"></textarea>
+                    </div>
+
+                    <hr>
+
+                    <!-- 客製化規格 -->
+                    <h6>客製化規格</h6>
+                    <!-- (此處省略規格勾選的實作，但您可以輕易地用 v-for 和 checkbox 擴充) -->
+                    <p class="text-muted">客製化規格列表...</p>
                 </div>
-                <div class="col">
-                    <label class="form-label">供應狀態*</label>
-                    <select class="form-select" v-model="form.status">
-                        <option>供應中</option>
-                        <option>暫停供應</option>
-                    </select>
+                <div class="modal-footer justify-content-between">
+                    <button v-if="item" type="button" class="btn btn-danger" @click="handleDelete">刪除品項</button>
+                    <div v-else></div> <!-- 占位符，讓按鈕保持在右邊 -->
+                    <div>
+                        <button type="button" class="btn btn-secondary me-2" @click="handleClose">取消</button>
+                        <button type="button" class="btn btn-primary" @click="handleSave">確定提交</button>
+                    </div>
                 </div>
             </div>
-
-            <div class="mb-3">
-                <label class="form-label">庫存</label>
-                <input type="number" class="form-control" v-model.number="form.stock" min="0">
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">品項敘述*</label>
-                <textarea class="form-control" rows="3" v-model="form.description"></textarea>
-            </div>
-
-            <hr class="my-4">
-
-            <!-- 按鈕現在放在表單的末尾 -->
-            <div class="d-flex justify-content-between">
-                <button v-if="props.item" type="button" class="btn btn-outline-danger" @click="handleDelete">刪除品項</button>
-                <div v-else></div><!-- 占位符，讓按鈕保持在右邊 -->
-                <div class="d-flex gap-2">
-                    <button type="button" class="btn btn-secondary" @click="handleClose">取消</button>
-                    <button type="submit" class="btn btn-primary">確定提交</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
 </template>

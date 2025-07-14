@@ -10,8 +10,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.CascadeType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,7 +30,9 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.ToString;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.comment.LikedFoodBean;
@@ -37,9 +45,11 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Table(name = "food")
 @NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class FoodBean {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @EqualsAndHashCode.Include
     @EqualsAndHashCode.Include
     private Integer id;
 
@@ -75,12 +85,27 @@ public class FoodBean {
     private StoreBean store;
 
     @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToOne
+    @JoinColumn(name = "store_id")
+    @JsonBackReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private StoreBean store;
+
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "food_tag", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @JsonBackReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @JsonBackReference
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<TagBean> tags;
 
+    @OneToMany(mappedBy = "food", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @OneToMany(mappedBy = "food", fetch = FetchType.LAZY)
     @JsonManagedReference
     @ToString.Exclude
@@ -91,10 +116,17 @@ public class FoodBean {
     @JsonManagedReference
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
+    @OneToMany(mappedBy = "food", fetch = FetchType.LAZY)
+    @JsonManagedReference
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<LikedFoodBean> likedFoods;
 
     @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "food_spec_group", joinColumns = @JoinColumn(name = "food_id"), inverseJoinColumns = @JoinColumn(name = "spec_group_id"))
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private List<SpecGroupBean> specGroups;
@@ -113,6 +145,9 @@ public class FoodBean {
 
     // 多對多關係：Food 與 User 通過 favorite_food 表格關聯
     @ManyToMany(mappedBy = "favoriteFoods")
+    @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     @JsonIgnore
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

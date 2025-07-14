@@ -1,4 +1,5 @@
 <!-- 歷史訂單 -->
+<!-- 歷史訂單 -->
 <script setup>
 import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
@@ -84,6 +85,7 @@ function findorder(id) {
 // 重新訂購功能
 const reorder = (order) => {
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
+  alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
 </script>
 
@@ -116,6 +118,12 @@ const reorder = (order) => {
           訂購時間: {{ order.createTime }}
         </p>
 
+        <div class="mb-3">
+          <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
+            <span class="text-dark">{{ detail.food.name }}  x  {{ detail.quantity }}</span>
+            <!-- <span v-if="food.spec" class="text-secondary small"> ({{  }})</span> -->
+          </p>
+        </div>
         <div class="mb-3">
           <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
             <span class="text-dark">{{ detail.food.name }}  x  {{ detail.quantity }}</span>

@@ -12,6 +12,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -19,8 +20,10 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.UserBean;
@@ -31,7 +34,9 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 @Data
 @Entity
 @Table(name = "customer_order")
+@Table(name = "customer_order")
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id") // <--- 在這裡加上這一行
 @EqualsAndHashCode(of = "id") // <--- 在這裡加上這一行
 public class OrderBean {
 	@Id
@@ -39,7 +44,9 @@ public class OrderBean {
 	private Integer id;
 
 	@ManyToOne(fetch = FetchType.LAZY)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "user_id")
+	@JsonBackReference
 	@JsonBackReference
 	private UserBean user;
 
@@ -62,6 +69,9 @@ public class OrderBean {
 	private CommentBean comment;
 	// mappedBy="order" 是comment的java屬性order
 
+	// ------------order 資料夾-----------------------------------
+	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+	@JsonManagedReference
 	// ------------order 資料夾-----------------------------------
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	@JsonManagedReference

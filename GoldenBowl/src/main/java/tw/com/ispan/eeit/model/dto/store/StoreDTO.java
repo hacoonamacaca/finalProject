@@ -38,6 +38,7 @@ public class StoreDTO {
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
     private Boolean isActive;
+    private String tel;
 
     // 新增：表示當前用戶是否收藏了該餐廳
     private Boolean isFavorited; // 預設為 false，除非明確設置

@@ -48,6 +48,14 @@ const routes = [{
     name: "OrderList-link"
 },
 {
+    path: "/OrderList/OrderDetail/:id",
+    component: () => import('@/views/Ted/OrdeDetail.vue'),
+    name: "OrderDetail",
+    props: (route) => ({
+        restaurantId: (route.params.id),
+    }),
+},
+{
     path: "/VoucherWallet",
     component: VoucherWallet,
     name: "VoucherWallet-link"

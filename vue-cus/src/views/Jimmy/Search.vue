@@ -11,6 +11,11 @@
         @update:filters="filters = $event"
         @update-score="updatescore"
         :availableCategories="uniqueCategoryNames" />
+      <SidebarFilters
+        :filters="filters"
+        @update:filters="filters = $event"
+        @update-score="updatescore"
+        :availableCategories="uniqueCategoryNames" />
     </aside>
 
     <RestaurantListSection :restaurants="displayedRestaurants" @update:favoriteStatus="handleFavoriteStatusUpdate" />
@@ -327,6 +332,7 @@ const sortRestaurants = () => {
 
 <style scoped>
 /* 這裡保留 Home.vue 原有的全局或佈局相關 CSS */
+/* 這裡保留 Home.vue 原有的全局或佈局相關 CSS */
 * {
   margin: 0;
   padding: 0;
@@ -374,7 +380,9 @@ body {
   /* 防止縮小 */
   background-color: #fff;
   padding: 20px;
+  padding: 20px;
   border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
