@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.entity.reservation.TimeSlot;
 import tw.com.ispan.eeit.model.dto.reservation.TimeSlotSimpleDTO;
+import tw.com.ispan.eeit.model.dto.reservation.TimeRangeRequest;
 import tw.com.ispan.eeit.service.reservation.ReservationService;
 
 @RestController
@@ -155,6 +157,35 @@ public class TimeSlotController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("生成時段資料時發生錯誤: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 根據指定時間段生成時段
+     */
+    @PostMapping("/generate-custom")
+    public ResponseEntity<Map<String, Object>> generateCustomTimeSlots(
+            @PathVariable Integer storeId,
+            @RequestParam LocalDate date,
+            @RequestBody List<TimeRangeRequest> timeRanges) {
+        try {
+            List<TimeSlotSimpleDTO> generatedSlots = reservationService.generateTimeSlotsForCustomRanges(
+                    storeId, date, timeRanges);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "成功生成 " + generatedSlots.size() + " 個時段");
+            response.put("generatedSlots", generatedSlots);
+            response.put("date", date);
+
+            return ResponseEntity.ok(response);
+        } catch (ResourceNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "生成時段失敗: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 

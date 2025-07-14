@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import tw.com.ispan.eeit.model.dto.reservation.TimeSlotSimpleDTO;
+import tw.com.ispan.eeit.model.dto.reservation.TimeRangeRequest;
 import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
 import tw.com.ispan.eeit.model.entity.reservation.TableBean;
@@ -746,6 +747,73 @@ public class ReservationService {
         }
 
         return enabledCount;
+    }
+
+    /**
+     * 根據自定義時間段生成時段
+     */
+    public List<TimeSlotSimpleDTO> generateTimeSlotsForCustomRanges(
+            Integer storeId, LocalDate date, List<TimeRangeRequest> timeRanges) {
+
+        StoreBean store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new RuntimeException("餐廳不存在: " + storeId));
+
+        TimeSettingBean setting = timeSettingRepository.findByStoreId(storeId)
+                .orElseThrow(() -> new RuntimeException("未設定餐廳營業參數: " + storeId));
+
+        int intervalMinutes = setting.getInterval();
+        List<TimeSlotSimpleDTO> generatedSlots = new ArrayList<>();
+
+        // 先停用該日期的所有現有時段
+        disableTimeSlotsByDate(storeId, date);
+
+        // 為每個時間段生成時段
+        for (TimeRangeRequest range : timeRanges) {
+            if (range.getStartTime() != null && range.getEndTime() != null) {
+                List<TimeSlot> slots = generateTimeSlotsForRangeWithReturn(
+                        store, date, range.getStartTime(), range.getEndTime(), intervalMinutes);
+
+                // 轉換為 DTO 並添加到結果列表
+                for (TimeSlot slot : slots) {
+                    TimeSlotSimpleDTO dto = convertToTimeSlotSimpleDTO(slot, storeId);
+                    generatedSlots.add(dto);
+                }
+            }
+        }
+
+        return generatedSlots;
+    }
+
+    /**
+     * 生成時段並返回生成的時段列表
+     */
+    private List<TimeSlot> generateTimeSlotsForRangeWithReturn(
+            StoreBean store, LocalDate date, LocalTime start, LocalTime end, int intervalMinutes) {
+
+        List<TimeSlot> generatedSlots = new ArrayList<>();
+
+        for (LocalTime current = start; current.isBefore(end); current = current.plusMinutes(intervalMinutes)) {
+            LocalTime slotEnd = current.plusMinutes(intervalMinutes);
+            if (slotEnd.isAfter(end))
+                break;
+
+            // 檢查是否已存在相同時段
+            boolean exists = timeSlotRepository
+                    .existsByStoreIdAndDayAndStartTime(store.getId(), date, current) > 0;
+
+            if (!exists) {
+                TimeSlot slot = new TimeSlot();
+                slot.setStore(store);
+                slot.setDay(date);
+                slot.setStartTime(current);
+                slot.setEndTime(slotEnd);
+                slot.setIsActive(true);
+                TimeSlot savedSlot = timeSlotRepository.save(slot);
+                generatedSlots.add(savedSlot);
+            }
+        }
+
+        return generatedSlots;
     }
 
     /**

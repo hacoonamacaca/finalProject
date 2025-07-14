@@ -12,8 +12,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import tw.com.ispan.eeit.model.entity.reservation.ReservationBean;
+import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.enums.ReservationStatus;
 import tw.com.ispan.eeit.repository.reservation.ReservationRepository;
+import tw.com.ispan.eeit.repository.UserRepository;
 import tw.com.ispan.eeit.service.reservation.ReservationService;
 import tw.com.ispan.eeit.model.dto.reservation.ReservationDTO;
 import tw.com.ispan.eeit.model.dto.reservation.ReservationSearchRequest;
@@ -33,6 +35,9 @@ public class ReservationController {
 
     @Autowired
     private ReservationQueryService reservationQueryService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * 創建新預約
@@ -294,6 +299,141 @@ public class ReservationController {
     public ResponseEntity<List<ReservationBean>> getStoreUpcomingReservations(
             @PathVariable Integer storeId) {
         return ResponseEntity.ok(reservationQueryService.findUpcomingReservationsByStoreId(storeId));
+    }
+
+    /**
+     * 取得餐廳的所有訂位（商家端使用）
+     */
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<Map<String, Object>>> getStoreReservations(
+            @PathVariable Integer storeId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String date,
+            @RequestParam(required = false) String keyword) {
+        try {
+            List<ReservationBean> reservations = reservationRepository.findByStoreId(storeId);
+
+            // 根據狀態篩選
+            if (status != null && !status.isEmpty() && !status.equals("all")) {
+                try {
+                    ReservationStatus statusEnum = ReservationStatus.valueOf(status.toUpperCase());
+                    reservations = reservations.stream()
+                            .filter(r -> r.getStatus() == statusEnum)
+                            .toList();
+                } catch (IllegalArgumentException e) {
+                    // 如果狀態不存在，回傳空列表
+                    System.err.println("無效的狀態值: " + status);
+                    reservations = new java.util.ArrayList<>();
+                }
+            }
+
+            // 根據日期篩選
+            if (date != null && !date.isEmpty()) {
+                LocalDate filterDate = LocalDate.parse(date);
+                reservations = reservations.stream()
+                        .filter(r -> r.getReservedDate().equals(filterDate))
+                        .toList();
+            }
+
+            // 根據關鍵字篩選
+            if (keyword != null && !keyword.isEmpty()) {
+                String lowerKeyword = keyword.toLowerCase();
+                reservations = reservations.stream()
+                        .filter(r -> {
+                            // 這裡需要根據實際的資料結構來調整搜尋邏輯
+                            // 假設我們有顧客姓名和備註欄位
+                            return (r.getContent() != null && r.getContent().toLowerCase().contains(lowerKeyword));
+                        })
+                        .toList();
+            }
+
+            // 轉換為包含顧客資訊的DTO
+            List<Map<String, Object>> result = reservations.stream()
+                    .map(reservation -> {
+                        Map<String, Object> dto = new java.util.HashMap<>();
+                        dto.put("id", reservation.getId());
+                        dto.put("userId", reservation.getUserId());
+                        dto.put("storeId", reservation.getStoreId());
+                        dto.put("reservedDate", reservation.getReservedDate());
+                        dto.put("reservedTime", reservation.getReservedTime());
+                        dto.put("guests", reservation.getGuests());
+                        dto.put("status", reservation.getStatus());
+                        dto.put("content", reservation.getContent());
+                        dto.put("createdAt", reservation.getCreatedAt());
+                        dto.put("updatedAt", reservation.getUpdatedAt());
+
+                        // 取得顧客資訊
+                        try {
+                            UserBean user = userRepository.findById(reservation.getUserId()).orElse(null);
+                            if (user != null) {
+                                dto.put("userName", user.getName());
+                                dto.put("userPhone", user.getPhone());
+                            } else {
+                                dto.put("userName", "未知顧客");
+                                dto.put("userPhone", "未知電話");
+                            }
+                        } catch (Exception e) {
+                            dto.put("userName", "未知顧客");
+                            dto.put("userPhone", "未知電話");
+                        }
+
+                        return dto;
+                    })
+                    .toList();
+
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * 取得餐廳訂位統計資料
+     */
+    @GetMapping("/store/{storeId}/stats")
+    public ResponseEntity<Map<String, Object>> getStoreReservationStats(@PathVariable Integer storeId) {
+        try {
+            List<ReservationBean> allReservations = reservationRepository.findByStoreId(storeId);
+
+            // 計算統計資料
+            int totalReservations = allReservations.size();
+            int pendingReservations = (int) allReservations.stream()
+                    .filter(r -> r.getStatus() == ReservationStatus.PENDING).count();
+            int confirmedReservations = (int) allReservations.stream()
+                    .filter(r -> r.getStatus() == ReservationStatus.CONFIRMED).count();
+            int cancelledReservations = (int) allReservations.stream()
+                    .filter(r -> r.getStatus() == ReservationStatus.CANCELLED).count();
+            int completedReservations = 0; // ReservationStatus枚舉中沒有COMPLETED狀態
+
+            // 今日訂位
+            LocalDate today = LocalDate.now();
+            int todayReservations = (int) allReservations.stream()
+                    .filter(r -> r.getReservedDate().equals(today)).count();
+
+            // 未來訂位
+            int upcomingReservations = (int) allReservations.stream()
+                    .filter(r -> r.getReservedDate().isAfter(today)).count();
+
+            // 平均人數
+            double averageGuests = allReservations.stream()
+                    .mapToInt(ReservationBean::getGuests)
+                    .average()
+                    .orElse(0.0);
+
+            Map<String, Object> stats = Map.of(
+                    "totalReservations", totalReservations,
+                    "pendingReservations", pendingReservations,
+                    "confirmedReservations", confirmedReservations,
+                    "cancelledReservations", cancelledReservations,
+                    "completedReservations", completedReservations,
+                    "todayReservations", todayReservations,
+                    "upcomingReservations", upcomingReservations,
+                    "averageGuests", Math.round(averageGuests * 10.0) / 10.0);
+
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     /**

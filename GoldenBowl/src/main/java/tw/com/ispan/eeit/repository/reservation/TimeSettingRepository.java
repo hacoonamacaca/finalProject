@@ -8,9 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface TimeSettingRepository extends JpaRepository<TimeSettingBean, Integer> {
-
-    /**
-     * 根據餐廳ID查詢時間設定
-     */
     Optional<TimeSettingBean> findByStoreId(Integer storeId);
 }
