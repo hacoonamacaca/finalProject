@@ -2,6 +2,8 @@
 import { computed, watch, nextTick } from 'vue';
 import { Collapse } from 'bootstrap'; // 導入 Bootstrap 的 Collapse 模組
 import Swal from 'sweetalert2';
+
+
 import axios from '@/plungins/axios.js';
 
 const props = defineProps({
@@ -12,6 +14,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['cancel-order','close-Sidebar','confirm-order','complete-order']);
+// 傳送資料到父曾OrderManager
 
 
 
@@ -52,11 +55,14 @@ const cancelOrder = () => {
 };
 
 const confirmOrder = () => {
+
+ props.order.status = '準備中';
   emit('confirm-order', props.order.id)
+  
  
 };
 const completeOrder = () => {
-
+  props.order.status = '已完成';
   emit('complete-order', props.order.id)
 };
 
@@ -129,7 +135,7 @@ watch(() => props.order, (newOrder) => {
         <button v-if="order.status!='已取消' && order.status!='已完成' " class="btn btn-outline-danger w-100 py-3 rounded-pill fw-bold" @click="cancelOrder">取消訂單</button>
         <button v-if="order.status=='待確認'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="confirmOrder">確認訂單
         </button>
-        <button v-if="order.status=='處理中'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="completeOrder">完成訂單，代取餐
+        <button v-if="order.status=='準備中'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="completeOrder">完成訂單，代取餐
         </button>
       </div>
     </div>

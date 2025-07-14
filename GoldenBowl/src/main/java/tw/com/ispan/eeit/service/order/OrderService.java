@@ -43,17 +43,8 @@ public class OrderService {
     
     
     // 創建訂單 (包含其明細)
-    public Optional<OrderBean> createOrder(OrderDTO orderDTO) {
-        // 1. 將 OrderDTO 轉換為 OrderBean
-        // 在創建操作中，通常我們會創建一個新的 Bean，並將 DTO 的數據填充進去。
-        // DTO 中的 ID 在這裡通常是 null，因為是資料庫自動生成的。
+    public Optional<OrderDTO> createOrder(OrderDTO orderDTO) {
         OrderBean newOrderBean = orderDTO.toBean();
-
-        // 複製 DTO 中的基本屬性到 Bean
-        // newOrderBean.setId(orderDTO.getId()); // 創建時 ID 通常由資料庫生成，不需從 DTO 複製
-
-        
-     // --- 處理 Promotion 關聯 ---
         if (orderDTO.getPromotionId() != null) {
             promotionRepository.findById(orderDTO.getPromotionId())
                                .ifPresentOrElse(
@@ -126,7 +117,7 @@ public class OrderService {
         }
         
         // 4. 返回保存後的 OrderBean，包裝在 Optional 中
-        return Optional.of(savedOrder);
+        return Optional.of(OrderDTO.fromEntity(savedOrder));
     }
 
 
@@ -143,12 +134,15 @@ public class OrderService {
     }
 
     // 查找所有訂單
-    public List<OrderBean> findAllOrders() {
-        return orderRepository.findAll();
+    public List<OrderDTO> findAllOrders() {
+        	List<OrderBean> orderBeans =orderRepository.findAll();
+            return orderBeans.stream()
+                    .map(OrderDTO::fromEntity)
+                    .collect(Collectors.toList());
     }
 
     // 更新訂單
-    public Optional<OrderBean> updateOrder(Integer id, OrderDTO orderDTO) {
+    public Optional<OrderDTO> updateOrder(Integer id, OrderDTO orderDTO) {
         Optional<OrderBean> existingOrderOptional = orderRepository.findById(id);
 
         if (existingOrderOptional.isEmpty()) {
@@ -243,11 +237,11 @@ public class OrderService {
             System.err.println("警告:更新訂單後，無法獲取有效的商店ID或訂單ID，未發送WebSocket通知。");
         }
         // 保存更新後的 OrderBean
-        return Optional.of(orderRepository.save(existingOrderBean));
+        return Optional.of(OrderDTO.fromEntity( orderRepository.save(existingOrderBean)));
     }
     
     // 更新訂單狀態
-    public Optional<OrderBean> updateOrderStatus(Integer id, OrderDTO orderDTO) {
+    public Optional<OrderDTO> updateOrderStatus(Integer id, OrderDTO orderDTO) {
         Optional<OrderBean> existingOrderOptional = orderRepository.findById(id);
 
         if (existingOrderOptional.isEmpty()) {
@@ -268,7 +262,7 @@ public class OrderService {
             System.err.println("警告:更新訂單後，無法獲取有效的商店ID或訂單ID，未發送WebSocket通知。");
         }
         // 保存更新後的 OrderBean
-        return Optional.of(orderRepository.save(existingOrderBean));
+        return Optional.of(OrderDTO.fromEntity( orderRepository.save(existingOrderBean)));
     }
     
     

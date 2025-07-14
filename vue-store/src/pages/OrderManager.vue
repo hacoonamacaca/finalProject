@@ -6,7 +6,8 @@ import OrderList from '../components/order/OrderList.vue';
 import OrderDetail from '../components/order/OrderDetail.vue';
 
 import axios from '@/plungins/axios.js';
-import { useOrderNotifier } from '../composables/useOrderNotifier.js'; // 匯入 Composable
+import { useOrderNotifier } from '../composables/useOrderNotifier.js';
+// 匯入 Composable  使用webSocket
 
 
 // 訂單列表資料 (模擬資料)
@@ -18,7 +19,6 @@ const storeId =4
 // 使用 Composables，它會自動處理 WebSocket 連線和訂閱
 // 從後端獲得資料
 function fetchOrders (storeId)  {
-  
   axios.get(`/api/orders/store/${storeId}`).then(function(response) {
     // console.log(response.data)
     orders.value=response.data
@@ -64,15 +64,32 @@ const resetFilters = () => {
   alert('重設功能待實現');
 };
 
+const updateStatus=(orderId, status) =>{
+    const body = {
+    id: orderId,
+    status
+  }
+  axios.put(`/api/orders/status/${orderId}`,body)
+    .then(function (response) {
+    console.log('修改編號的訂單', orderId)
+    console.log('修改編號的狀態', status)
+
+  }).catch(function (error) {
+    console.log(error)
+  })
+
+}
+
 //取消訂單
 const cancelOrder = (orderId) => {
-  console.log('取消編號的訂單',orderId)
+  updateStatus(orderId, 'cancelled')
 }
 const confirmOrder = (orderId) => {
-  console.log('確認編號的訂單',orderId)
+  updateStatus(orderId, 'perparing')
+  
 }
 const completeOrder = (orderId) => {
-  console.log('完成編號的訂單',orderId)
+  updateStatus(orderId, 'completed')
 }
 
 </script>

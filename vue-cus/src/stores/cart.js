@@ -147,14 +147,15 @@ export const useCartStore = defineStore('cart', () => {
         if (!restaurantCart) return null
 
         const orderData = {
-            restaurant: restaurantCart.restaurant,
+            store: restaurantCart.restaurant,
             // 餐廳資訊
             orderDetails: [...restaurantCart.items],
             total: getRestaurantTotal(restaurantId),
             status: restaurantCart.status,
-            create_time:restaurantCart.create_time,
+            createTime: restaurantCart.create_time,
             content: restaurantCart.content,
-            pickup_time: restaurantCart.pickup_time,
+            pickupTime: restaurantCart.pickup_time,
+            user: restaurantCart.user,
 
         }
 

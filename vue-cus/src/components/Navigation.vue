@@ -92,6 +92,9 @@ import NotificationList from '@/components/Yifan/NotificationList.vue';
 import CartModal from '@/components/KTlu/CartModal.vue';
 import CheckOrderModal from '@/components/Ted/CheckOrderModal.vue'; // 引入 CheckOrderModal ted
 import { useCartStore } from '@/stores/cart';
+import Swal from 'sweetalert2';
+import { useUserStore } from '@/stores/user.js'; 
+import axios from '@/plungins/axios.js';
 
 // 購物車 store
 const cartStore = useCartStore();
@@ -106,6 +109,11 @@ const address = ref(route.query.address || '');
 const coordinates = ref(null);
 const loading = ref(false);
 const error = ref('');
+
+const userStore = useUserStore(); // 實例化 userStore
+const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
+
+
 
 // 購物車相關的計算屬性和方法
 const cartCount = computed(() => cartStore.cartCount);
@@ -146,22 +154,62 @@ const handleCheckoutRestaurant = (restaurantId) => {
     restId.value = (restaurantId);
 
   } else {
-    alert('該餐廳購物車是空的，無法結帳！');
+    Swal.fire({
+      icon: 'warning', // 警告圖示，也可以是 'error', 'success', 'info', 'question'
+      title: '無法結帳', // 標題
+      text: '該餐廳購物車是空的，無法結帳！', // 內容文字
+      confirmButtonText: '確定', // 確認按鈕的文字
+      customClass: {
+        confirmButton: 'my-swal-confirm-button' // 可以為按鈕添加自定義 CSS 類別
+      }
+    });
   }
 };
-// ted
+// ted 新增訂單
 const handleConfirmCheckout = (restaruantId,orderData) => {
   // 結帳送出訂單
- 
+  if (!userId.value) { userId.value = 4 }
+  //如果沒辦法取得userId.value暫時給值 4
+  const body = {
+    user :{
+    id: userId.value // 假設您的 Pinia store 中有 userId 屬性
+
+    }
+  }
   // 將 body 的屬性複製到 existingObject (修改 existingObject)
   // Object.assign(target, source1, source2, ...);
-  Object.assign( getRestaurantCart(restaruantId), orderData);
+  Object.assign( getRestaurantCart(restaruantId), orderData,body);
   isCheckOrderVisible.value = false;
 
   const order =cartStore.checkoutSingleRestaurant(restaruantId)
   // 寫上ajax
+  axios.post('/api/orders', order)
+
+
+
+
+
+
+
+
   console.log('ajax使用',order)
-  alert('訂單已送出！',restaruantId);
+ 
+  Swal.fire({
+    icon: 'success', // 成功圖示
+    title: '訂單已送出！', // 標題
+    text: `您的訂單已成功送出。`, // 內容文字，可包含餐廳ID
+    confirmButtonText: '確定', // 確認按鈕的文字
+    customClass: {
+      confirmButton: 'my-swal-confirm-button' // 可以為按鈕添加自定義 CSS 類別
+    }
+  }).then((result) => {
+    // 如果需要，可以在用戶點擊「確定」按鈕後執行其他邏輯
+    if (result.isConfirmed) {
+      console.log(`用戶確認了訂單送出，餐廳ID為: ${restaruantId}`);
+      // 例如：導航到訂單歷史頁面，或者關閉模態框等
+      // router.push('/orders');
+    }
+  });
 };
 // ted
 const hideCheckOrderModal = () => {
@@ -320,6 +368,7 @@ watch(() => route.query.address, (newAddress) => {
 });
 
 onMounted(() => {
+  userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
   address.value = route.query.address || '';
 });
 

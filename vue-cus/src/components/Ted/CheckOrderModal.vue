@@ -101,6 +101,7 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { Modal } from 'bootstrap';
+import Swal from 'sweetalert2';
 
 // 定義發射的事件
 const emits = defineEmits(['add-to-cart', 'close']);
@@ -224,7 +225,15 @@ const emitAddToCart = () => {
     internalOrderItems.value = [];
     bsModal.hide();
   } else {
-    alert('訂單是空的，無法結帳！');
+    Swal.fire({
+      icon: 'warning', // 警告圖示，也可以是 'error', 'success', 'info', 'question'
+      title: '無法結帳', // 標題
+      text: '該餐廳購物車是空的，無法結帳！', // 內容文字
+      confirmButtonText: '確定', // 確認按鈕的文字
+      customClass: {
+        confirmButton: 'my-swal-confirm-button' // 可以為按鈕添加自定義 CSS 類別
+      }
+    });
   }
 };
 

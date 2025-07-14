@@ -23,6 +23,7 @@ public class OrderDTO {
     private String createTime;
     private String content;
     private String pickupTime;
+    
     // 外部連結的部分
 
     private OrderUserDto User; // 一個存在在OrderDTO內的 UserDto

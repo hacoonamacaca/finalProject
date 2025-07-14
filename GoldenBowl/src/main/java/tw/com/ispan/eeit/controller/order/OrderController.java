@@ -42,7 +42,7 @@ public class OrderController {
 	// 創建新訂單
     @PostMapping
     // 修改參數為 OrderDTO
-    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orderDTO) {
+    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
         // 調用 Service 層，它會返回 Optional<OrderBean>
         return orderService.createOrder(orderDTO)
                 .map(createdOrderBean -> ResponseEntity.status(HttpStatus.CREATED).body(createdOrderBean))
@@ -56,28 +56,43 @@ public class OrderController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+ // 更新現有訂單狀態
+    @PutMapping("/{id}")
+    public ResponseEntity<OrderDTO> updateOrder(@PathVariable Integer id, @RequestBody OrderDTO order) {
+    	System.out.println(order.getId());
+    	System.out.println(order.getContent());
+    	return orderService.updateOrder(id, order)
+    			.map(ResponseEntity::ok)
+    			.orElse(ResponseEntity.notFound().build());
+    }
+    
+    // 更新現有訂單狀態
+    @PutMapping("/status/{id}")
+    public ResponseEntity<OrderDTO> updateOrderStatus(@PathVariable Integer id, @RequestBody OrderDTO order) {
+    	System.out.println(order.getId());
+    	System.out.println(order.getContent());
+    	return orderService.updateOrderStatus(id, order)
+    			.map(ResponseEntity::ok)
+    			.orElse(ResponseEntity.notFound().build());
+    }
 
+    
+    
+    
+    
     // 獲取所有訂單
     @GetMapping
-    public ResponseEntity<List<OrderBean>> getAllOrders() {
-        List<OrderBean> orders = orderService.findAllOrders();
+    public ResponseEntity<List<OrderDTO>> getAllOrders() {
+    	List<OrderDTO> orders = orderService.findAllOrders();
         if (orders.isEmpty()) {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(orders);
+
     }
 
 
 
-    // 更新現有訂單
-    @PutMapping("/{id}")
-    public ResponseEntity<OrderBean> updateOrderStatus(@PathVariable Integer id, @RequestBody OrderDTO order) {
-    	System.out.println(order.getId());
-    	System.out.println(order.getContent());
-        return orderService.updateOrderStatus(id, order)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     // 刪除訂單 可執行
     @DeleteMapping("/{id}")
