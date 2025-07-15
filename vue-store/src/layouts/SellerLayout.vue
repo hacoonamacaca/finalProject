@@ -39,6 +39,43 @@
             <!-- Sidebar -->
             <nav class="sidebar">
                 <div class="sidebar-sticky">
+
+                    <!-- 🔥 NEW: 店家選擇區域 -->
+                    <div class="sidebar-section">
+                        <h6 class="section-title">當前店家</h6>
+                        
+                        <!-- 載入中狀態 -->
+                        <div v-if="isStoreLoading" class="text-center p-2">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <small class="d-block mt-1">載入店家中...</small>
+                        </div>
+                        
+                        <!-- 店家選擇 -->
+                        <div v-else-if="stores.length > 0" class="mb-3">
+                            <!-- 多店家：下拉選單 -->
+                            <select v-if="stores.length > 1" 
+                                    class="form-select form-select-sm" 
+                                    :value="selectedStore"
+                                    @change="handleStoreChange">
+                                <option v-for="store in stores" :key="store.id" :value="store.id">
+                                    🏪 {{ store.name }}
+                                </option>
+                            </select>
+                            
+                            <!-- 單店家：顯示名稱 -->
+                            <div v-else class="alert alert-info mb-0 py-2">
+                                <small>🏪 {{ stores[0].name }}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- 無店家資料 -->
+                        <div v-else class="alert alert-warning mb-0 py-2">
+                            <small>⚠️ 無店家資料</small>
+                        </div>
+                    </div>
+
                     <!-- 商家資訊 -->
                     <div class="sidebar-section">
                         <h6 class="section-title">管理你的商家資訊</h6>
@@ -105,30 +142,41 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
-import logoUrl from '../assets/logo.png';
+import logoUrl from '../assets/logo.png'
+import { useStore } from '../composables/useStore.js'
+
+// 使用 store composable
+const { 
+    currentUser, 
+    stores, 
+    selectedStore, 
+    isLoading: isStoreLoading,
+    isLoggedIn,
+    switchStore 
+} = useStore()
 
 // 響應式資料
 const iconDropdownRef = ref(null)
 const showDropdown = ref(false)
-const currentUser = ref(null)
+// const currentUser = ref(null)  // useStore 改造中先註解
 
-// 計算屬性
-const isLoggedIn = computed(() => !!currentUser.value?.ownerId)
+// 計算屬性  // useStore 改造中先註解
+// const isLoggedIn = computed(() => !!currentUser.value?.ownerId)
 
-// 方法
-const loadUserData = () => {
-    const ownerId = localStorage.getItem('ownerId')
-    const ownerFullName = localStorage.getItem('storeFullName')
-    const ownerEmail = localStorage.getItem('storeEmail')
+// 方法  // useStore 改造中先註解
+// const loadUserData = () => {
+//     const ownerId = localStorage.getItem('ownerId')
+//     const ownerFullName = localStorage.getItem('storeFullName')
+//     const ownerEmail = localStorage.getItem('storeEmail')
     
-    if (ownerId) {
-        currentUser.value = {
-            ownerId,
-            ownerFullName,
-            ownerEmail
-        }
-    }
-}
+//     if (ownerId) {
+//         currentUser.value = {
+//             ownerId,
+//             ownerFullName,
+//             ownerEmail
+//         }
+//     }
+// }
 
 const onUserIconClick = () => {
     console.log('點擊用戶圖示:', isLoggedIn.value) // 除錯用
@@ -153,7 +201,7 @@ const logout = () => {
     localStorage.removeItem('storeProfile')
     
     // 重設本地狀態
-    currentUser.value = null
+    // currentUser.value = null   // useStore 改造中先註解
     showDropdown.value = false
     
     // 跳轉回 vue-cus 登入頁面
@@ -161,9 +209,16 @@ const logout = () => {
     window.location.href = `${vueCustomerUrl}/store`
 }
 
+// 🔥 NEW: 處理店家切換
+const handleStoreChange = (event) => {
+    const newStoreId = parseInt(event.target.value)
+    console.log('🔄 [SellerLayout] 用戶切換店家到:', newStoreId)
+    switchStore(newStoreId)
+}
+
 // 生命週期
 onMounted(() => {
-    loadUserData()
+    // loadUserData() useStore 改造中先註解
     document.addEventListener('click', handleClickOutside)
 })
 
@@ -301,10 +356,10 @@ onBeforeUnmount(() => {
 
 .main-content {
     flex-grow: 1;
-    /* overflow-y: auto; */
+    /* overflow-y: auto; */  /* 取消註解會造成有兩個滾動條 */
     background-color: white;
-    position: relative; /* << 新增：也建立堆疊上下文，成為子頁面絕對定位的基準 */
-    z-index: 10; /* << 新增：層級比 sidebar 低，但比預設高 */
+    position: relative; /* 也建立堆疊上下文，成為子頁面絕對定位的基準 */
+    z-index: 10; /* 層級比 sidebar 低，但比預設高 */
 }
 
 
@@ -314,4 +369,19 @@ header,
 footer {
     flex-shrink: 0;
 }
+
+/* 🔥 NEW: 店家選擇區域樣式 */
+.form-select-sm {
+    font-size: 0.875rem;
+}
+
+.alert {
+    font-size: 0.875rem;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
 </style>

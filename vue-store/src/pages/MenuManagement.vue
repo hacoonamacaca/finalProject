@@ -29,77 +29,77 @@ const activeTab = ref('overview'); // 'overview', 'categories' 或 'specs'
 // const selectedStore = ref(stores.value[0]?.id || null); 
 
 // 🔥 NEW: 從 localStorage 取得登入用戶資料
-const currentUser = ref(null)
-const stores = ref([])
-const selectedStore = ref(null)
+// const currentUser = ref(null)
+// const stores = ref([])
+// const selectedStore = ref(null)
 
 // 載入用戶資料和店家列表的函數
-const loadUserData = async () => {
-    const ownerId = localStorage.getItem('ownerId')
-    const ownerFullName = localStorage.getItem('storeFullName')
-    const ownerEmail = localStorage.getItem('storeEmail')
+// const loadUserData = async () => {
+//     const ownerId = localStorage.getItem('ownerId')
+//     const ownerFullName = localStorage.getItem('storeFullName')
+//     const ownerEmail = localStorage.getItem('storeEmail')
     
-    if (ownerId) {
-        currentUser.value = {
-            ownerId,
-            ownerFullName,
-            ownerEmail
-        }
+//     if (ownerId) {
+//         currentUser.value = {
+//             ownerId,
+//             ownerFullName,
+//             ownerEmail
+//         }
         
-        console.log('✅ 載入用戶資料:', currentUser.value)
+//         console.log('✅ 載入用戶資料:', currentUser.value)
 
-        // 🔥 NEW: 向後端請求該 owner 的所有 store 資料
-        try {
-            console.log(`🚀 正在為 owner ID: ${ownerId} 獲取店家列表...`)
+//         // 🔥 NEW: 向後端請求該 owner 的所有 store 資料
+//         try {
+//             console.log(`🚀 正在為 owner ID: ${ownerId} 獲取店家列表...`)
             
-            // 🔥 修正 API 路徑：使用正確的 endpoint
-            const storesResponse = await apiClient.get('/api/stores/profile/all', {
-                params: { ownerId: ownerId }
-            })
-            console.log('✅ 成功獲取店家列表:', storesResponse.data)
+//             // 🔥 修正 API 路徑：使用正確的 endpoint
+//             const storesResponse = await apiClient.get('/api/stores/profile/all', {
+//                 params: { ownerId: ownerId }
+//             })
+//             console.log('✅ 成功獲取店家列表:', storesResponse.data)
             
-            // 更新 stores 陣列
-            stores.value = storesResponse.data.map(store => ({
-                id: store.id,
-                name: store.name || store.storeName || `店家${store.id}`
-            }))
+//             // 更新 stores 陣列
+//             stores.value = storesResponse.data.map(store => ({
+//                 id: store.id,
+//                 name: store.name || store.storeName || `店家${store.id}`
+//             }))
             
-            // 🔥 NEW: 智慧選擇預設店家
-            if (stores.value.length > 0) {
-                // 優先選擇 localStorage 中記錄的 storeId
-                const savedStoreId = localStorage.getItem('storeId')
-                const savedStore = stores.value.find(store => String(store.id) === String(savedStoreId))
+//             // 🔥 NEW: 智慧選擇預設店家
+//             if (stores.value.length > 0) {
+//                 // 優先選擇 localStorage 中記錄的 storeId
+//                 const savedStoreId = localStorage.getItem('storeId')
+//                 const savedStore = stores.value.find(store => String(store.id) === String(savedStoreId))
                 
-                if (savedStore) {
-                    selectedStore.value = savedStore.id
-                    console.log('📌 使用 localStorage 中的店家:', savedStore)
-                } else {
-                    // 如果沒有或找不到，就選第一個
-                    selectedStore.value = stores.value[0].id
-                    console.log('📌 選擇第一個店家:', stores.value[0])
-                }
-            }
+//                 if (savedStore) {
+//                     selectedStore.value = savedStore.id
+//                     console.log('📌 使用 localStorage 中的店家:', savedStore)
+//                 } else {
+//                     // 如果沒有或找不到，就選第一個
+//                     selectedStore.value = stores.value[0].id
+//                     console.log('📌 選擇第一個店家:', stores.value[0])
+//                 }
+//             }
             
-            console.log('🏪 最終店家狀態:', {
-                stores: stores.value,
-                selectedStore: selectedStore.value
-            })
+//             console.log('🏪 最終店家狀態:', {
+//                 stores: stores.value,
+//                 selectedStore: selectedStore.value
+//             })
             
-        } catch (error) {
-            console.error('❌ 獲取店家列表失敗:', error)
-            error.value = `無法載入店家資料：${error.response?.data?.message || error.message}`
-            // 發生錯誤時清空資料
-            stores.value = []
-            selectedStore.value = null
-        }
-    } else {
-        console.warn('⚠️ 找不到 ownerId')
-        // 清空資料
-        currentUser.value = null
-        stores.value = []
-        selectedStore.value = null
-    }
-}
+//         } catch (error) {
+//             console.error('❌ 獲取店家列表失敗:', error)
+//             error.value = `無法載入店家資料：${error.response?.data?.message || error.message}`
+//             // 發生錯誤時清空資料
+//             stores.value = []
+//             selectedStore.value = null
+//         }
+//     } else {
+//         console.warn('⚠️ 找不到 ownerId')
+//         // 清空資料
+//         currentUser.value = null
+//         stores.value = []
+//         selectedStore.value = null
+//     }
+// }
 
 
 // =================================================================
@@ -120,12 +120,11 @@ const error = ref(null); // 新增一個錯誤狀態
 
 
 // =================================================================
-// 3. 【全新】獲取資料的核心函式
+// 3. 【簡化】獲取資料的核心函式
 // =================================================================
 
 const fetchMenuData = async (storeId) => {
     if (!storeId) {
-        // 如果沒有 storeId，清空列表並返回
         categories.splice(0);
         items.splice(0);
         return;
@@ -135,22 +134,21 @@ const fetchMenuData = async (storeId) => {
         isLoading.value = true;
         error.value = null;
 
-        console.log(`🚀 正在為店家 ID: ${storeId} 獲取菜單資料...`);
-        // 使用 Promise.all 來並行發送所有請求，效率更高
+        console.log(`🚀 [MenuManagement] 正在為店家 ID: ${storeId} 獲取菜單資料...`);
+        
         const [categoriesResponse, itemsResponse] = await Promise.all([
             apiClient.get(`/api/food-classes/store/${storeId}`),
             apiClient.get(`/api/foods/store/${storeId}`),
-            // apiClient.get(`/specs/store/${storeId}`), // 未來可以加上規格的 API
         ]);
 
-        // 【修改】使用 .splice(0) 和解構賦值來安全地更新 reactive 陣列
+        console.log('✅ [MenuManagement] API 回應結果:');
+        console.log('   分類回應:', categoriesResponse.data);
+        console.log('   品項回應:', itemsResponse.data);
+
         categories.splice(0, categories.length, ...categoriesResponse.data);
-
-        // 🔥 NEW: 轉換 items 資料格式，確保與前端元件相容
+        
         const formattedItems = itemsResponse.data.map(item => {
-            console.log('🔍 處理 item 資料:', item); // 除錯：查看原始資料
-
-            // 🔥 關鍵修正：通過 categoryName 找到對應的 categoryId
+            // 通過 categoryName 找到對應的 categoryId
             let categoryId = null;
             if (item.categoryName) {
                 const matchedCategory = categoriesResponse.data.find(cat => 
@@ -158,36 +156,34 @@ const fetchMenuData = async (storeId) => {
                 );
                 if (matchedCategory) {
                     categoryId = matchedCategory.id;
-                    console.log(`   📋 找到分類匹配: "${item.categoryName}" → ID: ${categoryId}`);
+                    console.log(`   📋 [MenuManagement] 找到分類匹配: "${item.categoryName}" → ID: ${categoryId}`);
                 } else {
-                    console.warn(`   ⚠️ 找不到分類: "${item.categoryName}"`);
+                    console.warn(`   ⚠️ [MenuManagement] 找不到分類: "${item.categoryName}"`);
                 }
             } else if (item.foodClassIds && item.foodClassIds.length > 0) {
-                // 備用：如果有 foodClassIds，使用第一個
                 categoryId = item.foodClassIds[0];
-                console.log(`   📋 使用 foodClassIds: ${categoryId}`);
+                console.log(`   📋 [MenuManagement] 使用 foodClassIds: ${categoryId}`);
             }
-
+            
             return {
                 ...item,
-                status: item.isActive ? '供應中' : '停售',  // 轉換後端的 isActive 為前端的 status
-                categoryId: categoryId, // 🔥 使用找到的 categoryId
-                imgResource: item.imgResource || item.imageUrl || item.image || '', // 確保圖片欄位存在
-                imageUrl: item.imgResource || item.imageUrl || item.image || '' // 備用圖片欄位
+                status: item.isActive ? '供應中' : '停售',
+                categoryId: categoryId,
+                imgResource: item.imgResource || item.imageUrl || item.image || '',
+                imageUrl: item.imgResource || item.imageUrl || item.image || ''
             };
         });
-
-        console.log('✅ 格式化後的 items:', formattedItems);
+        
+        console.log('✅ [MenuManagement] 格式化後的 items:', formattedItems);
         items.splice(0, items.length, ...formattedItems);
-        // specs.splice(0, specs.length, ...specsResponse.data);
 
-        console.log('✅ 成功獲取分類:', categories);
-        console.log('✅ 成功獲取品項:', items);
+        console.log('📊 [MenuManagement] 最終載入結果:');
+        console.log(`   分類數量: ${categories.length}`);
+        console.log(`   品項數量: ${items.length}`);
 
     } catch (e) {
-        console.error(`❌ 獲取店家 ID:${storeId} 的資料失敗:`, e);
-        error.value = '無法載入菜單資料，請稍後再試。';
-        // 發生錯誤時清空資料
+        console.error(`❌ [MenuManagement] 獲取店家 ID:${storeId} 的資料失敗:`, e);
+        error.value = `無法載入菜單資料：${e.response?.data?.message || e.message}`;
         categories.splice(0);
         items.splice(0);
     } finally {
@@ -199,52 +195,35 @@ const fetchMenuData = async (storeId) => {
 // =================================================================
 // 4. 生命週期鉤子和監聽器
 // =================================================================
-// onMounted(() => {
-//     fetchMenuData(selectedStore.value);
-// });
 
-// 監聽 selectedStore 的變化，當使用者切換店家時，重新獲取資料
-// watch(selectedStore, (newStoreId) => {
-//     fetchMenuData(newStoreId);
-// });
-
-onMounted(async () => {
-    // 🔥 NEW: 先載入資料和店家列表，再載入菜單資料
-    await loadUserData()
-    
-    // 如果有選中的店家，就載入菜單資料
-    if (selectedStore.value) {
-        await fetchMenuData(selectedStore.value)
-    }
-});
-
-// 【修改】監聽 selectedStore 的變化，當使用者切換店家時，重新獲取資料
+// 🔥 NEW: 監聽 selectedStore 變化
 watch(selectedStore, async (newStoreId, oldStoreId) => {
-    console.log('👀 監聽到 selectedStore 變化:', { 
-        from: oldStoreId, 
-        to: newStoreId 
-    });
-    
-    if (newStoreId && newStoreId !== oldStoreId) {
-        console.log(`🔄 切換店家：從 ${oldStoreId} 到 ${newStoreId}，重新載入資料`);
-        await fetchMenuData(newStoreId);
-        
-        // 🔥 NEW: 更新 localStorage 中的 storeId
-        localStorage.setItem('storeId', String(newStoreId));
-        console.log('💾 已更新 localStorage 中的 storeId:', newStoreId);
+    console.log(`👀 [MenuManagement] selectedStore 變化: ${oldStoreId} → ${newStoreId}`)
+    if (newStoreId) {
+        await fetchMenuData(newStoreId)
     }
-});
+}, { immediate: true })
 
-// 🔥 NEW: 監聽 localStorage 變化 (當用戶重新登入時)
-const handleStorageChange = async () => {
-    await loadUserData()
-    if (selectedStore.value) {
-        await fetchMenuData(selectedStore.value)
+// 🔥 NEW: 監聽全域 storeChanged 事件
+const handleStoreChanged = async (event) => {
+    const { newStoreId } = event.detail
+    console.log(`🔄 [MenuManagement] 收到店家切換事件: ${newStoreId}`)
+    if (newStoreId) {
+        await fetchMenuData(newStoreId)
     }
 }
 
-// 監聽 storage 事件 (跨分頁同步)
-window.addEventListener('storage', handleStorageChange)
+onMounted(async () => {
+    console.log('🎬 [MenuManagement] 組件掛載')
+    
+    // 監聽全域店家切換事件
+    window.addEventListener('storeChanged', handleStoreChanged)
+    
+    // 如果已經有選中的店家，立即載入
+    if (selectedStore.value) {
+        await fetchMenuData(selectedStore.value)
+    }
+});
 
 // 清理事件監聽器
 onBeforeUnmount(() => {
@@ -559,46 +538,15 @@ const selectTab = (tab) => {
         <PageHeader title="菜單管理">
             <!-- 這是要 "塞" 進插槽的內容 -->
             <template #actions>
-                <!-- 切換店鋪下拉選單 -->
-                <!-- <select class="form-select" v-model="selectedStore" style="width: auto; min-width: 180px;">  
-                    <option v-for="store in stores" :key="store.id" :value="store.id">
-                        {{ store.name }}
-                    </option>
-                </select> -->
-
-                <!-- 🔥 NEW: 顯示當前登入的用戶資訊 -->
-                <div v-if="currentUser" class="d-flex align-items-center gap-3">
-                    <span class="text-muted small">
-                        管理者：{{ currentUser.ownerFullName || currentUser.ownerEmail }}
-                    </span>
-                    
-                    <!-- 🔥 NEW: 支援多店家選擇 -->
-                    <select v-if="stores.length > 1" 
-                            class="form-select" 
-                            v-model="selectedStore" 
-                            style="width: auto; min-width: 200px;">
-                        <option v-for="store in stores" :key="store.id" :value="store.id">
-                            {{ store.name }}
-                        </option>
-                    </select>
-                    
-                    <!-- 單一店家時顯示店家名稱 -->
-                    <div v-else-if="stores.length === 1" class="badge bg-primary fs-6">
-                        {{ stores[0].name }}
-                    </div>
-
-                    <!-- 🔥 NEW: 顯示載入中狀態 -->
-                    <div v-else-if="currentUser && stores.length === 0" class="badge bg-secondary">
-                        <div class="spinner-border spinner-border-sm me-2" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        載入店家中...
-                    </div>
+                <!-- 🔥 NEW: 簡化的店家顯示 -->
+                <div v-if="currentStoreName" class="badge bg-primary fs-6">
+                    🏪 {{ currentStoreName }}
                 </div>
-                
-                <!-- 🔥 NEW: 如果沒有登入資料，顯示提示 -->
-                <div v-else class="alert alert-warning mb-0" role="alert">
-                    <small>⚠️ 未找到登入資料，請重新登入</small>
+                <div v-else-if="!isLoggedIn" class="badge bg-warning fs-6">
+                    ⚠️ 未登入
+                </div>
+                <div v-else class="badge bg-secondary fs-6">
+                    📍 請選擇店家
                 </div>
             </template>
         </PageHeader>
@@ -614,6 +562,7 @@ const selectTab = (tab) => {
             </p>
         </div>
         
+        <!-- 載入中狀態 -->
         <div v-else-if="isLoading" class="text-center p-5">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -713,5 +662,8 @@ const selectTab = (tab) => {
 </template>
 
 <style scoped>
-/* 已搬到共用樣式 SellerLayout.vue */
+/* 大部分已搬到共用樣式 SellerLayout.vue 處理 */
+.badge {
+    font-size: 0.85rem !important;
+}
 </style>
