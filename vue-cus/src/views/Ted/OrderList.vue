@@ -5,8 +5,6 @@ import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
 import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
 import { useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
-import { useRouter } from 'vue-router';
 
 const orders=ref([])
 const id = ref(1)
@@ -19,7 +17,7 @@ const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
  * 從後端獲取用戶訂單列表
  * @param {number} id - 用戶 ID
  */
- async function fetchOrders(id) {
+  async function fetchOrders(id) {
     try {
         const response = await axios.get(`/api/orders/user/${id}`);
         // 對於每個訂單，如果沒有 comment 屬性或 likedFood 屬性，則補上預設值，
@@ -69,10 +67,8 @@ onMounted(() => {
 
 function findorder(id) {
   axios.get(`/api/orders/user/${id}`)
-  axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
 
-      console.log("訂單數據:", response.data);
       console.log("訂單數據:", response.data);
       orders.value = response.data
       console.log(orders.value)
@@ -83,7 +79,6 @@ function findorder(id) {
       // console.log(`ordersValue:${orders.value}`)
   }).catch(function (error) {
     console.error("加載訂單失敗:", error);
-    console.error("加載訂單失敗:", error);
   })
 
 }
@@ -92,12 +87,6 @@ function findorder(id) {
 const reorder = (order) => {
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
-
-//頁面跳轉 點擊訂單詳情後跳轉
-const goToOrderDetail = (orderId) => {
-  router.push({ name: 'OrderDetail', params: { id: orderId } });
-};
-
 
 //頁面跳轉 點擊訂單詳情後跳轉
 const goToOrderDetail = (orderId) => {
@@ -115,7 +104,6 @@ const goToOrderDetail = (orderId) => {
       v-for="order in orders"
       :key="order.id"
       class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
-      @click="goToOrderDetail(order.id)"
       @click="goToOrderDetail(order.id)"
     >
       <img
@@ -146,13 +134,10 @@ const goToOrderDetail = (orderId) => {
 
         <div class="d-flex justify-content-end align-items-center mt-3">
           <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click.stop="reorder(order)">
-          <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click.stop="reorder(order)">
             選擇想要重新訂購的項目
           </button>
         </div>
 
-        <div >
-          <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
         <div >
           <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
         </div>

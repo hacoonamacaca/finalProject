@@ -1,10 +1,7 @@
 
 <script setup> //Ted 負責範圍 餐廳所有餐點 呼叫CartModal
-
-<script setup> //Ted 負責範圍 餐廳所有餐點 呼叫CartModal
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import apiClient from '../../plungins/axios.js'; // 導入 apiClient
-// import ItemDetailModal from './ItemDetailModal.vue'
 // import ItemDetailModal from './ItemDetailModal.vue'
 import { useCartStore } from '@/stores/cart'
 import '@/assets/css/restaurant-theme.css'
@@ -24,13 +21,11 @@ const cartStore = useCartStore()
 // 基本狀態
 const selectedItem = ref(null)
 // const showItemDetail = ref(false)
-// const showItemDetail = ref(false)
 
 // 導航狀態
 const activeCategory = ref(null) // 初始沒有Category
 // const activeCategory = ref('人氣精選') // 初始設為第一個分類
 const stickyNav = ref(null)
-// 新增 ref 來引用可滾動的分類導航容器，類別過多時出現左右
 // 新增 ref 來引用可滾動的分類導航容器，類別過多時出現左右
 const tabsContainer = ref(null);
 // 控制滾動按鈕的顯示/隱藏狀態
@@ -41,7 +36,6 @@ const canScrollRight = ref(false);
 
 // 監控 activeCategory 變化
 watch(activeCategory, (newValue, oldValue) => {
-    //console.log(`🎯 RestaurantMenu activeCategory 變化: ${oldValue} → ${newValue}`)
     //console.log(`🎯 RestaurantMenu activeCategory 變化: ${oldValue} → ${newValue}`)
 }, { immediate: true })
 
@@ -84,31 +78,16 @@ const getCategoryItems = (categoryName) => {
 //     showItemDetail.value = false
 //     selectedItem.value = null
 // }
-// 顯示ItemDetailModal.vue
-// const openItemDetail = (item) => {
-//     selectedItem.value = item
-//     showItemDetail.value = true
-//     console.log(item)
-//     // 讓其顯示
-// }
-// // 關閉ItemDetailModal.vue
-// const closeItemDetail = () => {
-//     showItemDetail.value = false
-//     selectedItem.value = null
-// }
 
 const quickAddToCart = (item) => {
     const cartItem = {
-        quantity: 1,
+        id: item.id,
+        name: item.name,
         price: item.discountPrice || item.price,
         image: item.image,
-        
+        quantity: 1,
         sub_total: 0,
-        total: item.price,
-        food: {
-            id: item.id,
-            name: item.name,
-        }
+        total:item.price
     }
     handleAddToCart(cartItem)
 
@@ -118,11 +97,6 @@ const quickAddToCart = (item) => {
 
 const handleAddToCart = (itemToAdd) => {
     cartStore.addToCart(itemToAdd, props.restaurant)
-    // 使用購物車開啟
-    // if (showItemDetail.value) {
-    //     closeItemDetail()
-    // }
-    // console.log(itemToAdd)
     // 使用購物車開啟
     // if (showItemDetail.value) {
     //     closeItemDetail()
@@ -155,13 +129,11 @@ const checkout = () => {
 // 滾動方法
 const scrollTabs = (direction) => {
     // //console.log(`🔄 滾動按鈕點擊: ${direction}`)
-    // //console.log(`🔄 滾動按鈕點擊: ${direction}`)
     if (tabsContainer.value) {
         const scrollAmount = 150; // 每次滾動的像素量，可調整
         const currentScrollLeft = tabsContainer.value.scrollLeft;
         const newScrollLeft = direction === 'left' ? currentScrollLeft - scrollAmount : currentScrollLeft + scrollAmount;
 
-        // //console.log(`📊 滾動前: ${currentScrollLeft}, 滾動後: ${newScrollLeft}`)
         // //console.log(`📊 滾動前: ${currentScrollLeft}, 滾動後: ${newScrollLeft}`)
 
         tabsContainer.value.scrollTo({
@@ -175,14 +147,11 @@ const scrollTabs = (direction) => {
         }, 300);
     } else {
         // //console.error('❌ tabsContainer 未找到')
-        // //console.error('❌ tabsContainer 未找到')
     }
 };
 
 // 檢查滾動按鈕可見性及禁用狀態, tabsContainer 相關
-// 檢查滾動按鈕可見性及禁用狀態, tabsContainer 相關
 const checkScrollButtonVisibility = () => {
-    // //console.log('🔍 檢查滾動按鈕可見性...')
     // //console.log('🔍 檢查滾動按鈕可見性...')
     if (tabsContainer.value) {
         const { scrollWidth, clientWidth, scrollLeft } = tabsContainer.value;
@@ -190,14 +159,6 @@ const checkScrollButtonVisibility = () => {
         const canScrollLeftNow = scrollLeft > 0;
         const canScrollRightNow = scrollLeft + clientWidth < scrollWidth;
 
-        // //console.log(`📊 滾動容器狀態:`, {
-        //     scrollWidth,
-        //     clientWidth,
-        //     scrollLeft,
-        //     shouldShowButtons,
-        //     canScrollLeftNow,
-        //     canScrollRightNow
-        // })
         // //console.log(`📊 滾動容器狀態:`, {
         //     scrollWidth,
         //     clientWidth,
@@ -216,13 +177,7 @@ const checkScrollButtonVisibility = () => {
         //     canScrollLeft: canScrollLeft.value,
         //     canScrollRight: canScrollRight.value
         // })
-        // //console.log(`🎯 按鈕狀態:`, {
-        //     showScrollButtons: showScrollButtons.value,
-        //     canScrollLeft: canScrollLeft.value,
-        //     canScrollRight: canScrollRight.value
-        // })
     } else {
-        //console.error('❌ tabsContainer 未找到，無法檢查滾動按鈕')
         //console.error('❌ tabsContainer 未找到，無法檢查滾動按鈕')
     }
 };
@@ -251,7 +206,6 @@ const onTabClick = (event, category) => {
 
         activeCategory.value = category.name;
 
-        // 點擊後，將當前點擊的 tab 滾動到 tabsContainer 的中心（可選） tabsContainer 相關
         // 點擊後，將當前點擊的 tab 滾動到 tabsContainer 的中心（可選） tabsContainer 相關
         nextTick(() => {
             const activeTab = tabsContainer.value.querySelector('.nav-tab.active');
@@ -284,7 +238,6 @@ const checkActiveCategoryOnScroll = () => {
         const firstCategory = categories.value[0].name;
         if (activeCategory.value !== firstCategory) {
             // //console.log(`🔄 滾動檢測 - 頁面頂部，設置第一個分類: ${firstCategory}`)
-            // //console.log(`🔄 滾動檢測 - 頁面頂部，設置第一個分類: ${firstCategory}`)
             activeCategory.value = firstCategory;
         }
         return;
@@ -311,7 +264,6 @@ const checkActiveCategoryOnScroll = () => {
     });
 
     if (currentActiveCategory && activeCategory.value !== currentActiveCategory) {
-        // //console.log(`🔄 滾動檢測 - 更新 activeCategory: ${activeCategory.value} → ${currentActiveCategory}`)
         // //console.log(`🔄 滾動檢測 - 更新 activeCategory: ${activeCategory.value} → ${currentActiveCategory}`)
         activeCategory.value = currentActiveCategory;
     }
@@ -343,7 +295,6 @@ const checkStickyNavPosition = () => {
 // =======================================================
 const setupIntersectionObserver = () => {
     // //console.log('🔄 RestaurantMenu: 設置 IntersectionObserver')
-    // //console.log('🔄 RestaurantMenu: 設置 IntersectionObserver')
 
     observers.forEach(observer => observer.disconnect());
     observers = [];
@@ -352,7 +303,6 @@ const setupIntersectionObserver = () => {
     const stickyNavHeight = stickyNav.value ? stickyNav.value.offsetHeight : 60;
     const triggerOffset = STICKY_TOP_POSITION + stickyNavHeight;
 
-    // //console.log(`📊 觸發位置計算: STICKY_TOP_POSITION=${STICKY_TOP_POSITION}, stickyNavHeight=${stickyNavHeight}, triggerOffset=${triggerOffset}`)
     // //console.log(`📊 觸發位置計算: STICKY_TOP_POSITION=${STICKY_TOP_POSITION}, stickyNavHeight=${stickyNavHeight}, triggerOffset=${triggerOffset}`)
 
     const observerOptions = {
@@ -363,11 +313,9 @@ const setupIntersectionObserver = () => {
 
     const observer = new IntersectionObserver((entries) => {
         // //console.log('👁️ IntersectionObserver 觸發，entries:', entries.length)
-        // //console.log('👁️ IntersectionObserver 觸發，entries:', entries.length)
 
         // 找到所有正在相交的元素
         const intersectingEntries = entries.filter(entry => entry.isIntersecting);
-        // //console.log(`📊 相交的元素數量: ${intersectingEntries.length}`)
         // //console.log(`📊 相交的元素數量: ${intersectingEntries.length}`)
 
         if (intersectingEntries.length === 0) {
@@ -379,7 +327,6 @@ const setupIntersectionObserver = () => {
             if (isAtTop && categories.value.length > 0) {
                 const firstCategory = categories.value[0].name;
                 if (activeCategory.value !== firstCategory) {
-                    //console.log(`🏠 頁面頂部，設置第一個分類: ${firstCategory}`)
                     //console.log(`🏠 頁面頂部，設置第一個分類: ${firstCategory}`)
                     activeCategory.value = firstCategory;
                 }
@@ -394,7 +341,6 @@ const setupIntersectionObserver = () => {
         intersectingEntries.forEach(entry => {
             const top = entry.boundingClientRect.top;
             //console.log(`📊 檢查分類: ${entry.target.id}, top: ${top}`)
-            //console.log(`📊 檢查分類: ${entry.target.id}, top: ${top}`)
 
             if (top < minTop) {
                 minTop = top;
@@ -407,10 +353,8 @@ const setupIntersectionObserver = () => {
             const newActiveCategory = categories.value.find(cat => cat.id === categoryId)?.name;
 
             //console.log(`🎯 最靠近頂部的分類: ${newActiveCategory}, top: ${minTop}`)
-            //console.log(`🎯 最靠近頂部的分類: ${newActiveCategory}, top: ${minTop}`)
 
             if (newActiveCategory && activeCategory.value !== newActiveCategory) {
-                //console.log(`🎯 更新 activeCategory: ${activeCategory.value} → ${newActiveCategory}`)
                 //console.log(`🎯 更新 activeCategory: ${activeCategory.value} → ${newActiveCategory}`)
                 activeCategory.value = newActiveCategory;
             }
@@ -423,21 +367,17 @@ const setupIntersectionObserver = () => {
         if (element) {
             observer.observe(element);
             //console.log(`👁️ 觀察分類: ${category.name} (ID: ${category.id})`)
-            //console.log(`👁️ 觀察分類: ${category.name} (ID: ${category.id})`)
         } else {
-            //console.error(`❌ 找不到分類元素: category-${category.id}`)
             //console.error(`❌ 找不到分類元素: category-${category.id}`)
         }
     });
 
     observers.push(observer);
     //console.log('✅ IntersectionObserver 設置完成')
-    //console.log('✅ IntersectionObserver 設置完成')
 };
 
 // 生命周期
 onMounted(async() => {
-    //console.log('🏪 餐廳菜單已載入，顯示所有菜品');
     //console.log('🏪 餐廳菜單已載入，顯示所有菜品');
         
     try {
@@ -448,7 +388,6 @@ onMounted(async() => {
         }
 
         // 使用 Promise.all 來並行發送兩個 API 請求，提升效能
-        //console.log(`🔄 開始為店家 ID: ${storeId} 獲取菜單資料...`);
         //console.log(`🔄 開始為店家 ID: ${storeId} 獲取菜單資料...`);
         const [categoriesResponse, itemsResponse] = await Promise.all([
             apiClient.get(`/api/food-classes/store/${storeId}`),
@@ -465,11 +404,9 @@ onMounted(async() => {
         }
 
         //console.log("✅ 成功載入店家分類:", categories.value);
-        //console.log("✅ 成功載入店家分類:", categories.value);
         console.log("✅ 成功載入店家菜單:", items.value);
 
     } catch (error) {
-        //console.error("❌ 載入菜單資料失敗:", error);
         //console.error("❌ 載入菜單資料失敗:", error);
         categories.value = [];
         items.value = [];
@@ -479,12 +416,9 @@ onMounted(async() => {
     await nextTick(() => {
         //console.log('🎨 DOM 已根據新資料更新完畢。');
         //console.log('🔄 開始初始化組件...')
-        //console.log('🎨 DOM 已根據新資料更新完畢。');
-        //console.log('🔄 開始初始化組件...')
 
         // 延遲設置 IntersectionObserver，確保 DOM 完全渲染
         setTimeout(() => {
-            //console.log('⏰ 延遲設置 IntersectionObserver...')
             //console.log('⏰ 延遲設置 IntersectionObserver...')
             setupIntersectionObserver();
         }, 500);
@@ -493,19 +427,15 @@ onMounted(async() => {
         checkStickyNavPosition(); // 初始檢查 sticky nav 狀態
 
         // 監聽 tabsContainer 自身滾動事件，以更新按鈕禁用狀態 tabsContainer 相關
-        // 監聽 tabsContainer 自身滾動事件，以更新按鈕禁用狀態 tabsContainer 相關
         if (tabsContainer.value) {
-            //console.log('✅ tabsContainer 找到，設置滾動監聽器')
             //console.log('✅ tabsContainer 找到，設置滾動監聽器')
             tabsContainer.value.addEventListener('scroll', checkScrollButtonVisibility, { passive: true });
         } else {
-            //console.error('❌ tabsContainer 未找到')
             //console.error('❌ tabsContainer 未找到')
         }
 
         // 延遲檢查滾動按鈕可見性，確保 DOM 完全渲染
         setTimeout(() => {
-            //console.log('⏰ 延遲檢查滾動按鈕可見性...')
             //console.log('⏰ 延遲檢查滾動按鈕可見性...')
             checkScrollButtonVisibility();
         }, 100);
@@ -514,21 +444,11 @@ onMounted(async() => {
         // setTimeout(() => {
         //     forceCheckScrollButtons();
         // }, 300);
-        // // 多次強制檢查，確保按鈕狀態正確
-        // setTimeout(() => {
-        //     forceCheckScrollButtons();
-        // }, 300);
 
         // setTimeout(() => {
         //     forceCheckScrollButtons();
         // }, 500);
-        // setTimeout(() => {
-        //     forceCheckScrollButtons();
-        // }, 500);
 
-        // setTimeout(() => {
-        //     forceCheckScrollButtons();
-        // }, 1000);
         // setTimeout(() => {
         //     forceCheckScrollButtons();
         // }, 1000);
@@ -536,11 +456,9 @@ onMounted(async() => {
         // 監聽窗口大小變化，當佈局變化時重新檢查按鈕可見性
         window.addEventListener('resize', () => {
             //console.log('📱 窗口大小變化，重新檢查滾動按鈕')
-            //console.log('📱 窗口大小變化，重新檢查滾動按鈕')
             setTimeout(checkScrollButtonVisibility, 100);
         });
 
-        //console.log('✅ 組件初始化完成')
         //console.log('✅ 組件初始化完成')
     });
 })
@@ -554,102 +472,6 @@ onUnmounted(() => {
     observers.forEach(observer => observer.disconnect());
 })
 </script>
-
-<template> <!--//Ted 負責範圍 餐廳所有餐點-->
-    <div class="restaurant-menu restaurant-theme">
-        <div class="menu-container" id="all-categories">
-            <nav class="sticky-nav" ref="stickyNav">
-                <div class="sticky-nav-container">
-                    <!-- 類別過多時出現箭號 -->
-                    <button v-if="showScrollButtons" @click="scrollTabs('left')"
-                        :class="['scroll-button', 'scroll-button--left', { 'hidden': !canScrollLeft }]">
-                        ←
-                    </button>
-
-                    <div class="nav-tabs-wrapper" ref="tabsContainer">
-                        <a v-for="category in categories" :key="category.id"
-                            :class="['nav-tab', { 'active': activeCategory === category.name }]"
-                            @click="onTabClick($event, category)">
-                            {{ category.name }}
-                            <span class="tab-count">({{ getCategoryItems(category.name).length }})</span>
-                        </a>
-                        <!-- <a :class="['nav-tab', { 'active': activeCategory === 'all' }]"
-                            @click="onTabClick($event, { name: 'all', id: 'all' })">
-                            全部菜單
-                            <span class="tab-count">({{ allItemsCount }})</span>
-                        </a> -->
-                    </div>
-
-                    <button v-if="showScrollButtons" @click="scrollTabs('right')"
-                        :class="['scroll-button', 'scroll-button--right', { 'hidden': !canScrollRight }]">
-                        →
-                    </button>
-                </div>
-
-                <!-- 調試顯示器 -->
-                <!-- <div class="debug-indicator"
-                    style="position: absolute; top: -30px; right: 20px; background: #333; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; z-index: 1000;">
-                    當前活動: {{ activeCategory }}
-                </div> -->
-            </nav>
-
-            <main class="menu-main">
-                <div v-if="hasMenuItems">
-                    <section v-for="category in categories" :key="category.id" :id="`category-${category.id}`"
-                        class="category-section">
-                        <h2 v-if="getCategoryItems(category.name).length > 0" class="category-title">
-                            {{ category.name }}<!--類別名稱-->
-                            <span class="category-count">({{ getCategoryItems(category.name).length }})</span>
-                        </h2>
-                        <div class="menu-grid" v-if="getCategoryItems(category.name).length > 0">
-                            <div class="menu-item" v-for="item in getCategoryItems(category.name)" :key="item.id"
-                                @click="quickAddToCart(item)"><!-- 點選後開啟 -->
-                                
-                                <!-- 餐點內容 -->
-                                <div class="item-tags" v-if="item.tagNames && item.tagNames.length > 0">
-                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag }}</span>
-                                    <!-- 標籤 -->
-                                </div>
-
-                                <div class="item-image">
-                                    <img :src="item.imageResource || restaurant.image" :alt="item.name" />
-                                </div>
-                                <div class="item-content">
-                                    <div class="item-info">
-                                        <h5 class="item-name">{{ item.name }}</h5><!--餐點名稱-->
-                                        <p class="item-desc">{{ item.description }}</p><!--餐點描述-->
-                                        <div class="price-section">
-                                        
-                                            <span class="current-price">NT${{ item.discountPrice || item.price }}</span>
-                                        </div>
-                                        <!-- <span v-if="item.originalPrice && item.originalPrice !== item.discountPrice" class="original-price">NT${{ item.originalPrice }} 暫時移除 --> 
-                                    </div>
-                                    <div class="item-actions">
-                                        <span class="pi pi-cart-plus add-to-cart-btn" @click.stop="quickAddToCart(item)" title="加入購物車"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-                <div v-else class="no-menu">
-                    <p>暫無菜品資訊</p>
-                </div>
-            </main>
-        </div>
-   
-        <!-- 統一由Nvaigation 處理 -->
-        <!-- <CartModal 
-        v-if="cartStore.isCartVisible" 
-        :cartByRestaurant="cartStore.cartByRestaurant" :totalAmount="cartStore.totalAmount"
-        @close="cartStore.hideCart" 
-        @update-quantity="updateCartItemQuantity" 
-        @remove-item="removeCartItem"
-        @checkout="checkout" 
-        /> -->
-    </div>
-</template>
-
 
 <template> <!--//Ted 負責範圍 餐廳所有餐點-->
     <div class="restaurant-menu restaurant-theme">
