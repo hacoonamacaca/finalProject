@@ -1,7 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import GeneralHoursEditor from '../components/hours/GeneralHoursEditor.vue';
 import SpecialHoursEditor from '../components/hours/SpecialHoursEditor.vue';
+import axios from '@/plungins/axios.js';
+
 
 // 模態框/側邊欄的顯示狀態
 const isSidebarVisible = ref(false);
@@ -12,17 +14,31 @@ const editingDay = ref(''); // 當編輯一般營業時間時，表示正在編�
 const showNotification = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('success'); // success, warning, danger 等
+const storeid =ref(1)
+const generalHours = ref([]);
 
+const findOpenHours= (id)=>{ 
+  axios.get(`/api/stores/${id}/hours`).then((res)=>{
+    generalHours.value = res.data
+    console.log(generalHours.value)
+
+  })
+
+}
+
+//    {
+    //     "id": 36,
+    //     "storeId": 1,
+    //     "dayOfWeek": "SUNDAY",
+    //     "openTime": "11:00:00",
+    //     "closeTime": "23:00:00",
+    //     "openTimeStr": "11:00",
+    //     "closeTimeStr": "23:00",
+    //     "isOpen": true,
+    //     "dayName": "星期日"
+    // },
 // 模擬一般營業時間數據
-const generalHours = ref({
-  'monday': '關閉',
-  'tuesday': '10:00 - 14:00',
-  'wednesday': '10:00 - 14:00',
-  'thursday': '10:00 - 14:00',
-  'friday': '關閉',
-  'saturday': '關閉',
-  'sunday': '關閉',
-});
+
 
 // 模擬特殊營業時間數據 (範例，可能需要更複雜的結構來存儲日期範圍等)
 const specialHoursRecords = ref([
@@ -38,7 +54,7 @@ const specialHoursRecords = ref([
 // 開啟一般營業時間編輯器
 const openGeneralEditor = (day) => {
   sidebarType.value = 'general';
-  editingDay.value = day; // 傳遞正在編輯的日期
+  // editingDay.value = day; // 傳遞正在編輯的日期
   isSidebarVisible.value = true;
   hideNotification(); // 開啟側邊欄時隱藏提示
 };
@@ -46,7 +62,7 @@ const openGeneralEditor = (day) => {
 // 開啟特殊營業時間編輯器
 const openSpecialEditor = () => {
   sidebarType.value = 'special';
-  editingDay.value = ''; // 清空編輯日期
+  // editingDay.value = ''; // 清空編輯日期
   isSidebarVisible.value = true;
   hideNotification(); // 開啟側邊欄時隱藏提示
 };
@@ -78,14 +94,14 @@ const hideNotification = () => {
 
 // 處理一般營業時間的保存
 const handleSaveGeneralHours = (updatedHours) => {
-  generalHours.value = { ...generalHours.value, ...updatedHours };
+  // generalHours.value = { ...generalHours.value, ...updatedHours };
   closeSidebar();
   showToast('一般營業時間已更新！', 'success');
 };
 
 // 處理特殊營業時間的保存
 const handleSaveSpecialHours = (newRecord) => {
-  specialHoursRecords.value.push(newRecord); // 簡單添加，實際應用中可能需要更複雜的邏輯
+  // specialHoursRecords.value.push(newRecord); // 簡單添加，實際應用中可能需要更複雜的邏輯
   closeSidebar();
   showToast('特殊營業時間已新增！', 'success'); // 顯示成功提示
 };
@@ -93,17 +109,24 @@ const handleSaveSpecialHours = (newRecord) => {
 // 刪除特殊營業時間 (範例)
 const deleteSpecialHours = (index) => {
   if (confirm('確定要刪除此特殊營業時間記錄嗎？')) {
-    specialHoursRecords.value.splice(index, 1);
+    // specialHoursRecords.value.splice(index, 1);
     showToast('特殊營業時間已刪除！', 'warning'); // 顯示刪除提示
   }
 };
+
+
+
+onMounted(() => {
+  findOpenHours(storeid.value)
+  
+})
 </script>
 
 <template>
   <!-- 根容器：佔滿整個視口，並設置背景色 -->
-  <div class="h-100 w-100">
+  <div class=" flex-grow-1 w-100 d-flex flex-column">
     <!-- 主要內容區塊的包裝器：佔據整個寬度，並提供內邊距 -->
-    <div class="main-content-wrapper d-flex flex-column h-100 p-4">
+    <div class="main-content-wrapper flex-grow-1 p-4" style="overflow-y: auto;">
       <!-- 移除 card 類別，保持 shadow-sm, flex-grow-1, rounded-4, p-4 並加上 bg-white -->
       <div class="  p-4">
         <div class="card-body">
@@ -119,9 +142,9 @@ const deleteSpecialHours = (index) => {
                 </button>
               </div>
               <ul class="list-unstyled mb-0">
-                <li v-for="(time, day) in generalHours" :key="day" class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                  <span class="fw-bold text-capitalize">{{ day === 'monday' ? '週一' : day === 'tuesday' ? '週二' : day === 'wednesday' ? '週三' : day === 'thursday' ? '週四' : day === 'friday' ? '週五' : day === 'saturday' ? '週六' : '週日' }}</span>
-                  <span>{{ time }}</span>
+                <li v-for="(time) in generalHours" :key="time.id" class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                  <span class="fw-bold text-capitalize">{{ time.dayName }}</span>
+                  <span>{{ time.openTimeStr }} 至 {{ time.closeTimeStr }}</span>
                 </li>
               </ul>
             </div>
@@ -210,6 +233,12 @@ const deleteSpecialHours = (index) => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+.main-content-wrapper {
+  overflow-y: auto; /*已經直接寫在 template inline style*/
+  /* 如果你的佈局是 flex，flex-grow-1 會讓它填充可用空間 */
+}
+
 
 /* 自定義粉色邊框按鈕 */
 .btn-pink-outline {

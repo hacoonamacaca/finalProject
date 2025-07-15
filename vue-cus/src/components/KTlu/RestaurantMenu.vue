@@ -97,12 +97,7 @@ const quickAddToCart = (item) => {
 
 const handleAddToCart = (itemToAdd) => {
     cartStore.addToCart(itemToAdd, props.restaurant)
-    // 使用購物車開啟
-    // if (showItemDetail.value) {
-    //     closeItemDetail()
-    // }
-    // console.log(itemToAdd)
-    // 只在購物車未開啟時才開啟
+    console.log("加入購物車",itemToAdd)
     if (!cartStore.isCartVisible) {
         cartStore.showCart()
     }
@@ -556,15 +551,7 @@ onUnmounted(() => {
             </main>
         </div>
    
-        <!-- 統一由Nvaigation 處理 -->
-        <!-- <CartModal 
-        v-if="cartStore.isCartVisible" 
-        :cartByRestaurant="cartStore.cartByRestaurant" :totalAmount="cartStore.totalAmount"
-        @close="cartStore.hideCart" 
-        @update-quantity="updateCartItemQuantity" 
-        @remove-item="removeCartItem"
-        @checkout="checkout" 
-        /> -->
+
     </div>
 </template>
 

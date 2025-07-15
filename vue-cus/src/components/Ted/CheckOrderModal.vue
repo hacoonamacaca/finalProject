@@ -223,6 +223,7 @@ const emitAddToCart = () => {
     });
     
     const createTime = formattedTime.toString().replace(" ", "T").replace(/\//g, "-")
+    //建立訂單時間即日期
     // formattedTime= formattedTime.replace(" ", "T");
   console.log("格式化後的台灣時間:", formattedTime.toString().replace(" ", "T").replace(/\//g, "-"));
       // console.log(new Date().toTimeString)

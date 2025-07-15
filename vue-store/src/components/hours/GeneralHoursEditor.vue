@@ -1,9 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue'; // 引入 watch
 
 const props = defineProps({
   generalHours: {
-    type: Object,
+    type: Array, // 改為 Array 類型
     required: true,
   },
 });
@@ -11,7 +11,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'save']);
 
 // 內部狀態，用於編輯營業時間
-const editableHours = ref({});
+const editableHours = ref([]); // 初始化為空陣列
 
 // 時間選項（分鐘，以 15 分鐘為間隔，用於下拉選單）
 const timeOptions = ref([]);
@@ -29,111 +29,128 @@ const generateTimeOptions = () => {
 
 onMounted(() => {
   // 深拷貝 props，以便在子組件中修改而不影響父組件
-  editableHours.value = JSON.parse(JSON.stringify(props.generalHours));
+  // 由於數據格式現在是陣列，複製方式也需要調整
+  // 並且在複製時，將時間數據初始化為可選的選項，如果 'isOpen' 為 false
+  editableHours.value = props.generalHours.map(hour => ({ ...hour })); // 淺拷貝物件陣列
+  console.log('editableHours.value',editableHours.value)
+  // 排序 editableHours，確保星期一到星期日依序顯示
+  // 假設 dayOfWeek 是 'MONDAY', 'TUESDAY', ... 的字串
+  // 我們需要一個映射來進行排序
+  const dayOrder = {
+    'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4,
+    'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
+  };
+  editableHours.value.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
+  
+
+  // 初始化選擇時間
   timeOptions.value = generateTimeOptions();
 });
 
+// 使用 watch 監聽 props.generalHours 變化，重新初始化 editableHours
+// 這在父組件通過非 prop 更新數據時很有用
+watch(() => props.generalHours, (newHours) => {
+  editableHours.value = newHours.map(hour => ({ ...hour }));
+  const dayOrder = {
+    'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4,
+    'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
+  };
+  editableHours.value.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
+}, { deep: true }); // deep: true 可以監聽陣列內部物件的變化
+
 // 處理開關切換
-const toggleDayStatus = (day) => {
-  if (editableHours.value[day] === '關閉') {
-    // 預設設定為 10:00 - 14:00 或其他合理值
-    editableHours.value[day] = '10:00 - 14:00';
+const toggleDayStatus = (item) => {
+  console.log('切換開關前',item.isOpen)
+
+  console.log('切換開關後',item.isOpen)
+  if (!item.isOpen) {
+    // 如果關閉了，可以清空時間或者設定一個預設關閉狀態的值
+    item.openTimeStr = '00:00'; // 例如：如果關閉，時間設為 00:00
+    item.closeTimeStr = '00:00';
   } else {
-    editableHours.value[day] = '關閉';
+    // 如果開啟了，且沒有時間，給個預設值
+    if (!item.openTimeStr || item.openTimeStr === '00:00') {
+      item.openTimeStr = '10:00';
+    }
+    if (!item.closeTimeStr || item.closeTimeStr === '00:00') {
+      item.closeTimeStr = '22:00';
+    }
   }
 };
 
-// 解析時間字串為開始和結束時間
-const parseTimeRange = (timeRange) => {
-  if (timeRange === '關閉') return { start: '', end: '' };
-  const parts = timeRange.split(' - ');
-  return { start: parts[0] || '', end: parts[1] || '' };
-};
-
-// 格式化時間範圍為字串
-const formatTimeRange = (start, end) => {
-  if (!start || !end) return '關閉';
-  return `${start} - ${end}`;
-};
-
-// 添加時間段（圖片中未明確顯示，但編輯可能需要此功能）
-const addTimeSegment = (day) => {
-  // 這裡需要更複雜的邏輯來管理每個日期的多個時間段
-  alert(`為 ${day} 添加時間段功能待實現`);
-};
-
-// 刪除時間段（圖片中未明確顯示）
-const removeTimeSegment = (day, index) => {
-  alert(`刪除 ${day} 的時間段功能待實現`);
-};
+// 解析時間字串和格式化時間字串的函數在新數據格式下可能不再需要
+// 因為我們直接操作 openTimeStr 和 closeTimeStr。
+// 如果你想用於顯示，可以保留 formatTimeRange
 
 // 保存更改
 const saveChanges = () => {
   // 在這裡可以執行數據驗證
+  // 確保 openTimeStr 和 closeTimeStr 是有效的時間格式
+  // 以及 openTimeStr < closeTimeStr
+  // 
+
+  
   emit('save', editableHours.value);
 };
 
 // 重置為初始狀態
 const resetChanges = () => {
-  editableHours.value = JSON.parse(JSON.stringify(props.generalHours));
-  alert('已重置為初始狀態');
+  editableHours.value = props.generalHours.map(hour => ({ ...hour })); // 從 props 重新初始化
+  const dayOrder = {
+    'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4,
+    'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
+  };
+  editableHours.value.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
 };
 </script>
 
 <template>
   <div class="h-100 d-flex flex-column p-4">
-    <!-- 頂部標題和關閉按鈕 -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h4 class="mb-0 fw-bold">調整一般營業時間</h4>
       <button class="btn-close" @click="emit('close')"></button>
     </div>
-    <hr>
+    <hr />
 
-    <!-- 可滾動內容區域 -->
     <div class="flex-grow-1 overflow-auto pe-2 py-3">
       <div class="mb-3 form-check form-switch">
-        <input class="form-check-input" type="checkbox" id="toggleAllDays">
-        <label class="form-check-label" for="toggleAllDays">複製每日開關與時間</label>
-      </div>
+        </div>
 
-      <div v-for="(time, day) in editableHours" :key="day" class="mb-4 p-3 border rounded-3 bg-light">
+      <div v-for="item in editableHours" :key="item.id" class="mb-4 p-3 border rounded-3 bg-light">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h6 class="mb-0 fw-bold">{{ day === 'monday' ? '週一' : day === 'tuesday' ? '週二' : day === 'wednesday' ? '週三' : day === 'thursday' ? '週四' : day === 'friday' ? '週五' : '週六' ? '週六' : '週日' }}</h6>
+          <h6 class="mb-0 fw-bold">{{ item.dayName }}</h6>
           <div class="form-check form-switch">
             <input
               class="form-check-input"
               type="checkbox"
-              :id="`toggle-${day}`"
-              :checked="time !== '關閉'"
-              @change="toggleDayStatus(day)"
-            >
-            <label class="form-check-label" :for="`toggle-${day}`"></label>
+              :id="`toggle-${item.dayOfWeek}`"
+              v-model="item.isOpen"
+              @change="toggleDayStatus(item)"
+            />
+            <label class="form-check-label" :for="`toggle-${item.dayOfWeek}`"></label>
           </div>
         </div>
 
-        <div v-if="time !== '關閉'" class="d-flex align-items-center gap-2 mb-3">
-          <select class="form-select form-select-sm" v-model="parseTimeRange(time).start">
+        <div v-if="item.isOpen" class="d-flex align-items-center gap-2 mb-3">
+          <select class="form-select form-select-sm" v-model="item.openTimeStr">
             <option v-for="option in timeOptions" :key="option" :value="option">{{ option }}</option>
           </select>
           <span class="text-muted">至</span>
-          <select class="form-select form-select-sm" v-model="parseTimeRange(time).end">
+          <select class="form-select form-select-sm" v-model="item.closeTimeStr">
             <option v-for="option in timeOptions" :key="option" :value="option">{{ option }}</option>
           </select>
-          <button class="btn btn-outline-danger btn-sm" @click="removeTimeSegment(day, 0)">
-            <i class="bi bi-trash"></i> <!-- 已更新為 Bootstrap Icons -->
-          </button>
+          </div>
+        <div v-else class="text-muted text-center py-2">
+            關閉
         </div>
-        <button class="btn btn-sm btn-outline-primary w-100 py-2" @click="addTimeSegment(day)">
-          <i class="bi bi-plus me-2"></i><!-- 已更新為 Bootstrap Icons -->
-          新增區段
-        </button>
-      </div>
+
+
+        </div>
     </div>
 
-    <!-- 底部操作按鈕 -->
     <div class="mt-auto pt-3 border-top d-flex justify-content-between gap-2">
-      <button class="btn btn-outline-secondary  py-2 flex-grow-1" @click="resetChanges">重置</button>
-      <button class="btn btn-primary  py-2 flex-grow-1" @click="saveChanges">下一步</button>
+      <button class="btn btn-outline-secondary py-2 flex-grow-1" @click="resetChanges">重置</button>
+      <button class="btn btn-primary py-2 flex-grow-1" @click="saveChanges">下一步</button>
     </div>
   </div>
 </template>

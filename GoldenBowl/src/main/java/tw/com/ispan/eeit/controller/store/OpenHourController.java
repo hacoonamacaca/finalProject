@@ -247,68 +247,11 @@ public class OpenHourController {
     /**
      * 取得餐廳的特殊營業時間設定
      */
-    @GetMapping("/special")
-    public ResponseEntity<List<SpecialHoursDTO>> getSpecialHours(@PathVariable Integer storeId) {
-        try {
-            List<SpecialHoursBean> specialHours = openHourService.getSpecialHoursByStore(storeId);
-            List<SpecialHoursDTO> specialHoursDTOs = specialHours.stream()
-                    .map(sh -> new SpecialHoursDTO(
-                            sh.getId(),
-                            storeId,
-                            sh.getDate(),
-                            sh.getOpenTime(),
-                            sh.getCloseTime(),
-                            sh.getIsClose()))
-                    .collect(java.util.stream.Collectors.toList());
-            return ResponseEntity.ok(specialHoursDTOs);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+   
 
     /**
      * 設定特殊營業時間
      */
-    @PostMapping("/special")
-    public ResponseEntity<SpecialHoursDTO> setSpecialHours(
-            @PathVariable Integer storeId,
-            @RequestParam String date,
-            @RequestParam(required = false) String openTime,
-            @RequestParam(required = false) String closeTime,
-            @RequestParam(required = false) Boolean isClose) {
-        try {
-            LocalDate localDate = LocalDate.parse(date);
-            SpecialHoursBean specialHours = openHourService.setSpecialHours(storeId, localDate, openTime, closeTime,
-                    isClose);
-            SpecialHoursDTO specialHoursDTO = new SpecialHoursDTO(
-                    specialHours.getId(),
-                    storeId,
-                    specialHours.getDate(),
-                    specialHours.getOpenTime(),
-                    specialHours.getCloseTime(),
-                    specialHours.getIsClose());
-            return ResponseEntity.status(HttpStatus.CREATED).body(specialHoursDTO);
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        } catch (Exception e) {
-            System.err.println("設定特殊營業時間錯誤: " + e.getMessage());
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-    }
-
-    /**
-     * 刪除特殊營業時間設定
-     */
-    @DeleteMapping("/special/{specialHoursId}")
-    public ResponseEntity<Void> deleteSpecialHours(
-            @PathVariable Integer storeId,
-            @PathVariable Integer specialHoursId) {
-        try {
-            openHourService.deleteSpecialHours(specialHoursId);
-            return ResponseEntity.noContent().build();
-        } catch (ResourceNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
+   
+  
 }
