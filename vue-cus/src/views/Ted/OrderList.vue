@@ -18,26 +18,24 @@ const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
  * @param {number} id - 用戶 ID
  */
  async function fetchOrders(id) {
-    try {
-        const response = await axios.get(`/api/orders/user/${id}`);
-        // 對於每個訂單，如果沒有 comment 屬性或 likedFood 屬性，則補上預設值，
-        // 確保 ReviewModal 可以安全訪問這些屬性
-        orders.value = response.data.map(order => {
-            // 確保 comment 屬性存在，即使為空也設為 null
-            order.comment = order.comment || null; 
-            if (order.orderDetails) {
-                order.orderDetails = order.orderDetails.map(detail => {
-                    // 確保 likedFood 屬性存在，即使為空也設為 null
-                    detail.likedFood = detail.likedFood || null; 
-                    return detail;
-                });
-            }
-            return order;
+  try {
+    const response = await axios.get(`/api/orders/user/${id}`);
+    orders.value = response.data.map(order => {
+      order.comment = order.comment || null;
+      if (order.orderDetails) {
+        order.orderDetails = order.orderDetails.map(detail => {
+          detail.likedFood = detail.likedFood || null;
+          // 確保 detail.food 存在，如果不存在則給一個預設的空物件
+          detail.food = detail.food || { name: '未知餐點' }; // 或者你希望的預設值
+          return detail;
         });
-        console.log("訂單數據加載成功:", orders.value);
-    } catch (error) {
-        console.error("加載訂單失敗:", error);
-    }
+      }
+      return order;
+    });
+    console.log("訂單數據加載成功:", orders.value);
+  } catch (error) {
+    console.error("加載訂單失敗:", error);
+  }
 }
 
 // 監聽 RatingModal 發出的更新事件，然後重新獲取訂單數據
@@ -50,21 +48,15 @@ const handleRatingUpdated = () => {
 
 onMounted(() => {
   // 獲取用戶 ID 從 Pinia
-  console.log(userId.value)
-
-  // 初始化訂單評分狀態
-  // 從 Pinia 獲取用戶 ID
   userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
   if (userId.value) {
-    findorder(userId.value)
-
-    // orders.value.push(findOrder(userId.value));
+    // 改為呼叫 fetchOrders，它包含了對 comment 和 likedFood 的預設值處理
+    fetchOrders(userId.value);
   } else {
     console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
     // 您可以導向登入頁面或顯示提示
   }
-})
-
+});
 function findorder(id) {
   axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
