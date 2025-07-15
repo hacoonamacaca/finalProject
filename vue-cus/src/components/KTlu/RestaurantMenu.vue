@@ -1,5 +1,93 @@
+<template>
+    <div class="restaurant-menu restaurant-theme">
+        <div class="menu-container" id="all-categories">
+            <nav class="sticky-nav" ref="stickyNav">
+                <div class="sticky-nav-container">
+                    <button v-if="showScrollButtons" @click="scrollTabs('left')"
+                        :class="['scroll-button', 'scroll-button--left', { 'hidden': !canScrollLeft }]">
+                        ←
+                    </button>
 
-<script setup> //Ted 負責範圍 餐廳所有餐點 呼叫CartModal
+                    <div class="nav-tabs-wrapper" ref="tabsContainer">
+                        <a v-for="category in categories" :key="category.id"
+                            :class="['nav-tab', { 'active': activeCategory === category.name }]"
+                            @click="onTabClick($event, category)">
+                            {{ category.name }}
+                            <span class="tab-count">({{ getCategoryItems(category.name).length }})</span>
+                        </a>
+                        <!-- <a :class="['nav-tab', { 'active': activeCategory === 'all' }]"
+                            @click="onTabClick($event, { name: 'all', id: 'all' })">
+                            全部菜單
+                            <span class="tab-count">({{ allItemsCount }})</span>
+                        </a> -->
+                    </div>
+
+                    <button v-if="showScrollButtons" @click="scrollTabs('right')"
+                        :class="['scroll-button', 'scroll-button--right', { 'hidden': !canScrollRight }]">
+                        →
+                    </button>
+                </div>
+
+                <!-- 調試顯示器 -->
+                <!-- <div class="debug-indicator"
+                    style="position: absolute; top: -30px; right: 20px; background: #333; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; z-index: 1000;">
+                    當前活動: {{ activeCategory }}
+                </div> -->
+            </nav>
+
+            <main class="menu-main">
+                <div v-if="hasMenuItems">
+                    <section v-for="category in categories" :key="category.id" :id="`category-${category.id}`"
+                        class="category-section">
+                        <h2 v-if="getCategoryItems(category.name).length > 0" class="category-title">
+                            {{ category.name }}
+                            <span class="category-count">({{ getCategoryItems(category.name).length }})</span>
+                        </h2>
+                        <div class="menu-grid" v-if="getCategoryItems(category.name).length > 0">
+                            <div class="menu-item" v-for="item in getCategoryItems(category.name)" :key="item.id"
+                                @click="openItemDetail(item)">
+                                <!-- <div class="item-tags" v-if="item.tags && item.tags.length > 0">
+                                    <span v-for="tag in item.tags" :key="tag" class="item-tag">{{ tag }}</span>
+                                </div> -->
+
+                                <div class="item-image">
+                                    <img :src="item.imgResource || restaurant.image" :alt="item.name" />
+                                </div>
+                                <div class="item-content">
+                                    <div class="item-info">
+                                        <h5 class="item-name">{{ item.name }}</h5>
+                                        <p class="item-desc">{{ item.description }}</p>
+                                        <div class="price-section">
+
+                                            <span class="current-price">NT${{ item.discountPrice || item.price }}</span>
+                                        </div>
+                                        <!-- <span v-if="item.originalPrice && item.originalPrice !== item.discountPrice" class="original-price">NT${{ item.originalPrice }} 暫時移除 -->
+                                    </div>
+                                    <div class="item-actions">
+                                        <span class="pi pi-cart-plus add-to-cart-btn" @click.stop="quickAddToCart(item)"
+                                            title="加入購物車"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <div v-else class="no-menu">
+                    <p>暫無菜品資訊</p>
+                </div>
+            </main>
+        </div>
+
+        <ItemDetailModal v-if="showItemDetail" :item="selectedItem" :show="showItemDetail" @close="closeItemDetail"
+            @add-to-cart="handleAddToCart" />
+
+        <!-- <CartModal v-if="cartStore.isCartVisible" :cartItems="cartStore.cartItems" :totalAmount="cartStore.totalAmount"
+            @close="cartStore.hideCart" @update-quantity="updateCartItemQuantity" @remove-item="removeCartItem"
+            @checkout="checkout" /> -->
+    </div>
+</template>
+
+<script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import apiClient from '../../plungins/axios.js'; // 導入 apiClient
 // import ItemDetailModal from './ItemDetailModal.vue'
@@ -325,10 +413,12 @@ const setupIntersectionObserver = () => {
             const isAtTop = scrollY < menuContainerTop - STICKY_TOP_POSITION + 50;
 
             if (isAtTop && categories.value.length > 0) {
-                const firstCategory = categories.value[0].name;
-                if (activeCategory.value !== firstCategory) {
-                    //console.log(`🏠 頁面頂部，設置第一個分類: ${firstCategory}`)
-                    activeCategory.value = firstCategory;
+                const firstCategoryWithItems = categories.value.find(category =>
+                    getCategoryItems(category.name).length > 0
+                );
+                if (firstCategoryWithItems && activeCategory.value !== firstCategoryWithItems.name) {
+                    console.log(`🏠 頁面頂部，設置第一個有菜品的分類: ${firstCategoryWithItems.name}`)
+                    activeCategory.value = firstCategoryWithItems.name;
                 }
             }
             return;
@@ -361,14 +451,24 @@ const setupIntersectionObserver = () => {
         }
     }, observerOptions);
 
-    // 觀察所有分類區塊
-    categories.value.forEach(category => {
+    // 觀察有菜品的分類區塊 - 增加重試機制
+    categoriesWithItems.forEach(category => {
         const element = document.getElementById(`category-${category.id}`);
         if (element) {
             observer.observe(element);
             //console.log(`👁️ 觀察分類: ${category.name} (ID: ${category.id})`)
         } else {
-            //console.error(`❌ 找不到分類元素: category-${category.id}`)
+            console.warn(`⚠️ 分類元素暫時找不到: category-${category.id}，將重試...`)
+            // 延遲重試機制
+            setTimeout(() => {
+                const retryElement = document.getElementById(`category-${category.id}`);
+                if (retryElement) {
+                    observer.observe(retryElement);
+                    console.log(`✅ 重試成功，觀察分類: ${category.name} (ID: ${category.id})`)
+                } else {
+                    console.error(`❌ 重試後仍找不到分類元素: category-${category.id}`)
+                }
+            }, 100);
         }
     });
 
@@ -377,9 +477,9 @@ const setupIntersectionObserver = () => {
 };
 
 // 生命周期
-onMounted(async() => {
-    //console.log('🏪 餐廳菜單已載入，顯示所有菜品');
-        
+onMounted(async () => {
+    console.log('🏪 餐廳菜單已載入，顯示所有菜品');
+
     try {
         // 獲取當前店家的 ID
         const storeId = props.restaurant.id;
@@ -398,9 +498,14 @@ onMounted(async() => {
         categories.value = categoriesResponse.data;
         items.value = itemsResponse.data;
 
-        // 如果有分類，將第一個分類設為預設 active
+        // 如果有分類，將第一個有菜品的分類設為預設 active
         if (categories.value.length > 0) {
-            activeCategory.value = categories.value[0].name;
+            const firstCategoryWithItems = categories.value.find(category =>
+                getCategoryItems(category.name).length > 0
+            );
+            if (firstCategoryWithItems) {
+                activeCategory.value = firstCategoryWithItems.name;
+            }
         }
 
         //console.log("✅ 成功載入店家分類:", categories.value);
@@ -440,18 +545,18 @@ onMounted(async() => {
             checkScrollButtonVisibility();
         }, 100);
 
-        // // 多次強制檢查，確保按鈕狀態正確
-        // setTimeout(() => {
-        //     forceCheckScrollButtons();
-        // }, 300);
+        // 多次強制檢查，確保按鈕狀態正確
+        setTimeout(() => {
+            checkScrollButtonVisibility();
+        }, 300);
 
-        // setTimeout(() => {
-        //     forceCheckScrollButtons();
-        // }, 500);
+        setTimeout(() => {
+            checkScrollButtonVisibility();
+        }, 500);
 
-        // setTimeout(() => {
-        //     forceCheckScrollButtons();
-        // }, 1000);
+        setTimeout(() => {
+            checkScrollButtonVisibility();
+        }, 1000);
 
         // 監聽窗口大小變化，當佈局變化時重新檢查按鈕可見性
         window.addEventListener('resize', () => {
@@ -677,7 +782,7 @@ onUnmounted(() => {
     background: rgba(255, 186, 32, 0.1);
     border-color: rgba(255, 186, 32, 0.3);
     color: var(--restaurant-primary, #ffba20);
-    transform: translateY(-2px); 
+    transform: translateY(-2px);
     cursor: pointer;
 }
 

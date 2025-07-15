@@ -46,7 +46,7 @@ public class ReportBean {
     @JoinColumn(name = "report_type_id", insertable = false, updatable = false)
     private ReportTypeBean reportType;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "comment_id", insertable = false, updatable = false)
     private CommentBean comment;
 }

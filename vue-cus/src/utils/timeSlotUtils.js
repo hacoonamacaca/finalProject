@@ -3,13 +3,66 @@
  */
 
 /**
- * 根據時間段數據獲取可用日期列表
+ * 將 LocalTime 對象轉換為 HH:mm 格式字符串
+ * @param {Object|string} time - LocalTime 對象或時間字符串
+ * @returns {string} HH:mm 格式的時間字符串
+ */
+export function formatTimeToString(time) {
+    if (!time) return ''
+
+    // 如果已經是字符串格式，處理 ISO 格式 (HH:mm:ss)
+    if (typeof time === 'string') {
+        // 如果是 ISO 格式 (14:30:00)，只取前5個字符 (14:30)
+        if (time.includes(':') && time.length >= 5) {
+            return time.substring(0, 5)
+        }
+        return time
+    }
+
+    // 如果是 LocalTime 對象（包含 hour, minute 屬性）
+    if (time && typeof time === 'object') {
+        try {
+            const hour = String(time.hour || 0).padStart(2, '0')
+            const minute = String(time.minute || 0).padStart(2, '0')
+            return `${hour}:${minute}`
+        } catch (error) {
+            console.error('格式化時間時發生錯誤:', error, time)
+            return ''
+        }
+    }
+
+    console.error('無效的時間格式:', time)
+    return ''
+}
+
+/**
+ * 獲取可用日期（在當前月份內有時間段的日期）
  * @param {Array} timeSlots - 時間段數據數組
- * @returns {Array} 可用日期數組
+ * @returns {Set} 可用日期的 Set
  */
 export function getAvailableDates(timeSlots) {
-    const dates = [...new Set(timeSlots.map(slot => slot.date))]
-    return dates.map(dateStr => new Date(dateStr)).sort()
+    if (timeSlots.length === 0) return new Set()
+
+    const availableDateStrings = new Set()
+    const today = new Date()
+
+    // 只檢查當前月份內的日期
+    timeSlots.forEach(slot => {
+        const slotDate = slot.day || slot.date
+        if (slotDate) {
+            try {
+                const slotDateObj = new Date(slotDate)
+                // 只包含今天及以後的日期
+                if (slotDateObj >= today) {
+                    availableDateStrings.add(slotDate)
+                }
+            } catch (error) {
+                console.error('處理日期時發生錯誤:', slotDate, error)
+            }
+        }
+    })
+
+    return availableDateStrings
 }
 
 /**
@@ -20,7 +73,7 @@ export function getAvailableDates(timeSlots) {
 export function getHolidayDates(timeSlots) {
     if (timeSlots.length === 0) return []
 
-    const availableDateStrings = new Set(timeSlots.map(slot => slot.date))
+    const availableDateStrings = new Set(timeSlots.map(slot => slot.day || slot.date))
     const holidayDates = []
     const today = new Date()
 
@@ -83,7 +136,11 @@ export function getTimeSlotsForDate(timeSlots, selectedDate) {
         return []
     }
 
-    return timeSlots.filter(slot => slot.date === selectedDateStr)
+    // 處理後端返回的數據格式
+    return timeSlots.filter(slot => {
+        const slotDate = slot.day || slot.date
+        return slotDate === selectedDateStr && slot.isActive !== false
+    })
 }
 
 /**
@@ -95,7 +152,8 @@ export function groupTimeSlotsByPeriod(timeSlots) {
     if (timeSlots.length === 0) return []
 
     const sections = []
-    const slots = timeSlots.map(slot => slot.startTime).sort()
+    // 使用 formatTimeToString 轉換時間格式
+    const slots = timeSlots.map(slot => formatTimeToString(slot.startTime)).sort()
 
     // 按時間段分組
     const lunchSlots = slots.filter(time => {
@@ -164,7 +222,8 @@ export function isTimeSlotBooked(bookedSlots, timeSlot, selectedDate) {
     }
 
     return bookedSlots.some(booking =>
-        booking.date === selectedDateStr && booking.startTime === timeSlot
+        (booking.date === selectedDateStr || booking.day === selectedDateStr) &&
+        formatTimeToString(booking.startTime) === timeSlot
     )
 }
 
