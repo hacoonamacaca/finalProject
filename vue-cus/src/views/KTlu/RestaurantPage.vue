@@ -1,4 +1,4 @@
-<template>
+<template> <!--點選餐廳字卡後出現 往下是RestaurantTemplate-->
     <div v-if="isLoading" class="text-center p-5">
         <div class="spinner-border" role="status"></div>
         <p class="mt-2">店家資訊載入中...</p>

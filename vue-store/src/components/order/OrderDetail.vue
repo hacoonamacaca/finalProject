@@ -3,6 +3,8 @@ import { computed, watch, nextTick } from 'vue';
 import { Collapse } from 'bootstrap'; // 導入 Bootstrap 的 Collapse 模組
 import Swal from 'sweetalert2';
 import axios from '@/plungins/axios.js';
+import Swal from 'sweetalert2';
+import axios from '@/plungins/axios.js';
 
 const props = defineProps({
   order: {
@@ -10,6 +12,9 @@ const props = defineProps({
     default: null,
   },
 });
+
+const emit = defineEmits(['cancel-order','close-Sidebar','confirm-order','complete-order']);
+
 
 const emit = defineEmits(['cancel-order','close-Sidebar','confirm-order','complete-order']);
 
@@ -85,12 +90,15 @@ watch(() => props.order, (newOrder) => {
   <div v-if="order" class="h-100 d-flex flex-column p-4">
 
 
+
     <div class="flex-grow-1 overflow-auto pe-2">
       <div class="d-flex align-items-center mb-4">
         <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
           <i class="fas fa-user"></i>
         </div>
         <div>
+          <p class="mb-0 fw-bold">{{ order.user.name }}</p>
+          <!-- <p class="mb-0 text-muted small">{{ order.timeline.length }} 份訂單</p> -->
           <p class="mb-0 fw-bold">{{ order.user.name }}</p>
           <!-- <p class="mb-0 text-muted small">{{ order.timeline.length }} 份訂單</p> -->
         </div>
@@ -100,20 +108,26 @@ watch(() => props.order, (newOrder) => {
 
       <h5 class="mb-3">訂單 {{ order.id }}</h5>
       <p class="text-muted small mb-4">取餐時間：{{ order.pickupTime }}</p>
+      <p class="text-muted small mb-4">取餐時間：{{ order.pickupTime }}</p>
 
+      <div v-for="item in order.orderDetails" :key="item.name" class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
       <div v-for="item in order.orderDetails" :key="item.name" class="d-flex justify-content-between align-items-start mb-3 border-bottom pb-2">
         <div class="d-flex align-items-baseline">
           <span class="badge bg-secondary rounded-pill me-2">{{ item.quantity }}</span>
           <div>
             <p class="mb-0 fw-bold">{{ item.food.name }}</p>
             <!-- <p v-if="item.note" class="mb-0 text-muted small">規格: {{ item.note }}</p> -->
+            <p class="mb-0 fw-bold">{{ item.food.name }}</p>
+            <!-- <p v-if="item.note" class="mb-0 text-muted small">規格: {{ item.note }}</p> -->
           </div>
         </div>
+        <p class="mb-0 fw-bold text-end">NT$ {{ item.price }}</p>
         <p class="mb-0 fw-bold text-end">NT$ {{ item.price }}</p>
       </div>
       <!-- v-if="order.note" -->
       <div  class="mt-auto pt-3 border-top mb-3 p-3 bg-light rounded">
         <h6 class="mb-2 fw-bold">備註:</h6>
+        <p class="mb-0 text-muted small">麻煩多給我一副餐具{{ order.content }}</p>
         <p class="mb-0 text-muted small">麻煩多給我一副餐具{{ order.content }}</p>
       </div>
 
@@ -121,6 +135,8 @@ watch(() => props.order, (newOrder) => {
 
     <div class="mt-auto pt-3 border-top">
       <div class="d-flex justify-content-between mb-2">
+        <span class="fw-bold">總計 ({{ order.orderDetails.length }} 項)</span>
+        <span class="fw-bold">NT$ {{ order.total }}</span>
         <span class="fw-bold">總計 ({{ order.orderDetails.length }} 項)</span>
         <span class="fw-bold">NT$ {{ order.total }}</span>
       </div>
@@ -146,6 +162,12 @@ watch(() => props.order, (newOrder) => {
 
 .btn-close {
   font-size: 1.25rem;
+}
+.my-swal-popup {
+  z-index: 1060 !important;
+}
+.my-swal-backdrop {
+  z-index: 1055 !important;
 }
 .my-swal-popup {
   z-index: 1060 !important;

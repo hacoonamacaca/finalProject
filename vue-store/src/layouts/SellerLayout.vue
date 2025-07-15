@@ -108,7 +108,7 @@
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="#" class="nav-link" active-class="active-link">
+                                <router-link to="/reservations" class="nav-link" active-class="active-link">
                                     <i class="fas fa-chair fa-fw me-2"></i> 訂位管理
                                 </router-link>
                             </li>
@@ -117,6 +117,7 @@
                                     <i class="fas fa-clock fa-fw me-2"></i> 營業時間
                                 </router-link>
                             </li>
+
                             <li class="nav-item">
                                 <router-link to="#" class="nav-link" active-class="active-link">
                                     <i class="fas fa-comments fa-fw me-2"></i> 評論回覆
@@ -282,8 +283,10 @@ onBeforeUnmount(() => {
     border-right: 1px solid #dee2e6;
     background-color: #f7f7f7;
     padding: 2rem;
-    position: relative; /* << 新增：讓它建立一個堆疊上下文 */
-    z-index: 20; /* << 新增：給它一個較高的層級，確保它在最上面 */
+    position: relative;
+    /* << 新增：讓它建立一個堆疊上下文 */
+    z-index: 20;
+    /* << 新增：給它一個較高的層級，確保它在最上面 */
 }
 
 .sidebar-section {

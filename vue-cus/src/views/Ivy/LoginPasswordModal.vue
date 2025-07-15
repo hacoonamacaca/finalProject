@@ -58,11 +58,13 @@
 <script setup>
 import { ref } from 'vue'
 import axios from '@/plungins/axios.js'
+import { useUserStore } from '@/stores/user' 
 
 const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'back', 'login'])
 const password = ref('')
 const showPassword = ref(false)
+const userStore = useUserStore();
 
 async function onSubmit() {
     if (!password.value) {
@@ -78,10 +80,15 @@ async function onSubmit() {
         const data = res.data
         if (data.success) {
             alert('登入成功！')
+            userStore.setFullName(data.userFullName);
+            userStore.setEmail(data.userEmail);
+            userStore.setUserId(data.userId); // <-- 新增這一行
+            userStore.setLogin(true); // 設定登入狀態為 true
             emit('login', { 
                 email: props.email,
                 userFullName: data.userFullName,
                 userEmail: data.userEmail,
+                userId: data.userId,
                 userPhone: data.userPhone // 如果有這欄位
             })
             // 你可以加 router.push(...) 或 emit('close') 關掉 modal

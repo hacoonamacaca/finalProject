@@ -1,7 +1,7 @@
 <template>
   <!-- 導航欄 -->
   <header class="navbar">
-    <div class="logo">金碗GoldenBowl Foolog</div>
+    <div class="logo">金碗GoldenBowl</div>
     <div class="nav-links">
       <HomeLogin />
     </div>
@@ -17,8 +17,7 @@
       經緯度：{{ coordinates.lat }}, {{ coordinates.lon }}
     </p>
     <p v-else-if="error" class="error">{{ error }}</p>
-  </section>
-
+  </section> 
 </template>
 
 <script setup>

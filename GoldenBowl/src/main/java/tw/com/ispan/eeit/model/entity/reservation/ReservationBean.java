@@ -2,8 +2,11 @@ package tw.com.ispan.eeit.model.entity.reservation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,10 +15,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -26,12 +27,7 @@ import tw.com.ispan.eeit.model.enums.ReservationStatus;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class ReservationBean {
-    @ManyToMany
-    @JoinTable(name = "reservation_tables", joinColumns = @JoinColumn(name = "reservation_id"), inverseJoinColumns = @JoinColumn(name = "tables_id"))
-    private Set<TableBean> tables = new HashSet<>();
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -45,8 +41,8 @@ public class ReservationBean {
     @Column(name = "reserved_date", nullable = false)
     private LocalDate reservedDate;
 
-    @Column(name = "reserved_time", nullable = false)
-    private LocalDateTime reservedTime;
+    @Column(name = "reserved_time", nullable = false, columnDefinition = "time(0)")
+    private LocalTime reservedTime;
 
     @Column(name = "guests", nullable = false)
     private Integer guests;
@@ -66,4 +62,9 @@ public class ReservationBean {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    // 暫時完全忽略桌位關聯，避免JSON序列化問題
+    @Transient
+    @JsonIgnore
+    private Set<TableBean> tables = new HashSet<>();
 }

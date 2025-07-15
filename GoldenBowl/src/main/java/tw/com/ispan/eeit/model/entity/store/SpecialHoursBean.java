@@ -1,12 +1,12 @@
 package tw.com.ispan.eeit.model.entity.store;
-//0709修改store
-import java.time.LocalTime;
-import java.util.Date;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -21,24 +21,18 @@ import lombok.NoArgsConstructor;
 public class SpecialHoursBean {
 
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Integer id;
-	
-	@ManyToOne
-	@JoinColumn(name="store_id")
-	@JsonBackReference
-	private StoreBean store;
-	
-//	@Column(name = "store_id")
-//	private Integer storeId;
-	
+	@Column(name = "store_id")
+	private Integer storeId;
+	// 修正：雖然資料庫是 datetime2(6)，但我們只需要日期部分
 	@Column(name = "date")
-	private Date date;
-	@Column(name = "open_time", columnDefinition = "Time(0)")
+	private LocalDate date;
+	@Column(name = "open_time", columnDefinition = "time(0)")
 	private LocalTime openTime;
-	@Column(name = "close_time", columnDefinition = "Time(0)")
+	@Column(name = "close_time", columnDefinition = "time(0)")
 	private LocalTime closeTime;
 	@Column(name = "is_close")
 	private Boolean isClose;
-
 }

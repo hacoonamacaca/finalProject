@@ -106,6 +106,7 @@ const activeTab = ref('overview'); // 'overview', 'categories' 或 'specs'
 // 2. 資料源 (Data Sources) - 從後端獲取的資料
 // =================================================================
 
+// 新增 categories 陣列
 const categories = reactive([]);
 
 

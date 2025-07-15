@@ -177,4 +177,13 @@ public class FoodService {
 
         return dto;
     }
+//  增加有上架的食物--ted
+    public List<FoodDTO> findActiveFoodsByStoreId(Integer storeId) {
+        // 可以在這裡加一個檢查，確認店家是否存在
+        if (!storeRepository.existsById(storeId)) {
+            throw new ResourceNotFoundException("找不到店家，ID: " + storeId);
+        }
+        List<FoodBean> foodBeans = foodRepository.findActiveFoodsByStoreId(storeId);
+        return foodBeans.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
 }

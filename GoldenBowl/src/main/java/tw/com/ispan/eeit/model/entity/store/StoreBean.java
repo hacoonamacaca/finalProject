@@ -63,6 +63,7 @@ public class StoreBean {
 
     @Convert(converter = tw.com.ispan.eeit.model.converter.PointToGeographyConverter.class)
     @Column(name = "store_coords", columnDefinition = "GEOGRAPHY")
+    @JsonIgnore // 忽略這個欄位的 JSON 序列化，避免 JTS Point 的無限遞歸
     private Point storeCoords;
 
     @Column(name = "lng")
@@ -131,7 +132,8 @@ public class StoreBean {
     @JsonManagedReference
     private Set<SpecGroupBean> specGroups;
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
     @JsonManagedReference
     private List<SpecialHoursBean> specialHours;
 

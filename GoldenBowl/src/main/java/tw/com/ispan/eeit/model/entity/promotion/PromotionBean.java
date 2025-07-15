@@ -34,7 +34,7 @@ public class PromotionBean {
 	private Integer id;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "plan_id")//sql當中的promotion table FK
+	@JoinColumn(name = "plan_id") // sql當中的promotion table FK
 	@JsonBackReference
 	private PlanBean plan;
 
@@ -54,10 +54,10 @@ public class PromotionBean {
 	@Column(columnDefinition = "NVARCHAR(50)")
 	private String description;
 
-	@Column(name = "discount_type",columnDefinition = "NVARCHAR(50)")
+	@Column(name = "discount_type", columnDefinition = "NVARCHAR(50)")
 	private String discountType;
 
-	@Column(name = "discount_value",columnDefinition = "NVARCHAR(50)")
+	@Column(name = "discount_value", columnDefinition = "NVARCHAR(50)")
 	private String discountValue;
 
 	@Column(name = "min_spend")

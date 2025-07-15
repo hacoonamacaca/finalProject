@@ -1,10 +1,15 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import {
+    createRouter,
+    createWebHistory
+} from 'vue-router';
 
 // 為了讓路由設定更乾淨，我們在這裡導入頁面組件
 import SellerLayout from '../layouts/SellerLayout.vue';
 import MenuManagement from '../pages/MenuManagement.vue';
 import OrderManagement from '../pages/OrderManager.vue';
 import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
+import ReservationManagement from '../pages/ReservationManagement.vue';
+import TimeSettingTest from '../views/TimeSettingTest.vue';
 
 // 檢查業者登入狀態的函數
 function checkOwnerLogin() {
@@ -125,20 +130,22 @@ const routes = [
             },
 
             {
-                path: 'hours', // 代表是 /store/hours
+                path: 'hours', // 代表是 /hours
                 name: 'BusinessHoursManager',
-                component: BusinessHoursManager,
-                meta: { requiresOwnerAuth: true }
+                component: BusinessHoursManager
+            },
+            {
+                path: 'reservations', // 代表是 /reservations
+                name: 'ReservationManagement',
+                component: ReservationManagement
+            },
+            {
+                path: 'time-setting-test', // 代表是 /time-setting-test
+                name: 'TimeSettingTest',
+                component: TimeSettingTest
             }
-            // 未來可以繼續新增更多店家功能路由
         ]
-    },
-    {
-        // 如果訪問不存在的路徑，重導向到 /store
-        path: '/:pathMatch(.*)*',
-        redirect: '/store'
-    }
-];
+    },];
 
 const router = createRouter({
     history: createWebHistory(),

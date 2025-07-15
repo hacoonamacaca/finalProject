@@ -84,8 +84,10 @@ public class CommentController {
 
     // 更新評論
     @PutMapping("/{id}")
-    public ResponseEntity<CommentBean> updateComment(@PathVariable Integer id, @RequestBody CommentBean comment) {
-        return commentService.updateComment(id, comment)
+    public ResponseEntity<CommentBean> updateComment(@PathVariable Integer id,
+            @RequestBody CommentRequestDTO commentDto) {
+        // 在 Service 層處理 DTO 到 Bean 的轉換和更新邏輯
+        return commentService.updateCommentFromDto(id, commentDto) // 新增一個方法處理 DTO
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -105,6 +107,16 @@ public class CommentController {
     @GetMapping("/store/{storeId}")
     public ResponseEntity<List<CommentResponseDTO>> getCommentsByStoreId(@PathVariable Integer storeId) {
         List<CommentResponseDTO> comments = commentService.findByStoreIdAsDto(storeId); // 調用返回 DTO 列表的方法
+        if (comments.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(comments);
+    }
+
+    // 新增：根據 User ID 查找評論列表 (返回 DTO 列表)
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CommentResponseDTO>> getCommentsByUserId(@PathVariable Integer userId) {
+        List<CommentResponseDTO> comments = commentService.findByUserIdAsDto(userId);
         if (comments.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.dto.store;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -77,14 +78,25 @@ public class StoreDTO {
         this.categoryNames = store.getCategories() != null
                 ? store.getCategories().stream().map(CategoryBean::getName).collect(Collectors.toList())
                 : new ArrayList<>();
+
         this.comments = store.getComments() != null
-                ? store.getComments().stream().map(CommentDTO::new).collect(Collectors.toList())
+                ? store.getComments().stream()
+                        .filter(comment -> !comment.getIsHidden()) // <-- 新增的過濾條件
+                        .map(CommentDTO::new)
+                        .collect(Collectors.toList())
                 : new ArrayList<>();
+
         this.foods = store.getFoods() != null ? store.getFoods().stream().map(FoodDTO::new).collect(Collectors.toList())
                 : new ArrayList<>();
 
         this.deliveryTime = 20; // 暫時寫死
         this.popularityScore = (double) (store.getScore() != null ? store.getScore() * 10 : 0);
+    }
+
+    // 重載構造函數，用於在包含用戶上下文時設置 isFavorited
+    public StoreDTO(StoreBean store, Boolean isFavorited) {
+        this(store); // 調用上面的構造函數初始化基本資訊
+        this.isFavorited = isFavorited;
     }
 
     // 定義內部 FoodDTO
@@ -101,9 +113,11 @@ public class StoreDTO {
             this.id = food.getId();
             this.name = food.getName();
             this.price = food.getPrice();
-            this.tagNames = food.getTags() != null
-                    ? food.getTags().stream().map(TagBean::getName).collect(Collectors.toList())
-                    : new ArrayList<>();
+            this.tagNames = food.getTags().stream()
+                    .map(TagBean::getName)
+                    .collect(Collectors.toCollection(LinkedHashSet::new)) // 使用 LinkedHashSet 保留順序並去重
+                    .stream()
+                    .collect(Collectors.toList());
         }
     }
 
