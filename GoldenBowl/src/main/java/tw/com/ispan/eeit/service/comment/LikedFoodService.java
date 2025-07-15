@@ -56,20 +56,20 @@ public class LikedFoodService {
             }
         }
         LikedFoodBean savedLikedFood = likedFoodRepository.save(likedFood);
-        return LikedFoodResponseDTO.fromLikedFoodBean(savedLikedFood);
+        return LikedFoodResponseDTO.fromEntity(savedLikedFood);
     }
 
     // 根據 ID 查找喜歡的食物 (返回 DTO)
     public Optional<LikedFoodResponseDTO> findLikedFoodDtoById(Integer id) {
         return likedFoodRepository.findById(id)
-                .map(LikedFoodResponseDTO::fromLikedFoodBean);
+                .map(LikedFoodResponseDTO::fromEntity);
     }
 
     // 根據用戶 ID 查找喜歡的食物列表 (返回 DTO 列表)
     public List<LikedFoodResponseDTO> findLikedFoodsByUserIdAsDto(Integer userId) {
         List<LikedFoodBean> likedFoods = likedFoodRepository.findByUserId(userId);
         return likedFoods.stream()
-                .map(LikedFoodResponseDTO::fromLikedFoodBean)
+                .map(LikedFoodResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -77,7 +77,7 @@ public class LikedFoodService {
     public List<LikedFoodResponseDTO> findLikedFoodsByFoodIdAsDto(Integer foodId) {
         List<LikedFoodBean> likedFoods = likedFoodRepository.findByFoodId(foodId);
         return likedFoods.stream()
-                .map(LikedFoodResponseDTO::fromLikedFoodBean)
+                .map(LikedFoodResponseDTO::fromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -87,5 +87,16 @@ public class LikedFoodService {
             throw new IllegalArgumentException("Liked Food with ID " + id + " does not exist.");
         }
         likedFoodRepository.deleteById(id);
+    }
+
+    // 更新現有的喜歡的食物狀態
+    public Optional<LikedFoodResponseDTO> updateLikedFood(Integer id, LikedFoodRequestDTO likedFoodDto) {
+        return likedFoodRepository.findById(id).map(existingLikedFood -> {
+            // 更新 isLiked 狀態
+            // 這裡假設您只更新 isLiked 字段，如果需要更新其他字段，請相應添加
+            existingLikedFood.setIsLiked(likedFoodDto.getIsLiked());
+            LikedFoodBean updatedBean = likedFoodRepository.save(existingLikedFood);
+            return LikedFoodResponseDTO.fromEntity(updatedBean);
+        });
     }
 }

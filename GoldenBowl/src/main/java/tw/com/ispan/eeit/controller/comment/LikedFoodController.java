@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,6 +30,15 @@ public class LikedFoodController {
     public ResponseEntity<LikedFoodResponseDTO> createOrUpdateLikedFood(@RequestBody LikedFoodRequestDTO likedFoodDto) {
         LikedFoodResponseDTO savedLikedFood = likedFoodService.createOrUpdateLikedFood(likedFoodDto);
         return new ResponseEntity<>(savedLikedFood, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<LikedFoodResponseDTO> updateLikedFood(@PathVariable Integer id,
+            @RequestBody LikedFoodRequestDTO likedFoodDto) {
+        // 在 Service 層處理更新邏輯，返回 Optional<LikedFoodResponseDTO>
+        return likedFoodService.updateLikedFood(id, likedFoodDto)
+                .map(ResponseEntity::ok) // 如果更新成功，返回 200 OK 和更新後的對象
+                .orElse(ResponseEntity.notFound().build()); // 如果找不到對應 ID 的記錄，返回 404 Not Found
     }
 
     // 根據 ID 查找喜歡的食物

@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.model.dto.store;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,9 @@ public class StoreDTO {
     private LocalDateTime updatedTime;
     private Boolean isActive;
 
+    // 新增：表示當前用戶是否收藏了該餐廳
+    private Boolean isFavorited; // 預設為 false，除非明確設置
+
     // 若你要給前端顯示空間點座標，可以自行決定怎麼包
     private String storeCoords; // 通常轉 WKT 字串或 GeoJSON 字串。要怎麼顯示決定於你的前端設計
 
@@ -48,6 +52,21 @@ public class StoreDTO {
         this.photo = store.getPhoto();
         this.score = store.getScore();
         this.isOpen = store.getIsOpen();
+        this.address = store.getAddress();
+        this.lng = store.getLng();
+        this.lat = store.getLat();
+        this.storeIntro = store.getStoreIntro();
+        this.createdTime = store.getCreatedTime();
+        this.updatedTime = store.getUpdatedTime();
+        this.isActive = store.getIsActive();
+
+        // 處理 storeCoords (GEOGRAPHY Point 物件轉換為字串)
+        if (store.getStoreCoords() != null) {
+            // 使用 toText() 方法將 JTS Point 物件轉換為 WKT (Well-Known Text) 格式的字串
+            this.storeCoords = store.getStoreCoords().toText();
+        } else {
+            this.storeCoords = null;
+        }
 
         // 這裡需要注意：當這些關聯是懶加載時，直接訪問它們可能會觸發懶加載異常
         // 但由於是在 DTO 轉換器中，通常會期望它們已經被加載（通過 EntityGraph 或 JOIN FETCH）
@@ -55,14 +74,25 @@ public class StoreDTO {
         this.categoryNames = store.getCategories() != null
                 ? store.getCategories().stream().map(CategoryBean::getName).collect(Collectors.toList())
                 : new ArrayList<>();
+
         this.comments = store.getComments() != null
-                ? store.getComments().stream().map(CommentDTO::new).collect(Collectors.toList())
+                ? store.getComments().stream()
+                        .filter(comment -> !comment.getIsHidden()) // <-- 新增的過濾條件
+                        .map(CommentDTO::new)
+                        .collect(Collectors.toList())
                 : new ArrayList<>();
+
         this.foods = store.getFoods() != null ? store.getFoods().stream().map(FoodDTO::new).collect(Collectors.toList())
                 : new ArrayList<>();
 
         this.deliveryTime = 20; // 暫時寫死
         this.popularityScore = (double) (store.getScore() != null ? store.getScore() * 10 : 0);
+    }
+
+    // 重載構造函數，用於在包含用戶上下文時設置 isFavorited
+    public StoreDTO(StoreBean store, Boolean isFavorited) {
+        this(store); // 調用上面的構造函數初始化基本資訊
+        this.isFavorited = isFavorited;
     }
 
     // 定義內部 FoodDTO
@@ -79,9 +109,11 @@ public class StoreDTO {
             this.id = food.getId();
             this.name = food.getName();
             this.price = food.getPrice();
-            this.tagNames = food.getTags() != null
-                    ? food.getTags().stream().map(TagBean::getName).collect(Collectors.toList())
-                    : new ArrayList<>();
+            this.tagNames = food.getTags().stream()
+                    .map(TagBean::getName)
+                    .collect(Collectors.toCollection(LinkedHashSet::new)) // 使用 LinkedHashSet 保留順序並去重
+                    .stream()
+                    .collect(Collectors.toList());
         }
     }
 

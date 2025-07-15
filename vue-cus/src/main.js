@@ -20,6 +20,7 @@ import Button from 'primevue/button'
 import Dropdown from 'primevue/dropdown'
 import Message from 'primevue/message'
 import DatePicker from 'primevue/datepicker'
+import Tooltip from 'primevue/tooltip';
 
 import Aura from '@primevue/themes/aura'
 import 'primeicons/primeicons.css'
@@ -41,4 +42,5 @@ createApp(App)
     .component('Dropdown', Dropdown)
     .component('Message', Message)
     .component('DatePicker', DatePicker)
+    .directive('tooltip', Tooltip)
     .mount('#app')

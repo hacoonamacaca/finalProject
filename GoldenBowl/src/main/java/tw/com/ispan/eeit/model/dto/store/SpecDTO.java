@@ -39,4 +39,24 @@ public class SpecDTO {
         // }
         return dto;
     }
+    
+    //--------------------------------------------------
+    public SpecBean toSpecBean() {
+        SpecBean specBean = new SpecBean();
+        specBean.setId(this.id);
+        specBean.setName(this.name);
+        specBean.setPrice(this.price);
+        specBean.setSort(this.sort);
+        specBean.setIsActive(this.isActive);
+        // 如果你的 DTO 包含 SpecGroup 的 ID，且你需要將其設定回 Bean 的 SpecGroup，
+        // 這裡的邏輯會稍微複雜，可能需要根據 ID 去查找 SpecGroupBean，
+        // 或者在 Service 層處理這部分關聯。
+        // 例如 (偽代碼):
+        // if (this.specGroupId != null) {
+        //     SpecGroupBean specGroup = new SpecGroupBean(); // 這裡通常會從資料庫查詢獲得
+        //     specGroup.setId(this.specGroupId);
+        //     specBean.setSpecGroup(specGroup);
+        // }
+        return specBean;
+    }
 }

@@ -4,29 +4,59 @@ import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
 import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
+import { useRouter } from 'vue-router';
 
 const orders=ref([])
 const id = ref(1)
 const userStore = useUserStore(); // 實例化 userStore
+const router = useRouter();
 const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
+
+
+/**
+ * 從後端獲取用戶訂單列表
+ * @param {number} id - 用戶 ID
+ */
+ async function fetchOrders(id) {
+  try {
+    const response = await axios.get(`/api/orders/user/${id}`);
+    orders.value = response.data.map(order => {
+      order.comment = order.comment || null;
+      if (order.orderDetails) {
+        order.orderDetails = order.orderDetails.map(detail => {
+          detail.likedFood = detail.likedFood || null;
+          // 確保 detail.food 存在，如果不存在則給一個預設的空物件
+          detail.food = detail.food || { name: '未知餐點' }; // 或者你希望的預設值
+          return detail;
+        });
+      }
+      return order;
+    });
+    console.log("訂單數據加載成功:", orders.value);
+  } catch (error) {
+    console.error("加載訂單失敗:", error);
+  }
+}
+
+// 監聽 RatingModal 發出的更新事件，然後重新獲取訂單數據
+const handleRatingUpdated = () => {
+    console.log("收到 RatingModal 的更新事件，重新加載訂單...");
+    if (userId.value) {
+        fetchOrders(userId.value); // 重新呼叫 fetchOrders 刷新數據
+    }
+};
 
 onMounted(() => {
   // 獲取用戶 ID 從 Pinia
-  console.log(userId.value)
-
-  // 初始化訂單評分狀態
-  // 從 Pinia 獲取用戶 ID
   userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
   if (userId.value) {
-    findorder(userId.value)
-
-    // orders.value.push(findOrder(userId.value));
+    // 改為呼叫 fetchOrders，它包含了對 comment 和 likedFood 的預設值處理
+    fetchOrders(userId.value);
   } else {
     console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
     // 您可以導向登入頁面或顯示提示
   }
-})
-
+});
 function findorder(id) {
   axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
@@ -49,6 +79,12 @@ function findorder(id) {
 const reorder = (order) => {
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
+
+//頁面跳轉 點擊訂單詳情後跳轉
+const goToOrderDetail = (orderId) => {
+  router.push({ name: 'OrderDetail', params: { id: orderId } });
+};
+
 </script>
 
 <template>
@@ -60,6 +96,7 @@ const reorder = (order) => {
       v-for="order in orders"
       :key="order.id"
       class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
+      @click="goToOrderDetail(order.id)"
     >
       <img
         :src="order.store.photo"
@@ -88,18 +125,19 @@ const reorder = (order) => {
         </div>
 
         <div class="d-flex justify-content-end align-items-center mt-3">
-          <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click="reorder(order)">
+          <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click.stop="reorder(order)">
             選擇想要重新訂購的項目
           </button>
         </div>
 
         <div >
-            <RatingModal :order="order" />
+          <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 /* 外部容器，保持與 RestaurantTemplate 中 tab-menu-container 相似的寬度限制 */
@@ -117,10 +155,6 @@ const reorder = (order) => {
   transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加過渡效果 */
 }
 
-/* .order-item-card:hover {
-  transform: translateY(-3px); 鼠標懸停時輕微上移 
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);  懸停時陰影加深 
-}*/
 
 /* 圓角類，Bootstrap 預設的 rounded-lg 已經很不錯 */
 .rounded-lg {

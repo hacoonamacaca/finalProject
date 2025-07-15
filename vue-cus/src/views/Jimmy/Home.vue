@@ -1,7 +1,7 @@
 <template>
   <!-- 導航欄 -->
   <header class="navbar">
-    <div class="logo">金碗GoldenBowl Foolog</div>
+    <div class="logo">金碗GoldenBowl</div>
     <div class="nav-links">
       <HomeLogin />
     </div>
