@@ -149,7 +149,7 @@ onBeforeUnmount(() => {
                         <h6 class="section-title">管理你的商家資訊</h6>
                         <ul class="nav flex-column">
                             <li class="nav-item">
-                                <router-link to="#" class="nav-link" active-class="active-link">
+                                <router-link to="/store/edit-owner" class="nav-link" active-class="active-link">
                                     <i class="fas fa-user-gear fa-fw me-2"></i> 商家資料
                                 </router-link>
                             </li>
@@ -159,7 +159,7 @@ onBeforeUnmount(() => {
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="#" class="nav-link" active-class="active-link">
+                                <router-link to="/store/edit-store" class="nav-link" active-class="active-link">
                                     <i class="fas fa-store fa-fw me-2"></i> 店鋪管理
                                 </router-link>
                             </li>

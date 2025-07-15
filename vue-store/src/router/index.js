@@ -10,6 +10,8 @@ import OrderManagement from '../pages/OrderManager.vue';
 import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
 import ReservationManagement from '../pages/ReservationManagement.vue';
 import TimeSettingTest from '../views/TimeSettingTest.vue';
+import EditStore from '../pages/EditStore.vue';
+import EditStoreUser from '../pages/EditStoreUser.vue';
 
 // 檢查業者登入狀態的函數
 function checkOwnerLogin() {
@@ -123,6 +125,21 @@ const routes = [
             },
 
             // 未來您可以繼續在這裡新增路由
+
+            {
+                path: 'edit-owner', // 代表是 /store/edit-owner
+                name: 'EditStoreUser',
+                component: EditStoreUser,
+                meta: { requiresOwnerAuth: true }
+            },
+
+            {
+                path: 'edit-store', // 代表是 /store/edit-store
+                name: 'EditStore',
+                component: EditStore,
+                meta: { requiresOwnerAuth: true }
+            },
+
             {
                 path: 'orders', // 代表是 /store/orders
                 name: 'OrderManager',
