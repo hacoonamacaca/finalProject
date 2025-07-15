@@ -1,11 +1,16 @@
 package tw.com.ispan.eeit.service.promotion;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tw.com.ispan.eeit.model.dto.promotion.PromotionCreateDTO;
 import tw.com.ispan.eeit.model.dto.promotion.PromotionDTO;
@@ -22,11 +27,17 @@ import tw.com.ispan.eeit.repository.store.StoreRepository;
 @Service
 public class PromotionService {
 
-    @Autowired
-    private PromotionRepository promotionRepository;
-    private StoreRepository storeRepository;
-    private TagRepository tagRepository;
-    private PlanRepository planRepository;
+	@Autowired
+	private PromotionRepository promotionRepository;
+
+	@Autowired
+	private StoreRepository storeRepository;
+
+	@Autowired
+	private TagRepository tagRepository;
+
+	@Autowired
+	private PlanRepository planRepository;
     
     // 查詢全部優惠券（後台管理）
     public List<PromotionBean> findAll() {
@@ -111,13 +122,6 @@ public class PromotionService {
         promotionRepository.deleteById(id);
     }
 
-//    // 新增：查詢可用優惠券 + 回傳 DTO（分類含 type）
-//    public List<PromotionBean> getAvailablePromotions(Integer userId, Integer storeId, Integer amount) {
-//        List<PromotionBean> result = promotionRepository.findAvailablePromotions(userId, storeId, amount);
-//        return result;
-//        
-//        //        return result.stream().map(this::toDTO).toList();
-//    }
     
     // ✅ 優惠券清單：查詢目前有效的優惠券
     public List<PromotionDTO> findAllAvailable() {
@@ -128,17 +132,14 @@ public class PromotionService {
         System.out.println("📦 資料庫優惠券筆數：" + all.size());
 
         List<PromotionDTO> result = all.stream()
+            .map(this::toDTO) // ⬅️ 先轉成 DTO，再根據 available 判斷
             .peek(p -> {
                 System.out.println("➡️ 優惠券：" + p.getTitle());
                 System.out.println("   狀態：" + p.getStatus());
                 System.out.println("   時間區間：" + p.getStartTime() + " ~ " + p.getEndTime());
+                System.out.println("   可用狀態：" + p.isAvailable());
             })
-            .filter(p -> "ACTIVE".equalsIgnoreCase(p.getStatus()))
-            .filter(p -> 
-                (p.getStartTime() == null || !now.isBefore(p.getStartTime())) &&
-                (p.getEndTime() == null || !now.isAfter(p.getEndTime()))
-            )
-            .map(this::toDTO)
+            .filter(PromotionDTO::isAvailable) // ⬅️ 只保留 available = true 的
             .toList();
 
         System.out.println("✅ 篩選後筆數：" + result.size());
@@ -146,12 +147,59 @@ public class PromotionService {
         return result;
     }
 
+
     
-    // ✅ 結帳時使用：查詢符合條件的優惠券（userId、storeId、金額）
-    public List<PromotionDTO> getAvailablePromotions(Integer userId, Integer storeId, Integer amount) {
-        List<PromotionBean> result = promotionRepository.findAvailablePromotions(userId, storeId, amount);
-        return result.stream().map(this::toDTO).toList(); // ✅ 把每筆轉成 DTO
-    }
+    // ✅ 結帳時使用：查詢符合條件的優惠券（userId、storeId、金額、tagId）
+    public List<PromotionDTO> getAvailablePromotions(
+    	    Integer userId, 
+    	    Integer storeId, 
+    	    Integer amount,
+    	    List<Integer> tagIds,
+    	    String tagSpendMapJson // 前端傳入的 JSON 字串：Map<tagId, 金額>
+    	) {
+    	    // 1️⃣ 解析 JSON → Map<Integer, Integer>
+    	final Map<Integer, Integer> tagSpendMap = new HashMap<>();
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<Integer, Integer> parsed = mapper.readValue(tagSpendMapJson, new TypeReference<>() {});
+            tagSpendMap.putAll(parsed); // ✅ 用 putAll，不重新指定變數
+            System.out.println("📨 後端收到 tagSpendMap：" + tagSpendMap);
+        } catch (Exception e) {
+            System.out.println("❌ 無法解析 tagSpendMap");
+            e.printStackTrace();
+        }
+
+    	    // 2️⃣ 初步條件查詢（時間、狀態、user 使用次數等）
+    	    List<PromotionBean> rawList = promotionRepository.findAvailablePromotions(userId, storeId, amount, tagIds);
+    	    System.out.println("🧩 初步符合條件的優惠券數：" + rawList.size());
+
+    	    // 3️⃣ 進一步過濾是否符合 storeId、tag、minSpend 條件
+    	    List<PromotionDTO> filtered = rawList.stream()
+    	        .filter(p -> {
+    	            int minSpend = p.getMinSpend();
+
+    	            // ⛔ 若有綁定 store 限定，檢查是否符合
+    	            if (p.getStore() != null && !p.getStore().getId().equals(storeId)) {
+    	                return false;
+    	            }
+
+    	            // ⛔ 若有綁定 tag 限定，則該 tag 的消費金額需達到門檻
+    	            if (p.getTag() != null) {
+    	                Integer tagSpend = tagSpendMap.getOrDefault(p.getTag().getId(), 0);
+    	                return tagSpend >= minSpend;
+    	            }
+
+    	            // ✅ 若無綁定 tag，則總金額需達門檻
+    	            return amount >= minSpend;
+    	        })
+    	        .map(this::toDTO)
+    	        .toList();
+
+    	    System.out.println("✅ 符合條件的最終優惠券數：" + filtered.size());
+
+    	    return filtered;
+    	}
+
 
     
     // ✅✨ 新增：分類用（由後端過濾分類 type）
@@ -170,12 +218,30 @@ public class PromotionService {
         if (p.getPlan() != null) return "member";
         return "global";
     }
+    // 判斷優惠券狀態 open / close
+    public void updateStatus(Integer id, String status) {
+        PromotionBean promotion = promotionRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("找不到優惠券 ID：" + id));
 
-    
+        if (!status.equalsIgnoreCase("open") && !status.equalsIgnoreCase("close")) {
+            throw new IllegalArgumentException("狀態只能是 open 或 close");
+        }
+
+        promotion.setStatus(status.toLowerCase());
+        promotion.setUpdatedTime(LocalDateTime.now());
+        promotionRepository.save(promotion);
+    }
+
 
     // Entity 轉 DTO（包含分類 type 判斷）
     public PromotionDTO toDTO(PromotionBean p) {
         String type = getType(p);
+        LocalDateTime now = LocalDateTime.now();
+
+        boolean available = 
+            "open".equalsIgnoreCase(p.getStatus()) &&
+            (p.getStartTime() == null || !now.isBefore(p.getStartTime())) &&
+            (p.getEndTime() == null || !now.isAfter(p.getEndTime()));
 
         return new PromotionDTO(
             p.getId(),
@@ -186,7 +252,8 @@ public class PromotionService {
             p.getMinSpend(),
             p.getStartTime(),
             p.getEndTime(),
-            p.getStatus(),
+            p.getStatus(),     // ✅ 保留 open/close 給後台人為控制
+            available,         // ✅ 自動算出可用性
             type,
             p.getTag() != null ? p.getTag().getName() : null,
             p.getStore() != null ? p.getStore().getId() : null,
@@ -197,4 +264,5 @@ public class PromotionService {
             p.getPlan() != null ? p.getPlan().getValidMonths() : null
         );
     }
+
 }

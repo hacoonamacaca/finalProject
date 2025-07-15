@@ -36,7 +36,7 @@
 
         <div class="nav-item" style="position: relative;">
           <button class="btn position-relative" style="background: transparent; border: none;"
-            @click="toggleNotification" title="優惠通知">
+            @click.stop="toggleNotification" title="優惠通知">
             <i class="bi bi-bell-fill text-white"></i>
             <span v-if="unreadCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">

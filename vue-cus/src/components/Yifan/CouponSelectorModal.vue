@@ -128,7 +128,7 @@ const manualCode = ref('')
 
 const filteredPromotions = computed(() => {
   if (activeTab.value === 'all') return props.promotions
-  return props.promotions.filter(p => p.types?.includes(activeTab.value))
+  return props.promotions.filter(p => p.type === activeTab.value)
 })
 
 watch(() => props.show, (newVal) => {
@@ -136,6 +136,10 @@ watch(() => props.show, (newVal) => {
     manualCode.value = ''
     activeTab.value = 'all'
   }
+})
+
+watch(() => props.promotions, (val) => {
+  console.log('🧾 傳入的優惠券資料：', val)
 })
 
 const selectPromotion = (promotion) => {

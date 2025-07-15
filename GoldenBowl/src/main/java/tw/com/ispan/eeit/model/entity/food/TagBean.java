@@ -2,7 +2,7 @@ package tw.com.ispan.eeit.model.entity.food;
 
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,9 +28,10 @@ public class TagBean {
     private String name;
 
     @ManyToMany(mappedBy = "tags")
-    @JsonManagedReference
+    @JsonIgnore
     private List<FoodBean> foods;
 
     @OneToMany(mappedBy = "tag")
+    @JsonIgnore
     private List<UserTagBean> userTags;
 }

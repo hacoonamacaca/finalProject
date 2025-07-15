@@ -18,7 +18,9 @@ public class PromotionDTO {
     private Integer minSpend;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private String status;
+    private String status; // 僅表示後台是否啟用 open / close
+    private boolean available; // 自動計算是否可用（前端根據這個顯示）
+
 
     private String type; // 用於前端分類 (global / restaurant / food / member)
 

@@ -90,7 +90,8 @@ const quickAddToCart = (item) => {
         food: {
             id: item.id,
             name: item.name,
-        }
+        },
+        tags: item.tagNames
     }
     handleAddToCart(cartItem)
 }
@@ -525,7 +526,7 @@ onUnmounted(() => {
                                 
                                 <!-- 餐點內容 -->
                                 <div class="item-tags" v-if="item.tagNames && item.tagNames.length > 0">
-                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag }}</span>
+                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag.name }}</span>
                                     <!-- 標籤 -->
                                 </div>
 
