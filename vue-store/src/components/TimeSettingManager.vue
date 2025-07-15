@@ -1,4 +1,4 @@
-<template>
+<!-- <template>
     <div class="time-setting-editor">
         <h3>餐廳預約時間設定</h3>
 
@@ -193,4 +193,4 @@ onMounted(fetchSetting)
 .p-invalid {
     border-color: #dc3545 !important;
 }
-</style>
+</style> -->

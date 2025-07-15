@@ -285,17 +285,23 @@ onMounted(() => {
     <div class="time-slot-manager">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h5 class="mb-0">時段管理</h5>
-            <div class="d-flex gap-2">
-                <input type="date" class="form-control" v-model="selectedDate" @change="onDateChange">
-                <button class="btn btn-primary" @click="openAddModal">
-                    <i class="fas fa-plus me-1"></i> 新增時段
-                </button>
-                <button class="btn btn-outline-secondary" @click="generateTimeSlots">
-                    <i class="fas fa-magic me-1"></i> 生成時段
-                </button>
-                <button class="btn btn-outline-info" @click="showTimeSettingModal = true">
-                    <i class="fas fa-cog me-1"></i> 時段設定
-                </button>
+            <div class="d-flex gap-3 align-items-center">
+                <!-- <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 me-2">選擇日期：</label>
+                    <input type="date" class="form-control" v-model="selectedDate" @change="onDateChange"
+                        style="width: auto;">
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary" @click="openAddModal">
+                        <i class="fas fa-plus me-2"></i> 新增時段
+                    </button>
+                    <button class="btn btn-outline-secondary" @click="generateTimeSlots">
+                        <i class="fas fa-magic me-2"></i> 生成時段
+                    </button>
+                    <button class="btn btn-outline-info" @click="showTimeSettingModal = true">
+                        <i class="fas fa-cog me-2"></i> 時段設定
+                    </button>
+                </div> -->
             </div>
         </div>
 
@@ -315,18 +321,21 @@ onMounted(() => {
         <div v-else>
             <!-- 日期選擇器 -->
             <div class="date-selector mb-4">
-                <div class="row">
+                <div class="row align-items-end">
                     <div class="col-md-4">
-                        <label class="form-label fw-bold">選擇日期</label>
+                        <label class="form-label fw-bold mb-2">選擇日期</label>
                         <input type="date" class="form-control" v-model="selectedDate" @change="onDateChange">
                     </div>
-                    <div class="col-md-8 d-flex align-items-end">
-                        <div class="d-flex gap-2">
+                    <div class="col-md-8">
+                        <div class="d-flex gap-3">
                             <button class="btn btn-primary" @click="openAddModal">
-                                <i class="fas fa-plus me-1"></i> 新增時段
+                                <i class="fas fa-plus me-2"></i> 新增時段
                             </button>
                             <button class="btn btn-outline-secondary" @click="generateTimeSlots">
-                                <i class="fas fa-magic me-1"></i> 生成時段
+                                <i class="fas fa-magic me-2"></i> 生成時段
+                            </button>
+                            <button class="btn btn-outline-info" @click="showTimeSettingModal = true">
+                                <i class="fas fa-cog me-2"></i> 時段設定
                             </button>
                         </div>
                     </div>
@@ -657,6 +666,15 @@ onMounted(() => {
     .time-slots-vertical-scroll {
         max-height: 400px;
     }
+
+    .d-flex.gap-3 {
+        gap: 0.5rem !important;
+    }
+
+    .btn {
+        font-size: 0.875rem;
+        padding: 0.375rem 0.75rem;
+    }
 }
 
 @media (max-width: 576px) {
@@ -666,6 +684,19 @@ onMounted(() => {
 
     .date-selector {
         padding: 1rem;
+    }
+
+    .d-flex.gap-3 {
+        gap: 0.25rem !important;
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .btn i {
+        margin-right: 0.25rem !important;
     }
 }
 </style>
