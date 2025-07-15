@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div @click.stop>
         <button class="btn btn-warning btn-sm rounded-pill px-3" @click.stop="openModal">
             <i class="bi bi-star-fill me-1"></i> 評分
         </button>

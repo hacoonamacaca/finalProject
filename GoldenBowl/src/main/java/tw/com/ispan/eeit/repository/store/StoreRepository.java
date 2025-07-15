@@ -30,6 +30,7 @@ public interface StoreRepository extends JpaRepository<StoreBean, Integer> {
                         "LEFT JOIN FETCH f.tags t " +
                         "WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(s.address) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
+                        "OR LOWER(s.storeIntro) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")

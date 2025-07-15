@@ -120,7 +120,7 @@ const toggleSearchKeyword = (keyword) => { // 這裡的 keyword 就是 searchKey
 // 這裡可以新增您特別的顯示名稱和對應的搜索關鍵字
 const allRecommendationKeywords = [
   { displayText: '毛小孩好去處', searchKeyword: '寵物友善' },
-  { displayText: '小孩放電好所在', searchKeyword: '小孩放電' },
+  { displayText: '小孩放電好所在', searchKeyword: '公園附近' },
   { displayText: '一起線上看直播', searchKeyword: '觀看直播' },
   { displayText: '初一十五要吃菜', searchKeyword: '素食' },
   { displayText: '精神不濟?', searchKeyword: '咖啡' },
@@ -132,7 +132,7 @@ const allRecommendationKeywords = [
   { displayText: '巷口銅板美食', searchKeyword: '超值' },
   { displayText: '輕食無負擔', searchKeyword: '健康' },
   { displayText: '趕時間也能吃', searchKeyword: '快速' },
-  { displayText: '氣氛超好拍美照', searchKeyword: '氣氛好' },
+  { displayText: '氣氛超好拍美照', searchKeyword: '好拍照' },
   { displayText: '天啊 已經三點了', searchKeyword: '甜點飲品' },
   { displayText: '下雨天不想出門', searchKeyword: '外送' }
 ];
