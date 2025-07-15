@@ -33,7 +33,7 @@
         <div class="tab-content-section">
             <!-- 預約訂位內容 -->
             <div v-if="activeTab === 'reservation'" class="tab-content" id="reservation-content">
-                <ReservationForm :restaurant-id="restaurant.id.toString()" />
+                <ReservationForm :restaurant-id="restaurant.id.toString()" :user-data="currentUserData" />
             </div>
 
             <!-- 線上訂餐內容 -->
@@ -51,14 +51,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import RestaurantBanner from './RestaurantBanner.vue'
 import RestaurantInfo from './RestaurantInfo.vue'
 import RestaurantMenu from './RestaurantMenu.vue'
 import RestaurantMap from './RestaurantMap.vue'
 import ReservationForm from './ReservationForm.vue'
 import RestaurantFooter from './RestaurantFooter.vue'
+import { useUserStore } from '@/stores/user.js' // 引入用戶 store
 import '@/assets/css/restaurant-theme.css'
+
+// 用戶 store
+const userStore = useUserStore()
 
 // 接收餐廳資料
 const props = defineProps({
@@ -66,6 +70,18 @@ const props = defineProps({
         type: Object,
         required: true
     }
+})
+
+// 從 store 獲取用戶資料並映射到預約表單需要的格式
+const currentUserData = computed(() => {
+    const userData = {
+        name: userStore.fullName || '',
+        phone: userStore.phone || '',
+        email: userStore.email || '',
+        userId: userStore.userId || null
+    }
+    console.log('🏪 RestaurantTemplate currentUserData:', userData)
+    return userData
 })
 
 // Tab狀態管理
@@ -80,16 +96,14 @@ const handleCheckout = (orderData) => {
 }
 
 function getStoreFoods() {
-    
+
 }
 
 // 生命周期
 onMounted(() => {
     console.log('🏪 RestaurantTemplate 已載入')
-    console.log(props.restaurant)
-    
-
-
+    console.log('餐廳資料:', props.restaurant)
+    console.log('用戶資料:', currentUserData.value)
 })
 </script>
 

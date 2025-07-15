@@ -5,6 +5,10 @@ import SlideOutPanel from '../components/common/SlideOutPanel.vue';
 import reservationService from '../services/reservationService.js';
 import ReservationDashboard from '../components/reservation/ReservationDashboard.vue';
 import TimeSlotManager from '../components/reservation/TimeSlotManager.vue';
+import { useStore } from '../composables/useStore.js';
+
+// 使用商店管理
+const { selectedStore, isLoggedIn } = useStore();
 
 // 響應式資料
 const reservations = ref([]);
@@ -15,66 +19,8 @@ const searchKeyword = ref('');
 const statusFilter = ref('all');
 const dateFilter = ref('');
 const currentView = ref('dashboard'); // dashboard, list, timeslots
-const storeId = ref(1); // 假設當前商家ID為1
 
-// 模擬訂位資料
-const mockReservations = [
-    {
-        id: 1,
-        customerName: '張小明',
-        phone: '0912-345-678',
-        date: '2024-01-15',
-        time: '18:30',
-        guests: 4,
-        status: 'PENDING',
-        content: '生日聚餐',
-        createdAt: '2024-01-10 14:30:00'
-    },
-    {
-        id: 2,
-        customerName: '李小華',
-        phone: '0923-456-789',
-        date: '2024-01-15',
-        time: '19:00',
-        guests: 2,
-        status: 'CONFIRMED',
-        content: '情侶約會',
-        createdAt: '2024-01-10 15:20:00'
-    },
-    {
-        id: 3,
-        customerName: '王大明',
-        phone: '0934-567-890',
-        date: '2024-01-16',
-        time: '12:00',
-        guests: 6,
-        status: 'CANCELLED',
-        content: '家庭聚餐',
-        createdAt: '2024-01-10 16:15:00'
-    },
-    {
-        id: 4,
-        customerName: '陳小美',
-        phone: '0945-678-901',
-        date: '2024-01-16',
-        time: '20:00',
-        guests: 3,
-        status: 'PENDING',
-        content: '朋友聚會',
-        createdAt: '2024-01-10 17:45:00'
-    },
-    {
-        id: 5,
-        customerName: '劉小強',
-        phone: '0956-789-012',
-        date: '2024-01-17',
-        time: '19:30',
-        guests: 5,
-        status: 'CONFIRMED',
-        content: '商務聚餐',
-        createdAt: '2024-01-10 18:30:00'
-    }
-];
+
 
 // 狀態選項
 const statusOptions = [
@@ -139,7 +85,12 @@ const getStatusClass = (status) => {
 const fetchReservations = async () => {
     loading.value = true;
     try {
-        const storeId = 1; // 假設當前商家ID為1
+        if (!selectedStore.value) {
+            console.error('未選擇商店');
+            reservations.value = [];
+            return;
+        }
+
         const filters = {
             status: statusFilter.value !== 'all' ? statusFilter.value : null,
             date: dateFilter.value || null,
@@ -147,7 +98,7 @@ const fetchReservations = async () => {
         };
 
         // 使用真實API
-        const data = await reservationService.getStoreReservations(storeId, filters);
+        const data = await reservationService.getStoreReservations(selectedStore.value, filters);
         console.log('API 返回的訂位資料:', data);
 
         // 轉換資料格式以符合前端期望
@@ -252,7 +203,12 @@ const clearFilters = () => {
 // 匯出訂位資料
 const exportReservations = async () => {
     try {
-        const storeId = 1; // 假設當前商家ID為1
+        if (!selectedStore.value) {
+            console.error('未選擇商店');
+            alert('請先選擇商店');
+            return;
+        }
+
         const filters = {
             status: statusFilter.value !== 'all' ? statusFilter.value : null,
             date: dateFilter.value || null,
@@ -261,7 +217,7 @@ const exportReservations = async () => {
 
         // 嘗試使用真實API匯出
         try {
-            const blob = await reservationService.exportReservations(storeId, filters);
+            const blob = await reservationService.exportReservations(selectedStore.value, filters);
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `訂位資料_${new Date().toISOString().split('T')[0]}.csv`;
@@ -334,7 +290,7 @@ onMounted(() => {
 
         <!-- 內容區域 -->
         <div v-if="currentView === 'dashboard'">
-            <ReservationDashboard :store-id="storeId"
+            <ReservationDashboard :store-id="selectedStore"
                 @view-pending="() => { currentView = 'list'; statusFilter = 'PENDING'; }"
                 @view-today="() => { currentView = 'list'; dateFilter = new Date().toISOString().split('T')[0]; }"
                 @view-upcoming="() => { currentView = 'list'; }" @export-data="exportReservations" />

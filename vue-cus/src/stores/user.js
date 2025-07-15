@@ -11,6 +11,7 @@ export const useUserStore = defineStore('user', () => {
     const fullName = ref(localStorage.getItem('userFullName') || '');
     const userId = ref(localStorage.getItem('userId') || '');
     const email = ref(localStorage.getItem('userEmail') || '');
+    const phone = ref(localStorage.getItem('userPhone') || '');
     const token = ref(localStorage.getItem('token') || '');
     const isLogin = ref(false);
 
@@ -19,7 +20,7 @@ export const useUserStore = defineStore('user', () => {
         localStorage.setItem('userFullName', name); // 雙向寫入
     }
 
-    function setUserId(id) { // <-- 新增這一行
+    function setUserId(id) {
         userId.value = id;
         localStorage.setItem('userId', id);
     }
@@ -27,6 +28,11 @@ export const useUserStore = defineStore('user', () => {
     function setEmail(data) {
         email.value = data;
         localStorage.setItem('userEmail', data);
+    }
+
+    function setPhone(data) {
+        phone.value = data;
+        localStorage.setItem('userPhone', data);
     }
 
     function setToken(data) {
@@ -43,6 +49,8 @@ export const useUserStore = defineStore('user', () => {
         setFullName,
         email,
         setEmail,
+        phone,
+        setPhone,
         token,
         setToken,
         userId,

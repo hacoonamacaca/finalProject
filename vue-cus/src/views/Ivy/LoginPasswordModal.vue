@@ -23,8 +23,7 @@
                         <div class="mb-3 position-relative">
                             <input :type="showPassword ? 'text' : 'password'" v-model="password"
                                 class="form-control custom-input" placeholder="密碼" required />
-                            <button type="button" class="eye-btn" @click="showPassword = !showPassword"
-                                tabindex="-1">
+                            <button type="button" class="eye-btn" @click="showPassword = !showPassword" tabindex="-1">
                                 <!-- 眼睛 icon 開關 -->
                                 <svg v-if="!showPassword" width="22" height="22" fill="none" viewBox="0 0 24 24">
                                     <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12Z" stroke="#ffba20"
@@ -58,7 +57,7 @@
 <script setup>
 import { ref } from 'vue'
 import axios from '@/plungins/axios.js'
-import { useUserStore } from '@/stores/user' 
+import { useUserStore } from '@/stores/user'
 
 const props = defineProps({ show: Boolean, email: String })
 const emit = defineEmits(['close', 'back', 'login'])
@@ -82,14 +81,15 @@ async function onSubmit() {
             alert('登入成功！')
             userStore.setFullName(data.userFullName);
             userStore.setEmail(data.userEmail);
-            userStore.setUserId(data.userId); // <-- 新增這一行
+            userStore.setUserId(data.userId);
+            userStore.setPhone(data.userPhone || '');
             userStore.setLogin(true); // 設定登入狀態為 true
-            emit('login', { 
+            emit('login', {
                 email: props.email,
                 userFullName: data.userFullName,
                 userEmail: data.userEmail,
                 userId: data.userId,
-                userPhone: data.userPhone // 如果有這欄位
+                userPhone: data.userPhone || ''
             })
             // 你可以加 router.push(...) 或 emit('close') 關掉 modal
         } else {
@@ -106,114 +106,114 @@ async function onSubmit() {
 
 <style scoped>
 .modal-bg {
-position: fixed;
-inset: 0;
-background: rgba(0, 0, 0, 0.08);
-z-index: 9999;
-display: flex;
-align-items: center;
-justify-content: center;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.08);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-dialog {
-width: 400px;
-margin: 0 auto;
+    width: 400px;
+    margin: 0 auto;
 }
 
 .modal-content {
-background: #fff !important;
-border-radius: 20px;
-box-shadow: 0 2px 24px 4px rgba(0, 0, 0, 0.10);
-border: none;
-padding: 2.2rem 2rem 2rem 2rem;
-position: relative;
+    background: #fff !important;
+    border-radius: 20px;
+    box-shadow: 0 2px 24px 4px rgba(0, 0, 0, 0.10);
+    border: none;
+    padding: 2.2rem 2rem 2rem 2rem;
+    position: relative;
 }
 
 .close-btn {
-position: absolute;
-top: 14px;
-right: 14px;
-background: #fff;
-border: none;
-border-radius: 50%;
-box-shadow: 0 2px 8px 1px rgba(0, 0, 0, 0.10);
-width: 40px;
-height: 40px;
-padding: 0;
-display: flex;
-align-items: center;
-justify-content: center;
-cursor: pointer;
-z-index: 10;
-transition: background 0.15s;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px 1px rgba(0, 0, 0, 0.10);
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: background 0.15s;
 }
 
 .nav-btn {
-background: none;
-border: none;
-padding: 0;
-margin-left: -5px;
-margin-top: -5px;
-box-shadow: none;
-outline: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin-left: -5px;
+    margin-top: -5px;
+    box-shadow: none;
+    outline: none;
 }
 
 .email-img {
-width: 62px;
-height: 62px;
-object-fit: contain;
-margin-bottom: 8px;
+    width: 62px;
+    height: 62px;
+    object-fit: contain;
+    margin-bottom: 8px;
 }
 
 .title {
-font-size: 2rem;
-font-weight: bold;
-color: #222;
-margin-bottom: 4px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 4px;
 }
 
 .custom-input {
-border-radius: 10px;
-border: 2px solid #ddd;
-font-size: 17px;
-padding: 12px 13px;
-margin-bottom: 0;
+    border-radius: 10px;
+    border: 2px solid #ddd;
+    font-size: 17px;
+    padding: 12px 13px;
+    margin-bottom: 0;
 }
 
 .btn-main {
-background: #ffba20;
-color: #fff;
-font-weight: bold;
-font-size: 20px;
-height: 48px;
-border-radius: 12px;
-border: none;
-letter-spacing: 2px;
-transition: filter 0.15s;
-box-shadow: 0 2px 8px 1px #ffba200f;
+    background: #ffba20;
+    color: #fff;
+    font-weight: bold;
+    font-size: 20px;
+    height: 48px;
+    border-radius: 12px;
+    border: none;
+    letter-spacing: 2px;
+    transition: filter 0.15s;
+    box-shadow: 0 2px 8px 1px #ffba200f;
 }
 
 .btn-main:disabled {
-background: #d5d5d5;
-color: #fff;
+    background: #d5d5d5;
+    color: #fff;
 }
 
 .btn-main:hover:enabled {
-filter: brightness(1.12);
-background: #f1cd78;
+    filter: brightness(1.12);
+    background: #f1cd78;
 }
 
 .eye-btn {
-position: absolute;
-top: 14px;
-right: 22px;
-background: transparent;
-border: none;
-padding: 0;
-cursor: pointer;
-z-index: 10;
-outline: none;
-display: flex;
-align-items: center;
+    position: absolute;
+    top: 14px;
+    right: 22px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    z-index: 10;
+    outline: none;
+    display: flex;
+    align-items: center;
 }
 </style>
