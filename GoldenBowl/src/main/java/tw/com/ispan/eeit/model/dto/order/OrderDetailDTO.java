@@ -61,6 +61,7 @@ public class OrderDetailDTO {
 			foodDTO.setId(orderDetailBean.getFood().getId());
 			foodDTO.setName(orderDetailBean.getFood().getName());
 			orderDetail.setFood(foodDTO);
+			System.out.println("fromEntity"+orderDetail.getFood().toString());
 		}
 
 		//
@@ -94,6 +95,7 @@ public class OrderDetailDTO {
 		// 轉換 Food (如果存在)
 		if (this.food != null) {
 			orderDetailBean.setFood(this.food.toFoodBean());
+			
 		}
 
 		// 轉換 Specs 列表 (如果存在)

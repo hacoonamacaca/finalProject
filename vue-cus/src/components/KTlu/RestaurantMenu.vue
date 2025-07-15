@@ -81,23 +81,33 @@ const getCategoryItems = (categoryName) => {
 
 const quickAddToCart = (item) => {
     const cartItem = {
-        quantity: 1,
+        
         price: item.discountPrice || item.price,
         image: item.image,
-        
+        quantity: 1,
         sub_total: 0,
         total: item.price,
         food: {
             id: item.id,
             name: item.name,
-        }
+        },
+        tags: item.tagNames
     }
     handleAddToCart(cartItem)
+
+
+
 }
 
 const handleAddToCart = (itemToAdd) => {
     cartStore.addToCart(itemToAdd, props.restaurant)
-    console.log("加入購物車",itemToAdd)
+ 
+    // 使用購物車開啟
+    // if (showItemDetail.value) {
+    //     closeItemDetail()
+    // }
+    // console.log(itemToAdd)
+    // 只在購物車未開啟時才開啟
     if (!cartStore.isCartVisible) {
         cartStore.showCart()
     }
@@ -520,7 +530,7 @@ onUnmounted(() => {
                                 
                                 <!-- 餐點內容 -->
                                 <div class="item-tags" v-if="item.tagNames && item.tagNames.length > 0">
-                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag }}</span>
+                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag.name }}</span>
                                     <!-- 標籤 -->
                                 </div>
 
@@ -551,7 +561,15 @@ onUnmounted(() => {
             </main>
         </div>
    
-
+        <!-- 統一由Nvaigation 處理 -->
+        <!-- <CartModal 
+        v-if="cartStore.isCartVisible" 
+        :cartByRestaurant="cartStore.cartByRestaurant" :totalAmount="cartStore.totalAmount"
+        @close="cartStore.hideCart" 
+        @update-quantity="updateCartItemQuantity" 
+        @remove-item="removeCartItem"
+        @checkout="checkout" 
+        /> -->
     </div>
 </template>
 

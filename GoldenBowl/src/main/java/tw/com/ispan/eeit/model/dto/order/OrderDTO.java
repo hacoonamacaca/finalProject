@@ -122,6 +122,9 @@ public class OrderDTO {
                     .collect(Collectors.toList());
             orderDto.setOrderDetails(orderDetailDtos);
         }
+        
+        
+        
 
         return orderDto;
     }
@@ -173,6 +176,9 @@ public class OrderDTO {
                     .map(OrderDetailDTO::toBean) // 假設 OrderDetailDTO 也有 toBean() 方法
                     .collect(Collectors.toList()));
         }
+        
+        
+        
 
         return orderBean;
     }

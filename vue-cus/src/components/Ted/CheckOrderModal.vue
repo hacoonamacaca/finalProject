@@ -32,7 +32,7 @@
             <div v-for="item in orderItems" :key="item.id"
               class="d-flex align-items-center justify-content-between mb-3 py-2 border-bottom">
               <div>
-                <div class="fw-bold">{{ item.name }}a</div>
+                <div class="fw-bold">{{ item.food.name }}a</div>
                 <!-- 配料選校 -->
                 <!-- <small class="text-muted d-block" style="font-size: 0.85rem;">
                   {{ item.spec || '無選項' }}

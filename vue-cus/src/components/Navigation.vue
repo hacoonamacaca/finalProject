@@ -34,6 +34,7 @@
           <span>{{ restaurantDisplayStore.showAllRestaurants ? '已收藏' : '全部' }}</span>
         </a>
 
+        <!-- 優惠通知鈴鐺 -->
         <div class="nav-item" style="position: relative;">
           <button class="btn position-relative" style="background: transparent; border: none;"
             @click.stop="toggleNotification" title="優惠通知">

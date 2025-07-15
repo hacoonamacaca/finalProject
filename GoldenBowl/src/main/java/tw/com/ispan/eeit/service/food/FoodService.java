@@ -140,7 +140,7 @@ public class FoodService {
         dto.setIsActive(foodBean.getIsActive());
         dto.setStock(foodBean.getStock());
         dto.setImgResource(foodBean.getImgResource());
-
+        dto.setTagNames(foodBean.getTags()); 
         if (foodBean.getStore() != null) {
             dto.setStoreId(foodBean.getStore().getId());
             dto.setStoreName(foodBean.getStore().getName());
