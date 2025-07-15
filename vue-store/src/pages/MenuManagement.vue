@@ -141,6 +141,15 @@ const fetchMenuData = async (storeId) => {
 
         console.log(`🚀 [MenuManagement] 正在為店家 ID: ${storeId} 獲取菜單資料...`);
         
+        // 🔥 NEW: 先測試店家是否存在
+        console.log('📡 測試店家存在性...');
+        try {
+            const storeResponse = await apiClient.get(`/api/stores/profile?ownerId=1&storeId=${storeId}`);
+            console.log('✅ 店家資料:', storeResponse.data);
+        } catch (storeError) {
+            console.warn('⚠️ 無法驗證店家存在性:', storeError);
+        }
+        
         const [categoriesResponse, itemsResponse] = await Promise.all([
             apiClient.get(`/api/food-classes/store/${storeId}`),
             apiClient.get(`/api/foods/store/${storeId}`),
@@ -149,6 +158,14 @@ const fetchMenuData = async (storeId) => {
         console.log('✅ [MenuManagement] API 回應結果:');
         console.log('   分類回應:', categoriesResponse.data);
         console.log('   品項回應:', itemsResponse.data);
+        
+        // 🔥 NEW: 檢查回應狀態
+        console.log('📊 API 回應狀態:', {
+            categoriesStatus: categoriesResponse.status,
+            itemsStatus: itemsResponse.status,
+            categoriesLength: categoriesResponse.data.length,
+            itemsLength: itemsResponse.data.length
+        });
 
         categories.splice(0, categories.length, ...categoriesResponse.data);
         
@@ -186,8 +203,23 @@ const fetchMenuData = async (storeId) => {
         console.log(`   分類數量: ${categories.length}`);
         console.log(`   品項數量: ${items.length}`);
 
+        // 🔥 NEW: 如果沒有資料，提供更多資訊
+        if (categories.length === 0 && items.length === 0) {
+            console.warn(`⚠️ 店家 ${storeId} 沒有任何菜單資料`);
+            console.warn('💡 請檢查：');
+            console.warn('   1. 店家 ID 是否正確？');
+            console.warn('   2. 該店家是否有設定分類和品項？');
+            console.warn('   3. API 路徑是否正確？');
+        }
+
     } catch (e) {
         console.error(`❌ [MenuManagement] 獲取店家 ID:${storeId} 的資料失敗:`, e);
+        console.error('   錯誤詳情:', {
+            message: e.message,
+            status: e.response?.status,
+            statusText: e.response?.statusText,
+            data: e.response?.data
+        });
         error.value = `無法載入菜單資料：${e.response?.data?.message || e.message}`;
         categories.splice(0);
         items.splice(0);
@@ -204,25 +236,25 @@ const fetchMenuData = async (storeId) => {
 // 🔥 NEW: 監聽 selectedStore 變化
 watch(selectedStore, async (newStoreId, oldStoreId) => {
     console.log(`👀 [MenuManagement] selectedStore 變化: ${oldStoreId} → ${newStoreId}`)
-    if (newStoreId) {
+    if (newStoreId && newStoreId !== oldStoreId) {
         await fetchMenuData(newStoreId)
     }
 }, { immediate: true })
 
-// 🔥 NEW: 監聽全域 storeChanged 事件
-const handleStoreChanged = async (event) => {
-    const { newStoreId } = event.detail
-    console.log(`🔄 [MenuManagement] 收到店家切換事件: ${newStoreId}`)
-    if (newStoreId) {
-        await fetchMenuData(newStoreId)
-    }
-}
+// 🔥 移除重複的全域事件監聽 - 因為 watch 已經能監聽到變化了
+// const handleStoreChanged = async (event) => {
+//     const { newStoreId } = event.detail
+//     console.log(`🔄 [MenuManagement] 收到店家切換事件: ${newStoreId}`)
+//     if (newStoreId) {
+//         await fetchMenuData(newStoreId)
+//     }
+// }
 
 onMounted(async () => {
     console.log('🎬 [MenuManagement] 組件掛載')
     
-    // 監聽全域店家切換事件
-    window.addEventListener('storeChanged', handleStoreChanged)
+    // 🔥 移除全域事件監聽，因為 watch 已經能處理
+    // window.addEventListener('storeChanged', handleStoreChanged)
     
     // 如果已經有選中的店家，立即載入
     if (selectedStore.value) {
@@ -232,7 +264,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
     console.log('🧹 [MenuManagement] 組件卸載')
-    window.removeEventListener('storeChanged', handleStoreChanged)
+    // window.removeEventListener('storeChanged', handleStoreChanged)
 })
 
 
