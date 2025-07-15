@@ -1,7 +1,7 @@
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue'; // 導入 onMounted、onBeforeUnmount、watch函數
+import { ref, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 import SlideOutPanel from '../components/common/SlideOutPanel.vue';
-import apiClient from '../plungins/axios.js'; // 導入 apiClient
+import apiClient from '../plungins/axios.js';
 import { uploadImage } from '../plungins/firebase-storage.js' // 導入 firebase
 import PageHeader from '../components/common/PageHeader.vue';
 // import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';  //預定捨棄功能
@@ -10,6 +10,10 @@ import CategoryManagement from '../components/menu/CategoryManagement.vue';
 import EditCategoryPanel from '../components/menu/EditCategoryPanel.vue'; 
 // import EditSpecModal from '../components/menu/EditSpecModal.vue';  //預定捨棄功能
 import MenuOverview from '../components/menu/MenuOverview.vue';
+import { useStore } from '../composables/useStore.js'; // 🔥 NEW: 導入 useStore
+
+// 🔥 NEW: 使用共享的 store 狀態
+const { selectedStore, currentStoreName, isLoggedIn } = useStore()
 
 // --- 響應式狀態 (State) ---
 
@@ -194,7 +198,7 @@ const fetchMenuData = async (storeId) => {
 
 
 // =================================================================
-// 4. 生命週期鉤子和監聽器
+// 4. 監聽 store 變化
 // =================================================================
 
 // 🔥 NEW: 監聽 selectedStore 變化
@@ -226,9 +230,9 @@ onMounted(async () => {
     }
 });
 
-// 清理事件監聽器
 onBeforeUnmount(() => {
-    window.removeEventListener('storage', handleStorageChange)
+    console.log('🧹 [MenuManagement] 組件卸載')
+    window.removeEventListener('storeChanged', handleStoreChanged)
 })
 
 
@@ -361,7 +365,7 @@ const handleSaveItem = async (itemData) => {
             alert('品項新增成功！');
         }
         
-        // 操作成功後，重新獲取列表
+        // 🔥 NEW: 使用當前選中的 store 重新載入
         await fetchMenuData(selectedStore.value);
 
     } catch (e) {
@@ -380,7 +384,7 @@ const handleDeleteItem = async (itemId) => {
             // 【修改】刪除：呼叫 DELETE API
             await apiClient.delete(`/api/foods/${itemId}`);
             alert('刪除成功！');
-            await fetchMenuData(selectedStore.value); // 重新獲取列表
+            await fetchMenuData(selectedStore.value); // 🔥 NEW: 使用當前選中的 store
         } catch (e) {
             console.error('刪除品項失敗:', e);
             alert(`刪除失敗：${e.response?.data?.message || e.message}`);
@@ -448,12 +452,12 @@ const handleSaveCategory = async (categoryData) => {
             alert('類別更新成功！');
         } else {
             // 新增模式，記得加上 storeId
-            const payload = { ...categoryData, storeId: selectedStore.value };
+            const payload = { ...categoryData, storeId: selectedStore.value }; // 🔥 NEW
             await apiClient.post('/api/food-classes', payload);
             alert('類別新增成功！');
         }
         // 成功後，只重新獲取 categories 列表即可
-        const response = await apiClient.get(`/api/food-classes/store/${selectedStore.value}`);
+        const response = await apiClient.get(`/api/food-classes/store/${selectedStore.value}`); // 🔥 NEW
         categories.splice(0, categories.length, ...response.data);
     } catch (e) {
         console.error('儲存品項類別失敗:', e);
@@ -470,7 +474,7 @@ const handleDeleteCategory = async (categoryId) => {
         try {
             await apiClient.delete(`/api/food-classes/${categoryId}`);
             alert('刪除成功！');
-            const response = await apiClient.get(`/api/food-classes/store/${selectedStore.value}`);
+            const response = await apiClient.get(`/api/food-classes/store/${selectedStore.value}`);// 🔥 NEW
             categories.splice(0, categories.length, ...response.data);
         } catch (e) {
             console.error('刪除品項類別失敗:', e);
@@ -552,14 +556,11 @@ const selectTab = (tab) => {
             </template>
         </PageHeader>
 
-        <!-- 使用完整的條件判斷鏈，確保邏輯正確 -->
+        <!-- 沒有選中店家時的提示 -->
         <div v-if="!selectedStore && !isLoading" class="alert alert-info">
-            <h5>📋 沒有店家資料</h5>
+            <h5>📋 請選擇店家</h5>
             <p class="mb-0">
-                請確認您已正確登入，並且帳號關聯了店家資料。<br>
-                <small class="text-muted">
-                    測試用戶可以在 Console 中執行 <code>setTempLogin(1)</code> 來設定測試資料。
-                </small>
+                請在左側邊欄選擇要管理的店家，然後就能編輯該店家的菜單資料。
             </p>
         </div>
         

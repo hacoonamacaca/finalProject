@@ -9,10 +9,6 @@ import axios from '@/plungins/axios.js';
 import { useOrderNotifier } from '../composables/useOrderNotifier.js'; // 匯入 Composable
 
 
-import axios from '@/plungins/axios.js';
-import { useOrderNotifier } from '../composables/useOrderNotifier.js'; // 匯入 Composable
-
-
 // 訂單列表資料 (模擬資料)
 const orders = ref([]);
 const selectedOrder = ref(null);
@@ -37,27 +33,7 @@ function fetchOrders (storeId)  {
 const { isConnected } = useOrderNotifier(storeId, fetchOrders); 
 
 // 組件首次載入時，也執行一次完整的訂單獲取，以確保數據是最新且完整的
-const storeId =4  
-// 使用 Composables，它會自動處理 WebSocket 連線和訂閱
-// 從後端獲得資料
-function fetchOrders (storeId)  {
-  
-  axios.get(`/api/orders/store/${storeId}`).then(function(response) {
-    // console.log(response.data)
-    orders.value=response.data
-    console.log('orders',orders.value)
-  }
-).catch(function(error){
-  console.log(error)
-})
-
-};
-// 需要取得storeId和方法
-const { isConnected } = useOrderNotifier(storeId, fetchOrders); 
-
-// 組件首次載入時，也執行一次完整的訂單獲取，以確保數據是最新且完整的
 onMounted(() => {
-  fetchOrders(storeId);
   fetchOrders(storeId);
 });
 
@@ -72,7 +48,6 @@ const handleOrderSelected = (order) => {
 
 // 關閉訂單詳情側邊欄
 const closeDetailSidebar = () => {
-  console.log('關閉側邊')
   console.log('關閉側邊')
   isDetailSidebarVisible.value = false;
   // selectedOrder 會在面板關閉後再清空，體驗更好
@@ -132,9 +107,6 @@ const completeOrder = (orderId) => {
           <span :class="{'text-success': isConnected, 'text-danger': !isConnected}" class="me-3">
             {{ isConnected ? '● 線上' : '● 離線' }}
           </span>
-          <span :class="{'text-success': isConnected, 'text-danger': !isConnected}" class="me-3">
-            {{ isConnected ? '● 線上' : '● 離線' }}
-          </span>
           <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" @click="resetFilters">重設</button>
         </div>
       </template>
@@ -143,16 +115,12 @@ const completeOrder = (orderId) => {
     <div class="order-list-panel">
       <OrderList 
       :orders="orders" 
-      @select-order="handleOrderSelected" 
-      :orders="orders" 
-      @select-order="handleOrderSelected" 
+      @select-order="handleOrderSelected"
       />
     </div>
     <!-- 左側訂單列表 -->
-    <!-- 左側訂單列表 -->
 
     <!-- 3. 使用新的 SlideOutPanel 組件 -->
-    <!-- 測邊列 -->
     <!-- 測邊列 -->
     <SlideOutPanel 
       v-model:isOpen="isDetailSidebarVisible" 
@@ -163,10 +131,6 @@ const completeOrder = (orderId) => {
       <OrderDetail 
         v-if="selectedOrder" 
         :order="selectedOrder" 
-        @close-Sidebar="closeDetailSidebar"
-        @cancel-order="cancelOrder"
-        @confirm-order="confirmOrder"
-        @complete-order="completeOrder"
         @close-Sidebar="closeDetailSidebar"
         @cancel-order="cancelOrder"
         @confirm-order="confirmOrder"
