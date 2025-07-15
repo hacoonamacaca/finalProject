@@ -210,7 +210,6 @@ const removeItem = (id) => {
 
 const emitAddToCart = () => {
   if (internalOrderItems.value.length > 0) {
-<<<<<<< HEAD
     const now = new Date()
     const formattedTime = now.toLocaleString('zh-TW', {
       year: 'numeric',
@@ -228,21 +227,13 @@ const emitAddToCart = () => {
   console.log("格式化後的台灣時間:", formattedTime.toString().replace(" ", "T").replace(/\//g, "-"));
       // console.log(new Date().toTimeString)
       // console.log(new Date().toTimeString)
-=======
->>>>>>> origin/jamie
    const body={
 
       content:content.value,
       status:'Pending',
-<<<<<<< HEAD
       create_time:createTime ,
       method:paymentMethod.value,
       pickup_time:createTime.slice(0, 11)+currentTime.value
-=======
-      create_time:new Date().toISOString().slice(0, 19) ,
-      method:paymentMethod.value,
-      pickup_time:new Date().toISOString().slice(0, 11)+currentTime.value
->>>>>>> origin/jamie
       // 設定取餐時間
     }
     //增加備註、訂單狀態、付款方式、取餐時間

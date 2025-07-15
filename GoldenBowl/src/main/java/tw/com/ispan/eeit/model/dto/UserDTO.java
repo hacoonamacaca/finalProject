@@ -11,10 +11,7 @@ public class UserDTO {
     private Integer id;
     private String email;
     private String name;
-<<<<<<< HEAD
     private String password;
-=======
->>>>>>> origin/jamie
     private String phone;
     private Boolean isActive;
     private Boolean isVerify;
