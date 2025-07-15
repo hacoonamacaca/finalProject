@@ -25,6 +25,7 @@ public class PromotionDTO {
     private String type; // 用於前端分類 (global / restaurant / food / member)
 
     // 額外附帶欄位（可選）
+    private Integer tagId;
     private String tagName;
     private Integer storeId;
     private String storeName;

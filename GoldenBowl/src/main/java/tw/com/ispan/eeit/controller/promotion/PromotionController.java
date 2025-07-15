@@ -80,9 +80,16 @@ public class PromotionController {
     }
 
     // 修改優惠券
+//    @PutMapping("/{id}")
+//    public PromotionBean update(@PathVariable Integer id, @RequestBody PromotionUpdateDTO dto) {
+//        return promotionService.updateFromDTO(id, dto);
+//    }
     @PutMapping("/{id}")
-    public PromotionBean update(@PathVariable Integer id, @RequestBody PromotionUpdateDTO dto) {
-        return promotionService.updateFromDTO(id, dto);
+    public ResponseEntity<PromotionDTO> updatePromotion(
+            @PathVariable Integer id,
+            @RequestBody PromotionUpdateDTO dto) {
+        PromotionBean promotion = promotionService.updateFromDTO(id, dto);
+        return ResponseEntity.ok(promotionService.toDTO(promotion)); // ✅ 改這裡！
     }
 
     // 刪除優惠券
@@ -90,16 +97,6 @@ public class PromotionController {
     public void delete(@PathVariable Integer id) {
         promotionService.deleteById(id);
     }
-
-    // // 查詢符合條件的可用優惠券（回傳 DTO）
-    // @GetMapping("/available")
-    // public List<PromotionBean> getAvailablePromotions(
-    // @RequestParam Integer userId,
-    // @RequestParam Integer storeId,
-    // @RequestParam Integer amount
-    // ) {
-    // return promotionService.getAvailablePromotions(userId, storeId, amount);
-    // }
 
     // ✅ 查詢目前所有有效未使用的優惠券（給優惠券清單頁面用）
     @GetMapping("/all-available")

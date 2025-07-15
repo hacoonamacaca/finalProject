@@ -105,14 +105,42 @@ public class PromotionService {
 
         p.setTitle(dto.getTitle());
         p.setDescription(dto.getDescription());
-        // ... 依序更新欄位
+        p.setDiscountType(dto.getDiscountType());
+        p.setMinSpend(dto.getMinSpend()); 
+        p.setStartTime(dto.getStartTime());
+        p.setEndTime(dto.getEndTime());
+        p.setCode(dto.getCode());
+        p.setMaxUsage(dto.getMaxUsage());
+        p.setUserUsageLimit(dto.getUserUsageLimit());
 
-        // 如果關聯 id 有傳才更新關聯
+        // ✅ 更新 store 綁定
         if (dto.getStoreId() != null) {
             StoreBean store = storeRepository.findById(dto.getStoreId()).orElse(null);
             p.setStore(store);
+        } else {
+            p.setStore(null); // 沒填就解除綁定
         }
 
+        // ✅ 更新 tag 綁定
+        if (dto.getTagId() != null) {
+            TagBean tag = tagRepository.findById(dto.getTagId()).orElse(null);
+            p.setTag(tag);
+        } else {
+            p.setTag(null);
+        }
+
+        // ✅ 更新 plan 綁定
+        if (dto.getPlanId() != null) {
+            PlanBean plan = planRepository.findById(dto.getPlanId()).orElse(null);
+            p.setPlan(plan);
+        } else {
+            p.setPlan(null);
+        }
+
+        // ✅ 將 BigDecimal 轉為 String 儲存
+        if (dto.getDiscountValue() != null) {
+            p.setDiscountValue(dto.getDiscountValue().toPlainString());
+        }
         return promotionRepository.save(p);
     }
 
@@ -255,6 +283,7 @@ public class PromotionService {
             p.getStatus(),     // ✅ 保留 open/close 給後台人為控制
             available,         // ✅ 自動算出可用性
             type,
+            p.getTag() != null ? p.getTag().getId() : null,
             p.getTag() != null ? p.getTag().getName() : null,
             p.getStore() != null ? p.getStore().getId() : null,
             p.getStore() != null ? p.getStore().getName() : null,
