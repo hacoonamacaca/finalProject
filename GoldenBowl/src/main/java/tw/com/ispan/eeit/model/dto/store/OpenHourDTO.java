@@ -7,7 +7,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
-import tw.com.ispan.eeit.util.DatetimeConvert;
 
 @Data
 @NoArgsConstructor
@@ -72,88 +71,62 @@ public class OpenHourDTO {
                 return dayOfWeek.toString();
         }
     }
-
-    /**
-     * 將 OpenHourBean 轉換為 OpenHourDTO。
-     * 
-     * @param bean OpenHourBean 物件
-     * @return 轉換後的 OpenHourDTO 物件
-     */
+    
+    
     public static OpenHourDTO toDto(OpenHourBean bean) {
         if (bean == null) {
             return null;
         }
 
-        // 使用 DTO 提供的完整建構子來初始化屬性，可以利用內部邏輯設定 openTimeStr, closeTimeStr, isOpen, dayName
-        OpenHourDTO dto = new OpenHourDTO(
-                bean.getId(),
-                bean.getStore() != null ? bean.getStore().getId() : null, // 獲取 storeId
-                bean.getDayOfWeek(), // 獲取 DayOfWeek 枚舉
-                bean.getOpenTime(),
-                bean.getCloseTime());
+        Integer id = bean.getId();
+        Integer storeId = (bean.getStore() != null) ? bean.getStore().getId() : null; // 從 StoreBean 獲取 storeId
+        DayOfWeek dayOfWeek = bean.getDayOfWeek(); // 使用 bean 提供的 getDayOfWeek()
+        LocalTime openTime = bean.getOpenTime();
+        LocalTime closeTime = bean.getCloseTime();
 
-        // 如果Bean中的openTime和closeTime都為null，表示休息，則isOpen為false，openTimeStr和closeTimeStr為空
-        // 否則，isOpen為true，時間字串已在建構子中設定
-        if (bean.getOpenTime() == null && bean.getCloseTime() == null) {
-            dto.setIsOpen(false);
-            dto.setOpenTimeStr("");
-            dto.setCloseTimeStr("");
-        } else {
-            dto.setIsOpen(true);
-            dto.setOpenTimeStr(DatetimeConvert.toString(bean.getOpenTime(), TIME_FORMAT));
-            dto.setCloseTimeStr(DatetimeConvert.toString(bean.getCloseTime(), TIME_FORMAT));
-        }
-
-        return dto;
+        // 直接使用 OpenHourDTO 的建構子來初始化
+        return new OpenHourDTO(id, storeId, dayOfWeek, openTime, closeTime);
     }
 
     /**
      * 將 OpenHourDTO 轉換為 OpenHourBean。
-     * 注意：StoreBean 的設置通常應在 Service 層完成資料庫查詢，此處僅設置 Store ID。
-     * 
-     * @param dto OpenHourDTO 物件
+     * 注意：此方法需要一個 StoreBean 物件，因為 OpenHourBean 實際關聯的是 StoreBean 實例，
+     * 而 DTO 只包含 storeId。在實際應用中，你可能需要從資料庫或其他地方根據 storeId 獲取 StoreBean。
+     * @param dto 要轉換的 OpenHourDTO 物件
+     * @param storeBean 關聯的 StoreBean 物件，必須提供
      * @return 轉換後的 OpenHourBean 物件
+     * @throws IllegalArgumentException 如果 storeBean 為 null
      */
-    public static OpenHourBean toBean(OpenHourDTO dto) {
+    public static OpenHourBean toBean (OpenHourDTO dto) {
         if (dto == null) {
             return null;
         }
-
+        StoreBean storeBean = new StoreBean();
+        
         OpenHourBean bean = new OpenHourBean();
-        bean.setId(dto.getId());
+        bean.setId(dto.getId()); // 如果是新增，id 可能為 null，由資料庫生成
+     // 設定關聯的 StoreBean 物件
+        storeBean.setId(dto.getStoreId());
+        bean.setStore(storeBean);
 
-        // 設定 DayOfWeek (Bean 中的 day 屬性會透過 setDayOfWeek 自動轉換)
+        // 設定 DayOfWeek。DTO 中的 DayOfWeek 是枚舉，直接設定
         bean.setDayOfWeek(dto.getDayOfWeek());
 
-        // 使用 DatetimeConvert 將字串時間轉換為 LocalTime
-        // 這裡需要根據 openTimeStr 或 openTime 哪個有值來判斷
-        // 優先使用 LocalTime openTime 屬性，如果為 null 再嘗試解析 openTimeStr
-        if (dto.getOpenTime() != null) {
-            bean.setOpenTime(dto.getOpenTime());
-        } else if (dto.getOpenTimeStr() != null && !dto.getOpenTimeStr().isEmpty()) {
-            bean.setOpenTime(DatetimeConvert.parseLocalTime(dto.getOpenTimeStr(), TIME_FORMAT));
-        } else {
-            bean.setOpenTime(null);
-        }
+        // 判斷 isOpen 狀態並設定 openTime 和 closeTime
+//        設定時間
 
-        if (dto.getCloseTime() != null) {
-            bean.setCloseTime(dto.getCloseTime());
-        } else if (dto.getCloseTimeStr() != null && !dto.getCloseTimeStr().isEmpty()) {
-            bean.setCloseTime(DatetimeConvert.parseLocalTime(dto.getCloseTimeStr(), TIME_FORMAT));
+        if (dto.getIsOpen() != null && dto.getIsOpen()) {
+            // 如果 isOpen 為 true，則解析時間字串
+            // LocalTime.parse() 預設支持 "HH:mm" 或 "HH:mm:ss" 格式
+            bean.setOpenTime(dto.getOpenTimeStr() != null ? LocalTime.parse(dto.getOpenTimeStr()) : null);
+            bean.setCloseTime(dto.getCloseTimeStr() != null ? LocalTime.parse(dto.getCloseTimeStr()) : null);
         } else {
+            // 如果 isOpen 為 false 或 null，則設定時間為 null
+            bean.setOpenTime(null);
             bean.setCloseTime(null);
         }
-
-        // 處理 StoreBean 的設置：
-        // 在 DTO 層，我們只能根據 storeId 創建一個 "空殼" 的 StoreBean。
-        // 真正的 StoreBean 實例（例如從資料庫查詢獲得的持久化實例）
-        // 應在 Service 層處理，以避免 DTO 層與資料存取邏輯耦合。
-        if (dto.getStoreId() != null) {
-            StoreBean store = new StoreBean();
-            store.setId(dto.getStoreId());
-            bean.setStore(store);
-        }
-
         return bean;
     }
+   
+   
 }

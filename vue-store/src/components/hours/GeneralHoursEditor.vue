@@ -26,6 +26,27 @@ const generateTimeOptions = () => {
   }
   return options;
 };
+// 新增一個驗證時間的函數
+const validateTimeRange = (openTime, closeTime) => {
+  if (!openTime || !closeTime) {
+    return true; // 如果其中一個為空，我們可能認為它是暫時有效，或在保存時處理
+  }
+  // 將時間字串轉換為可比較的格式 (例如：分鐘數)
+  const parseTime = (timeStr) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    return hours * 60 + minutes;
+  };
+
+  const openMinutes = parseTime(openTime);
+  const closeMinutes = parseTime(closeTime);
+
+  // 如果結束時間小於或等於開始時間，則無效
+  // 這裡需要考慮跨天的情況，但對於營業時間通常在同一天內
+  // 如果需要跨天，邏輯會更複雜 (例如 22:00 - 02:00)
+  // 目前假設在同一天內，結束時間必須大於開始時間
+  return closeMinutes > openMinutes;
+};
+
 
 onMounted(() => {
   // 深拷貝 props，以便在子組件中修改而不影響父組件
@@ -33,15 +54,6 @@ onMounted(() => {
   // 並且在複製時，將時間數據初始化為可選的選項，如果 'isOpen' 為 false
   editableHours.value = props.generalHours.map(hour => ({ ...hour })); // 淺拷貝物件陣列
   console.log('editableHours.value',editableHours.value)
-  // 排序 editableHours，確保星期一到星期日依序顯示
-  // 假設 dayOfWeek 是 'MONDAY', 'TUESDAY', ... 的字串
-  // 我們需要一個映射來進行排序
-  const dayOrder = {
-    'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4,
-    'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
-  };
-  editableHours.value.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
-  
 
   // 初始化選擇時間
   timeOptions.value = generateTimeOptions();
@@ -50,33 +62,61 @@ onMounted(() => {
 // 使用 watch 監聽 props.generalHours 變化，重新初始化 editableHours
 // 這在父組件通過非 prop 更新數據時很有用
 watch(() => props.generalHours, (newHours) => {
-  editableHours.value = newHours.map(hour => ({ ...hour }));
-  const dayOrder = {
-    'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4,
-    'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
-  };
-  editableHours.value.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
+  editableHours.value = newHours.map(hour => ({ ...hour, isTimeInvalid: !hour.isOpen || validateTimeRange(hour.openTimeStr, hour.closeTimeStr) ? false : true }));
+
 }, { deep: true }); // deep: true 可以監聽陣列內部物件的變化
 
 // 處理開關切換
 const toggleDayStatus = (item) => {
-  console.log('切換開關前',item.isOpen)
 
-  console.log('切換開關後',item.isOpen)
   if (!item.isOpen) {
-    // 如果關閉了，可以清空時間或者設定一個預設關閉狀態的值
-    item.openTimeStr = '00:00'; // 例如：如果關閉，時間設為 00:00
-    item.closeTimeStr = '00:00';
+
+    item.isTimeInvalid = false; // 關閉時無所謂時間無效
   } else {
-    // 如果開啟了，且沒有時間，給個預設值
-    if (!item.openTimeStr || item.openTimeStr === '00:00') {
-      item.openTimeStr = '10:00';
-    }
-    if (!item.closeTimeStr || item.closeTimeStr === '00:00') {
-      item.closeTimeStr = '22:00';
+     // 再次檢查，如果預設時間或之前的值導致結束時間不晚于开始时间，则调整结束时间
+     console.log('跑到這邊')
+    if(item.openTimeStr==null){
+          item.openTimeStr='08:00';
+        }
+        if(item.closeTimeStr==null){
+          item.closeTimeStr='17:00';
+        } 
+    if (!validateTimeRange(item.openTimeStr, item.closeTimeStr)) {
+        // 如果發現無效，將結束時間設定為開始時間之後的某個值，例如加 15 分鐘
+        
+        const [openHour, openMinute] = item.openTimeStr.split(':').map(Number);
+        const newCloseMinutes = openHour * 60 + openMinute + 15;
+        const newCloseHour = String(Math.floor(newCloseMinutes / 60) % 24).padStart(2, '0');
+        const newCloseMinute = String(newCloseMinutes % 60).padStart(2, '0');
+        item.closeTimeStr = `${newCloseHour}:${newCloseMinute}`;
+       item.isTimeInvalid = true; // 即使自動調整了，也可能需要提示（如果用戶期望更早結束）
+    } else {
+        item.isTimeInvalid = false; // 時間範圍有效
     }
   }
 };
+// 處理時間選擇變化
+const handleTimeChange = (item) => {
+  // 當時間變化時，重新驗證並可能調整
+  if (!validateTimeRange(item.openTimeStr, item.closeTimeStr)) {
+    // 如果結束時間小於或等於開始時間，自動將結束時間調整為開始時間的 15 分鐘後
+    const [openHour, openMinute] = item.openTimeStr.split(':').map(Number);
+    let newCloseMinutes = openHour * 60 + openMinute + 15;
+
+    // 確保結束時間不會超過 23:45 (如果沒有跨日邏輯)
+    if (newCloseMinutes >= 24 * 60) {
+        newCloseMinutes = 23 * 60 + 45; // 或者設置為當天最後一個可選時間
+    }
+
+    const newCloseHour = String(Math.floor(newCloseMinutes / 60) % 24).padStart(2, '0');
+    const newCloseMinute = String(newCloseMinutes % 60).padStart(2, '0');
+    item.closeTimeStr = `${newCloseHour}:${newCloseMinute}`;
+      item.isTimeInvalid = true; // 時間範圍無效
+  } else {
+    item.isTimeInvalid = false; // 時間範圍有效
+  }
+};
+
 
 // 解析時間字串和格式化時間字串的函數在新數據格式下可能不再需要
 // 因為我們直接操作 openTimeStr 和 closeTimeStr。
@@ -84,11 +124,17 @@ const toggleDayStatus = (item) => {
 
 // 保存更改
 const saveChanges = () => {
-  // 在這裡可以執行數據驗證
-  // 確保 openTimeStr 和 closeTimeStr 是有效的時間格式
-  // 以及 openTimeStr < closeTimeStr
-  // 
+ 
+  // 遍歷所有營業時間，檢查是否有無效的時間範圍
+  const invalidItems = editableHours.value.filter(item =>
+    item.isOpen && !validateTimeRange(item.openTimeStr, item.closeTimeStr)
+  );
 
+  if (invalidItems.length > 0) {
+    alert('部分營業時間設置無效，結束時間必須晚於開始時間。請檢查！');
+    // 可以滾動到第一個無效項，或者更詳細的錯誤提示
+    return; // 阻止保存操作
+  }
   
   emit('save', editableHours.value);
 };
@@ -96,11 +142,12 @@ const saveChanges = () => {
 // 重置為初始狀態
 const resetChanges = () => {
   editableHours.value = props.generalHours.map(hour => ({ ...hour })); // 從 props 重新初始化
-  const dayOrder = {
-    'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4,
-    'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
-  };
-  editableHours.value.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
+  
+  // const dayOrder = {
+  //   'MONDAY': 1, 'TUESDAY': 2, 'WEDNESDAY': 3, 'THURSDAY': 4,
+  //   'FRIDAY': 5, 'SATURDAY': 6, 'SUNDAY': 7
+  // };
+  // editableHours.value.sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek]);
 };
 </script>
 
@@ -132,17 +179,21 @@ const resetChanges = () => {
         </div>
 
         <div v-if="item.isOpen" class="d-flex align-items-center gap-2 mb-3">
-          <select class="form-select form-select-sm" v-model="item.openTimeStr">
+          <select class="form-select form-select-sm" v-model="item.openTimeStr" @change="handleTimeChange(item)">
             <option v-for="option in timeOptions" :key="option" :value="option">{{ option }}</option>
           </select>
           <span class="text-muted">至</span>
-          <select class="form-select form-select-sm" v-model="item.closeTimeStr">
+          <select class="form-select form-select-sm" v-model="item.closeTimeStr" @change="handleTimeChange(item)">
             <option v-for="option in timeOptions" :key="option" :value="option">{{ option }}</option>
           </select>
           </div>
-        <div v-else class="text-muted text-center py-2">
-            關閉
-        </div>
+          <div v-else class="text-muted text-center py-2">
+              關閉
+          </div>
+
+          <div v-if="item.isTimeInvalid" class="alert alert-danger py-1 px-2 mb-0" role="alert" style="font-size: 0.85em;">
+            開始時間不能晚於或等於結束時間。已自動調整。
+          </div>
 
 
         </div>

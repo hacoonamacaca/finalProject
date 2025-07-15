@@ -4,6 +4,7 @@ import GeneralHoursEditor from '../components/hours/GeneralHoursEditor.vue';
 import SpecialHoursEditor from '../components/hours/SpecialHoursEditor.vue';
 import axios from '@/plungins/axios.js';
 
+const storeid =ref(7) //店家id
 
 // 模態框/側邊欄的顯示狀態
 const isSidebarVisible = ref(false);
@@ -14,31 +15,27 @@ const editingDay = ref(''); // 當編輯一般營業時間時，表示正在編�
 const showNotification = ref(false);
 const notificationMessage = ref('');
 const notificationType = ref('success'); // success, warning, danger 等
-const storeid =ref(1)
-const generalHours = ref([]);
+const generalHours = ref([]);//一般營業時間
+
+//預設陣列
+const defaultDayData = [
+  {storeId: storeid.value, dayOfWeek: 'SUNDAY', dayName: '星期日', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeid.value, dayOfWeek: 'MONDAY', dayName: '星期一', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeid.value, dayOfWeek: 'TUESDAY', dayName: '星期二', openTimeStr:null, closeTimeStr: null, isOpen: false },
+  {storeId: storeid.value, dayOfWeek: 'WEDNESDAY', dayName: '星期三', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeid.value, dayOfWeek: 'THURSDAY', dayName: '星期四', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeid.value, dayOfWeek: 'FRIDAY', dayName: '星期五', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeid.value, dayOfWeek: 'SATURDAY', dayName: '星期六', openTimeStr: null, closeTimeStr: null, isOpen: false }, // 週末可以給不同預設值
+];
 
 const findOpenHours= (id)=>{ 
   axios.get(`/api/stores/${id}/hours`).then((res)=>{
     generalHours.value = res.data
-    console.log(generalHours.value)
+    // console.log(generalHours.value)
 
   })
 
 }
-
-//    {
-    //     "id": 36,
-    //     "storeId": 1,
-    //     "dayOfWeek": "SUNDAY",
-    //     "openTime": "11:00:00",
-    //     "closeTime": "23:00:00",
-    //     "openTimeStr": "11:00",
-    //     "closeTimeStr": "23:00",
-    //     "isOpen": true,
-    //     "dayName": "星期日"
-    // },
-// 模擬一般營業時間數據
-
 
 // 模擬特殊營業時間數據 (範例，可能需要更複雜的結構來存儲日期範圍等)
 const specialHoursRecords = ref([
@@ -53,6 +50,19 @@ const specialHoursRecords = ref([
 
 // 開啟一般營業時間編輯器
 const openGeneralEditor = (day) => {
+  if (generalHours.value.length==0){
+    axios.put(`/api/stores/${storeid.value}/hours/saveAll`, defaultDayData)
+    .then((res)=>{
+      // console.log(res.data) 
+      showToast('建立一般營業時間！', 'success'); 
+      findOpenHours(storeid.value)
+    }).catch((error)=>{
+      console.log(error);
+    })
+
+  }
+  // console.log("陣列長度",generalHours.value.length)
+
   sidebarType.value = 'general';
   // editingDay.value = day; // 傳遞正在編輯的日期
   isSidebarVisible.value = true;
@@ -95,13 +105,23 @@ const hideNotification = () => {
 // 處理一般營業時間的保存
 const handleSaveGeneralHours = (updatedHours) => {
   // generalHours.value = { ...generalHours.value, ...updatedHours };
+  axios.put(`/api/stores/${storeid.value}/hours/saveAll`, updatedHours)
+  .then((res)=>{
+    // console.log(res.data) 
+    showToast('一般營業時間已更新！', 'success'); 
+    findOpenHours(storeid.value)
+  }).catch((error)=>{
+    console.log(error);
+  })
+
   closeSidebar();
-  showToast('一般營業時間已更新！', 'success');
+  
 };
 
 // 處理特殊營業時間的保存
 const handleSaveSpecialHours = (newRecord) => {
   // specialHoursRecords.value.push(newRecord); // 簡單添加，實際應用中可能需要更複雜的邏輯
+  console.log(newRecord)
   closeSidebar();
   showToast('特殊營業時間已新增！', 'success'); // 顯示成功提示
 };
@@ -144,7 +164,13 @@ onMounted(() => {
               <ul class="list-unstyled mb-0">
                 <li v-for="(time) in generalHours" :key="time.id" class="d-flex justify-content-between align-items-center py-2 border-bottom">
                   <span class="fw-bold text-capitalize">{{ time.dayName }}</span>
-                  <span>{{ time.openTimeStr }} 至 {{ time.closeTimeStr }}</span>
+                  <div v-if="time.isOpen">
+                    <span>{{ time.openTimeStr }} 至 {{ time.closeTimeStr }}</span>
+                  </div>
+                  <div v-else>
+                    <span>未營業</span>
+                  </div>
+                  
                 </li>
               </ul>
             </div>

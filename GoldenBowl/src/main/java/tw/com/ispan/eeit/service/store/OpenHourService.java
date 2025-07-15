@@ -2,7 +2,9 @@ package tw.com.ispan.eeit.service.store;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -18,7 +20,6 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.repository.store.OpenHourRepository;
 import tw.com.ispan.eeit.repository.store.SpecialHoursRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
-import tw.com.ispan.eeit.util.DatetimeConvert;
 
 @Service
 @Transactional
@@ -33,148 +34,130 @@ public class OpenHourService {
 	@Autowired
 	private SpecialHoursRepository specialHoursRepo;
 
-	/**
-	 * 新增一個營業時間設定。
-	 * 將 DTO 轉換為 Bean，並處理 StoreBean 關聯，然後儲存。
-	 * 
-	 * @param openHourDTO 包含營業時間資訊的 DTO 物件。
-	 * @return 儲存成功後轉換回的 OpenHourDTO 物件，如果商店不存在則返回 null。
-	 */
-	public OpenHourBean create(OpenHourDTO openHourDTO) {
-		if (openHourDTO == null || openHourDTO.getStoreId() == null) {
-			System.err.println("OpenHourDTO 或 StoreId 為空，無法新增。");
-			return null;
-		}
 
-		// 1. 根據 storeId 查詢 StoreBean
-		Optional<StoreBean> storeOptional = storeRepo.findById(openHourDTO.getStoreId());
-		if (storeOptional.isEmpty()) {
-			System.err.println("找不到對應的商店，Store ID: " + openHourDTO.getStoreId());
-			return null; // 或者拋出一個自定義異常
-		}
-		StoreBean storeBean = storeOptional.get();
-
-		// 2. 將 OpenHourDTO 轉換為 OpenHourBean
-		// 注意：OpenHourDTO.toBean 方法中，我們只會設置一個帶有 ID 的 StoreBean "空殼"，
-		// 這裡需要將查詢到的完整 StoreBean 設置進去。
-		OpenHourBean openHourBean = OpenHourDTO.toBean(openHourDTO);
-		openHourBean.setStore(storeBean); // 設定正確的 StoreBean 關聯
-
-		// 3. 儲存 OpenHourBean
-		OpenHourBean savedBean = openHourRepo.save(openHourBean);
-
-		// 4. 將儲存後的 Bean 轉換回 DTO 並返回
-		return openHourRepo.save(openHourBean);
-	}
-
-	// 查詢所有營業時間
-	@Transactional(readOnly = true)
-	public List<OpenHourDTO> findAll() {
-		List<OpenHourBean> openHourBeans = openHourRepo.findAll();
-		return openHourBeans.stream()
-				.map(OpenHourDTO::toDto)
-				.collect(Collectors.toList());
-	}
-
-	// 查詢店家所有營業時間
-	@Transactional(readOnly = true)
-	public List<OpenHourDTO> findByStoreId(Integer storeId) {
-		if (storeId == null) {
-			return List.of(); // 返回空列表
-		}
-		// 假設 OpenHourRepository 有 findByStore_Id 方法 (根據 JPA 命名規範)
-		List<OpenHourBean> openHourBeans = openHourRepo.findByStoreId(storeId);
-		return openHourBeans.stream()
-				.map(OpenHourDTO::toDto)
-				.collect(Collectors.toList());
-	}
-
-	/**
-	 * 更新一個現有的營業時間設定。
-	 * 
-	 * @param openHourDTO 包含更新資訊的 DTO 物件。
-	 * @return 更新成功後轉換回的 OpenHourDTO 物件，如果找不到或商店不存在則返回 null。
-	 */
-	public OpenHourDTO update(OpenHourDTO openHourDTO) {
-		if (openHourDTO == null || openHourDTO.getId() == null) {
-			System.err.println("OpenHourDTO 或 ID 為空，無法更新。");
-			return null;
-		}
-
-		// 1. 檢查要更新的 Bean 是否存在
-		Optional<OpenHourBean> existingOpenHourOptional = openHourRepo.findById(openHourDTO.getId());
-		if (existingOpenHourOptional.isEmpty()) {
-			System.err.println("找不到要更新的營業時間設定，ID: " + openHourDTO.getId());
-			return null;
-		}
-		OpenHourBean existingBean = existingOpenHourOptional.get();
-
-		// 2. 處理 StoreBean 關聯 (如果 DTO 中提供了新的 storeId)
-		if (openHourDTO.getStoreId() != null && !openHourDTO.getStoreId().equals(existingBean.getStore().getId())) {
-			Optional<StoreBean> newStoreOptional = storeRepo.findById(openHourDTO.getStoreId());
-			if (newStoreOptional.isEmpty()) {
-				System.err.println("更新時找不到新的商店，Store ID: " + openHourDTO.getStoreId());
-				return null; // 或者拋出自定義異常
-			}
-			existingBean.setStore(newStoreOptional.get());
-		}
-
-		// 3. 更新 Bean 的其他屬性
-		// 這裡手動更新屬性，或者可以再次呼叫 OpenHourDTO.toBean(openHourDTO) 並複製屬性，
-		// 但對於更新操作，通常建議手動複製以避免意外覆蓋。
-		existingBean.setDayOfWeek(openHourDTO.getDayOfWeek());
-
-		// 處理 LocalTime 的更新，確保即使為 null 也能正確設定
-		if (openHourDTO.getOpenTime() != null) {
-			existingBean.setOpenTime(openHourDTO.getOpenTime());
-		} else if (openHourDTO.getOpenTimeStr() != null && !openHourDTO.getOpenTimeStr().isEmpty()) {
-			existingBean.setOpenTime(DatetimeConvert.parseLocalTime(openHourDTO.getOpenTimeStr(), "HH:mm"));
-		} else {
-			existingBean.setOpenTime(null);
-		}
-
-		if (openHourDTO.getCloseTime() != null) {
-			existingBean.setCloseTime(openHourDTO.getCloseTime());
-		} else if (openHourDTO.getCloseTimeStr() != null && !openHourDTO.getCloseTimeStr().isEmpty()) {
-			existingBean.setCloseTime(DatetimeConvert.parseLocalTime(openHourDTO.getCloseTimeStr(), "HH:mm"));
-		} else {
-			existingBean.setCloseTime(null);
-		}
-
-		// 4. 儲存更新後的 Bean
-		OpenHourBean updatedBean = openHourRepo.save(existingBean);
-
-		// 5. 將更新後的 Bean 轉換回 DTO 並返回
-		return OpenHourDTO.toDto(updatedBean);
-	}
-
-	/**
-	 * 根據 ID 刪除一個營業時間設定。
-	 * 
-	 * @param id 要刪除的營業時間的 ID。
-	 * @return 如果刪除成功則返回 true，否則返回 false。
-	 */
-	public boolean delete(Integer id) {
-		if (id == null) {
-			System.err.println("刪除 ID 為空。");
-			return false;
-		}
-		if (openHourRepo.existsById(id)) {
-			openHourRepo.deleteById(id);
-			return true;
-		}
-		System.err.println("找不到要刪除的營業時間設定，ID: " + id);
-		return false;
-	}
-
+	
+	
+	
 	// ---------------------------------------------------------
 	/**
 	 * 為餐廳設定營業時間
 	 */
 	public OpenHourBean setOpenHour(Integer storeId, DayOfWeek day, String openTime, String closeTime) {
+		StoreBean store = storeRepo.findById(storeId)
+				.orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+		
 		return setOpenHour(storeId, day, openTime, closeTime, true);
 	}
+	
+	 public OpenHourBean updateOpenHour(OpenHourDTO hourDto) {
+	        // 1. 根據 hourDto 中的 storeId 查找 StoreBean
+	        // 假設 hourDto 裡有 storeId 屬性，並且是更新現有 OpenHour，所以需要找到關聯的 Store。
+	        // 如果是新增操作，且 storeId 是必需的，則也需要這個查找。
+	        StoreBean store = storeRepo.findById(hourDto.getStoreId()) // 使用 getStoreId() 查找 StoreBean
+	                .orElseThrow(() -> new ResourceNotFoundException("Store not found with ID: " + hourDto.getStoreId()));
 
+	        OpenHourBean existingOpenHour;
+
+	        if (hourDto.getId() != null) {
+	            // 2. 如果 DTO 提供了 ID，則嘗試查找現有的 OpenHourBean
+	            existingOpenHour = openHourRepo.findById(hourDto.getId())
+	                    .orElseThrow(() -> new ResourceNotFoundException("OpenHour not found with ID: " + hourDto.getId()));
+
+	            // 3. 更新現有 OpenHourBean 的屬性
+	            // 使用 Mapper 將 DTO 的值賦給現有的 Bean
+	            // 注意：Mapper 中的 toBean 方法會根據 isOpen 設置 openTime 和 closeTime 為 null
+	            OpenHourBean updatedOpenHour = OpenHourDTO.toBean(hourDto); // Mapper 轉換會產生新的實例或更新
+	            
+	            // 將 DTO 中的可變屬性複製到現有 Bean
+	            existingOpenHour.setDayOfWeek(updatedOpenHour.getDayOfWeek());
+	            existingOpenHour.setOpenTime(updatedOpenHour.getOpenTime());
+	            existingOpenHour.setCloseTime(updatedOpenHour.getCloseTime());
+	            
+	            // 4. 保存更新後的 Bean
+	            return openHourRepo.save(existingOpenHour);
+
+	        } else {
+	            // 如果 hourDto.getId() 為 null，這表示可能是新增操作而不是更新
+	            // 在這種情況下，你可以創建一個新的 OpenHourBean 並保存
+	            OpenHourBean newOpenHour = OpenHourDTO.toBean(hourDto);
+	            return openHourRepo.save(newOpenHour);
+	            // 或者如果你這個方法只用於更新，可以在這裡拋出異常
+	            // throw new IllegalArgumentException("OpenHour ID must be provided for update operation.");
+	        }
+	    }
+	 
+	    public List<OpenHourBean> saveAllOpenHours(List<OpenHourDTO> hourDtos) {
+	        if (hourDtos == null || hourDtos.isEmpty()) {
+	            // 如果列表為空，可以選擇返回空列表或拋出異常
+	            return new ArrayList<>();
+	            // throw new IllegalArgumentException("OpenHour DTO list cannot be empty.");
+	        }
+
+	        // 1. 獲取關聯的 StoreBean
+	        // 我們假設列表中的所有 DTO 都屬於同一個 storeId。
+	        // 可以從第一個 DTO 中獲取 storeId。
+	        Integer storeId = hourDtos.get(0).getStoreId();
+	        if (storeId == null) {
+	            throw new IllegalArgumentException("Store ID is required for saving open hours.");
+	        }
+
+	        StoreBean store = storeRepo.findById(storeId)
+	                .orElseThrow(() -> new ResourceNotFoundException("Store not found with ID: " + storeId));
+
+	        // 2. 從資料庫中獲取該店鋪現有的所有營業時間，並按星期幾進行映射，便於查找
+	        List<OpenHourBean> existingOpenHours = openHourRepo.findByStore(store); // 假設你有這個查詢方法
+	        // 將現有營業時間按 DayOfWeek 映射，以便快速查找
+	        Map<DayOfWeek, OpenHourBean> existingHoursMap = existingOpenHours.stream()
+	                .collect(Collectors.toMap(OpenHourBean::getDayOfWeek, openHour -> openHour));
+
+	        List<OpenHourBean> beansToSave = new ArrayList<>(); // 最終要保存的 Bean 列表
+
+	        // 3. 遍歷傳入的 DTO 列表，判斷是更新還是新增
+	        for (OpenHourDTO dto : hourDtos) {
+	            if (dto.getStoreId() == null || !dto.getStoreId().equals(storeId)) {
+	                // 防禦性編程：確保列表中所有 DTO 的 storeId 一致
+	                throw new IllegalArgumentException("All OpenHour DTOs in the list must belong to the same store.");
+	            }
+
+	            // 嘗試根據 DayOfWeek 查找現有的 Bean
+	            OpenHourBean existingBean = existingHoursMap.get(dto.getDayOfWeek());
+
+	            if (existingBean != null) {
+	                // 如果找到現有的 Bean，則更新其屬性
+	                // 使用 Mapper 轉換 DTO 以獲取更新後的 LocalTime 值
+	                OpenHourBean tempBean = OpenHourDTO.toBean(dto); // Mapper 轉換的目的是獲取 LocalTime
+
+	                // 更新現有 Bean 的可變屬性
+	                existingBean.setOpenTime(tempBean.getOpenTime());
+	                existingBean.setCloseTime(tempBean.getCloseTime());
+	                // ID 和 Store 關聯通常不變
+	                beansToSave.add(existingBean); // 將更新後的現有 Bean 加入待保存列表
+	            } else {
+	                // 如果沒有找到現有的 Bean，則創建一個新的
+	                OpenHourBean newBean = OpenHourDTO.toBean(dto);
+	                newBean.setId(null); // 確保是新記錄，ID 由資料庫生成
+	                beansToSave.add(newBean); // 將新 Bean 加入待保存列表
+	            }
+	        }
+	        // 4. 清理：處理那些在 DTO 列表中不再存在的營業時間 (可選，但推薦)
+	        // 這一步是為了刪除前端傳來列表中不再包含的營業時間（例如某天從營業改為不營業，且資料庫中是獨立的記錄）
+	        // 或者，如果 "isOpen = false" 意味著刪除記錄而不是設置時間為 null，則需要單獨處理
+	        // 這裡的邏輯是：所有在 `existingHoursMap` 中但不在 `hourDtos` 中的 DayOfWeek 應該被刪除。
+	        List<DayOfWeek> incomingDayOfWeeks = hourDtos.stream()
+	                .map(OpenHourDTO::getDayOfWeek)
+	                .collect(Collectors.toList());
+	        List<OpenHourBean> beansToDelete = existingOpenHours.stream()
+	                .filter(bean -> !incomingDayOfWeeks.contains(bean.getDayOfWeek()))
+	                .collect(Collectors.toList());
+	        if (!beansToDelete.isEmpty()) {
+	            openHourRepo.deleteAll(beansToDelete); // 批量刪除
+	        }
+	        // 5. 執行批量保存操作
+	        return openHourRepo.saveAll(beansToSave);
+	    }
+	
+	
+	
 	/**
 	 * 為餐廳設定營業時間 (包含是否營業選項)
 	 */
@@ -396,49 +379,7 @@ public class OpenHourService {
 		return isClosedDay(storeId, date.getDayOfWeek());
 	}
 
-	/**
-	 * 設定特殊營業時間
-	 */
-	public SpecialHoursBean setSpecialHours(Integer storeId, LocalDate date, String openTime, String closeTime,
-			Boolean isClose) {
-		StoreBean store = storeRepo.findById(storeId)
-				.orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-
-		// 檢查是否已存在設定
-		Optional<SpecialHoursBean> existingSpecial = specialHoursRepo.findByStoreIdAndDate(storeId, date);
-
-		SpecialHoursBean specialHours;
-		if (existingSpecial.isPresent()) {
-			specialHours = existingSpecial.get();
-		} else {
-			specialHours = new SpecialHoursBean();
-			specialHours.setStore(existingSpecial.get().getStore());
-			specialHours.setDate(date);
-		}
-
-		// 設定特殊營業時間
-		if (isClose != null) {
-			specialHours.setIsClose(isClose);
-		}
-		if (openTime != null && !openTime.trim().isEmpty()) {
-			specialHours.setOpenTime(java.time.LocalTime.parse(openTime));
-		}
-		if (closeTime != null && !closeTime.trim().isEmpty()) {
-			specialHours.setCloseTime(java.time.LocalTime.parse(closeTime));
-		}
-
-		return specialHoursRepo.save(specialHours);
-	}
-
-	/**
-	 * 刪除特殊營業時間設定
-	 */
-	public void deleteSpecialHours(Integer specialHoursId) {
-		if (!specialHoursRepo.existsById(specialHoursId)) {
-			throw new ResourceNotFoundException("Special hours not found");
-		}
-		specialHoursRepo.deleteById(specialHoursId);
-	}
+	
 
 	/**
 	 * 取得餐廳的完整營業時間資訊（包括公休日）

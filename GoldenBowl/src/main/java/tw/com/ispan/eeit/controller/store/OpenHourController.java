@@ -12,16 +12,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.exception.ResourceNotFoundException;
 import tw.com.ispan.eeit.model.dto.store.OpenHourDTO;
-import tw.com.ispan.eeit.model.dto.store.SpecialHoursDTO;
 import tw.com.ispan.eeit.model.dto.store.StoreOpenStatusDTO;
 import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
-import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 import tw.com.ispan.eeit.service.store.OpenHourService;
 
 @RestController
@@ -56,7 +55,10 @@ public class OpenHourController {
             return ResponseEntity.notFound().build();
         }
     }
-
+    
+        
+    
+    
     /**
      * 取得餐廳的營業時間設定 (完整版本，包含所有關聯資料)
      */
@@ -95,7 +97,7 @@ public class OpenHourController {
      * 設定餐廳的營業時間
      */
     @PostMapping
-    public ResponseEntity<OpenHourDTO> setOpenHour(
+    public ResponseEntity<OpenHourDTO> createOpenHour(
             @PathVariable Integer storeId,
             @RequestParam DayOfWeek day,
             @RequestParam(required = false) String openTime,
@@ -244,12 +246,38 @@ public class OpenHourController {
 
     // ========== 特殊營業時間相關 API ==========
 
-    /**
-     * 取得餐廳的特殊營業時間設定
-     */
+    @PutMapping("/saveAll") // 使用 PUT 來表示整個資源的更新或替換
+    public ResponseEntity<List<OpenHourBean>> saveAll(
+            @PathVariable Integer storeId,
+            @RequestBody List<OpenHourDTO> dtoList) {
 
-    /**
-     * 設定特殊營業時間
-     */
+        // 1. 數據一致性檢查：確保所有 DTO 中的 storeId 與 PathVariable 中的 storeId 一致
+        for (OpenHourDTO dto : dtoList) {
+            // 如果 DTO 的 storeId 不存在或者與路徑中的 storeId 不匹配，則返回錯誤
+            if (dto.getStoreId() == null || !dto.getStoreId().equals(storeId)) {
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 返回 400 Bad Request
+            }
+        }
+
+        try {
+            // 2. 調用 Service 層的方法來處理批量保存邏輯
+            List<OpenHourBean> savedHours = openHourService.saveAllOpenHours(dtoList);
+
+            // 3. 返回成功響應和保存後的數據
+            return new ResponseEntity<>(savedHours, HttpStatus.OK); // 返回 200 OK
+
+        } catch (ResourceNotFoundException e) {
+            // 4. 處理店家未找到的異常
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND); // 返回 404 Not Found
+        } catch (IllegalArgumentException e) {
+            // 5. 處理業務邏輯中的無效參數異常 (例如 DTO 列表為空)
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST); // 返回 400 Bad Request
+        } catch (Exception e) {
+            // 6. 捕獲其他未預期的異常
+            // 實際應用中應該更詳細地記錄錯誤日誌
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR); // 返回 500 Internal Server Error
+        }
+    }
+
 
 }
