@@ -23,11 +23,13 @@ public interface OpenHourRepository extends JpaRepository<OpenHourBean, Integer>
         /**
          * 根據餐廳查詢營業時間
          */
-        
+
         List<OpenHourBean> findByStore(StoreBean store);
 
         List<OpenHourBean> findByStoreOrderByDayAsc(StoreBean store);
+
         List<OpenHourBean> findByStoreOrderByDayDesc(StoreBean store);
+
         /**
          * 根據餐廳ID和星期查詢營業時間
          */

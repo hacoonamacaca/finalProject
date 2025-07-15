@@ -17,8 +17,6 @@ public class SpecialHoursService {
 	@Autowired
 	private SpecialHoursRepository specialHoursRepository;
 
-
-
 	/**
 	 * 設定特殊休假日
 	 */
@@ -37,9 +35,10 @@ public class SpecialHoursService {
 		specialHours.setIsClose(true);
 		specialHours.setOpenTime(null);
 		specialHours.setCloseTime(null);
-		SpecialHoursBean saved = specialHoursRepository.save(specialHours);	
+		SpecialHoursBean saved = specialHoursRepository.save(specialHours);
 		return saved;
 	}
+
 	/**
 	 * 設定特殊營業時間
 	 */
@@ -62,6 +61,7 @@ public class SpecialHoursService {
 		SpecialHoursBean saved = specialHoursRepository.save(specialHours);
 		return saved;
 	}
+
 	/**
 	 * 取消特殊設定，恢復正常營業
 	 */
@@ -72,7 +72,7 @@ public class SpecialHoursService {
 			specialHoursRepository.delete(existingOpt.get());
 
 			// 重新生成該日期的時段（按正常營業時間）
-		
+
 			System.out.println("取消特殊設定 " + date + "，恢復正常營業時間");
 			return true;
 		}
@@ -127,7 +127,6 @@ public class SpecialHoursService {
 		return specialHours.isPresent() && !specialHours.get().getIsClose() &&
 				specialHours.get().getOpenTime() != null && specialHours.get().getCloseTime() != null;
 	}
-
 
 	/**
 	 * 取得特殊設定的摘要資訊

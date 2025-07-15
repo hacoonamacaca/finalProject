@@ -12,8 +12,8 @@ import tw.com.ispan.eeit.util.DatetimeConvert;
 @Data
 @NoArgsConstructor
 public class OpenHourDTO {
-	
-	 // 時間格式定義，與資料庫的 TIME(0) 匹配
+
+    // 時間格式定義，與資料庫的 TIME(0) 匹配
     private static final String TIME_FORMAT = "HH:mm";
 
     private Integer id;
@@ -72,10 +72,10 @@ public class OpenHourDTO {
                 return dayOfWeek.toString();
         }
     }
-    
-    
+
     /**
      * 將 OpenHourBean 轉換為 OpenHourDTO。
+     * 
      * @param bean OpenHourBean 物件
      * @return 轉換後的 OpenHourDTO 物件
      */
@@ -86,13 +86,12 @@ public class OpenHourDTO {
 
         // 使用 DTO 提供的完整建構子來初始化屬性，可以利用內部邏輯設定 openTimeStr, closeTimeStr, isOpen, dayName
         OpenHourDTO dto = new OpenHourDTO(
-            bean.getId(),
-            bean.getStore() != null ? bean.getStore().getId() : null, // 獲取 storeId
-            bean.getDayOfWeek(), // 獲取 DayOfWeek 枚舉
-            bean.getOpenTime(),
-            bean.getCloseTime()
-        );
-        
+                bean.getId(),
+                bean.getStore() != null ? bean.getStore().getId() : null, // 獲取 storeId
+                bean.getDayOfWeek(), // 獲取 DayOfWeek 枚舉
+                bean.getOpenTime(),
+                bean.getCloseTime());
+
         // 如果Bean中的openTime和closeTime都為null，表示休息，則isOpen為false，openTimeStr和closeTimeStr為空
         // 否則，isOpen為true，時間字串已在建構子中設定
         if (bean.getOpenTime() == null && bean.getCloseTime() == null) {
@@ -111,6 +110,7 @@ public class OpenHourDTO {
     /**
      * 將 OpenHourDTO 轉換為 OpenHourBean。
      * 注意：StoreBean 的設置通常應在 Service 層完成資料庫查詢，此處僅設置 Store ID。
+     * 
      * @param dto OpenHourDTO 物件
      * @return 轉換後的 OpenHourBean 物件
      */
@@ -143,7 +143,7 @@ public class OpenHourDTO {
         } else {
             bean.setCloseTime(null);
         }
-        
+
         // 處理 StoreBean 的設置：
         // 在 DTO 層，我們只能根據 storeId 創建一個 "空殼" 的 StoreBean。
         // 真正的 StoreBean 實例（例如從資料庫查詢獲得的持久化實例）

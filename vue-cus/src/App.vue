@@ -1,9 +1,10 @@
 <template>
   <Navigation v-if="$route.path !== '/'" />
-
-  <div>
-    <RouterView></RouterView>
-  </div>
+  
+    
+    <div>
+      <RouterView></RouterView>
+    </div>
 </template>
 <!-- 在 index.html 加 -->
 

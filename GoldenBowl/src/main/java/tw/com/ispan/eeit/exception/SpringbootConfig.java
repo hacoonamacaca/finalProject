@@ -15,7 +15,8 @@ public class SpringbootConfig implements WebMvcConfigurer {
                 registry.addMapping("/api/users/**")
                                 .allowedMethods("GET", "POST", "PUT", "DELETE");
                 registry.addMapping("/**")
-                                .allowedOrigins("http://localhost:5173", "http://localhost:8080")
+                                .allowedOrigins("http://localhost:5173", "http://localhost:5174",
+                                                "http://localhost:5175", "http://localhost:8080")
                                 .allowedMethods("GET", "POST", "PUT", "DELETE");
                 registry.addMapping("/**")
                 				.allowedOrigins("http://localhost:5174", "http://localhost:8080")

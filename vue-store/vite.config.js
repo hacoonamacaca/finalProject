@@ -1,6 +1,11 @@
-import { fileURLToPath, URL } from 'node:url'
+import {
+  fileURLToPath,
+  URL
+} from 'node:url'
 
-import { defineConfig } from 'vite'
+import {
+  defineConfig
+} from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
@@ -15,10 +20,13 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-    define: {
-      // 新增加整個deinfe 0713 ted
-    // 將 'global' 關鍵字替換為 'window'
-    // 'global' 必須是字串形式
-    'global': 'window',
-  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        secure: false
+      }
+    }
+  }
 })

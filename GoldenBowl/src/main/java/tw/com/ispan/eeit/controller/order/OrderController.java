@@ -25,21 +25,20 @@ import tw.com.ispan.eeit.service.order.OrderService;
 public class OrderController {
 
     private final OrderDetailController orderDetailController;
-    
-  
-    private OrderService orderService;
-   
-    private UserService userService;
-    
-    public OrderController(OrderDetailController orderDetailController, OrderService orderService,
-			UserService userService) {
-		super();
-		this.orderDetailController = orderDetailController;
-		this.orderService = orderService;
-		this.userService = userService;
-	}
 
-	// 創建新訂單
+    private OrderService orderService;
+
+    private UserService userService;
+
+    public OrderController(OrderDetailController orderDetailController, OrderService orderService,
+            UserService userService) {
+        super();
+        this.orderDetailController = orderDetailController;
+        this.orderService = orderService;
+        this.userService = userService;
+    }
+
+    // 創建新訂單
     @PostMapping
     // 修改參數為 OrderDTO
     public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orderDTO) {
@@ -67,13 +66,11 @@ public class OrderController {
         return ResponseEntity.ok(orders);
     }
 
-
-
-    // 更新訂單狀態  
+    // 更新現有訂單
     @PutMapping("/status/{id}")
     public ResponseEntity<OrderBean> updateOrderStatus(@PathVariable Integer id, @RequestBody OrderDTO order) {
-    	System.out.println(order.getId());
-    	System.out.println(order.getContent());
+        System.out.println(order.getId());
+        System.out.println(order.getContent());
         return orderService.updateOrderStatus(id, order)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -87,8 +84,8 @@ public class OrderController {
         }
         return ResponseEntity.notFound().build(); // 404 Not Found
     }
-    
-    // 根據用戶 ID 獲取訂單列表 
+
+    // 根據用戶 ID 獲取訂單列表
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<OrderDTO>> getOrdersByUserId(@PathVariable Integer userId) {
         List<OrderDTO> orders = orderService.findOrdersByUserId(userId);
@@ -97,51 +94,44 @@ public class OrderController {
         }
         return ResponseEntity.ok(orders);
     }
-    
-	    
-	//	尋找歷史訂單(使用者)
-	@GetMapping("/user/history/{userId}")
-	public ResponseEntity<List<OrderDTO>> getHistoryOrdersByUserId
-	(@PathVariable Integer userId) {
-	//	JSONObject obj = new JSONObject(body);
-	//	String status = obj.isNull("status") ? "" : obj.getString("status");
-	//	System.out.println(status);
-		
-	    List<OrderDTO> orders = orderService.findHistoryByUserId(userId);
-	    if (orders.isEmpty()) {
-	        return ResponseEntity.noContent().build();
-	    }
-	    return ResponseEntity.ok(orders);
-	}
 
-	//	尋找未完成的訂單(使用者)
-	@GetMapping("/user/uncomplete/{userId}")
-	public ResponseEntity<List<OrderDTO>> getUncompleteOrdersByUserId
-	(@PathVariable Integer userId) {
-	//	JSONObject obj = new JSONObject(body);
-	//	String status = obj.isNull("status") ? "" : obj.getString("status");
-	//	System.out.println(status);
-		
-	    List<OrderDTO> orders = orderService.findUncompleteByUserId(userId);
-	    if (orders.isEmpty()) {
-	        return ResponseEntity.noContent().build();
-	    }
-	    return ResponseEntity.ok(orders);
-	}
-	
-	@GetMapping("/store/{storeId}")
-	public ResponseEntity<List<OrderDTO>> getOrderByStoreId(@PathVariable Integer storeId){
-		 List<OrderDTO> orders = orderService.findOrderByStoreId(storeId);
-		    if (orders.isEmpty()) {
-		        return ResponseEntity.noContent().build();
-		    }
-		
-		return ResponseEntity.ok(orders);
-//		return ResponseEntity.ok(orders);
-	}
-    
-    
-    
-    
-    
+    // 尋找歷史訂單(使用者)
+    @GetMapping("/user/history/{userId}")
+    public ResponseEntity<List<OrderDTO>> getHistoryOrdersByUserId(@PathVariable Integer userId) {
+        // JSONObject obj = new JSONObject(body);
+        // String status = obj.isNull("status") ? "" : obj.getString("status");
+        // System.out.println(status);
+
+        List<OrderDTO> orders = orderService.findHistoryByUserId(userId);
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(orders);
+    }
+
+    // 尋找未完成的訂單(使用者)
+    @GetMapping("/user/uncomplete/{userId}")
+    public ResponseEntity<List<OrderDTO>> getUncompleteOrdersByUserId(@PathVariable Integer userId) {
+        // JSONObject obj = new JSONObject(body);
+        // String status = obj.isNull("status") ? "" : obj.getString("status");
+        // System.out.println(status);
+
+        List<OrderDTO> orders = orderService.findUncompleteByUserId(userId);
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<List<OrderDTO>> getOrderByStoreId(@PathVariable Integer storeId) {
+        List<OrderDTO> orders = orderService.findOrderByStoreId(storeId);
+        if (orders.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(orders);
+        // return ResponseEntity.ok(orders);
+    }
+
 }

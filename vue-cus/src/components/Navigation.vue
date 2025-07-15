@@ -36,7 +36,7 @@
 
         <div class="nav-item" style="position: relative;">
           <button class="btn position-relative" style="background: transparent; border: none;"
-            @click="toggleNotification" title="優惠通知">
+            @click.stop="toggleNotification" title="優惠通知">
             <i class="bi bi-bell-fill text-white"></i>
             <span v-if="unreadCount > 0"
               class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
@@ -178,6 +178,8 @@ const handleConfirmCheckout = (restaruantId,orderData) => {
     console.error('訂單送出失敗', error);
   })
 
+
+
   console.log('ajax使用',order)
  
   Swal.fire({
@@ -221,7 +223,9 @@ const toggleMenu = () => {
 
 // 優惠通知邏輯 (保持不變)
 const isNotificationOpen = ref(false)
-const toggleNotification = () => isNotificationOpen.value = !isNotificationOpen.value
+const toggleNotification = () => {
+  isNotificationOpen.value = !isNotificationOpen.value;
+}
 
 const notifications = ref([
   { id: 1, title: '🎁 全站85折限時優惠', date: '2025-06-30', is_read: false },

@@ -12,6 +12,14 @@ const userStore = useUserStore(); // 實例化 userStore
 const router = useRouter();
 const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
 
+// 格式化日期時間顯示
+const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return '';
+    const date = new Date(dateTimeString);
+    return date.toLocaleString(); // 根據用戶本地設置格式化日期時間
+};
+
+
 
 /**
  * 從後端獲取用戶訂單列表
@@ -114,7 +122,7 @@ const goToOrderDetail = (orderId) => {
           </h4>
         </div>
         <p class="mb-2 text-muted small">
-          訂購時間: {{ order.createTime }}
+          訂購時間: {{ formatDateTime(order.createTime) }}
         </p>
 
         <div class="mb-3">
@@ -153,8 +161,6 @@ const goToOrderDetail = (orderId) => {
   border: 1px solid #e0e0e0; /* 淺灰色邊框 */
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* 柔和的陰影 */
   transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加過渡效果 */
-  cursor: pointer; /* ted */
-  /* 新增這一行，讓滑鼠懸停時顯示手形游標 0715*/ 
 }
 
 

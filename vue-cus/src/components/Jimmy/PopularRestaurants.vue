@@ -24,7 +24,7 @@
   </section>
   <section class="popular-section" v-else-if="locationStore.address && restaurants.length === 0">
     <h2>附近熱門美食</h2>
-    <p class="no-restaurants-message">目前沒有附近熱門餐廳。</p>
+    <p class="no-restaurants-message">附近沒有符合條件的餐廳。</p>
   </section>
   <section class="popular-section" v-else>
     <h2>附近熱門美食</h2>

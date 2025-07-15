@@ -247,11 +247,9 @@ public class OpenHourController {
     /**
      * 取得餐廳的特殊營業時間設定
      */
-   
 
     /**
      * 設定特殊營業時間
      */
-   
-  
+
 }

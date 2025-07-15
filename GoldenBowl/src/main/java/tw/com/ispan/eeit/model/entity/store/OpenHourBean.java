@@ -1,12 +1,13 @@
 package tw.com.ispan.eeit.model.entity.store;
 
 import java.time.DayOfWeek;
+import java.time.DayOfWeek;
 import java.time.LocalTime;
-
-import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -23,10 +24,11 @@ import tw.com.ispan.eeit.util.DatetimeConvert;
 @Data
 @NoArgsConstructor
 public class OpenHourBean {
-	   // 時間格式定義，與資料庫的 TIME(0) 匹配
-    private static final String TIME_FORMAT = "HH:mm";
-	
+	// 時間格式定義，與資料庫的 TIME(0) 匹配
+	private static final String TIME_FORMAT = "HH:mm";
+
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Integer id;
@@ -49,10 +51,6 @@ public class OpenHourBean {
 	// @Column(name = "is_open", nullable = false)
 	// private Boolean isOpen = true;
 
-	
-	
-	
-	
 	/**
 	 * 取得 DayOfWeek 枚舉值
 	 */
@@ -68,7 +66,5 @@ public class OpenHourBean {
 		// 將 DayOfWeek 轉換為數字（SUNDAY=0, MONDAY=1, ..., SATURDAY=6）
 		this.day = dayOfWeek.getValue() == 7 ? 0 : dayOfWeek.getValue();
 	}
-	
-	
 
 }

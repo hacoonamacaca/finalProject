@@ -1,12 +1,16 @@
 package tw.com.ispan.eeit.model.entity.store;
 
 import java.time.LocalDate;
+
+import java.time.LocalDate;
 import java.time.LocalTime;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -24,6 +28,7 @@ public class SpecialHoursBean {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "id")
 	private Integer id;
 
@@ -36,13 +41,10 @@ public class SpecialHoursBean {
 	private LocalTime closeTime;
 	@Column(name = "is_close")
 	private Boolean isClose;
-	
-	
+
 	@ManyToOne
-	@JoinColumn(name="store_id")
+	@JoinColumn(name = "store_id")
 	@JsonBackReference
 	private StoreBean store;
-	
-	
-	
+
 }
