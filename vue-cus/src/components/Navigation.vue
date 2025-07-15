@@ -170,12 +170,13 @@ const handleConfirmCheckout = (restaruantId,orderData) => {
 
   const order =cartStore.checkoutSingleRestaurant(restaruantId)
   // 寫上ajax
-  axios.post('/api/orders', order)
-
-
-
-
-
+  axios.post('/api/orders', order).then((response) => {
+    // 請求成功的處理邏輯
+    console.log('訂單已成功送出', response.data);
+  }).catch((error) => {
+    // 請求失敗的處理邏輯
+    console.error('訂單送出失敗', error);
+  })
 
 
 
