@@ -3,13 +3,29 @@ import { ref } from 'vue';
 
 const emit = defineEmits(['close', 'save']);
 
-const recordType = ref('specific'); // 'specific' for 特定日期, 'range' for 日期範圍
-const specificDate = ref('');
-const startDate = ref('');
-const endDate = ref('');
-const isClosedAllDay = ref(false); // 全日關閉開關
-const startTime = ref('10:00');
-const endTime = ref('14:00');
+// 確保月份和日期始終是兩位數的格式化函數
+const getFormattedDate = (date) => {
+  const year = date.getFullYear();
+  // 月份從 0 開始，所以要加 1
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 補零，例如 7 -> 07
+  const day = String(date.getDate()).padStart(2, '0');     // 補零，例如 6 -> 06
+  return `${year}-${month}-${day}`;
+};
+
+const today = new Date(); // 取得當前日期
+
+
+const specialHoursList = ref({
+  recordType: 'specific',
+  specificDate:  getFormattedDate(today),
+  startDate:  getFormattedDate(today),
+  endDate: '',
+  isClose: false,
+  openTime: '08:00',
+  closeTime: '17:00',
+});
+
+
 
 // 時間選項（分鐘，以 15 分鐘為間隔，用於下拉選單）
 const timeOptions = ref([]);
@@ -28,30 +44,22 @@ timeOptions.value = generateTimeOptions();
 
 // 保存更改
 const saveChanges = () => {
+  console.log(specialHoursList.value)
   let newRecord = {};
-  if (recordType.value === 'specific') {
-    if (!specificDate.value) {
+  if (specialHoursList.value.recordType === 'specific') {
+    if (!specialHoursList.value.specificDate) {
       alert('請選擇特定日期！'); // 使用自定義提示框替代
       return;
     }
-    newRecord = {
-      type: 'specific',
-      date: specificDate.value,
-      time: isClosedAllDay.value ? '關閉' : `${startTime.value} 至 ${endTime.value}`,
-    };
+ 
   } else {
-    if (!startDate.value || !endDate.value) {
+    if (!specialHoursList.value.startDate || !specialHoursList.value.endDate) {
       alert('請選擇日期範圍！'); // 使用自定義提示框替代
       return;
     }
-    newRecord = {
-      type: 'range',
-      startDate: startDate.value,
-      endDate: endDate.value,
-      time: isClosedAllDay.value ? '關閉' : `${startTime.value} - ${endTime.value}`,
-    };
+
   }
-  emit('save', newRecord); // 觸發保存事件，並將新記錄傳遞給父組件
+  emit('save', specialHoursList.value); // 觸發保存事件，並將新記錄傳遞給父組件
 };
 </script>
 
@@ -68,10 +76,10 @@ const saveChanges = () => {
     <div class="flex-grow-1 overflow-auto pe-2 py-3">
       <!-- 日期類型選擇 -->
       <div class="btn-group w-100 mb-4" role="group">
-        <input type="radio" class="btn-check" name="recordType" id="specificDay" value="specific" v-model="recordType" autocomplete="off">
+        <input type="radio" class="btn-check" name="recordType" id="specificDay" value="specific" v-model="specialHoursList.recordType" autocomplete="off">
         <label class="btn btn-outline-primary" for="specificDay">單日</label>
 
-        <input type="radio" class="btn-check" name="recordType" id="multipleDays" value="range" v-model="recordType" autocomplete="off">
+        <input type="radio" class="btn-check" name="recordType" id="multipleDays" value="range" v-model="specialHoursList.recordType" autocomplete="off">
         <label class="btn btn-outline-primary" for="multipleDays">多日</label>
       </div>
 
@@ -79,40 +87,40 @@ const saveChanges = () => {
       <div class="mb-4">
         <label for="dateInput" class="form-label text-muted">日期</label>
         <input
-          v-if="recordType === 'specific'"
+          v-if="specialHoursList.recordType === 'specific'"
           type="date"
           class="form-control"
           id="dateInput"
-          v-model="specificDate"
+          v-model="specialHoursList.specificDate"
         >
         <div v-else class="d-flex align-items-center gap-2">
-          <input type="date" class="form-control" v-model="startDate">
+          <input type="date" class="form-control" v-model="specialHoursList.startDate">
           <span class="text-muted">至</span>
-          <input type="date" class="form-control" v-model="endDate">
+          <input type="date" class="form-control" v-model="specialHoursList.endDate">
         </div>
       </div>
 
       <!-- 全日關閉開關 -->
       <div class="form-check form-switch mb-4">
-        <input class="form-check-input" type="checkbox" id="closedAllDay" v-model="isClosedAllDay">
+        <input class="form-check-input" type="checkbox" id="closedAllDay" v-model="specialHoursList.isClose">
         <label class="form-check-label" for="closedAllDay">全日關閉</label>
       </div>
 
       <!-- 營業時間段 -->
-      <div v-if="!isClosedAllDay" class="mb-4 p-3 border rounded-3 bg-light">
+      <div v-if="specialHoursList.isClose" class="mb-4 p-3 border rounded-3 bg-light">
         <h6 class="mb-3 fw-bold">營業時段</h6>
         <div class="d-flex align-items-center gap-2 mb-3">
-          <select class="form-select form-select-sm" v-model="startTime">
+          <select class="form-select form-select-sm" v-model="specialHoursList.openTime">
             <option v-for="option in timeOptions" :key="option" :value="option">{{ option }}</option>
           </select>
           <span class="text-muted">至</span>
-          <select class="form-select form-select-sm" v-model="endTime">
+          <select class="form-select form-select-sm" v-model="specialHoursList.closeTime">
             <option v-for="option in timeOptions" :key="option" :value="option">{{ option }}</option>
           </select>
         </div>
-        <button class="btn btn-sm btn-outline-primary w-100 py-2">
+        <!-- <button class="btn btn-sm btn-outline-primary w-100 py-2">
           <i class="fas fa-plus me-2"></i>新增時段
-        </button>
+        </button> -->
       </div>
 
       <p class="text-muted small">
