@@ -163,7 +163,7 @@ public class StoreService {
                 double lat = storeDetails.getLat();
                 double lon = storeDetails.getLon();
                 System.out.println("[updateStore] 收到 lat=" + lat + ", lon=" + lon);
-                if(lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
                     existingStore.setLat(lat);
                     existingStore.setLon(lon);
                     Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
@@ -196,7 +196,7 @@ public class StoreService {
         }
         return null;
     }
-    
+
     public boolean deleteStore(Integer id) {
         if (storeRepository.existsById(id)) {
             storeRepository.deleteById(id);
@@ -229,10 +229,10 @@ public class StoreService {
             } else {
                 store.setStoreCoords(null);
             }
-         // 重要：需要保存變更！
+            // 重要：需要保存變更！
             storeRepository.save(store);
             return true;
-            
+
         } catch (Exception e) {
             System.err.println("錯誤：" + e.getMessage());
             e.printStackTrace();
@@ -240,7 +240,7 @@ public class StoreService {
             return false;
         }
     }
-    
+
     /**
      * 獲取Owner的所有Store
      */
@@ -275,17 +275,18 @@ public class StoreService {
      * 獲取Owner的Store數量，更安全的 getStoreCountByOwnerId 實作
      */
     public long getStoreCountByOwnerId(Integer ownerId) {
-    	// 避免載入所有資料再計算數量，改用直接查詢
+        // 避免載入所有資料再計算數量，改用直接查詢
         return storeRepository.countByOwner_Id(ownerId);
     }
-    
+
     @Deprecated
     public Optional<StoreBean> getStoreByOwnerId(Integer ownerId) {
         return getMainStoreByOwnerId(ownerId); // 注意你的 repository 要有這個方法
     }
-    
+
     private Float roundTo1Decimal(Float value) {
-        if (value == null) return null;
+        if (value == null)
+            return null;
         return Math.round(value * 10f) / 10f;
     }
 

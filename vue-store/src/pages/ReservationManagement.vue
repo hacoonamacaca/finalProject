@@ -139,7 +139,6 @@ const getStatusClass = (status) => {
 const fetchReservations = async () => {
     loading.value = true;
     try {
-        // 使用真實API或模擬資料
         const storeId = 1; // 假設當前商家ID為1
         const filters = {
             status: statusFilter.value !== 'all' ? statusFilter.value : null,
@@ -147,20 +146,31 @@ const fetchReservations = async () => {
             keyword: searchKeyword.value || null
         };
 
-        // 嘗試使用真實API，如果失敗則使用模擬資料
-        try {
-            const data = await reservationService.getStoreReservations(storeId, filters);
-            reservations.value = data;
-        } catch (apiError) {
-            console.warn('API呼叫失敗，使用模擬資料:', apiError);
-            // 模擬 API 呼叫延遲
-            await new Promise(resolve => setTimeout(resolve, 500));
-            reservations.value = mockReservations;
+        // 使用真實API
+        const data = await reservationService.getStoreReservations(storeId, filters);
+        console.log('API 返回的訂位資料:', data);
+
+        // 轉換資料格式以符合前端期望
+        if (data && Array.isArray(data)) {
+            reservations.value = data.map(item => ({
+                id: item.id,
+                customerName: item.userName || '未知顧客',
+                phone: item.userPhone || '未知電話',
+                date: item.reservedDate,
+                time: item.reservedTime,
+                guests: item.guests,
+                status: item.status,
+                content: item.content || '',
+                createdAt: item.createdAt
+            }));
+        } else {
+            reservations.value = [];
         }
     } catch (error) {
         console.error('載入訂位資料失敗:', error);
-        // 如果完全失敗，使用模擬資料
-        reservations.value = mockReservations;
+        // 不使用模擬資料，保持空陣列
+        reservations.value = [];
+        alert('載入訂位資料失敗，請檢查網路連線或稍後再試');
     } finally {
         loading.value = false;
     }

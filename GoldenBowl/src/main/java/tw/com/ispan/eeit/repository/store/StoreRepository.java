@@ -46,6 +46,9 @@ public interface StoreRepository extends JpaRepository<StoreBean, Integer> {
         @EntityGraph(attributePaths = { "categories", "foods", "foods.tags", "owner" })
         List<StoreBean> findByOwner_Id(Integer ownerId);
 
+        @Query("SELECT s FROM StoreBean s LEFT JOIN FETCH s.comments WHERE s.id = :id")
+        Optional<StoreBean> findByIdWithComments(@Param("id") Integer id);
+
         // 新增：獲取Owner的最新Store（按建立時間排序）
         @Query("SELECT s FROM StoreBean s " +
                         "LEFT JOIN FETCH s.categories " +

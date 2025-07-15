@@ -43,12 +43,6 @@ public class OrderController {
     // 創建新訂單
     @PostMapping
     // 修改參數為 OrderDTO
-    public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orderDTO) {
-        // 調用 Service 層，它會返回 Optional<OrderBean>
-        return orderService.createOrder(orderDTO)
-                .map(createdOrderBean -> ResponseEntity.status(HttpStatus.CREATED).body(createdOrderBean))
-                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).build()); // 如果創建失敗，可能是 DTO 數據有問題
-    // 修改參數為 OrderDTO
 
     public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orderDTO) {
         // 調用 Service 層，它會返回 Optional<OrderBean>
@@ -58,10 +52,7 @@ public class OrderController {
     }
 
     // 根據 訂單ID 獲取單一訂單
-    // 根據 訂單ID 獲取單一訂單
     @GetMapping("/{id}")
-    public ResponseEntity<OrderDTO> getOrderById(@PathVariable Integer id) {
-
     public ResponseEntity<OrderDTO> getOrderById(@PathVariable Integer id) {
         return orderService.findOrderById(id)
                 .map(ResponseEntity::ok)

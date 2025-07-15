@@ -37,7 +37,7 @@ public class StoreController {
     public ResponseEntity<List<StoreDTO>> getAllStores(
             @RequestParam(value = "userId", required = false) Integer userId, // 新增 userId 參數
             @RequestParam(value = "search", required = false) String search) {
-        
+
         List<StoreDTO> storeDTOs;
         if (search != null && !search.trim().isEmpty()) {
             // 調用帶有 userId 參數的 searchStores 方法
@@ -111,7 +111,7 @@ public class StoreController {
         storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
         storeToUpdate.setLat(storeDetailsDto.getLat());
         storeToUpdate.setLon(storeDetailsDto.getLon());
-        
+
         OwnerBean owner = new OwnerBean();
         owner.setPhone(storeDetailsDto.getPhone());
         owner.setEmail(storeDetailsDto.getEmail());
@@ -153,7 +153,8 @@ public class StoreController {
         String storeCategory = (String) map.get("storeCategory");
         String intro = (String) map.get("storeIntro");
         String photo = (String) map.get("photo"); // 這裡收到的是分號分隔或單一 firebase 下載網址
-        // 你也可以改成 List<String> photoUrls = (List<String>) map.get("photoUrls"); 如果前端直接送 array
+        // 你也可以改成 List<String> photoUrls = (List<String>) map.get("photoUrls"); 如果前端直接送
+        // array
 
         if (ownerId == null) {
             return Map.of("success", false, "message", "ownerId 不可為空");
@@ -203,9 +204,9 @@ public class StoreController {
         boolean ok = storeService.updateAddress(storeId, address, lat, lon);
         return Map.of("success", ok);
     }
-    
+
     // ========== 以下為支援多店主的新端點 ==========
-    
+
     /**
      * 獲取Owner的主要Store（最新建立的）- 保持向下兼容
      */
@@ -213,7 +214,7 @@ public class StoreController {
     public ResponseEntity<StoreDTO> getMyStoreProfile(@RequestParam Integer ownerId) {
         // ownerId 可以從 JWT 或 session 取得，不要讓前端直接傳（安全性問題）
         // 這邊為示範，暫時用 query 參數帶
-    	if (ownerId == null) {
+        if (ownerId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
 
@@ -225,7 +226,7 @@ public class StoreController {
         StoreDTO storeDTO = new StoreDTO(storeOptional.get());
         return new ResponseEntity<>(storeDTO, HttpStatus.OK);
     }
-    
+
     /**
      * 獲取Owner的所有Store
      */
@@ -243,7 +244,7 @@ public class StoreController {
         List<StoreDTO> storeDTOs = stores.stream()
                 .map(StoreDTO::new)
                 .collect(Collectors.toList());
-        
+
         return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
     }
 
@@ -280,18 +281,16 @@ public class StoreController {
         }
 
         Map<String, Object> summary = Map.of(
-            "ownerId", ownerId,
-            "totalStores", stores.size(),
-            "stores", stores.stream()
-                    .map(store -> Map.of(
-                        "id", store.getId(),
-                        "name", store.getName(),
-                        "isOpen", store.getIsOpen() != null ? store.getIsOpen() : false,
-                        "score", store.getScore() != null ? store.getScore() : 0.0,
-                        "createdTime", store.getCreatedTime()
-                    ))
-                    .collect(Collectors.toList())
-        );
+                "ownerId", ownerId,
+                "totalStores", stores.size(),
+                "stores", stores.stream()
+                        .map(store -> Map.of(
+                                "id", store.getId(),
+                                "name", store.getName(),
+                                "isOpen", store.getIsOpen() != null ? store.getIsOpen() : false,
+                                "score", store.getScore() != null ? store.getScore() : 0.0,
+                                "createdTime", store.getCreatedTime()))
+                        .collect(Collectors.toList()));
 
         return new ResponseEntity<>(summary, HttpStatus.OK);
     }
@@ -301,9 +300,9 @@ public class StoreController {
      */
     @GetMapping("/profile/store/{storeId}")
     public ResponseEntity<StoreDTO> getSpecificStore(
-            @PathVariable Integer storeId, 
+            @PathVariable Integer storeId,
             @RequestParam Integer ownerId) {
-        
+
         if (ownerId == null || storeId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -313,12 +312,10 @@ public class StoreController {
             return new ResponseEntity<>(HttpStatus.FORBIDDEN);
         }
 
-        Optional<StoreBean> storeOptional = storeService.getStoreById(storeId);
-        if (storeOptional.isEmpty()) {
+        StoreDTO storeDTO = storeService.getStoreById(storeId, ownerId);
+        if (storeDTO == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
         return new ResponseEntity<>(storeDTO, HttpStatus.OK);
     }
 
@@ -333,9 +330,8 @@ public class StoreController {
 
         long count = storeService.getStoreCountByOwnerId(ownerId);
         Map<String, Object> result = Map.of(
-            "ownerId", ownerId,
-            "storeCount", count
-        );
+                "ownerId", ownerId,
+                "storeCount", count);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
