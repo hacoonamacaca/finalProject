@@ -45,18 +45,18 @@
                                 </div>
 
                                 <div class="item-details">
-                                    <h5 class="item-name">{{ item.name }}</h5>
+                                    <h5 class="item-name">{{ item.food.name }}</h5>
                                     <div class="item-price">NT${{ item.price }}</div>
                                 </div>
 
                                 <div class="item-controls">
                                     <div class="quantity-controls">
                                         <button class="quantity-btn"
-                                            @click="updateQuantity(item.id, item.quantity - 1, restaurantId)"
+                                            @click="updateQuantity(item.food.id, item.quantity - 1, restaurantId)"
                                             :disabled="item.quantity <= 1">-</button>
                                         <span class="quantity-display">{{ item.quantity }}</span>
                                         <button class="quantity-btn"
-                                            @click="updateQuantity(item.id, item.quantity + 1, restaurantId)">+</button>
+                                            @click="updateQuantity(item.food.id, item.quantity + 1, restaurantId)">+</button>
                                     </div>
 
                                     
@@ -64,7 +64,7 @@
 
                                 <div class="item-total">
                                     NT${{ item.price * item.quantity }}
-                                    <button class="remove-btn" @click="removeItem(item.id, restaurantId)" title="移除商品">
+                                    <button class="remove-btn" @click="removeItem(item.food.id, restaurantId)" title="移除商品">
                                         <i class="pi pi-trash"></i>
                                     </button>
                                 </div>

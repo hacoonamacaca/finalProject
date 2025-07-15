@@ -345,8 +345,8 @@ public class OrderService {
         }
         return null;
     }
-    
-    //yifan新增
+
+    // yifan新增
     // 查詢某個使用者使用某張優惠券的次數（僅統計已完成訂單）
     public int countUserPromotionUsage(Integer userId, Integer promotionId) {
         if (userId != null && promotionId != null) {
@@ -362,27 +362,27 @@ public class OrderService {
         }
         return 0;
     }
-    
+
     public OrderDTO createOrderFromRequest(OrderRequestDTO dto) {
-    	System.out.println("已選 promotionId: " + dto.getPromotionId());
-    	System.out.println("已選 storeId: " + dto.getStoreId());
-    	
-    	OrderBean order = new OrderBean();
+        System.out.println("已選 promotionId: " + dto.getPromotionId());
+        System.out.println("已選 storeId: " + dto.getStoreId());
+
+        OrderBean order = new OrderBean();
 
         // 從資料庫查詢 user、store、promotion 實體
         UserBean user = new UserBean();
         user.setId(dto.getUserId());
         order.setUser(user);
 
-        //苡帆改掉
-//        StoreBean store = storeRepository.findById(dto.getStoreId())
-//            .orElseThrow(() -> new RuntimeException("找不到店家"));
-//        order.setStore(store);
+        // 苡帆改掉
+        // StoreBean store = storeRepository.findById(dto.getStoreId())
+        // .orElseThrow(() -> new RuntimeException("找不到店家"));
+        // order.setStore(store);
 
-        //改成這個：
+        // 改成這個：
         StoreBean store = storeRepository.getReferenceById(dto.getStoreId());
         order.setStore(store);
-        
+
         if (dto.getPromotionId() != null) {
             PromotionBean promo = new PromotionBean();
             promo.setId(dto.getPromotionId());
@@ -396,6 +396,5 @@ public class OrderService {
         OrderBean savedOrder = orderRepository.save(order);
         return OrderDTO.fromEntity(savedOrder); // 回傳給前端
     }
-
 
 }

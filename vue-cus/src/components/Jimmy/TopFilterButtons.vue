@@ -121,7 +121,7 @@ const toggleSearchKeyword = (keyword) => { // 這裡的 keyword 就是 searchKey
 const allRecommendationKeywords = [
   { displayText: '毛小孩好去處', searchKeyword: '寵物友善' },
   { displayText: '小孩放電好所在', searchKeyword: '公園附近' },
-  { displayText: '一起線上看直播', searchKeyword: '觀看直播' },
+  { displayText: '熱鬧看比賽!', searchKeyword: '觀看直播' },
   { displayText: '初一十五要吃菜', searchKeyword: '素食' },
   { displayText: '精神不濟?', searchKeyword: '咖啡' },
   { displayText: '想吃點特別的', searchKeyword: '異國料理' },
