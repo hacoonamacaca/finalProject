@@ -1,7 +1,69 @@
 <script setup>
-// 把 Logo 和 Avatar 的導入也移到這裡
-import logoUrl from '../assets/logo.png';
-import avataUrl from '../assets/avata.png';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import logoUrl from '../assets/logo.png'
+import { useStore } from '@/composables/useStore.js' // 🔥 NEW: 導入 useStore
+
+// 🔥 NEW: 使用 store composable
+const { 
+    currentUser, 
+    stores, 
+    selectedStore, 
+    isLoading: isStoreLoading,
+    isLoggedIn,
+    switchStore 
+} = useStore()
+
+// 響應式資料
+const iconDropdownRef = ref(null)
+const showDropdown = ref(false)
+
+// 方法
+const onUserIconClick = () => {
+    console.log('點擊用戶圖示:', isLoggedIn.value)
+    if (isLoggedIn.value) {
+        showDropdown.value = !showDropdown.value
+        console.log('showDropdown:', showDropdown.value)
+    }
+}
+
+const handleClickOutside = (event) => {
+    if (iconDropdownRef.value && !iconDropdownRef.value.contains(event.target)) {
+        showDropdown.value = false
+    }
+}
+
+const logout = () => {
+    // 清除本地儲存的用戶資料
+    localStorage.removeItem('ownerId')
+    localStorage.removeItem('storeFullName')
+    localStorage.removeItem('storeEmail')
+    localStorage.removeItem('storeId')
+    localStorage.removeItem('storeProfile')
+    
+    // 重設本地狀態
+    showDropdown.value = false
+    
+    // 跳轉回 vue-cus 登入頁面
+    const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
+    window.location.href = `${vueCustomerUrl}/store`
+}
+
+// 🔥 NEW: 處理店家切換
+const handleStoreChange = (event) => {
+    const newStoreId = parseInt(event.target.value)
+    console.log('🔄 [SellerLayout] 用戶切換店家到:', newStoreId)
+    switchStore(newStoreId)
+}
+
+// 生命週期
+onMounted(() => {
+    document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside)
+})
+
 </script>
 
 <template>
@@ -16,9 +78,26 @@ import avataUrl from '../assets/avata.png';
             </a>
             <!-- 右側使用者資訊 -->
             <div class="d-flex align-items-center gap-3">
-                <span class="text-white fw-semibold">使用者，您好！</span>
-                <img :src="avataUrl" alt="Avatar" class="rounded-circle"
-                    style="height: 40px; width: 40px; object-fit: cover;" />
+                <span class="text-white fw-semibold">
+                {{ currentUser ? currentUser.ownerFullName || currentUser.ownerEmail || '商家' : '使用者' }}，您好！
+                </span>
+                <!-- 純 Vue 控 dropdown -->
+                <div ref="iconDropdownRef" class="position-relative">
+                    <i
+                        class="bi bi-person-circle text-white"
+                        style="font-size: 2rem; cursor:pointer"
+                        @click="onUserIconClick"
+                    ></i>
+                    <ul
+                        v-if="isLoggedIn && showDropdown"
+                        class="dropdown-menu dropdown-menu-end show"
+                        style="position: absolute; right: 0; top: 110%;"
+                    >
+                        <li>
+                            <a class="dropdown-item" href="#" @click.prevent="logout">登出</a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </header>
 
@@ -28,6 +107,43 @@ import avataUrl from '../assets/avata.png';
             <!-- Sidebar -->
             <nav class="sidebar">
                 <div class="sidebar-sticky">
+
+                    <!-- 🔥 NEW: 店家選擇區域 -->
+                    <div class="sidebar-section">
+                        <h6 class="section-title">當前店家</h6>
+                        
+                        <!-- 載入中狀態 -->
+                        <div v-if="isStoreLoading" class="text-center p-2">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <small class="d-block mt-1">載入店家中...</small>
+                        </div>
+                        
+                        <!-- 店家選擇 -->
+                        <div v-else-if="stores.length > 0" class="mb-3">
+                            <!-- 多店家：下拉選單 -->
+                            <select v-if="stores.length > 1" 
+                                    class="form-select form-select-sm" 
+                                    :value="selectedStore"
+                                    @change="handleStoreChange">
+                                <option v-for="store in stores" :key="store.id" :value="store.id">
+                                    🏪 {{ store.name }}
+                                </option>
+                            </select>
+                            
+                            <!-- 單店家：顯示名稱 -->
+                            <div v-else class="alert alert-info mb-0 py-2">
+                                <small>🏪 {{ stores[0].name }}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- 無店家資料 -->
+                        <div v-else class="alert alert-warning mb-0 py-2">
+                            <small>⚠️ 無店家資料</small>
+                        </div>
+                    </div>
+
                     <!-- 商家資訊 -->
                     <div class="sidebar-section">
                         <h6 class="section-title">管理你的商家資訊</h6>
@@ -38,7 +154,7 @@ import avataUrl from '../assets/avata.png';
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="/menu" class="nav-link" active-class="active-link">
+                                <router-link to="/store/menu" class="nav-link" active-class="active-link">
                                     <i class="fas fa-utensils fa-fw me-2"></i> 菜單管理
                                 </router-link>
                             </li>
@@ -55,17 +171,17 @@ import avataUrl from '../assets/avata.png';
                         <h6 class="section-title">主要功能設定</h6>
                         <ul class="nav flex-column mb-2">
                             <li class="nav-item">
-                                <router-link to="/orders" class="nav-link" active-class="active-link">
+                                <router-link to="/store/orders" class="nav-link" active-class="active-link">
                                     <i class="fas fa-file-invoice fa-fw me-2"></i> 訂單管理
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="/reservations" class="nav-link" active-class="active-link">
+                                <router-link to="/store/reservations" class="nav-link" active-class="active-link">
                                     <i class="fas fa-chair fa-fw me-2"></i> 訂位管理
                                 </router-link>
                             </li>
                             <li class="nav-item">
-                                <router-link to="/hours" class="nav-link" active-class="active-link">
+                                <router-link to="/store/hours" class="nav-link" active-class="active-link">
                                     <i class="fas fa-clock fa-fw me-2"></i> 營業時間
                                 </router-link>
                             </li>
@@ -204,11 +320,23 @@ import avataUrl from '../assets/avata.png';
     /* << 新增：層級比 sidebar 低，但比預設高 */
 }
 
-
-
 /* 確保 header 和 footer 不會被壓縮 */
 header,
 footer {
     flex-shrink: 0;
+}
+
+/* 🔥 NEW: 店家選擇區域樣式 */
+.form-select-sm {
+    font-size: 0.875rem;
+}
+
+.alert {
+    font-size: 0.875rem;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
 }
 </style>
