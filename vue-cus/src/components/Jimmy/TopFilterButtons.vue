@@ -28,14 +28,14 @@
         @click="toggleSearchKeyword('熱')"
         :class="{ 'filter-button': true, 'active': activeKeywords.includes('熱') }"
       >
-        熱食推薦
+        天寒地凍？來點熱飲吧！
       </button>
       <button
         v-else-if="isHot"
         @click="toggleSearchKeyword('冰')"
         :class="{ 'filter-button': true, 'active': activeKeywords.includes('冰') }"
       >
-        冰品推薦
+        日頭炎炎？來點冰品吧！
       </button>
 
       <button v-for="item in randomKeywords" :key="item.searchKeyword" @click="toggleSearchKeyword(item.searchKeyword)" 

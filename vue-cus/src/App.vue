@@ -1,9 +1,10 @@
 <template>
   <Navigation v-if="$route.path !== '/'" />
-
-  <div>
-    <RouterView></RouterView>
-  </div>
+  
+    
+    <div>
+      <RouterView></RouterView>
+    </div>
 </template>
 <!-- 在 index.html 加 -->
 
@@ -15,9 +16,4 @@ import Navigation from '@/components/Navigation.vue';
 </script>
 
 <style>
-
-/* 前端背景底色 */
-body {
-  background-color: #fff4e0; /* 淺黃色 */
-}
 </style>

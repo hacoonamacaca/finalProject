@@ -28,14 +28,15 @@ public class OrderDTO {
     private OrderStoreDto store;// 一個存在在OrderDTO內的StoreDTO
     private CommentResponseDTO comment;
     private List<OrderDetailDTO> orderDetails; // 包含訂單明細列表
-//    private List<StoreDTO> stores;
+    // private List<StoreDTO> stores;
     // 如果需要更詳細的User/Store/Promotion資料，可以嵌套對應的DTO
+
     @Data
     public static class OrderUserDto {
         private Integer id;
         private String name;
         // ... 其他用戶資訊
-        
+
         public UserBean toUserBean() {
             UserBean userBean = new UserBean();
             userBean.setId(this.id);
@@ -44,26 +45,27 @@ public class OrderDTO {
             return userBean;
         }
     }
+
     @Data
     public static class OrderStoreDto {
-    	private Integer id;
-    	private String name;
-    	private String photo;
-    	private Boolean isOpen;
-    	private Boolean isActive;
-       
-    	
-    	 public StoreBean toStoreBean() {
-             StoreBean storeBean = new StoreBean();
-             storeBean.setId(this.id);
-             storeBean.setName(this.name);
-             storeBean.setPhoto(this.photo);
-             storeBean.setIsOpen(this.isOpen);
-             storeBean.setIsActive(this.isActive);
-             // ... 其他屬性
-             return storeBean;
-         }
+        private Integer id;
+        private String name;
+        private String photo;
+        private Boolean isOpen;
+        private Boolean isActive;
+
+        public StoreBean toStoreBean() {
+            StoreBean storeBean = new StoreBean();
+            storeBean.setId(this.id);
+            storeBean.setName(this.name);
+            storeBean.setPhoto(this.photo);
+            storeBean.setIsOpen(this.isOpen);
+            storeBean.setIsActive(this.isActive);
+            // ... 其他屬性
+            return storeBean;
+        }
     }
+
     public static OrderDTO fromEntity(OrderBean orderBean) {
         // 透過靜態法將Bean匯入到DTO中階產生物件
         OrderDTO orderDto = new OrderDTO();
@@ -71,10 +73,12 @@ public class OrderDTO {
         orderDto.setTotal(orderBean.getTotal());
         orderDto.setStatus(StatusConvert.toDTO(orderBean.getStatus()));
         orderDto.setCreateTime(
-        		DatetimeConvert.toString(orderBean.getCreateTime(),"M月d日 EEEE HH時mm分"));
+                DatetimeConvert.toString(orderBean.getCreateTime(), "yyyy/MM/dd HH:mm:ss"));
+        // DatetimeConvert.toString(orderBean.getCreateTime(),"M月d日 EEEE HH時mm分"));
         orderDto.setContent(orderBean.getContent());
         orderDto.setPickupTime(
-        		DatetimeConvert.toString(orderBean.getPickupTime(),"M月d日 EEEE HH時mm分"));
+                DatetimeConvert.toString(orderBean.getPickupTime(), "yyyy/MM/dd HH:mm:ss"));
+        // DatetimeConvert.toString(orderBean.getPickupTime(),"M月d日 EEEE HH時mm分"));
 
         // 複製 User 資訊
         // 檢查關聯是否已初始化且不為 null，避免 LazyInitializationException
@@ -118,15 +122,11 @@ public class OrderDTO {
                     .collect(Collectors.toList());
             orderDto.setOrderDetails(orderDetailDtos);
         }
-      
 
-        
-        
         return orderDto;
     }
-    
-    
-    //---------------------------------------------------------------
+
+    // ---------------------------------------------------------------
     public OrderBean toBean() {
         OrderBean orderBean = new OrderBean();
         PromotionBean promotionBean = new PromotionBean();
@@ -136,10 +136,10 @@ public class OrderDTO {
         orderBean.setTotal(this.total);
         orderBean.setStatus(this.status);
         orderBean.setCreateTime(
-        		DatetimeConvert.parse(this.createTime,"yyyy-MM-dd'T'HH:mm:ss"));
+                DatetimeConvert.parse(this.createTime, "yyyy-MM-dd'T'HH:mm:ss"));
         orderBean.setContent(this.content);
         orderBean.setPickupTime(
-        		DatetimeConvert.parse(this.pickupTime,"yyyy-MM-dd'T'HH:mm"));
+                DatetimeConvert.parse(this.pickupTime, "yyyy-MM-dd'T'HH:mm"));
 
         // 轉換 User (如果存在)
         if (this.User != null) {
@@ -160,18 +160,18 @@ public class OrderDTO {
             // orderBean.setComment(this.comment.toCommentBean());
             // 或者，如果 CommentResponseDTO 僅用於響應，你可能需要從 CommentRequestDTO 轉換過來
             // 這裡為了示例，簡單假設 CommentResponseDTO 可以直接轉換回 CommentBean
-             CommentBean commentBean = new CommentBean();
-             commentBean.setId(this.comment.getId());
-             commentBean.setContent(this.comment.getContent());
-             // ... 其他 comment 屬性
-             orderBean.setComment(commentBean);
+            CommentBean commentBean = new CommentBean();
+            commentBean.setId(this.comment.getId());
+            commentBean.setContent(this.comment.getContent());
+            // ... 其他 comment 屬性
+            orderBean.setComment(commentBean);
         }
 
         // 轉換 OrderDetails 列表
         if (this.orderDetails != null && !this.orderDetails.isEmpty()) {
             orderBean.setOrderDetails(this.orderDetails.stream()
-                .map(OrderDetailDTO::toBean) // 假設 OrderDetailDTO 也有 toBean() 方法
-                .collect(Collectors.toList()));
+                    .map(OrderDetailDTO::toBean) // 假設 OrderDetailDTO 也有 toBean() 方法
+                    .collect(Collectors.toList()));
         }
 
         return orderBean;
