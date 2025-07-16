@@ -154,9 +154,19 @@ public class BookingAvailabilityService {
         LocalDate start = LocalDate.now();
         LocalDate end = start.plusDays(daysAhead);
 
-        // 獲取週期性公休日和特殊休假日
-        Set<Integer> weeklyClosedDays = new java.util.HashSet<>(openHourRepository.findClosedDaysByStore(storeId));
-        List<LocalDate> specialClosedDates = specialHoursRepository.findClosedDates(storeId);
+        // 獲取週期性公休日（沒有營業時間的日期）
+        List<OpenHourBean> allOpenHours = openHourRepository.findByStoreId(storeId);
+        Set<Integer> weeklyClosedDays = allOpenHours.stream()
+                .filter(oh -> oh.getOpenTime() == null || oh.getCloseTime() == null)
+                .map(OpenHourBean::getDay)
+                .collect(java.util.stream.Collectors.toSet());
+
+        // 獲取特殊休假日
+        List<SpecialHoursBean> allSpecialHours = specialHoursRepository.findByStoreId(storeId);
+        List<LocalDate> specialClosedDates = allSpecialHours.stream()
+                .filter(sh -> Boolean.TRUE.equals(sh.getIsClose()))
+                .map(SpecialHoursBean::getDate)
+                .collect(java.util.stream.Collectors.toList());
 
         return start.datesUntil(end.plusDays(1))
                 .filter(date -> {
