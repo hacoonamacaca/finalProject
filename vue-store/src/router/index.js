@@ -1,46 +1,238 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import {
+    createRouter,
+    createWebHistory
+} from 'vue-router';
 
 // 為了讓路由設定更乾淨，我們在這裡導入頁面組件
 import SellerLayout from '../layouts/SellerLayout.vue';
 import MenuManagement from '../pages/MenuManagement.vue';
 import OrderManagement from '../pages/OrderManager.vue';
 import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
+import ReservationManagement from '../pages/ReservationManagement.vue';
+import TimeSettingTest from '../views/TimeSettingTest.vue';
+
+// 檢查業者登入狀態的函數
+function checkOwnerLogin() {
+    const ownerId = localStorage.getItem('ownerId')
+    const ownerEmail = localStorage.getItem('storeEmail')
+    const ownerFullName = localStorage.getItem('storeFullName')
+
+    return {
+        isLoggedIn: !!ownerId,
+        ownerId,
+        ownerEmail,
+        ownerFullName
+    }
+}
+
+// 取得餐廳資料的函數
+function getStoreData() {
+    const storeId = localStorage.getItem('storeId')
+    const storeProfile = localStorage.getItem('storeProfile')
+
+    return {
+        storeId,
+        storeProfile: storeProfile ? JSON.parse(storeProfile) : null
+    }
+}
+
+// 臨時測試用：設定假登入資料 (使用實際 SQL 資料)
+function setTempLoginData(ownerNum = 1) {
+    const tempData = {
+        1: {
+            ownerId: '1', // 🔥 修正：使用數字 ID
+            ownerFullName: '李俊傑',
+            ownerEmail: 'john.lee@example.com',
+            ownerPhone: '0918765432'
+        },
+        2: {
+            ownerId: '2',
+            ownerFullName: '吳雅雯',
+            ownerEmail: 'mary.wu@example.com',
+            ownerPhone: '0981234567'
+        },
+        3: {
+            ownerId: '3',
+            ownerFullName: '張偉倫',
+            ownerEmail: 'peter.chang@example.com',
+            ownerPhone: '0927654321'
+        },
+        4: {
+            ownerId: '4',
+            ownerFullName: '陳麗華',
+            ownerEmail: 'susan.chen@example.com',
+            ownerPhone: '0972345678'
+        },
+        5: {
+            ownerId: '5',
+            ownerFullName: '林志明',
+            ownerEmail: 'tom.lin@example.com',
+            ownerPhone: '0936543210'
+        }
+    }
+
+    const data = tempData[ownerNum]
+    if (data) {
+        // 🔥 NEW: 只設定基本的 owner 資料，讓系統從 API 載入 store 資料
+        localStorage.setItem('ownerId', data.ownerId)
+        localStorage.setItem('storeFullName', data.ownerFullName)
+        localStorage.setItem('storeEmail', data.ownerEmail)
+
+        // 清除之前可能存在的 store 相關資料，讓系統重新載入
+        localStorage.removeItem('storeId')
+        localStorage.removeItem('storeProfile')
+
+        console.log(`✅ 已設定臨時登入資料 - ${data.ownerFullName} (owner ID: ${data.ownerId})`)
+        console.log('🔄 請重新整理頁面來載入該 owner 的店家資料')
+    }
+}
+
+// 清除登入資料
+function clearLoginData() {
+    localStorage.removeItem('ownerId')
+    localStorage.removeItem('storeFullName')
+    localStorage.removeItem('storeEmail')
+    localStorage.removeItem('storeId')
+    localStorage.removeItem('storeProfile')
+    console.log('🗑️ 已清除登入資料')
+}
+
+// 把這些函數掛到 window 上，方便在 console 中測試
+window.setTempLogin = setTempLoginData
+window.clearLogin = clearLoginData
 
 const routes = [
     {
-        // 我們將根目錄暫時重導向到菜單管理頁面
-        // 未來當您開發好 Dashboard，只需要把這行改成
-        // component: () => import('../pages/SellerDashboard.vue') 即可
+        // 根目錄重導向到 /store
         path: '/',
+        redirect: '/store'
+    },
+    {
+        path: '/store',
         component: SellerLayout, // 所有 / 開頭的路由都先經過這個佈局組件
-        redirect: '/menu',
+        redirect: '/store/menu', // 預設進入菜單管理
+        meta: { requiresOwnerAuth: true },  // 需要業者登入權限
         // 使用 children 來定義嵌套路由
         children: [
             {
-                path: 'menu',  // 注意：這裡沒有 /，代表是 /menu
+                path: 'menu', // 注意：這裡沒有 /，代表是 /menu
                 name: 'MenuManagement',
-                component: MenuManagement
+
+                component: MenuManagement,
+                meta: { requiresOwnerAuth: true }
             },
 
             // 未來您可以繼續在這裡新增路由
             {
-                path: 'orders', // 代表是 /orders
+                path: 'orders', // 代表是 /store/orders
                 name: 'OrderManager',
-                component: OrderManagement
+                component: OrderManagement,
+                meta: { requiresOwnerAuth: true }
             },
 
             {
-                path: 'hours', // 代表是 /hours
+                path: 'hours', // 代表是 /store/hours
                 name: 'BusinessHoursManager',
-                component: BusinessHoursManager
-            }
+                component: BusinessHoursManager,
+                meta: { requiresOwnerAuth: true }
+            },
+
+            {
+                path: 'reservations', // 代表是 /store/reservations
+                name: 'ReservationManagement',
+                component: ReservationManagement,
+                meta: { requiresOwnerAuth: true }
+            },
+
+            {
+                path: 'time-setting-test', // 代表是 /store/time-setting-test
+                name: 'TimeSettingTest',
+                component: TimeSettingTest,
+                meta: { requiresOwnerAuth: true }
+            },
+            {
+                path: '/registerBusiness',
+                component: () => import('@/views/Ivy/RegisterBusiness.vue')
+            },
+            {
+                path:'/editStoreUser',
+                component: () => import('@/views/Ivy/EditStoreUser.vue')
+            },
+            {
+                path:'/editStore',
+                component: () => import('@/views/Ivy/EditStore.vue')
+            },
+            {
+                path:'/registerStoreInfo',
+                component: () => import('@/views/Ivy/RegisterStoreInfo.vue')
+            },
+            {
+                path: '/verifyAddress',
+                component: () => import('@/views/Ivy/VerifyAddress.vue')
+            },
+            {
+                path: '/registerProfile',
+                component: () => import('@/views/Ivy/RegisterProfile.vue')
+            },
+            {
+                path: '/verifyPending',
+                component: () => import('@/views/Ivy/VerifyPending.vue')
+            },
+
         ]
     },
+    {
+        // 如果訪問不存在的路徑，重導向到 /store
+        path: '/:pathMatch(.*)*',
+        redirect: '/store'
+    }
 ];
 
 const router = createRouter({
     history: createWebHistory(),
     routes, // 相當於 routes: routes
 });
+
+// 路由守衛：檢查業者登入狀態
+router.beforeEach((to, from, next) => {
+    // 檢查是否需要業者登入權限
+    const requiresOwnerAuth = to.matched.some(record => record.meta.requiresOwnerAuth)
+
+    if (requiresOwnerAuth) {
+        const ownerStatus = checkOwnerLogin()
+
+        if (!ownerStatus.isLoggedIn) {
+            console.log('⚠️ 未登入狀態')
+            console.log('💡 請在 console 中執行以下指令來測試登入：')
+            console.log('   setTempLogin(1)  // 李俊傑 - 李俊傑的餐廳')
+            console.log('   setTempLogin(2)  // 吳雅雯 - 雅雯美食館')
+            console.log('   setTempLogin(3)  // 張偉倫 - 偉倫小廚 (未驗證email)')
+            console.log('   setTempLogin(4)  // 陳麗華 - 麗華風味餐廳')
+            console.log('   setTempLogin(5)  // 林志明 - 志明經典餐廳')
+            console.log('   clearLogin()     // 清除登入資料')
+
+            // 🔥 暫時註解掉跳轉邏輯，方便測試
+            // 正式串接時再取消註解
+            /*
+            const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
+            window.location.href = `${vueCustomerUrl}/store`
+            return
+            */
+
+            // 暫時阻止進入，但不跳轉
+            alert('請先設定登入資料！請查看 console 說明。')
+            return
+        }
+
+        // 登入成功，顯示登入狀態
+        console.log('✅ 業者登入狀態:', ownerStatus)
+
+        // 顯示餐廳資料
+        const storeData = getStoreData()
+        console.log('🏪 餐廳資料:', storeData)
+    }
+
+    next()
+})
 
 export default router;
