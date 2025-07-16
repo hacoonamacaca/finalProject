@@ -22,4 +22,5 @@ public class ReportResponseDTO {
     private String reportTypeName; // 來自 ReportTypeBean.name
     private String commentContent; // 來自 CommentBean.content
     private Integer commentScore; // 來自 CommentBean.score (可選，但通常會一起顯示)
+    private Boolean commentIsHidden; // 新增：來自 CommentBean.isHidden
 }

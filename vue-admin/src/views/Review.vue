@@ -2,7 +2,6 @@
     <h2>評價檢舉審核</h2>
     <div class="container mt-4">
 
-        <!-- 書籤 Tabs -->
         <div class="bookmark-tabs mb-4">
             <button
                 v-for="tab in tabs"
@@ -18,7 +17,6 @@
             <div class="bookmark-underline"></div>
         </div>
 
-        <!-- 搜尋與篩選 -->
         <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
             <div>搜尋：</div>
             <input v-model="keyword" placeholder="檢舉人ID..." class="form-control w-auto" style="min-width:160px;" />
@@ -27,20 +25,20 @@
             <button class="btn btn-primary ms-2" @click="resetFilters">清除篩選</button>
         </div>
 
-        <!-- 全選 -->
         <div class="mb-2">
             <input type="checkbox" :checked="isAllSelected" @change="toggleAll" />
             全選
         </div>
 
-        <!-- 表格 -->
         <table class="table table-striped table-hover review-table">
             <thead>
                 <tr>
                     <th></th>
-                    <th>評價ID</th>
+                    <th>檢舉ID</th> <th>評價ID (評論ID)</th>
                     <th>檢舉人ID</th>
-                    <th>審核狀態</th>
+                    <th>提交身分</th> <th>審核狀態</th>
+                    <th>檢舉類型</th>
+                    <th>評論內容</th>
                     <th>操作</th>
                 </tr>
             </thead>
@@ -54,25 +52,24 @@
                     <td @click.stop>
                         <input type="checkbox" v-model="selected" :value="review.id" />
                     </td>
-                    <td>{{ review.identity }}</td>
-                    <td>{{ review.name }}</td>
-                    <td>
-                        {{ review.status }}
-                        <br v-if="review.detail" />
-                        <small v-if="review.detail">{{ review.detail }}</small>
-                    </td>
+                    <td>{{ review.id }}</td> <td>{{ review.commentId }}</td>
+                    <td>{{ review.submitterId }}</td>
+                    <td>{{ review.submitterType }}</td> <td>
+                        {{ getStatusText(review.status) }}
+                        </td>
+                    <td>{{ review.reportTypeName }}</td>
+                    <td>{{ review.commentContent }}</td>
                     <td @click.stop>
-                        <span class="text-link me-3" @click="confirmReview(review.id)">確認</span>
-                        <span class="text-link text-danger" @click="rejectReview(review.id)">駁回</span>
+                        <span v-if="review.status === 'pending'" class="text-link me-3 text-success" @click="confirmReview(review)">確認</span>
+                        <span v-if="review.status === 'pending'" class="text-link text-danger" @click="rejectReview(review)">駁回</span>
+                        <span v-if="review.status !== 'pending'">已處理</span>
                     </td>
                 </tr>
                 <tr v-if="pagedReviews.length === 0">
-                    <td colspan="6" class="text-center">查無資料</td>
-                </tr>
+                    <td colspan="9" class="text-center">查無資料</td> </tr>
             </tbody>
         </table>
 
-        <!-- 分頁控制 -->
         <div class="pagination d-flex justify-content-end align-items-center pagebar-wrap">
             <button class="btn btn-outline-secondary me-2" :disabled="page === 1" @click="page > 1 && (page--)">&lt; 上一頁</button>
             <nav>
@@ -90,15 +87,18 @@
             </div>
         </div>
 
-        <!-- 彈窗 -->
         <div v-if="modalReview" class="modal-mask" @click.self="closeModal">
             <div class="modal-dialog">
                 <h5>評價詳細資訊</h5>
                 <table class="table table-sm">
-                    <tr><th>評價ID</th><td>{{ modalReview.identity }}</td></tr>
-                    <tr><th>檢舉人ID</th><td>{{ modalReview.name }}</td></tr>
-                    <tr><th>狀態</th><td>{{ modalReview.status }}</td></tr>
-                    <tr v-if="modalReview.detail"><th>說明</th><td>{{ modalReview.detail }}</td></tr>
+                    <tr><th>檢舉ID</th><td>{{ modalReview.id }}</td></tr>
+                    <tr><th>評價ID (評論ID)</th><td>{{ modalReview.commentId }}</td></tr>
+                    <tr><th>檢舉人ID</th><td>{{ modalReview.submitterId }}</td></tr>
+                    <tr><th>提交身分</th><td>{{ modalReview.submitterType }}</td></tr> <tr><th>審核狀態</th><td>{{ getStatusText(modalReview.status) }}</td></tr>
+                    <tr><th>檢舉類型</th><td>{{ modalReview.reportTypeName }}</td></tr>
+                    <tr><th>評論內容</th><td>{{ modalReview.commentContent }}</td></tr>
+                    <tr><th>評論分數</th><td>{{ modalReview.commentScore }}</td></tr>
+                    <tr><th>評論隱藏狀態</th><td>{{ modalReview.isHidden ? '已隱藏' : '未隱藏' }}</td></tr> <tr><th>檢舉時間</th><td>{{ formatDateTime(modalReview.reportDate) }}</td></tr>
                 </table>
                 <div class="text-end">
                     <button class="btn btn-secondary" @click="closeModal">關閉</button>
@@ -109,23 +109,38 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
+import axios from '@/plungins/axios.js'; // 引入 axios
 
-// 假資料（正式請用API fetch）
-const reviews = ref([
-    { id: 1, identity: 'r001', name: 'user123', status: '待審核', detail: '內容有疑慮' },
-    { id: 2, identity: 'r002', name: 'user456', status: '已駁回', detail: '無違規' },
-    { id: 3, identity: 'r003', name: 'user789', status: '已審核', detail: '' }
-])
+// 原始數據
+const allReviews = ref([]); // 用於儲存從 API 獲取的所有檢舉資料
 
 // 書籤Tab
 const currentTab = ref('all')
-const filteredCounts = computed(() => ({
-    all: reviews.value.length,
-    approved: reviews.value.filter(w => w.status.includes('已') && !w.status.includes('駁回')).length,
-    pending: reviews.value.filter(w => w.status.includes('待')).length,
-    rejected: reviews.value.filter(w => w.status.includes('駁回')).length,
-}))
+const filteredCounts = computed(() => {
+    const data = filteredReviews.value; // 使用過濾後的數據來計算數量
+    return {
+        all: data.length,
+        approved: data.filter(r => r.status === 'approved').length,
+        pending: data.filter(r => r.status === 'pending').length,
+        rejected: data.filter(r => r.status === 'rejected').length,
+    }
+})
+
+// 根據後端狀態碼轉換為前端顯示文本
+const getStatusText = (status) => {
+    switch (status) {
+        case 'pending':
+            return '待審核';
+        case 'approved':
+            return '已審核';
+        case 'rejected':
+            return '已駁回';
+        default:
+            return status;
+    }
+};
+
 const tabs = computed(() => [
     {
         key: 'all',
@@ -163,17 +178,29 @@ const setTab = (key) => {
 }
 
 // 篩選
-const keyword = ref('')
-const identityKeyword = ref('')
+const keyword = ref('') // 檢舉人ID (submitterId)
+const identityKeyword = ref('') // 評價ID (commentId)
+
 const filteredReviews = computed(() => {
-    let arr = reviews.value
-    if (currentTab.value === 'pending') arr = arr.filter(w => w.status.includes('待'))
-    else if (currentTab.value === 'approved') arr = arr.filter(w => w.status.includes('已') && !w.status.includes('駁回'))
-    else if (currentTab.value === 'rejected') arr = arr.filter(w => w.status.includes('駁回'))
-    if (keyword.value) arr = arr.filter(w => w.name.includes(keyword.value))
-    if (identityKeyword.value) arr = arr.filter(w => w.identity.includes(identityKeyword.value))
-    return arr
-})
+    let arr = allReviews.value;
+
+    // 根據 Tab 過濾狀態
+    if (currentTab.value === 'pending') arr = arr.filter(r => r.status === 'pending');
+    else if (currentTab.value === 'approved') arr = arr.filter(r => r.status === 'approved');
+    else if (currentTab.value === 'rejected') arr = arr.filter(r => r.status === 'rejected');
+
+    // 根據關鍵字過濾檢舉人ID
+    if (keyword.value) {
+        // 將 submitterId 轉換為字串進行包含性搜索
+        arr = arr.filter(r => String(r.submitterId).includes(keyword.value));
+    }
+    // 根據關鍵字過濾評價ID (commentId)
+    if (identityKeyword.value) {
+        // 將 commentId 轉換為字串進行包含性搜索
+        arr = arr.filter(r => String(r.commentId).includes(identityKeyword.value));
+    }
+    return arr;
+});
 
 // 分頁
 const page = ref(1)
@@ -193,7 +220,7 @@ const isAllSelected = computed(() =>
 )
 const toggleAll = () => {
     if (isAllSelected.value) selected.value = []
-    else selected.value = pagedReviews.value.map(review => review.id)
+    else selected.value = pagedReviews.value.map(review => review.id) // 這裡的 ID 是 ReportBean 的 id
 }
 watch([page, pageSize], () => { selected.value = [] })
 watch(pageSize, () => { page.value = 1 })
@@ -203,15 +230,89 @@ const modalReview = ref(null)
 const showDetail = (review) => { modalReview.value = { ...review } }
 const closeModal = () => { modalReview.value = null }
 
-// 操作
-const confirmReview = (id) => { alert(`確認 ID: ${id}`) }
-const rejectReview = (id) => { alert(`駁回 ID: ${id}`) }
+// 格式化日期時間顯示
+const formatDateTime = (dateTimeString) => {
+    if (!dateTimeString) return '';
+    const date = new Date(dateTimeString);
+    return date.toLocaleString(); // 根據用戶本地設置格式化日期時間
+};
+
+// --- 後端 API 互動 ---
+
+// 獲取所有檢舉資料
+const fetchReviews = async () => {
+    try {
+        const response = await axios.get('/api/reports');
+        // 直接使用從後端返回的 ReportResponseDTO 結構
+        allReviews.value = response.data;
+        console.log("檢舉資料已加載:", allReviews.value);
+    } catch (error) {
+        console.error("加載檢舉資料失敗:", error);
+        allReviews.value = [];
+    }
+};
+
+// 確認檢舉 (將狀態設為 'approved'，並隱藏評論)
+const confirmReview = async (report) => {
+    if (confirm(`確定要確認 ID 為 ${report.id} 的檢舉並隱藏相關評論嗎？`)) {
+        try {
+            // 1. 更新檢舉狀態為 'approved'
+            const updateReportData = { ...report, status: 'approved' };
+            await axios.put(`/api/reports/${report.id}`, updateReportData);
+
+            // 2. 更新評論的 isHidden 狀態為 true
+            const updateCommentData = {
+                // CommentRequestDTO 中應有的字段，這裡只傳遞 isHidden
+                // 你可能需要從後端獲取完整的 CommentResponseDTO 後再修改，或者 CommentController 支持只更新部分字段
+                // 這裡假設 CommentController 的 PUT 方法可以只接收部分字段來更新
+                // 如果不行，你需要在前端先獲取該評論的完整資料，修改 isHidden 後再提交
+                isHidden: true
+            };
+            await axios.put(`/comment/${report.commentId}`, updateCommentData);
+
+            alert('檢舉已確認，相關評論已隱藏！');
+            await fetchReviews(); // 更新後重新加載數據
+        } catch (error) {
+            console.error("確認檢舉失敗:", error);
+            alert('確認檢舉失敗！');
+        }
+    }
+};
+
+// 駁回檢舉 (將狀態設為 'rejected'，評論狀態不變)
+const rejectReview = async (report) => {
+    if (confirm(`確定要駁回 ID 為 ${report.id} 的檢舉嗎？`)) {
+        try {
+            // 1. 更新檢舉狀態為 'rejected'
+            const updateReportData = { ...report, status: 'rejected' };
+            await axios.put(`/api/reports/${report.id}`, updateReportData);
+
+            // 評論的 isHidden 狀態保持不變，因為駁回代表檢舉不成立
+            alert('檢舉已駁回！');
+            await fetchReviews(); // 更新後重新加載數據
+        } catch (error) {
+            console.error("駁回檢舉失敗:", error);
+            alert('駁回檢舉失敗！');
+        }
+    }
+};
 
 // 清除篩選
 function resetFilters() {
     keyword.value = ''
     identityKeyword.value = ''
+    // currentTab.value = 'all'; // 也可以在此處重置 tab
 }
+
+// 組件掛載時獲取資料
+onMounted(() => {
+    fetchReviews();
+});
+
+// Watch 相關數據變化，重新計算 filteredCounts
+watch(filteredReviews, () => {
+    // filteredCounts 已經是 computed，它會自動反應 filteredReviews 的變化
+}, { deep: true });
 </script>
 
 <style scoped>
@@ -230,7 +331,7 @@ function resetFilters() {
     border: 1px solid #eee;
     background: #fff;
     border-bottom: none;
-    border-radius: 6px 6px 0 0;
+    border-radius: 6px 6px 0 0; /* 修正亂碼 */
     margin-bottom: -2px;
     padding: 0.55rem 2rem 0.45rem 1.5rem;
     font-weight: 500;
@@ -295,5 +396,21 @@ function resetFilters() {
 /* 表格 hover 行效果 */
 .review-table tbody tr:hover {
     background: #f8f9fa !important;
+}
+
+/* 確保表格標題文字居中 */
+.review-table th {
+    text-align: center;
+}
+/* 確保表格內容文字居中 */
+.review-table td {
+    text-align: center;
+}
+.text-link {
+    cursor: pointer;
+    text-decoration: underline;
+}
+.text-link:hover {
+    text-decoration: none;
 }
 </style>

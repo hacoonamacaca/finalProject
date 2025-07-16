@@ -111,7 +111,7 @@
         emit('reportSubmitted'); // 通知父組件檢舉已提交
         setTimeout(() => {
           emit('close'); // 成功後自動關閉模態框
-        }, 1500);
+        }, 200); //0716 JIMMY 修改為200毫秒
       } else {
         message.value = { type: 'error', text: '提交檢舉失敗。' };
       }

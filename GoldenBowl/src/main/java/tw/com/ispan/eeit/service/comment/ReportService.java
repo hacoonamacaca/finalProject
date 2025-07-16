@@ -33,7 +33,7 @@ public class ReportService {
         BeanUtils.copyProperties(requestDTO, reportBean);
 
         reportBean.setReportDate(LocalDateTime.now()); // 設置舉報日期為當前時間
-        reportBean.setStatus("PENDING"); // 預設狀態為 PENDING
+        reportBean.setStatus("pending"); // 預設狀態為 PENDING
 
         // 由於 ReportBean 中的 reportTypeId 和 commentId 是直接映射的，
         // 且 @ManyToOne 設置了 insertable = false, updatable = false，
@@ -85,23 +85,33 @@ public class ReportService {
         ReportResponseDTO dto = new ReportResponseDTO();
         BeanUtils.copyProperties(reportBean, dto); // 複製相同名稱的屬性
 
+        // 確保 reportType 和 comment 關聯已經加載
         if (reportBean.getReportType() != null) {
             dto.setReportTypeName(reportBean.getReportType().getType());
         } else {
-            System.err.println("Warning: reportType is null for Report ID: " + reportBean.getId());
-            dto.setReportTypeName(null); // 或者設置為 "Unknown Type"
+            // 這部分代碼在使用了 JOIN FETCH 後理論上不會被觸發，除非資料庫存在不一致情況
+            System.err.println("Warning: reportType is null for Report ID: " + reportBean.getId()
+                    + ". This might indicate a data consistency issue or a missing JOIN FETCH.");
+            dto.setReportTypeName(null);
         }
 
         if (reportBean.getComment() != null) {
-            // 觸發 CommentBean 的載入 (如果它是 LAZY)
-            dto.setCommentContent(reportBean.getComment().getContent()); // 假設 CommentBean 有 getContent() 方法
-            dto.setCommentScore(reportBean.getComment().getScore()); // 假設 CommentBean 有 getScore() 方法
+            dto.setCommentContent(reportBean.getComment().getContent());
+            dto.setCommentScore(reportBean.getComment().getScore());
+            dto.setCommentIsHidden(reportBean.getComment().getIsHidden()); // **新增：設置 isHidden**
         } else {
-            // 如果 comment 是 null，嘗試從 commentId 查詢
-            commentRepository.findById(reportBean.getCommentId()).ifPresent(comment -> {
-                dto.setCommentContent(comment.getContent());
-                dto.setCommentScore(comment.getScore());
-            });
+            // 這部分代碼在使用了 JOIN FETCH 後理論上不會被觸發，除非資料庫存在不一致情況
+            // 如果確實需要手動查詢，請確保此處的 commentRepository.findById() 不會導致 N+1
+            System.err.println("Warning: comment is null for Report ID: " + reportBean.getId()
+                    + ". This might indicate a data consistency issue or a missing JOIN FETCH.");
+            // 備用方案：如果 comment 為空，嘗試透過 commentId 查詢（但這會導致額外查詢）
+            if (reportBean.getCommentId() != null) {
+                commentRepository.findById(reportBean.getCommentId()).ifPresent(comment -> {
+                    dto.setCommentContent(comment.getContent());
+                    dto.setCommentScore(comment.getScore());
+                    dto.setCommentIsHidden(comment.getIsHidden()); // **設置 isHidden**
+                });
+            }
         }
         return dto;
     }
