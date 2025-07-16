@@ -104,7 +104,7 @@ const goToOrderDetail = (orderId) => {
       v-for="order in orders"
       :key="order.id"
       class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
-      @click="goToOrderDetail(order.id)"
+      @click="goToOrderDetail(order.id)" 
     >
       <img
         :src="order.store.photo"

@@ -2,7 +2,7 @@
   <section class="restaurant-list">
     <div class="restaurant-card" v-for="restaurant in restaurants" :key="restaurant.id">
       <div class="image-container">
-        <img :src="restaurant.photo || 'https://via.placeholder.com/280x160'" :alt="restaurant.name"
+        <img :src="restaurant.photo " :alt="restaurant.name"
           @click="navigateToRestaurant(restaurant.id)" style="cursor: pointer;" />
         <i class="favorite-icon bi"
           :class="{ 'bi-heart-fill': restaurant.isFavorited, 'bi-heart': !restaurant.isFavorited }"

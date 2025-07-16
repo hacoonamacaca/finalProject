@@ -129,7 +129,7 @@ const allRecommendationKeywords = [
   { displayText: '喝酒! 嚕串!', searchKeyword: '燒烤' },
   { displayText: '痛風也要吃', searchKeyword: '海鮮' },
   { displayText: '朋友家人聚餐', searchKeyword: '聚餐' },
-  { displayText: '巷口銅板美食', searchKeyword: '超值' },
+  { displayText: '巷口銅板美食', searchKeyword: '小吃' },
   { displayText: '輕食無負擔', searchKeyword: '健康' },
   { displayText: '趕時間也能吃', searchKeyword: '快速' },
   { displayText: '氣氛超好拍美照', searchKeyword: '好拍照' },

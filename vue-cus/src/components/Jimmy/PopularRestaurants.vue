@@ -82,7 +82,8 @@ const openCommentModal = (storeId) => {
 }
 
 .popular-section h2 {
-  font-size: 1.5em;
+  font-size: 23px;
+  font-weight: bold; 
   margin-bottom: 15px;
   color: #333;
 }
@@ -143,6 +144,7 @@ const openCommentModal = (storeId) => {
 }
 
 .restaurant-card h3 {
+  font-weight: bold; 
   font-size: 16px;
   margin-top: 5px; /* 調整標題上邊距 */
   margin-bottom: 5px;

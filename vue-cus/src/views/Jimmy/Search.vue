@@ -52,7 +52,7 @@ const restaurantDisplayStore = useRestaurantDisplayStore();
 
 
 const API_URL = import.meta.env.VITE_API_URL;
-const SEARCH_RADIUS_KM = 5.0; // 定義熱門餐廳的搜索半徑為 5 公里
+const SEARCH_RADIUS_KM = 3.0; // 定義熱門餐廳的搜索半徑為 3 公里
 
 // Haversine 公式計算距離 (單位: 公里)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
