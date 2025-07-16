@@ -9,90 +9,90 @@
         <div class="modal-body">
           <h4 class="card-title text-center mb-4">您的訂單</h4>
 
-            <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
-              <i class="bi bi-clock"></i>
-              <div>
-                本店今日營業時間：<strong>今日營業時間為...</strong>
-              </div>
+          <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
+            <i class="bi bi-clock"></i>
+            <div>
+              本店今日營業時間：<strong>今日營業時間為...</strong>
             </div>
-            <div class="mb-4">
-              <label for="pickupTime" class="form-label fw-bold">預計取餐時間</label>
-              <div class="input-group ">
-                <button class="btn btn-outline-secondary " type="button" @click="adjustTime(-5)">－</button>
+          </div>
+          <div class="mb-4">
+            <label for="pickupTime" class="form-label fw-bold">預計取餐時間</label>
+            <div class="input-group ">
+              <button class="btn btn-outline-secondary " type="button" @click="adjustTime(-5)">－</button>
 
-                <input type="time" class="form-control text-center" v-model="currentTime" />
+              <input type="time" class="form-control text-center" v-model="currentTime" />
 
-                <button class="btn btn-outline-secondary" type="button" @click="adjustTime(5)">＋</button>
-              </div>
+              <button class="btn btn-outline-secondary" type="button" @click="adjustTime(5)">＋</button>
             </div>
+          </div>
 
-            <hr class="my-4">
+          <hr class="my-4">
 
-            <h5 class="mb-3">您的訂單</h5>
-            <div v-for="item in orderItems" :key="item.id"
-              class="d-flex align-items-center justify-content-between mb-3 py-2 border-bottom">
-              <div>
-                <div class="fw-bold">{{ item.name }}a</div>
-                <!-- 配料選校 -->
-                <!-- <small class="text-muted d-block" style="font-size: 0.85rem;">
+          <h5 class="mb-3">您的訂單</h5>
+          <div v-for="item in orderItems" :key="item.id"
+            class="d-flex align-items-center justify-content-between mb-3 py-2 border-bottom">
+            <div>
+              <div class="fw-bold">{{ item.food.name }}a</div>
+              <!-- 配料選校 -->
+              <!-- <small class="text-muted d-block" style="font-size: 0.85rem;">
                   {{ item.spec || '無選項' }}
                 </small> -->
-                <!-- <small class="text-muted">NT$ {{ item.price }}</small> -->
-              </div>
-              <div class="d-flex align-items-center gap-2">
-                <!-- <div class="d-flex align-items-center border overflow-hidden flex-shrink-0 rounded-2"> -->
-                  <!-- <button class="btn btn-sm px-2" @click="decreaseQuantity(item.id)" :disabled="item.quantity === 1"
+              <!-- <small class="text-muted">NT$ {{ item.price }}</small> -->
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <!-- <div class="d-flex align-items-center border overflow-hidden flex-shrink-0 rounded-2"> -->
+              <!-- <button class="btn btn-sm px-2" @click="decreaseQuantity(item.id)" :disabled="item.quantity === 1"
                     :class="{ 'btn-secondary text-white': item.quantity === 1, 'btn-light text-dark': item.quantity !== 1 }">
                     －
                   </button> -->
-                  <span  style="width: 35px;">{{ item.quantity }}</span>
-                  <!-- <button class="btn btn-sm px-2 btn-light text-dark" @click="increaseQuantity(item.id)">
+              <span style="width: 35px;">{{ item.quantity }}</span>
+              <!-- <button class="btn btn-sm px-2 btn-light text-dark" @click="increaseQuantity(item.id)">
                     ＋
                   </button> -->
-                <!-- </div> -->
-                <div class="fw-bold text-end" style="width: 80px;">NT$ {{ item.total }}</div>
-                <!-- <button class="btn btn-sm btn-outline-danger rounded-circle p-0"
+              <!-- </div> -->
+              <div class="fw-bold text-end" style="width: 80px;">NT$ {{ item.total }}</div>
+              <!-- <button class="btn btn-sm btn-outline-danger rounded-circle p-0"
                   style="width: 28px; height: 28px; font-size: 0.8rem;" @click="removeItem(item.id)">
                   <i class="bi bi-trash"></i>
                 </button> -->
-              </div>
             </div>
+          </div>
 
 
-            <!-- <div class="d-flex justify-content-between align-items-center mt-4">
+          <!-- <div class="d-flex justify-content-between align-items-center mt-4">
               <span class="fw-bold">小計</span>
               <span class="fw-bold">NT$ {{ subtotal }}</span>
             </div> -->
 
-            <div class="d-flex justify-content-between align-items-center mt-3 py-3 border-bottom">
-              <h5 class="mb-0">總付款金額</h5>
-              <h5 class="mb-0 text-primary">NT$ {{ totalPayment }}</h5>
-            </div>
+          <div class="d-flex justify-content-between align-items-center mt-3 py-3 border-bottom">
+            <h5 class="mb-0">總付款金額</h5>
+            <h5 class="mb-0 text-primary">NT$ {{ totalPayment }}</h5>
+          </div>
 
-            <p class="text-muted text-center mt-4 small">
-              您將在以下訂單選擇二、六月 24 日, 預約 12:30 取餐的外帶訂單。
-              <br>取餐地址為...
-            </p>
-            <div class="mb-3">
-              <label for="exampleFormControlTextarea1" class="form-label" >備註</label>
-              <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="content"></textarea>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mt-3">
-              <label class="fw-bold">付款方式：</label>
-              <label>
-                <input type="radio" name="payment" value="cash" v-model="paymentMethod" /> 現金支付
-              </label>
-              <label class="ms-3">
-                <input type="radio" name="payment" value="credit" v-model="paymentMethod" /> 信用卡支付
-              </label>
+          <p class="text-muted text-center mt-4 small">
+            您將在以下訂單選擇二、六月 24 日, 預約 12:30 取餐的外帶訂單。
+            <br>取餐地址為...
+          </p>
+          <div class="mb-3">
+            <label for="exampleFormControlTextarea1" class="form-label">備註</label>
+            <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" v-model="content"></textarea>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <label class="fw-bold">付款方式：</label>
+            <label>
+              <input type="radio" name="payment" value="cash" v-model="paymentMethod" /> 現金支付
+            </label>
+            <label class="ms-3">
+              <input type="radio" name="payment" value="credit" v-model="paymentMethod" /> 信用卡支付
+            </label>
 
-
-            </div>
-            <button type="button" class="btn btn-primary py-2 fw-bold w-100 mt-4" @click="emitAddToCart">
-              確定結帳 NT$ {{ totalPayment }}
-            </button>
 
           </div>
+          <button type="button" class="btn btn-primary py-2 fw-bold w-100 mt-4" @click="emitAddToCart">
+            確定結帳 NT$ {{ totalPayment }}
+          </button>
+
+        </div>
       </div>
     </div>
   </div>
@@ -117,12 +117,12 @@ const props = defineProps({
     default: false
   },
   restId: {
-      type: Number,
-      required: true
+    type: Number,
+    required: true
   }
 });
 
-  
+
 // 模態框實例和 DOM 元素引用
 
 let bsModal = null;
@@ -136,12 +136,12 @@ const content = ref('');
 // 設定備註
 
 onMounted(() => {
- 
+
   if (checkOrderModal.value) {
     bsModal = new Modal(checkOrderModal.value);
     // 初始化元素
     // 監聽 Bootstrap 的隱藏事件
-    
+
     checkOrderModal.value.addEventListener('hidden.bs.modal', () => {
       emits('close'); // 模態框完全隱藏後才通知父組件
       resetModalState();
@@ -159,7 +159,7 @@ onMounted(() => {
 
 const resetModalState = () => {
   content.value = '';
-  
+
 }
 
 watch(() => props.isVisible, (newVal) => {
@@ -221,23 +221,24 @@ const emitAddToCart = () => {
       hour12: false, // 顯示 24 小時制
       timeZone: 'Asia/Taipei' // 明確指定時區為台灣 (UTC+8)
     });
-    
-    const createTime = formattedTime.toString().replace(" ", "T").replace(/\//g, "-")
-    // formattedTime= formattedTime.replace(" ", "T");
-  console.log("格式化後的台灣時間:", formattedTime.toString().replace(" ", "T").replace(/\//g, "-"));
-      // console.log(new Date().toTimeString)
-      // console.log(new Date().toTimeString)
-   const body={
 
-      content:content.value,
-      status:'Pending',
-      create_time:createTime ,
-      method:paymentMethod.value,
-      pickup_time:createTime.slice(0, 11)+currentTime.value
+    const createTime = formattedTime.toString().replace(" ", "T").replace(/\//g, "-")
+    //建立訂單時間即日期
+    // formattedTime= formattedTime.replace(" ", "T");
+    console.log("格式化後的台灣時間:", formattedTime.toString().replace(" ", "T").replace(/\//g, "-"));
+    // console.log(new Date().toTimeString)
+    // console.log(new Date().toTimeString)
+    const body = {
+
+      content: content.value,
+      status: 'Pending',
+      create_time: createTime,
+      method: paymentMethod.value,
+      pickup_time: createTime.slice(0, 11) + currentTime.value
       // 設定取餐時間
     }
     //增加備註、訂單狀態、付款方式、取餐時間
-    emits('add-to-cart',props.restId,body);
+    emits('add-to-cart', props.restId, body);
     // 送出事件清空函數
     internalOrderItems.value = [];
     bsModal.hide();
@@ -276,7 +277,8 @@ const closeModal = () => {
 }
 
 .modal-backdrop {
-  z-index: 3999 !important; /* 或其他你想要的值 */
+  z-index: 3999 !important;
+  /* 或其他你想要的值 */
 }
 
 /* 移除所有關於 .order-summary-card 的樣式 */
@@ -289,7 +291,8 @@ const closeModal = () => {
 
 /* 如果 modal-body 預設 padding 不符合期望，可以在這裡調整 */
 .modal-body {
-  padding: 20px; /* 根據您的喜好調整內邊距 */
+  padding: 20px;
+  /* 根據您的喜好調整內邊距 */
 }
 
 
@@ -298,6 +301,7 @@ const closeModal = () => {
   border-top-left-radius: var(--bs-border-radius-pill) !important;
   border-bottom-left-radius: var(--bs-border-radius-pill) !important;
 }
+
 .input-group .form-control:last-child {
   border-top-right-radius: 0 !important;
   border-bottom-right-radius: 0 !important;

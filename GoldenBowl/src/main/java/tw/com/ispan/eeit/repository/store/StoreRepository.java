@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import tw.com.ispan.eeit.model.entity.UserBean;
+import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 
 @Repository
@@ -30,13 +31,11 @@ public interface StoreRepository extends JpaRepository<StoreBean, Integer> {
                         "LEFT JOIN FETCH f.tags t " +
                         "WHERE LOWER(s.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(s.address) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
-                        "OR LOWER(s.storeIntro) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(c.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(f.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')) " +
                         "OR LOWER(t.name) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
         List<StoreBean> findStoresBySearchTerm(@Param("searchTerm") String searchTerm);
 
-        // 如果你的 getAllStores() 也要載入所有細節，也可以定義類似的 @Query
         @Query("SELECT DISTINCT s FROM StoreBean s " +
                         "LEFT JOIN FETCH s.categories c " +
                         "LEFT JOIN FETCH s.foods f " +
@@ -46,9 +45,6 @@ public interface StoreRepository extends JpaRepository<StoreBean, Integer> {
         // 修改：回傳該Owner的所有Store（包含相關資料）
         @EntityGraph(attributePaths = { "categories", "foods", "foods.tags", "owner" })
         List<StoreBean> findByOwner_Id(Integer ownerId);
-
-        @Query("SELECT s FROM StoreBean s LEFT JOIN FETCH s.comments WHERE s.id = :id")
-        Optional<StoreBean> findByIdWithComments(@Param("id") Integer id);
 
         // 新增：獲取Owner的最新Store（按建立時間排序）
         @Query("SELECT s FROM StoreBean s " +
@@ -77,4 +73,14 @@ public interface StoreRepository extends JpaRepository<StoreBean, Integer> {
         @Query("SELECT COUNT(s) FROM StoreBean s WHERE s.owner.id = :ownerId")
         long countStoresByOwnerId(@Param("ownerId") Integer ownerId);
 
+        @Query("SELECT s FROM StoreBean s LEFT JOIN FETCH s.comments WHERE s.id = :id")
+        Optional<StoreBean> findByIdWithComments(@Param("id") Integer id);
+
+        // 查詢用戶並同時載入其收藏的商店，避免 N+1 問題
+        @Query("SELECT u FROM UserBean u LEFT JOIN FETCH u.favoriteStores WHERE u.id = :userId")
+        Optional<UserBean> findByIdWithFavoriteStores(@Param("userId") Integer userId);
+
+        // 判斷特定用戶是否收藏了特定商店 (更輕量級的查詢)
+        @Query("SELECT COUNT(fs) > 0 FROM UserBean u JOIN u.favoriteStores fs WHERE u.id = :userId AND fs.id = :storeId")
+        boolean existsFavoriteByUserIdAndStoreId(@Param("userId") Integer userId, @Param("storeId") Integer storeId);
 }

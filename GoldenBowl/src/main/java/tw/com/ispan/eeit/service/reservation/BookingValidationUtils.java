@@ -12,7 +12,7 @@ import tw.com.ispan.eeit.repository.store.SpecialHoursRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
 
 /**
- * 預約驗證工具類
+ * 預約驗證工具類 
  */
 @Component
 public class BookingValidationUtils {

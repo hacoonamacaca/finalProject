@@ -80,13 +80,17 @@ const getCategoryItems = (categoryName) => {
 
 const quickAddToCart = (item) => {
     const cartItem = {
-        id: item.id,
-        name: item.name,
+
         price: item.discountPrice || item.price,
         image: item.image,
         quantity: 1,
         sub_total: 0,
-        total: item.price
+        total: item.price,
+        food: {
+            id: item.id,
+            name: item.name,
+        },
+        tags: item.tagNames
     }
     handleAddToCart(cartItem)
 
@@ -96,6 +100,7 @@ const quickAddToCart = (item) => {
 
 const handleAddToCart = (itemToAdd) => {
     cartStore.addToCart(itemToAdd, props.restaurant)
+
     // 使用購物車開啟
     // if (showItemDetail.value) {
     //     closeItemDetail()
@@ -524,7 +529,7 @@ onUnmounted(() => {
 
                                 <!-- 餐點內容 -->
                                 <div class="item-tags" v-if="item.tagNames && item.tagNames.length > 0">
-                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag }}</span>
+                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag.name }}</span>
                                     <!-- 標籤 -->
                                 </div>
 

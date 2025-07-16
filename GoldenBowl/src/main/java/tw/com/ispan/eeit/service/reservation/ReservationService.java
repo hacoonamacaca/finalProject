@@ -571,7 +571,7 @@ public class ReservationService {
         // 檢查是否有特殊營業時間覆蓋
         SpecialHoursBean specialHours = specialHoursRepository
                 .findByStoreIdAndDate(storeId, date).orElse(null);
-
+  
         if (specialHours != null) {
             if (specialHours.getIsClose()) {
                 return false; // 特殊休假日

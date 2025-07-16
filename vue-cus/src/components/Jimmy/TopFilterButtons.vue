@@ -28,14 +28,14 @@
         @click="toggleSearchKeyword('熱')"
         :class="{ 'filter-button': true, 'active': activeKeywords.includes('熱') }"
       >
-        熱食推薦
+        天寒地凍？來點熱飲吧！
       </button>
       <button
         v-else-if="isHot"
         @click="toggleSearchKeyword('冰')"
         :class="{ 'filter-button': true, 'active': activeKeywords.includes('冰') }"
       >
-        冰品推薦
+        日頭炎炎？來點冰品吧！
       </button>
 
       <button v-for="item in randomKeywords" :key="item.searchKeyword" @click="toggleSearchKeyword(item.searchKeyword)" 
@@ -121,7 +121,7 @@ const toggleSearchKeyword = (keyword) => { // 這裡的 keyword 就是 searchKey
 const allRecommendationKeywords = [
   { displayText: '毛小孩好去處', searchKeyword: '寵物友善' },
   { displayText: '小孩放電好所在', searchKeyword: '公園附近' },
-  { displayText: '一起線上看直播', searchKeyword: '觀看直播' },
+  { displayText: '熱鬧看比賽!', searchKeyword: '觀看直播' },
   { displayText: '初一十五要吃菜', searchKeyword: '素食' },
   { displayText: '精神不濟?', searchKeyword: '咖啡' },
   { displayText: '想吃點特別的', searchKeyword: '異國料理' },
