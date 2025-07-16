@@ -4,14 +4,18 @@ import {
 } from 'vue-router';
 
 // 為了讓路由設定更乾淨，我們在這裡導入頁面組件
+import StoreHome from '../views/Ivy/StoreHome.vue';
 import SellerLayout from '../layouts/SellerLayout.vue';
 import MenuManagement from '../pages/MenuManagement.vue';
 import OrderManagement from '../pages/OrderManager.vue';
 import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
 import ReservationManagement from '../pages/ReservationManagement.vue';
 import TimeSettingTest from '../views/TimeSettingTest.vue';
-import EditStore from '../pages/EditStore.vue';
-import EditStoreUser from '../pages/EditStoreUser.vue';
+// import RegisterBusiness from '../views/Ivy/RegisterBusiness.vue';
+// import RegisterStoreInfo from '../views/Ivy/RegisterStoreInfo.vue';
+// import VerifyAddress from '../views/Ivy/VerifyAddress.vue';
+// import RegisterProfile from '../views/Ivy/RegisterProfile.vue';
+// import VerifyPending from '../views/Ivy/VerifyPending.vue';
 
 // 檢查業者登入狀態的函數
 function checkOwnerLogin() {
@@ -105,10 +109,66 @@ window.clearLogin = clearLoginData
 
 const routes = [
     {
-        // 根目錄重導向到 /store
+        // 根目錄重導向邏輯：已登入→管理後台，未登入→首頁
         path: '/',
-        redirect: '/store'
+        redirect: () => {
+            const ownerStatus = checkOwnerLogin()
+            return ownerStatus.isLoggedIn ? '/store' : '/home'
+        }
     },
+
+    // 🔥 首頁路由 - StoreHome.vue (歡迎光臨頁面)
+    {
+        path: '/home',              // 建議改為 /home 比較貼切
+        name: 'StoreHome',
+        component: StoreHome,       // 🔥 使用已 import 的組件
+        meta: { requiresOwnerAuth: false }
+    },
+
+    // 🔥 (備用)保留 /login 作為別名，指向同一個組件
+    {
+        path: '/login',
+        redirect: '/home'           // 重導向到首頁
+    },
+
+    // 🔥 NEW: 註冊流程相關路由 (無需登入權限)
+    {
+        path: '/register',
+        redirect: '/home'  // 直接重導向到首頁
+    },
+
+    // {
+    //     path: '/register',
+    //     name: 'RegisterBusiness',
+    //     component: RegisterBusiness,
+    //     meta: { requiresOwnerAuth: false }
+    // },
+    // {
+    //     path: '/register/store-info',
+    //     name: 'RegisterStoreInfo',
+    //     component: RegisterStoreInfo,
+    //     meta: { requiresOwnerAuth: false }
+    // },
+    // {
+    //     path: '/register/verify-address',
+    //     name: 'VerifyAddress',
+    //     component: VerifyAddress,
+    //     meta: { requiresOwnerAuth: false }
+    // },
+    // {
+    //     path: '/register/profile',
+    //     name: 'RegisterProfile',
+    //     component: RegisterProfile,
+    //     meta: { requiresOwnerAuth: false }
+    // },
+    // {
+    //     path: '/register/verify-pending',
+    //     name: 'VerifyPending',
+    //     component: VerifyPending,
+    //     meta: { requiresOwnerAuth: false }
+    // },
+
+    // 🔥 管理後台路由 (需要登入權限)
     {
         path: '/store',
         component: SellerLayout, // 所有 / 開頭的路由都先經過這個佈局組件
@@ -125,21 +185,6 @@ const routes = [
             },
 
             // 未來您可以繼續在這裡新增路由
-
-            {
-                path: 'edit-owner', // 代表是 /store/edit-owner
-                name: 'EditStoreUser',
-                component: EditStoreUser,
-                meta: { requiresOwnerAuth: true }
-            },
-
-            {
-                path: 'edit-store', // 代表是 /store/edit-store
-                name: 'EditStore',
-                component: EditStore,
-                meta: { requiresOwnerAuth: true }
-            },
-
             {
                 path: 'orders', // 代表是 /store/orders
                 name: 'OrderManager',
@@ -166,15 +211,23 @@ const routes = [
                 name: 'TimeSettingTest',
                 component: TimeSettingTest,
                 meta: { requiresOwnerAuth: true }
-            }
-
+            },
         ]
     },
+
+    // 🔥 404 處理：根據登入狀態重導向
     {
-        // 如果訪問不存在的路徑，重導向到 /store
         path: '/:pathMatch(.*)*',
-        redirect: '/store'
+        redirect: () => {
+            const ownerStatus = checkOwnerLogin()
+            return ownerStatus.isLoggedIn ? '/store' : '/home'
+        }
     }
+    // {
+    //     // 如果訪問不存在的路徑，重導向到 /store
+    //     path: '/:pathMatch(.*)*',
+    //     redirect: '/store'
+    // }
 ];
 
 const router = createRouter({
@@ -208,9 +261,13 @@ router.beforeEach((to, from, next) => {
             return
             */
 
-            // 暫時阻止進入，但不跳轉
-            alert('請先設定登入資料！請查看 console 說明。')
+            // 🔥 正式環境：未登入時跳轉到註冊頁
+            next('/register')
             return
+
+            // 🔥 測試環境：註解掉上面的 next('/register')，取消註解下面的程式碼，可暫時阻止進入，但不跳轉
+            // alert('請先設定登入資料！請查看 console 說明。')
+            // return
         }
 
         // 登入成功，顯示登入狀態

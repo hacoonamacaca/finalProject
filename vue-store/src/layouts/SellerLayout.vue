@@ -238,7 +238,7 @@ onBeforeUnmount(() => {
     padding: 2rem;
     position: relative;
     /* << 新增：讓它建立一個堆疊上下文 */
-    z-index: 20;
+    /* z-index: 20; */
     /* << 新增：給它一個較高的層級，確保它在最上面 */
 }
 
