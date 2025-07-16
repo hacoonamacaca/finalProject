@@ -1,5 +1,5 @@
 <template>
-  <div class="voucher-container container my-5 p-4 shadow-sm bg-white rounded-4">
+  <div class="voucher-container mx-auto my-5 p-4 shadow-sm bg-white rounded-4 custom-width">
     <h2 class="mb-4 fw-bold text-center">
       <i class="bi bi-ticket-perforated me-3 text-warning"></i>我的優惠券
     </h2>
@@ -55,7 +55,7 @@ const tabs = [
   { label: '全部', value: 'all', icon: 'fas fa-folder-open' },
   { label: '全平台', value: 'global', icon: 'fas fa-globe' },
   { label: '餐廳限定', value: 'restaurant', icon: 'fas fa-utensils' },
-  { label: '餐點限定', value: 'food', icon: 'fas fa-drumstick-bite' },
+  { label: '餐點限定', value: 'food', icon: 'fas fa-hamburger' },
   { label: '會員限定', value: 'member', icon: 'fas fa-crown' },
   { label: '歷史紀錄', value: 'history', icon: 'fas fa-clock' }
 ]
@@ -184,43 +184,52 @@ h2 {
   letter-spacing: 1px;
 }
 
+.custom-width {
+  max-width: 1200px; /* 你可以自己調整為 700px 或 600px */
+  width: 100%;
+}
+
 /* 主容器美化 */
 .voucher-container {
   background-color: #fffbea;
+  color: #5f3300;
 }
 
 /* Tabs 樣式 */
 .nav-tabs {
-  border-bottom: 2px solid #ffc94d;
+  border-bottom: 2px solid #a06d50;
 }
 
 .nav-tabs .nav-link {
-  border-radius: 0; /* 去掉圓角 */
-  color: #555;
+  border: 1px solid transparent;
+  color: #666;
   font-weight: 500;
   padding: 10px 20px;
 }
 
+.nav-tabs .nav-link:hover {
+  background-color: #fff3cd;
+  color: #a06d50;
+  border-color: #ffe58f;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.nav-tabs .nav-link.active {
+  background-color: #a06d50;
+  color: white;
+  font-weight: bold;
+  border-color: #ffc94d #ffc94d #fff;
+}
 
 .tab-btn {
+  width: 140px;
   background-color: transparent;
   color: #666;
   border: 1px solid transparent;
-  transition: all 0.2s ease;
-  border-radius: 0 !important;
-}
-
-.tab-btn:hover {
-  background-color: #fff3cd;
-  color: #d48806;
-  border-color: #ffe58f;
-}
-
-.tab-btn.active {
-  background-color: #ffc94d;
-  color: white;
-  font-weight: bold;
-  border-color: #ffc94d;
+  transition: all 0.3s ease;
+  border-radius: 10px 10px 0 0;
 }
 
 /* 無資料訊息 */

@@ -4,79 +4,61 @@ import { ref ,onMounted} from 'vue';
 import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
 import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
-// 如果你的 main.js 或其他地方沒有全局引入 Bootstrap CSS 和 Icons，你可以在這裡引入
-// import 'bootstrap/dist/css/bootstrap.min.css';
-// import 'bootstrap-icons/font/bootstrap-icons.css'; // 如果你使用了 Bootstrap Icons
-// import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // 如果需要 Bootstrap JS 功能
-
-
-
+import { useRouter } from 'vue-router';
 
 const orders=ref([])
-// 模擬訂單數據
-// orders.value.push(
-//   {
-//     id: 1,
-//     store: '店家名稱1', // 修正 'sotre' 為 'store'
-//     img: 'https://www.discoverhongkong.com/content/dam/dhk/intl/explore/dining/hong-kong-restaurants-by-the-sea/hue-960x720.jpg',
-//     price: 499,
-//     foods: [{
-//       name: '綠茶',
-//       quantity: 1,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '紅茶拿鐵',
-//       quantity: 2,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '叉燒飯',
-//       quantity: 3,
-//       like: null,
-//     }],
-//     time: '2025-06-24 18:30',
-//     rating: 0, // 初始未評分
-//     like: null,
-//   },
-//   {
-//     id: 2,
-//     img: 'https://www.discoverhongkong.com/content/dam/dhk/intl/explore/dining/hong-kong-restaurants-by-the-sea/hue-960x720.jpg',
-//     store: '店家名稱2', // 修正 'sotre' 為 'store'
-//     price: 699,
-//     foods: [{
-//       name: '綠茶',
-//       quantity: 1,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '紅茶拿鐵',
-//       quantity: 2,
-//       spec: '中杯,溫,無糖,六分糖',
-//       like: null,
-//     }, {
-//       name: '叉燒飯',
-//       quantity: 3,
-//       like: null,
-//     }],
-//     time: '2025-06-23 19:00',
-//     rating: 5,
-//     like: null,
-//   },
-// );
-// 如果有來自Pinia的參數
-
 const id = ref(1)
 const userStore = useUserStore(); // 實例化 userStore
+const router = useRouter();
 const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
 
+
+/**
+ * 從後端獲取用戶訂單列表
+ * @param {number} id - 用戶 ID
+ */
+ async function fetchOrders(id) {
+    try {
+        const response = await axios.get(`/api/orders/user/${id}`);
+        // 對於每個訂單，如果沒有 comment 屬性或 likedFood 屬性，則補上預設值，
+        // 確保 ReviewModal 可以安全訪問這些屬性
+        orders.value = response.data.map(order => {
+            // 確保 comment 屬性存在，即使為空也設為 null
+            order.comment = order.comment || null; 
+            if (order.orderDetails) {
+                order.orderDetails = order.orderDetails.map(detail => {
+                    // 確保 likedFood 屬性存在，即使為空也設為 null
+                    detail.likedFood = detail.likedFood || null; 
+                    return detail;
+                });
+            }
+            return order;
+        });
+        console.log("訂單數據加載成功:", orders.value);
+    } catch (error) {
+        console.error("加載訂單失敗:", error);
+    }
+}
+
+// 監聽 RatingModal 發出的更新事件，然後重新獲取訂單數據
+const handleRatingUpdated = () => {
+    console.log("收到 RatingModal 的更新事件，重新加載訂單...");
+    if (userId.value) {
+        fetchOrders(userId.value); // 重新呼叫 fetchOrders 刷新數據
+    }
+};
+
 onMounted(() => {
-  orders.value.push(findorder(id))
+  // 獲取用戶 ID 從 Pinia
+  console.log(userId.value)
+
   // 初始化訂單評分狀態
   // 從 Pinia 獲取用戶 ID
   userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
   if (userId.value) {
-    findOrder(userId.value);
+    findorder(userId.value)
+
+    // orders.value.push(findOrder(userId.value));
   } else {
     console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
     // 您可以導向登入頁面或顯示提示
@@ -84,7 +66,7 @@ onMounted(() => {
 })
 
 function findorder(id) {
-  axios.get(`/api/orders/user/${id.value}`)
+  axios.get(`/api/orders/user/${id}`)
     .then(function (response) {
 
       console.log("訂單數據:", response.data);
@@ -105,6 +87,12 @@ function findorder(id) {
 const reorder = (order) => {
   alert(`重新訂購：${order.store}`); // 修正 alert 內容
 };
+
+//頁面跳轉 點擊訂單詳情後跳轉
+const goToOrderDetail = (orderId) => {
+  router.push({ name: 'OrderDetail', params: { id: orderId } });
+};
+
 </script>
 
 <template>
@@ -116,6 +104,7 @@ const reorder = (order) => {
       v-for="order in orders"
       :key="order.id"
       class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm"
+      @click="goToOrderDetail(order.id)"
     >
       <img
         :src="order.store.photo"
@@ -144,18 +133,19 @@ const reorder = (order) => {
         </div>
 
         <div class="d-flex justify-content-end align-items-center mt-3">
-          <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click="reorder(order)">
+          <button class="btn btn-outline-danger btn-sm rounded-pill px-3" @click.stop="reorder(order)">
             選擇想要重新訂購的項目
           </button>
         </div>
 
         <div >
-            <RatingModal :order="order" />
+          <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 /* 外部容器，保持與 RestaurantTemplate 中 tab-menu-container 相似的寬度限制 */
@@ -173,10 +163,6 @@ const reorder = (order) => {
   transition: transform 0.2s ease, box-shadow 0.2s ease; /* 添加過渡效果 */
 }
 
-/* .order-item-card:hover {
-  transform: translateY(-3px); 鼠標懸停時輕微上移 
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);  懸停時陰影加深 
-}*/
 
 /* 圓角類，Bootstrap 預設的 rounded-lg 已經很不錯 */
 .rounded-lg {

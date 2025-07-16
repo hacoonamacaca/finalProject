@@ -1,7 +1,4 @@
 <template>
-    <div style="position:fixed;top:0;left:0;z-index:99999;color:red;">
-        step: {{ step }}, email: {{ userEmail }}
-    </div>
     <div class="user-dropdown-container">
         <a href="#" class="user-link" @click.prevent="toggleDropdown">
             {{ isLoggedIn ? (userFullName || '目前使用者*') : '請選擇登入身分' }}
