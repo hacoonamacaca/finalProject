@@ -1,8 +1,10 @@
 package tw.com.ispan.eeit.service.promotion;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -23,6 +25,7 @@ import tw.com.ispan.eeit.repository.food.TagRepository;
 import tw.com.ispan.eeit.repository.plan.PlanRepository;
 import tw.com.ispan.eeit.repository.promotion.PromotionRepository;
 import tw.com.ispan.eeit.repository.store.StoreRepository;
+import tw.com.ispan.eeit.util.DatetimeConvert;
 
 @Service
 public class PromotionService {
@@ -72,7 +75,7 @@ public class PromotionService {
         bean.setCode(dto.getCode());
         bean.setMaxUsage(dto.getMaxUsage());
         bean.setUserUsageLimit(dto.getUserUsageLimit());
-        bean.setStatus("ACTIVE");
+        bean.setStatus("open");
         bean.setCreatedTime(LocalDateTime.now());
 
         // ✅ 預設時間區間
@@ -266,23 +269,15 @@ public class PromotionService {
         String type = getType(p);
         LocalDateTime now = LocalDateTime.now();
 
-        boolean available = 
+        boolean available =
             "open".equalsIgnoreCase(p.getStatus()) &&
             (p.getStartTime() == null || !now.isBefore(p.getStartTime())) &&
             (p.getEndTime() == null || !now.isAfter(p.getEndTime()));
 
-        return new PromotionDTO(
-            p.getId(),
-            p.getTitle(),
-            p.getDescription(),
-            p.getDiscountType(),
-            p.getDiscountValue(),
-            p.getMinSpend(),
-            p.getStartTime(),
-            p.getEndTime(),
-            p.getStatus(),     // ✅ 保留 open/close 給後台人為控制
-            available,         // ✅ 自動算出可用性
-            type,
+        PromotionDTO dto = new PromotionDTO(
+            p.getId(), p.getTitle(), p.getDescription(), p.getDiscountType(),
+            p.getDiscountValue(), p.getMinSpend(), p.getStartTime(), p.getEndTime(),
+            p.getStatus(), available, type,
             p.getTag() != null ? p.getTag().getId() : null,
             p.getTag() != null ? p.getTag().getName() : null,
             p.getStore() != null ? p.getStore().getId() : null,
@@ -290,8 +285,17 @@ public class PromotionService {
             p.getPlan() != null ? p.getPlan().getId() : null,
             p.getPlan() != null ? p.getPlan().getName() : null,
             p.getPlan() != null ? p.getPlan().getPrice() : null,
-            p.getPlan() != null ? p.getPlan().getValidMonths() : null
+            p.getPlan() != null ? p.getPlan().getValidMonths() : null,
+            p.getCode(), p.getMaxUsage(), p.getUserUsageLimit(),
+            null, // startTimeStr 預設 null，待會補上
+            null  // endTimeStr 預設 null，待會補上
         );
+     // ✨ 新增格式化欄位
+        String startTimeStr = DatetimeConvert.toString(p.getStartTime(), "yyyy/MM/dd（E） HH:mm", Locale.TAIWAN);
+        String endTimeStr = DatetimeConvert.toString(p.getEndTime(), "yyyy/MM/dd（E） HH:mm", Locale.TAIWAN);
+        dto.setStartTimeStr(startTimeStr);
+        dto.setEndTimeStr(endTimeStr);
+       
+        return dto;
     }
-
 }

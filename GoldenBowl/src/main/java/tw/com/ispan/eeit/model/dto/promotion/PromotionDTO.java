@@ -33,4 +33,11 @@ public class PromotionDTO {
     private String planName;
 	private Integer planPrice;
 	private Integer planValidMonths;
+	private String code;
+	private Integer maxUsage;
+	private Integer userUsageLimit;
+	
+	//時間格式
+	private String startTimeStr;
+    private String endTimeStr;
 }
