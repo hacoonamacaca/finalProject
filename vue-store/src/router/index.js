@@ -7,15 +7,14 @@ import {
 import StoreHome from '../views/Ivy/StoreHome.vue';
 import SellerLayout from '../layouts/SellerLayout.vue';
 import MenuManagement from '../pages/MenuManagement.vue';
+import EditStore from '../pages/EditStore.vue';
+import EditStoreUser from '../pages/EditStoreUser.vue';
+
 import OrderManagement from '../pages/OrderManager.vue';
 import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
 import ReservationManagement from '../pages/ReservationManagement.vue';
 import TimeSettingTest from '../views/TimeSettingTest.vue';
-// import RegisterBusiness from '../views/Ivy/RegisterBusiness.vue';
-// import RegisterStoreInfo from '../views/Ivy/RegisterStoreInfo.vue';
-// import VerifyAddress from '../views/Ivy/VerifyAddress.vue';
-// import RegisterProfile from '../views/Ivy/RegisterProfile.vue';
-// import VerifyPending from '../views/Ivy/VerifyPending.vue';
+
 
 // 檢查業者登入狀態的函數
 function checkOwnerLogin() {
@@ -137,37 +136,6 @@ const routes = [
         redirect: '/home'  // 直接重導向到首頁
     },
 
-    // {
-    //     path: '/register',
-    //     name: 'RegisterBusiness',
-    //     component: RegisterBusiness,
-    //     meta: { requiresOwnerAuth: false }
-    // },
-    // {
-    //     path: '/register/store-info',
-    //     name: 'RegisterStoreInfo',
-    //     component: RegisterStoreInfo,
-    //     meta: { requiresOwnerAuth: false }
-    // },
-    // {
-    //     path: '/register/verify-address',
-    //     name: 'VerifyAddress',
-    //     component: VerifyAddress,
-    //     meta: { requiresOwnerAuth: false }
-    // },
-    // {
-    //     path: '/register/profile',
-    //     name: 'RegisterProfile',
-    //     component: RegisterProfile,
-    //     meta: { requiresOwnerAuth: false }
-    // },
-    // {
-    //     path: '/register/verify-pending',
-    //     name: 'VerifyPending',
-    //     component: VerifyPending,
-    //     meta: { requiresOwnerAuth: false }
-    // },
-
     // 🔥 管理後台路由 (需要登入權限)
     {
         path: '/store',
@@ -185,6 +153,21 @@ const routes = [
             },
 
             // 未來您可以繼續在這裡新增路由
+
+            {
+                path: 'edit-owner', // 代表是 /store/edit-owner
+                name: 'EditStoreUser',
+                component: EditStoreUser,
+                meta: { requiresOwnerAuth: true }
+            },
+
+            {
+                path: 'edit-store', // 代表是 /store/edit-store
+                name: 'EditStore',
+                component: EditStore,
+                meta: { requiresOwnerAuth: true }
+            },
+
             {
                 path: 'orders', // 代表是 /store/orders
                 name: 'OrderManager',
@@ -252,14 +235,6 @@ router.beforeEach((to, from, next) => {
             console.log('   setTempLogin(4)  // 陳麗華 - 麗華風味餐廳')
             console.log('   setTempLogin(5)  // 林志明 - 志明經典餐廳')
             console.log('   clearLogin()     // 清除登入資料')
-
-            // 🔥 暫時註解掉跳轉邏輯，方便測試
-            // 正式串接時再取消註解
-            /*
-            const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
-            window.location.href = `${vueCustomerUrl}/store`
-            return
-            */
 
             // 🔥 正式環境：未登入時跳轉到註冊頁
             next('/register')
