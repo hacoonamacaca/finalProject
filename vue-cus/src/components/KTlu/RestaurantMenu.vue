@@ -81,13 +81,18 @@ const getCategoryItems = (categoryName) => {
 
 const quickAddToCart = (item) => {
     const cartItem = {
-        id: item.id,
-        name: item.name,
+        
+						
         price: item.discountPrice || item.price,
         image: item.image,
         quantity: 1,
         sub_total: 0,
-        total:item.price
+        total: item.price,
+        food: {
+            id: item.id,
+            name: item.name,
+        },
+        tags: item.tagNames
     }
     handleAddToCart(cartItem)
 

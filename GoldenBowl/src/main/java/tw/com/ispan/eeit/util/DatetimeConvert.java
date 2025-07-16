@@ -2,7 +2,9 @@ package tw.com.ispan.eeit.util;
 
 
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -57,4 +59,108 @@ public class DatetimeConvert {
 	            return null;
 	        }
 	    }
+	 
+		/**
+		 * 將 LocalDate 轉換為指定格式的字串
+		 * @param date LocalDate 物件
+		 * @param format 日期格式，例如 "yyyy-MM-dd"
+		 * @return 格式化後的日期字串，如果輸入為 null 則返回空字串
+		 */
+		public static String toString(LocalDate date, String format) {
+			if (date == null) {
+				return "";
+			}
+			try {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+				return date.format(formatter);
+			} catch (IllegalArgumentException e) {
+				System.err.println("無效的日期格式字串: " + format);
+				e.printStackTrace();
+				return "";
+			} catch (Exception e) {
+				System.err.println("格式化 LocalDate 時發生錯誤: " + date + ", 格式: " + format);
+				e.printStackTrace();
+				return "";
+			}
+		}
+
+		/**
+		 * 將字串解析為 LocalDate
+		 * @param dateStr 日期字串
+		 * @param format 日期格式，例如 "yyyy-MM-dd"
+		 * @return 解析後的 LocalDate 物件，如果解析失敗則返回 null
+		 */
+		public static LocalDate parseLocalDate(String dateStr, String format) {
+			if (dateStr == null || dateStr.trim().isEmpty()) {
+				return null;
+			}
+			try {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+				return LocalDate.parse(dateStr, formatter);
+			} catch (DateTimeParseException e) {
+				System.err.println("解析 LocalDate 字串失敗: '" + dateStr + "'，預期格式: '" + format + "'");
+				e.printStackTrace();
+				return null;
+			} catch (IllegalArgumentException e) {
+				System.err.println("無效的日期格式字串: " + format);
+				e.printStackTrace();
+				return null;
+			} catch (Exception e) {
+				System.err.println("解析 LocalDate 字串時發生未知錯誤: " + dateStr + ", 格式: " + format);
+				e.printStackTrace();
+				return null;
+			}
+		}
+
+		/**
+		 * 將 LocalTime 轉換為指定格式的字串
+		 * @param time LocalTime 物件
+		 * @param format 時間格式，例如 "HH:mm"
+		 * @return 格式化後的時間字串，如果輸入為 null 則返回空字串
+		 */
+		public static String toString(LocalTime time, String format) {
+			if (time == null) {
+				return "";
+			}
+			try {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+				return time.format(formatter);
+			} catch (IllegalArgumentException e) {
+				System.err.println("無效的時間格式字串: " + format);
+				e.printStackTrace();
+				return "";
+			} catch (Exception e) {
+				System.err.println("格式化 LocalTime 時發生錯誤: " + time + ", 格式: " + format);
+				e.printStackTrace();
+				return "";
+			}
+		}
+
+		/**
+		 * 將字串解析為 LocalTime
+		 * @param timeStr 時間字串
+		 * @param format 時間格式，例如 "HH:mm"
+		 * @return 解析後的 LocalTime 物件，如果解析失敗則返回 null
+		 */
+		public static LocalTime parseLocalTime(String timeStr, String format) {
+			if (timeStr == null || timeStr.trim().isEmpty()) {
+				return null;
+			}
+			try {
+				DateTimeFormatter formatter = DateTimeFormatter.ofPattern(format);
+				return LocalTime.parse(timeStr, formatter);
+			} catch (DateTimeParseException e) {
+				System.err.println("解析 LocalTime 字串失敗: '" + timeStr + "'，預期格式: '" + format + "'");
+				e.printStackTrace();
+				return null;
+			} catch (IllegalArgumentException e) {
+				System.err.println("無效的時間格式字串: " + format);
+				e.printStackTrace();
+				return null;
+			} catch (Exception e) {
+				System.err.println("解析 LocalTime 字串時發生未知錯誤: " + timeStr + ", 格式: " + format);
+				e.printStackTrace();
+				return null;
+			}
+		}
 }
