@@ -17,10 +17,11 @@ public interface ReportRepository extends JpaRepository<ReportBean, Integer> {
     @EntityGraph(attributePaths = { "reportType", "comment" })
     Optional<ReportBean> findById(Integer id);
 
-    // 使用 JOIN FETCH 預先加載 reportType 和 comment 關聯
+    // 使用 JOIN FETCH 預先加載 reportType 和 comment 關聯 0716 JIMMY新增
     @Query("SELECT r FROM ReportBean r JOIN FETCH r.reportType JOIN FETCH r.comment")
     List<ReportBean> findAllWithDetails();
 
+    // 0716 JIMMY新增
     @Query("SELECT r FROM ReportBean r JOIN FETCH r.reportType JOIN FETCH r.comment WHERE r.id = :id")
     Optional<ReportBean> findByIdWithDetails(@Param("id") Integer id);
 

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import tw.com.ispan.eeit.model.entity.comment.ReportTypeBean;
@@ -22,7 +23,7 @@ public class ReportTypeService {
 
     // 取得全部
     public List<ReportTypeBean> findAll() {
-        return reportTypeRepository.findAll();
+        return reportTypeRepository.findAll(Sort.by(Sort.Direction.ASC, "prime"));// 0716 JIMMY 修改排序
     }
 
     // 更新

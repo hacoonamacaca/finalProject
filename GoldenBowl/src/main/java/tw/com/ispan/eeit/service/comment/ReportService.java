@@ -80,7 +80,7 @@ public class ReportService {
         return false;
     }
 
-    // **輔助方法：將 ReportBean 轉換為 ReportResponseDTO**
+    // 0716 JIMMY 整個FUNCTION覆蓋**輔助方法：將 ReportBean 轉換為 ReportResponseDTO**
     private ReportResponseDTO convertToResponseDTO(ReportBean reportBean) {
         ReportResponseDTO dto = new ReportResponseDTO();
         BeanUtils.copyProperties(reportBean, dto); // 複製相同名稱的屬性
