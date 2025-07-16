@@ -411,7 +411,7 @@ onMounted(() => {
         </div>
 
         <div v-else-if="currentView === 'timeslots'">
-            <TimeSlotManager :store-id="storeId" />
+            <TimeSlotManager :store-id="selectedStore" />
         </div>
 
         <!-- 訂位詳情側邊欄 -->

@@ -4,13 +4,13 @@ import logoUrl from '../assets/logo.png'
 import { useStore } from '@/composables/useStore.js' // 🔥 NEW: 導入 useStore
 
 // 🔥 NEW: 使用 store composable
-const { 
-    currentUser, 
-    stores, 
-    selectedStore, 
+const {
+    currentUser,
+    stores,
+    selectedStore,
     isLoading: isStoreLoading,
     isLoggedIn,
-    switchStore 
+    switchStore
 } = useStore()
 
 // 響應式資料
@@ -39,10 +39,10 @@ const logout = () => {
     localStorage.removeItem('storeEmail')
     localStorage.removeItem('storeId')
     localStorage.removeItem('storeProfile')
-    
+
     // 重設本地狀態
     showDropdown.value = false
-    
+
     // 跳轉回 vue-cus 登入頁面
     const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
     window.location.href = `${vueCustomerUrl}/store`
@@ -79,20 +79,14 @@ onBeforeUnmount(() => {
             <!-- 右側使用者資訊 -->
             <div class="d-flex align-items-center gap-3">
                 <span class="text-white fw-semibold">
-                {{ currentUser ? currentUser.ownerFullName || currentUser.ownerEmail || '商家' : '使用者' }}，您好！
+                    {{ currentUser ? currentUser.ownerFullName || currentUser.ownerEmail || '商家' : '使用者' }}，您好！
                 </span>
                 <!-- 純 Vue 控 dropdown -->
                 <div ref="iconDropdownRef" class="position-relative">
-                    <i
-                        class="bi bi-person-circle text-white"
-                        style="font-size: 2rem; cursor:pointer"
-                        @click="onUserIconClick"
-                    ></i>
-                    <ul
-                        v-if="isLoggedIn && showDropdown"
-                        class="dropdown-menu dropdown-menu-end show"
-                        style="position: absolute; right: 0; top: 110%;"
-                    >
+                    <i class="bi bi-person-circle text-white" style="font-size: 2rem; cursor:pointer"
+                        @click="onUserIconClick"></i>
+                    <ul v-if="isLoggedIn && showDropdown" class="dropdown-menu dropdown-menu-end show"
+                        style="position: absolute; right: 0; top: 110%;">
                         <li>
                             <a class="dropdown-item" href="#" @click.prevent="logout">登出</a>
                         </li>
@@ -111,7 +105,7 @@ onBeforeUnmount(() => {
                     <!-- 🔥 NEW: 店家選擇區域 -->
                     <div class="sidebar-section">
                         <h6 class="section-title">當前店家</h6>
-                        
+
                         <!-- 載入中狀態 -->
                         <div v-if="isStoreLoading" class="text-center p-2">
                             <div class="spinner-border spinner-border-sm" role="status">
@@ -119,25 +113,23 @@ onBeforeUnmount(() => {
                             </div>
                             <small class="d-block mt-1">載入店家中...</small>
                         </div>
-                        
+
                         <!-- 店家選擇 -->
                         <div v-else-if="stores.length > 0" class="mb-3">
                             <!-- 多店家：下拉選單 -->
-                            <select v-if="stores.length > 1" 
-                                    class="form-select form-select-sm" 
-                                    :value="selectedStore"
-                                    @change="handleStoreChange">
+                            <select v-if="stores.length > 1" class="form-select form-select-sm" :value="selectedStore"
+                                @change="handleStoreChange">
                                 <option v-for="store in stores" :key="store.id" :value="store.id">
                                     🏪 {{ store.name }}
                                 </option>
                             </select>
-                            
+
                             <!-- 單店家：顯示名稱 -->
                             <div v-else class="alert alert-info mb-0 py-2">
                                 <small>🏪 {{ stores[0].name }}</small>
                             </div>
                         </div>
-                        
+
                         <!-- 無店家資料 -->
                         <div v-else class="alert alert-warning mb-0 py-2">
                             <small>⚠️ 無店家資料</small>
@@ -183,6 +175,12 @@ onBeforeUnmount(() => {
                             <li class="nav-item">
                                 <router-link to="/store/hours" class="nav-link" active-class="active-link">
                                     <i class="fas fa-clock fa-fw me-2"></i> 營業時間
+                                </router-link>
+                            </li>
+
+                            <li class="nav-item">
+                                <router-link to="/store/timeslots" class="nav-link" active-class="active-link">
+                                    <i class="fas fa-calendar-alt fa-fw me-2"></i> 時段管理
                                 </router-link>
                             </li>
 

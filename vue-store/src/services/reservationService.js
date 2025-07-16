@@ -341,6 +341,7 @@ class ReservationService {
              */
             async getTimeSetting(storeId) {
                 try {
+                    console.log('storeId', storeId);
                     const response = await axios.get(`/api/time-setting/${storeId}`);
                     return response.data;
                 } catch (error) {
