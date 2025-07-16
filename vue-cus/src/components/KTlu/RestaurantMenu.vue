@@ -90,7 +90,8 @@ const quickAddToCart = (item) => {
         food: {
             id: item.id,
             name: item.name,
-        }
+        },
+        tags: item.tagNames
     }
     handleAddToCart(cartItem)
 
