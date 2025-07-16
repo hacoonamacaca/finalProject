@@ -3,8 +3,9 @@ import { onMounted, ref } from 'vue';
 import GeneralHoursEditor from '../components/hours/GeneralHoursEditor.vue';
 import SpecialHoursEditor from '../components/hours/SpecialHoursEditor.vue';
 import axios from '@/plungins/axios.js';
+import Swal from 'sweetalert2';
 
-const storeid =ref(7) //店家id
+const storeId =ref(1) //店家id
 
 // 模態框/側邊欄的顯示狀態
 const isSidebarVisible = ref(false);
@@ -19,13 +20,13 @@ const generalHours = ref([]);//一般營業時間
 
 //預設陣列
 const defaultDayData = [
-  {storeId: storeid.value, dayOfWeek: 'SUNDAY', dayName: '星期日', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  {storeId: storeid.value, dayOfWeek: 'MONDAY', dayName: '星期一', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  {storeId: storeid.value, dayOfWeek: 'TUESDAY', dayName: '星期二', openTimeStr:null, closeTimeStr: null, isOpen: false },
-  {storeId: storeid.value, dayOfWeek: 'WEDNESDAY', dayName: '星期三', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  {storeId: storeid.value, dayOfWeek: 'THURSDAY', dayName: '星期四', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  {storeId: storeid.value, dayOfWeek: 'FRIDAY', dayName: '星期五', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  {storeId: storeid.value, dayOfWeek: 'SATURDAY', dayName: '星期六', openTimeStr: null, closeTimeStr: null, isOpen: false }, // 週末可以給不同預設值
+  {storeId: storeId.value, dayOfWeek: 'SUNDAY', dayName: '星期日', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeId.value, dayOfWeek: 'MONDAY', dayName: '星期一', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeId.value, dayOfWeek: 'TUESDAY', dayName: '星期二', openTimeStr:null, closeTimeStr: null, isOpen: false },
+  {storeId: storeId.value, dayOfWeek: 'WEDNESDAY', dayName: '星期三', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeId.value, dayOfWeek: 'THURSDAY', dayName: '星期四', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeId.value, dayOfWeek: 'FRIDAY', dayName: '星期五', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  {storeId: storeId.value, dayOfWeek: 'SATURDAY', dayName: '星期六', openTimeStr: null, closeTimeStr: null, isOpen: false }, // 週末可以給不同預設值
 ];
 
 const findOpenHours= (id)=>{ 
@@ -33,29 +34,36 @@ const findOpenHours= (id)=>{
     generalHours.value = res.data
     // console.log(generalHours.value)
 
+  }).catch((error) => { 
+    console.log(error);
   })
 
 }
+const findSpecialHours= (id)=>{
+  axios.get(`/api/stores/${id}/special/all`)
+    .then((res) => {
+      specialHoursRecords.value=res.data
+      console.log('特殊營業時間',res)
+    
+
+  }).catch((error) => { 
+    console.log(error);
+  })
+}
+
 
 // 模擬特殊營業時間數據 (範例，可能需要更複雜的結構來存儲日期範圍等)
-const specialHoursRecords = ref([
-  // 範例數據，模擬圖片中的一個特殊營業時間
-  {
-    type: 'range',
-    startDate: '28/05/2024',
-    endDate: '31/05/2024',
-    time: '10:00 至 20:00',
-  },
-]);
+// 模擬特殊營業時間數據 (符合您的新格式)
+const specialHoursRecords = ref([]);
 
 // 開啟一般營業時間編輯器
 const openGeneralEditor = (day) => {
   if (generalHours.value.length==0){
-    axios.put(`/api/stores/${storeid.value}/hours/saveAll`, defaultDayData)
+    axios.put(`/api/stores/${storeId.value}/hours/saveAll`, defaultDayData)
     .then((res)=>{
       // console.log(res.data) 
       showToast('建立一般營業時間！', 'success'); 
-      findOpenHours(storeid.value)
+      findOpenHours(storeId.value)
     }).catch((error)=>{
       console.log(error);
     })
@@ -105,11 +113,11 @@ const hideNotification = () => {
 // 處理一般營業時間的保存
 const handleSaveGeneralHours = (updatedHours) => {
   // generalHours.value = { ...generalHours.value, ...updatedHours };
-  axios.put(`/api/stores/${storeid.value}/hours/saveAll`, updatedHours)
+  axios.put(`/api/stores/${storeId.value}/hours/saveAll`, updatedHours)
   .then((res)=>{
     // console.log(res.data) 
     showToast('一般營業時間已更新！', 'success'); 
-    findOpenHours(storeid.value)
+    findOpenHours(storeId.value)
   }).catch((error)=>{
     console.log(error);
   })
@@ -121,24 +129,83 @@ const handleSaveGeneralHours = (updatedHours) => {
 // 處理特殊營業時間的保存
 const handleSaveSpecialHours = (newRecord) => {
   // specialHoursRecords.value.push(newRecord); // 簡單添加，實際應用中可能需要更複雜的邏輯
-  console.log(newRecord)
-  closeSidebar();
-  showToast('特殊營業時間已新增！', 'success'); // 顯示成功提示
+  axios.put(`/api/stores/${storeId.value}/special/saveAll`, newRecord)
+  .then((res)=>{
+    // console.log(res.data) 
+    findSpecialHours(storeId.value)
+    showToast('特殊營業時間已新增！', 'success'); // 顯示成功提示
+    closeSidebar();
+  }).catch((error)=>{
+    console.log(error);
+  })
+
+  console.log('接收到newRecord', newRecord)
+
+  
+  
+  
 };
 
 // 刪除特殊營業時間 (範例)
 const deleteSpecialHours = (index) => {
-  if (confirm('確定要刪除此特殊營業時間記錄嗎？')) {
-    // specialHoursRecords.value.splice(index, 1);
-    showToast('特殊營業時間已刪除！', 'warning'); // 顯示刪除提示
-  }
+  Swal.fire({
+    title: '確定要刪除此錄嗎？', // 確認彈窗的標題
+    text: "此操作將無法復原！", // 確認彈窗的內容文字
+    icon: 'warning', // 顯示警告圖標
+    showCancelButton: true, // 顯示取消按鈕
+    confirmButtonColor: '#d33', // 確認按鈕的顏色 (紅色)
+    cancelButtonColor: '#6c757d', // 取消按鈕的顏色 (灰色)
+    confirmButtonText: '是的，刪除它！', // 確認按鈕的文字
+    cancelButtonText: '取消' // 取消按鈕的文字+
+    
+  }).then((result) => {
+    // 檢查用戶是否點擊了「確認」按鈕
+    if (result.isConfirmed) {
+      axios.delete(`/api/stores/${storeId.value}/special/${index}`) // 確保這裡使用 idToDelete
+        .then((res) => {
+          // 成功刪除後，重新載入特殊營業時間列表
+          findSpecialHours(storeId.value);
+          // 顯示 SweetAlert2 成功提示
+          Swal.fire({
+            icon: 'success',
+            title: '刪除成功！',
+            text: '特殊營業時間已成功刪除。',
+            showConfirmButton: false,
+            timer: 1500
+          });
+          // 移除 showToast，避免重複提示
+          // showToast('特殊營業時間已刪除！', 'danger'); 
+        })
+        .catch((error) => {
+          console.error("刪除特殊營業時間失敗:", error);
+
+          // 根據錯誤類型設置提示訊息
+          let errorMessage = '刪除失敗，請稍後再試。';
+          if (error.response && error.response.status === 400) {
+            errorMessage = '刪除失敗：請求無效或該記錄不存在。';
+          } else if (error.response && error.response.data && error.response.data.message) {
+            errorMessage = error.response.data.message;
+          }
+
+          // 顯示 SweetAlert2 錯誤提示
+          Swal.fire({
+            icon: 'error',
+            title: '刪除失敗！',
+            text: errorMessage,
+            confirmButtonText: '確認'
+          });
+          // 移除 showToast，避免重複提示
+          // showToast('刪除失敗！', 'danger');
+        });
+    }
+  });
 };
 
 
 
 onMounted(() => {
-  findOpenHours(storeid.value)
-  
+  findOpenHours(storeId.value)
+  findSpecialHours(storeId.value)
 })
 </script>
 
@@ -174,8 +241,8 @@ onMounted(() => {
                 </li>
               </ul>
             </div>
-
-            <div class="col-12 col-md-6 mb-4"> <!-- 特殊營業時間區塊 -->
+             <!-- 特殊營業時間區塊 -->
+            <div class="col-12 col-md-6 mb-4">
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <h5 class="fw-bold mb-0">特殊營業時間 / 店休</h5>
                 <button class="btn btn-primary btn-sm  px-3 py-2" @click="openSpecialEditor">
@@ -188,31 +255,33 @@ onMounted(() => {
               </p> -->
 
               <div v-if="specialHoursRecords.length === 0" class="text-center py-5   ">
-                <img src="https://placehold.co/150x150/E5E7EB/4B5563?text=No+Records" alt="No Records" class="mb-3">
+                <i class="bi bi-calendar-plus" style="font-size: 4rem; color: #6c757d;"></i> 
                 <p class="text-muted mb-4">尚未設定的店休紀錄</p>
-                <p class="text-muted mb-4">您尚未設定任何特殊營業時間或店休日期，請點擊下方按鈕。</p>
-                <button class="btn btn-outline-primary  px-4 py-2 fw-bold" @click="openSpecialEditor">
+                <p class="text-muted mb-4">點擊新增建立特殊營業時間或店休日期。</p>
+                <!-- <button class="btn btn-outline-primary  px-4 py-2 fw-bold" @click="openSpecialEditor">
                   <i class="bi bi-plus-circle me-2"></i>設定特殊營業時間
-                </button>
-              </div>
-              <div v-else>
-                <!-- 顯示已設定的特殊營業時間列表 -->
-                <div v-for="(record, index) in specialHoursRecords" :key="index" class="card mb-3 shadow-sm rounded-3">
-                  <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                      <h6 class="mb-1">{{ record.type === 'specific' ? '特定日期' : '日期範圍' }}</h6>
-                      <p class="mb-0 small text-muted">
-                        {{ record.type === 'specific' ? record.date : `${record.startDate} 至 ${record.endDate}` }}
-                      </p>
-                      <p class="mb-0 small text-muted">{{ record.time === 'closed' ? '關閉' : record.time }}</p>
-                    </div>
-                    <button class="btn btn-outline-danger btn-sm" @click="deleteSpecialHours(index)">刪除</button>
-                  </div>
-                </div>
-                <!-- <button class="btn btn-outline-primary  px-4 py-2 fw-bold w-100" @click="openSpecialEditor">
-                  <i class="fas fa-plus-circle me-2"></i>新增特殊營業時間
                 </button> -->
               </div>
+              <!-- 顯示特殊營業日 -->
+              
+              <div v-else class="special-hours-list-container">
+                <div v-for="(record, index) in specialHoursRecords" :key="record.id" class="card mb-3 shadow-sm rounded-3">
+                  <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                    
+                      <p class="mb-0 small text-muted">
+                        特殊日期：{{ record.date }} 
+                      </p>
+                      <p class="mb-0 small text-muted">
+                        <span v-if="record.isClose">營業時間：店休</span>
+                        <span v-else>營業時間：{{ record.openTime }} 至 {{ record.closeTime }}</span>
+                      </p>
+                    </div>
+                    <button class="btn btn-outline-danger btn-sm" @click="deleteSpecialHours(record.id)">刪除</button>
+                  </div>
+                </div>
+              </div>
+              
             </div>
           </div>
         </div>
@@ -350,5 +419,31 @@ onMounted(() => {
 .fade-enter-to, .fade-leave-from {
   opacity: 1;
   transform: translateY(0) translateX(-50%);
+}
+
+/**特殊營業日的滾動條 */
+.special-hours-list-container {
+  max-height: 320px; /* 設定一個最大高度，您可以根據需求調整 */
+  overflow-y: auto; /* 當內容超出 max-height 時顯示垂直滾輪 */
+  padding-right: 15px; /* 為滾輪留出空間，避免內容被遮擋 */
+}
+
+/* 為了讓滾動條更好看 (可選) */
+.special-hours-list-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.special-hours-list-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.special-hours-list-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.special-hours-list-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>

@@ -13,7 +13,7 @@ import tw.com.ispan.eeit.model.entity.store.SpecialHoursBean;
 
 @Repository
 public interface SpecialHoursRepository extends JpaRepository<SpecialHoursBean, Integer> {
-
+	
         /**
          * 根據餐廳ID和日期查詢特殊營業時間
          */

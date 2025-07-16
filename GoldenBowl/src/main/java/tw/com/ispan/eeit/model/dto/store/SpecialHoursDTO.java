@@ -10,8 +10,8 @@ import tw.com.ispan.eeit.util.DatetimeConvert;
 @NoArgsConstructor
 public class SpecialHoursDTO {
 
-	private static final String DATE_FORMAT = "yyyy-MM-dd"; // 日期格式
-	private static final String TIME_FORMAT = "HH:mm"; // 時間格式 (根據您的需求調整，例如 "HH:mm" 如果只需要小時分鐘)
+	public static final String DATE_FORMAT = "yyyy-MM-dd"; // 日期格式
+	public static final String TIME_FORMAT = "HH:mm"; // 時間格式 (根據您的需求調整，例如 "HH:mm" 如果只需要小時分鐘)
 
 	private Integer id;
 	private Integer storeId;
