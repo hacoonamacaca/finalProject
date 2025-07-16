@@ -922,7 +922,7 @@ onUnmounted(() => {
 }
 
 .add-to-cart-btn {
-    background: var(--restaurant-primary-color, #ff6b35);
+    background: var(--restaurant-primary-color, #eeb64f);
     color: white;
     padding: 10px;
     border-radius: 50%;
@@ -937,7 +937,7 @@ onUnmounted(() => {
 }
 
 .add-to-cart-btn:hover {
-    background: #e55a2b;
+    background: #795a07;
     transform: scale(1.1);
 }
 
