@@ -93,7 +93,7 @@ const localProfile = reactive({
     email: '',
     isEmailVerified: false,
     lat: null,
-    lon: null,
+    lng: null,
 })
 
 // 🔥 NEW: 擴展 fetchStoreProfile 來支援特定店家 ID
@@ -155,7 +155,7 @@ watchEffect(() => {
         localProfile.email = p.email || ''
         localProfile.isEmailVerified = p.isEmailVerified || false
         localProfile.lat = p.lat ?? null
-        localProfile.lon = p.lon ?? null
+        localProfile.lng = p.lng ?? null
     }
 })
 
@@ -210,7 +210,7 @@ async function handleSave() {
             email: localProfile.email,
             photo: photoUrl, // 存網址
             lat: localProfile.lat,
-            lon: localProfile.lon,
+            lng: localProfile.lng,
         }
         console.log('[handleSave] axios.put payload:', payload)
 
@@ -230,7 +230,7 @@ async function handleSave() {
                 email: localProfile.email,
                 photo: photoUrl,
                 lat: localProfile.lat,
-                lon: localProfile.lon,
+                lng: localProfile.lng,
             }
             userStore.setStoreProfile(updatedStoreProfile)
             

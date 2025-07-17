@@ -27,7 +27,7 @@ export const useUserStore = defineStore('user', () => {
         door: '',
         enAddress: '',
         lat: '',
-        lon: ''
+        lng: ''
     })
 
     // 🔥 餐廳完整資料（兩個環境都需要，但結構稍有不同）
@@ -233,7 +233,7 @@ export const useUserStore = defineStore('user', () => {
                 door: '',
                 enAddress: '',
                 lat: '',
-                lon: ''
+                lng: ''
             }
         }
 
@@ -278,7 +278,7 @@ export const useUserStore = defineStore('user', () => {
         storeId.value = ''
         storeName.value = ''
         address.value = {
-            city: '', district: '', zip: '', street: '', door: '', enAddress: '', lat: '', lon: ''
+            city: '', district: '', zip: '', street: '', door: '', enAddress: '', lat: '', lng: ''
         }
         storeProfile.value = {
             id: '',

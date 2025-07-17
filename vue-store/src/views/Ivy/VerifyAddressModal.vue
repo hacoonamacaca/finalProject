@@ -74,9 +74,9 @@
                         <div ref="mapContainer" style="height:220px; border-radius:12px; border: 1px solid #ddd;"></div>
 
                         <!-- 緯經度 -->
-                        <div v-if="lat && lon" class="mb-3 text-secondary">
+                        <div v-if="lat && lng" class="mb-3 text-secondary">
                             緯度：<span class="fw-bold">{{ lat }}</span>，
-                            經度：<span class="fw-bold">{{ lon }}</span>
+                            經度：<span class="fw-bold">{{ lng }}</span>
                         </div>
 
                         <!-- 商家地址（自動帶入、readonly） -->
@@ -121,7 +121,7 @@ const street = ref('')
 const door = ref('')
 const enAddress = ref('')
 const lat = ref('')
-const lon = ref('')
+const lng = ref('')
 const errorMsg = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -146,7 +146,7 @@ watch(() => props.show, async (show) => {
             door.value = userStore.address.door
             enAddress.value = userStore.address.enAddress
             lat.value = userStore.address.lat
-            lon.value = userStore.address.lon
+            lng.value = userStore.address.lng
         }
         
         // 等待 DOM 更新後初始化地圖
@@ -177,8 +177,8 @@ function initMap() {
         
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map)
 
-        if (lat.value && lon.value) {
-            const p = [parseFloat(lat.value), parseFloat(lon.value)]
+        if (lat.value && lng.value) {
+            const p = [parseFloat(lat.value), parseFloat(lng.value)]
             marker = L.marker(p).addTo(map)
             map.setView(p, 17)
         }
@@ -211,7 +211,7 @@ const mainAddress = computed(() =>
 // 表單驗證
 const isFormValid = computed(() => 
     city.value && district.value && zip.value && street.value && 
-    door.value && enAddress.value && lat.value && lon.value
+    door.value && enAddress.value && lat.value && lng.value
 )
 
 // 監聽地址變化，自動查詢位置
@@ -220,7 +220,7 @@ watch([city, district, street, door], ([c, d, s, o]) => {
         searchLocation()
     } else {
         lat.value = ''
-        lon.value = ''
+        lng.value = ''
         if (marker) {
             marker.remove()
             marker = null
@@ -234,13 +234,15 @@ async function searchLocation() {
     
     errorMsg.value = ''
     try {
-        const url = `/api/geo/latlon?address=${encodeURIComponent(mainAddress.value)}`
-        const res = await axios.get(url)
+        const url = `/api/geo/latlng?address=${encodeURIComponent(mainAddress.value)}`
+        console.log(mainAddress.value)
         
+        const res = await axios.get(url)
+        console.log(res)
         if (!res.data.success) {
             errorMsg.value = res.data.message || '查無經緯度，請確認地址格式'
             lat.value = ''
-            lon.value = ''
+            lng.value = ''
             if (marker) {
                 marker.remove()
                 marker = null
@@ -249,11 +251,11 @@ async function searchLocation() {
         }
         
         lat.value = res.data.lat
-        lon.value = res.data.lon || res.data.lng
+        lng.value = res.data.lng || res.data.lng
 
         // 更新地圖
         if (map) {
-            const p = [parseFloat(lat.value), parseFloat(lon.value)]
+            const p = [parseFloat(lat.value), parseFloat(lng.value)]
             map.setView(p, 17)
             if (!marker) {
                 marker = L.marker(p).addTo(map)
@@ -265,7 +267,7 @@ async function searchLocation() {
         console.error('地址查詢失敗:', e)
         errorMsg.value = 'API 請求失敗，請稍後再試'
         lat.value = ''
-        lon.value = ''
+        lng.value = ''
         if (marker) {
             marker.remove()
             marker = null
@@ -306,7 +308,7 @@ async function goNext() {
             door: door.value,
             enAddress: enAddress.value,
             lat: lat.value,
-            lon: lon.value
+            lng: lng.value
         })
 
         const payload = {
@@ -319,7 +321,7 @@ async function goNext() {
             door: door.value,
             enAddress: enAddress.value,
             lat: lat.value,
-            lon: lon.value
+            lng: lng.value
         }
 
         const res = await axios.post('/api/stores/updateAddress', payload)

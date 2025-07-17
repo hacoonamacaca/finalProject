@@ -151,7 +151,7 @@ const addressData = ref({
     door: '',
     enAddress: '',
     lat: '',
-    lon: '',
+    lng: '',
     mainAddress: ''
 })
 
@@ -224,7 +224,7 @@ function resetFlow() {
         door: '',
         enAddress: '',
         lat: '',
-        lon: '',
+        lng: '',
         mainAddress: ''
     }
     router.replace({ path: '/home', query: {} })

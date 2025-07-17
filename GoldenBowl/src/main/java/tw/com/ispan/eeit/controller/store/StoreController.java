@@ -110,7 +110,7 @@ public class StoreController {
         storeToUpdate.setAddress(storeDetailsDto.getAddress());
         storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
         storeToUpdate.setLat(storeDetailsDto.getLat());
-        storeToUpdate.setLon(storeDetailsDto.getLon());
+        storeToUpdate.setLng(storeDetailsDto.getLng());
 
         OwnerBean owner = new OwnerBean();
         owner.setPhone(storeDetailsDto.getPhone());
@@ -191,17 +191,17 @@ public class StoreController {
         }
         String address = (String) map.get("address");
 
-        Double lat = null, lon = null;
+        Double lat = null, lng = null;
         try {
             if (map.get("lat") != null && !((String) map.get("lat")).isBlank())
                 lat = Double.parseDouble((String) map.get("lat"));
-            if (map.get("lon") != null && !((String) map.get("lon")).isBlank())
-                lon = Double.parseDouble((String) map.get("lon"));
+            if (map.get("lng") != null && !((String) map.get("lng")).isBlank())
+                lng = Double.parseDouble((String) map.get("lng"));
         } catch (Exception e) {
             return Map.of("success", false, "message", "經緯度格式錯誤");
         }
 
-        boolean ok = storeService.updateAddress(storeId, address, lat, lon);
+        boolean ok = storeService.updateAddress(storeId, address, lat, lng);
         return Map.of("success", ok);
     }
 

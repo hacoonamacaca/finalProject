@@ -155,24 +155,24 @@ public class StoreService {
             if (storeDetails.getIsActive() != null)
                 existingStore.setIsActive(storeDetails.getIsActive());
 
-            // lat/lon（僅在兩個都有值且有效範圍才覆蓋）
+            // lat/lng（僅在兩個都有值且有效範圍才覆蓋）
             System.out.println("[updateStore] 進入方法，id=" + id);
             System.out.println("[updateStore] storeDetails.getLat() = " + storeDetails.getLat());
-            System.out.println("[updateStore] storeDetails.getLon() = " + storeDetails.getLon());
-            if (storeDetails.getLat() != null && storeDetails.getLon() != null) {
+            System.out.println("[updateStore] storeDetails.getlng() = " + storeDetails.getLng());
+            if (storeDetails.getLat() != null && storeDetails.getLng() != null) {
                 double lat = storeDetails.getLat();
-                double lon = storeDetails.getLon();
-                System.out.println("[updateStore] 收到 lat=" + lat + ", lon=" + lon);
-                if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                double lng = storeDetails.getLng();
+                System.out.println("[updateStore] 收到 lat=" + lat + ", lng=" + lng);
+                if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
                     existingStore.setLat(lat);
-                    existingStore.setLon(lon);
-                    Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
+                    existingStore.setLng(lng);
+                    Point point = geometryFactory.createPoint(new Coordinate(lng, lat));
                     point.setSRID(4326);
                     System.out.println("[updateStore] 建立 point: " + point);
                     System.out.println("[updateStore] WKT: " + new WKTWriter().write(point));
                     existingStore.setStoreCoords(point);
                 } else {
-                    System.out.println("[updateStore] 收到非法經緯度，lat/lon 不處理");
+                    System.out.println("[updateStore] 收到非法經緯度，lat/lng 不處理");
                 }
             }
             // 🚫 不要讓前端直接改 storeCoords（保護 DB 不會被塞壞掉）
@@ -209,7 +209,7 @@ public class StoreService {
             Integer storeId,
             String address,
             Double lat,
-            Double lon) {
+            Double lng) {
         StoreBean store = storeRepository.findById(storeId)
                 .orElse(null);
         if (store == null)
@@ -217,12 +217,12 @@ public class StoreService {
 
         store.setAddress(address);
         store.setLat(lat);
-        store.setLon(lon);
+        store.setLng(lng);
 
-        System.out.println("lat=" + lat + ", lon=" + lon);
+        System.out.println("lat=" + lat + ", lng=" + lng);
         try {
-            if (lat != null && lon != null) {
-                Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
+            if (lat != null && lng != null) {
+                Point point = geometryFactory.createPoint(new Coordinate(lng, lat));
                 point.setSRID(4326);
                 System.out.println("set storeCoords: " + point.toText() + " SRID=" + point.getSRID());
                 store.setStoreCoords(point);

@@ -24,7 +24,7 @@ public class StoreDTO {
     private Integer ownerId;
     private String name;
     private String address;
-    private Double lon;
+    private Double lng;
     private Double lat;
     private String storeIntro;
     private String photo;
@@ -52,7 +52,7 @@ public class StoreDTO {
         this.ownerId = store.getOwner() != null ? store.getOwner().getId() : null;
         this.name = store.getName();
         this.address = store.getAddress();
-        this.lon = store.getLon();
+        this.lng = store.getLng();
         this.lat = store.getLat();
         this.storeIntro = store.getStoreIntro();
         this.photo = store.getPhoto();
