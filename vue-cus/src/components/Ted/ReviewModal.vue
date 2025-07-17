@@ -15,7 +15,7 @@
 
                     <div class="modal-body p-4">
                         <div class="d-flex align-items-center mb-4">
-                            <img :src="order.store?.photo || 'https://via.placeholder.com/60'" alt="店家圖片"
+                            <img :src="order.store?.photo" alt="店家圖片"
                                 class="me-3 rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
                             <div>
                                 <h6 class="mb-0">{{ order.store?.name || '未知店家' }}</h6>
@@ -40,7 +40,7 @@
                             <div v-if="order.orderDetails && order.orderDetails.length > 0">
                                 <div v-for="detail in order.orderDetails" :key="detail.id"
                                     class="d-flex align-items-center mb-3 p-2 border rounded">
-                                    <img :src="detail.food?.imgResource || 'https://via.placeholder.com/50'" alt="食物圖片"
+                                    <img :src="detail.food?.imgResource " alt="食物圖片"
                                         class="me-3 rounded" style="width: 50px; height: 50px; object-fit: cover;">
                                     <div class="flex-grow-1">
                                         <p class="mb-0 fw-medium">{{ detail.food?.name || '未知食物' }} <span
@@ -95,6 +95,7 @@ import { ref, watch, computed } from 'vue';
 import { Modal } from 'bootstrap'; // 引入 Bootstrap Modal JavaScript
 import axios from '@/plungins/axios.js'; // 確保路徑正確
 import { useUserStore } from '@/stores/user.js'; // 假設您有用戶 Pinia Store 來獲取 userId
+import Swal from 'sweetalert2';
 
 const props = defineProps({
     order: {
@@ -204,7 +205,12 @@ const formatDateTime = (dateTimeString) => {
 // 提交評論和點讚狀態
 const submitReview = async () => {
     if (currentUserId.value === null) {
-        alert('請先登入才能進行評論和點讚。');
+        Swal.fire({
+        icon: 'info',
+        title: '請先登入',
+        text: '您需要登入才能進行評論和點讚。',
+        confirmButtonText: '確定'
+    });
         return;
     }
 
@@ -222,18 +228,33 @@ const submitReview = async () => {
         if (existingCommentId.value) {
             // 更新現有評論
             commentResponse = await axios.put(`/comment/${existingCommentId.value}`, commentData);
-            alert('店家評論更新成功！');
+            Swal.fire({
+                icon: 'success',
+                title: '店家評論更新成功！',
+                showConfirmButton: false, // 不顯示確認按鈕
+                timer: 500 // 0.5 秒後自動關閉
+            });
         } else {
             // 創建新評論
             commentResponse = await axios.post('/comment', commentData);
             existingCommentId.value = commentResponse.data.id; // 保存新創建的評論 ID
-            alert('店家評論提交成功！');
+            Swal.fire({
+                icon: 'success',
+                title: '店家評論提交成功！',
+                showConfirmButton: false,
+                timer: 500
+            });
         }
         console.log('評論提交成功:', commentResponse.data);
         emit('commentSubmitted', commentResponse.data); // 通知父組件評論已提交
     } catch (error) {
         console.error('提交評論失敗:', error);
-        alert('提交評論失敗！');
+        Swal.fire({
+            icon: 'error',
+            title: '提交評論失敗！',
+            text: '發生錯誤，請稍後再試。',
+            confirmButtonText: '確定'
+        });
         return; // 如果評論失敗，則停止後續操作
     }
 

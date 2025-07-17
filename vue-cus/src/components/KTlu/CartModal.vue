@@ -39,7 +39,7 @@
 
                         <!-- 該餐廳的商品列表 -->
                         <div class="restaurant-items">
-                            <div v-for="item in restaurantCart.items" :key="item.food.id" class="cart-item">
+                            <div v-for="item in restaurantCart.items" :key="item.id" class="cart-item">
                                 <div class="item-image">
                                     <img :src="item.image" :alt="item.name" />
                                 </div>

@@ -133,7 +133,12 @@ public class BookingAvailabilityService {
             metadata.put("maxDate", maxSlotDate != null ? maxSlotDate.toString() : LocalDate.now().toString());
 
             // 2. 獲取禁用日期列表
-        
+            List<String> disabledDates = getClosedDates(storeId, 30)
+                    .stream()
+                    .map(LocalDate::toString)
+                    .collect(java.util.stream.Collectors.toList());
+            metadata.put("disabledDates", disabledDates);
+
             return metadata;
         } catch (Exception e) {
             metadata.put("maxDate", LocalDate.now().toString());
@@ -145,7 +150,22 @@ public class BookingAvailabilityService {
     /**
      * 🔐 核心方法：取得禁用日期列表
      */
-  
+    public List<LocalDate> getClosedDates(Integer storeId, int daysAhead) {
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusDays(daysAhead);
+
+        // 獲取週期性公休日和特殊休假日
+        Set<Integer> weeklyClosedDays = new java.util.HashSet<>(openHourRepository.findClosedDaysByStore(storeId));
+        List<LocalDate> specialClosedDates = specialHoursRepository.findClosedDates(storeId);
+
+        return start.datesUntil(end.plusDays(1))
+                .filter(date -> {
+                    int dayOfWeek = date.getDayOfWeek().getValue() % 7;
+                    return weeklyClosedDays.contains(dayOfWeek) || specialClosedDates.contains(date);
+                })
+                .toList();
+    }
+
     // ========== 私有輔助方法 ==========
 
     /**

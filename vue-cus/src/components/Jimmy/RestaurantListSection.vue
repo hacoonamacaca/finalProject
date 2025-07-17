@@ -2,7 +2,7 @@
   <section class="restaurant-list">
     <div class="restaurant-card" v-for="restaurant in restaurants" :key="restaurant.id">
       <div class="image-container">
-        <img :src="restaurant.photo || 'https://via.placeholder.com/280x160'" :alt="restaurant.name"
+        <img :src="restaurant.photo " :alt="restaurant.name"
           @click="navigateToRestaurant(restaurant.id)" style="cursor: pointer;" />
         <i class="favorite-icon bi"
           :class="{ 'bi-heart-fill': restaurant.isFavorited, 'bi-heart': !restaurant.isFavorited }"
@@ -50,6 +50,7 @@ import Comment from '@/components/Jimmy/Comment.vue';
 import { useUserStore } from '@/stores/user';
 import axios from '@/plungins/axios.js';
 import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
+import swal from 'sweetalert2';
 
 const userStore = useUserStore();
 const currentUserId = computed(() => userStore.userId); // 獲取當前用戶ID
@@ -85,7 +86,12 @@ const openComment = (storeId) => {
 // --- 收藏功能相關方法 ---
 const toggleFavorite = async (restaurant) => {
   if (!currentUserId.value) {
-    alert('請先登入才能收藏餐廳！');
+    swal.fire({
+      icon: 'info',
+      title: '請先登入',
+      text: '您需要登入才能收藏餐廳！',
+      confirmButtonText: '確定'
+    });
     return;
   }
 
@@ -107,7 +113,12 @@ const toggleFavorite = async (restaurant) => {
         // alert('已取消收藏！'); // 通常在樂觀更新後不再需要彈出提示
       } else {
         restaurant.isFavorited = originalIsFavorited; // 如果失敗，回滾狀態
-        alert('取消收藏失敗！');
+        swal.fire({
+          icon: 'error',
+          title: '取消收藏失敗！',
+          text: '請稍後再試。',
+          confirmButtonText: '確定'
+        });
         return; // 終止函數執行
       }
     } else {
@@ -116,7 +127,12 @@ const toggleFavorite = async (restaurant) => {
         // alert('已成功收藏！'); // 通常在樂觀更新後不再需要彈出提示
       } else {
         restaurant.isFavorited = originalIsFavorited; // 如果失敗，回滾狀態
-        alert('收藏失敗！');
+        swal.fire({
+          icon: 'error',
+          title: '收藏失敗！',
+          text: '請稍後再試。',
+          confirmButtonText: '確定'
+        });
         return; // 終止函數執行
       }
     }
@@ -132,7 +148,12 @@ const toggleFavorite = async (restaurant) => {
 
   } catch (error) {
     console.error('收藏/取消收藏操作出錯:', error);
-    alert('收藏/取消收藏操作發生錯誤！');
+    swal.fire({
+      icon: 'error',
+      title: '操作發生錯誤！',
+      text: '收藏/取消收藏時發生網路或伺服器錯誤，請稍後再試。',
+      confirmButtonText: '確定'
+    });
     restaurant.isFavorited = originalIsFavorited; // 網路錯誤時回滾
     console.log(`RestaurantListSection.vue: 網路錯誤，isFavorited 回滾為: ${restaurant.isFavorited}`);
   }

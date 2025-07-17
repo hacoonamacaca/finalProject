@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import tw.com.ispan.eeit.model.dto.store.StoreDTO;
+import tw.com.ispan.eeit.model.entity.OwnerBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
 import tw.com.ispan.eeit.service.store.StoreService;
 
@@ -88,8 +89,10 @@ public class StoreController {
         StoreDTO createdStoreDTO = new StoreDTO(createdStoreBean);
         return new ResponseEntity<>(createdStoreDTO, HttpStatus.CREATED);
     }
-
-    @PutMapping("/{id}")
+    /**
+     * 更新商店資訊
+     */
+   @PutMapping("/{id}")
     public ResponseEntity<StoreDTO> updateStore(@PathVariable Integer id, @RequestBody StoreDTO storeDetailsDto) {
         // 將 StoreDTO 轉換回 StoreBean 以便 service 層處理更新
         StoreBean storeToUpdate = new StoreBean();
@@ -97,6 +100,15 @@ public class StoreController {
         storeToUpdate.setPhoto(storeDetailsDto.getPhoto());
         storeToUpdate.setScore(storeDetailsDto.getScore());
         storeToUpdate.setIsOpen(storeDetailsDto.getIsOpen());
+        storeToUpdate.setAddress(storeDetailsDto.getAddress());
+        storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
+        storeToUpdate.setLat(storeDetailsDto.getLat());
+        storeToUpdate.setLng(storeDetailsDto.getLng());
+        
+        OwnerBean owner = new OwnerBean();
+        owner.setPhone(storeDetailsDto.getPhone());
+        owner.setEmail(storeDetailsDto.getEmail());
+        storeToUpdate.setOwner(owner);
         // 同樣，對於關聯集合的更新，你需要根據業務邏輯處理
         // 例如，如果前端傳入新的 categoryNames，你可能需要在 service 層更新 StoreBean 的 categories 集合
         // storeDetailsDto.getCategoryNames(); // <-- 這裡會包含前端傳來的類別名稱
@@ -110,6 +122,7 @@ public class StoreController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteStore(@PathVariable Integer id) {
@@ -225,4 +238,141 @@ public class StoreController {
         boolean success = storeService.removeStoreFromFavorites(userId, storeId);
         return new ResponseEntity<>(Map.of("success", success), success ? HttpStatus.OK : HttpStatus.BAD_REQUEST);
     }
+
+    /**
+     * 獲取Owner的主要Store（最新建立的）- 保持向下兼容
+     */
+    @GetMapping("/profile")
+    public ResponseEntity<StoreDTO> getMyStoreProfile(@RequestParam Integer ownerId) {
+        // ownerId 可以從 JWT 或 session 取得，不要讓前端直接傳（安全性問題）
+        // 這邊為示範，暫時用 query 參數帶
+    	if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<StoreBean> storeOptional = storeService.getMainStoreByOwnerId(ownerId);
+        if (storeOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
+        return new ResponseEntity<>(storeDTO, HttpStatus.OK);
+    }
+    
+    /**
+     * 獲取Owner的所有Store
+     */
+    @GetMapping("/profile/all")
+    public ResponseEntity<List<StoreDTO>> getAllMyStores(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<StoreBean> stores = storeService.getStoresByOwnerId(ownerId);
+        if (stores.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        List<StoreDTO> storeDTOs = stores.stream()
+                .map(StoreDTO::new)
+                .collect(Collectors.toList());
+        
+        return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
+    }
+
+    /**
+     * 獲取Owner的第一個Store（最早建立的）
+     */
+    @GetMapping("/profile/first")
+    public ResponseEntity<StoreDTO> getMyFirstStore(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        Optional<StoreBean> storeOptional = storeService.getFirstStoreByOwnerId(ownerId);
+        if (storeOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
+        return new ResponseEntity<>(storeDTO, HttpStatus.OK);
+    }
+
+    /**
+     * 獲取Owner的Store摘要資訊
+     */
+    @GetMapping("/profile/summary")
+    public ResponseEntity<Map<String, Object>> getMyStoresSummary(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        List<StoreBean> stores = storeService.getStoresByOwnerId(ownerId);
+        if (stores.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        Map<String, Object> summary = Map.of(
+            "ownerId", ownerId,
+            "totalStores", stores.size(),
+            "stores", stores.stream()
+                    .map(store -> Map.of(
+                        "id", store.getId(),
+                        "name", store.getName(),
+                        "isOpen", store.getIsOpen() != null ? store.getIsOpen() : false,
+                        "score", store.getScore() != null ? store.getScore() : 0.0,
+                        "createdTime", store.getCreatedTime()
+                    ))
+                    .collect(Collectors.toList())
+        );
+
+        return new ResponseEntity<>(summary, HttpStatus.OK);
+    }
+
+    /**
+     * 根據StoreId和OwnerId獲取特定Store（安全檢查）
+     */
+    @GetMapping("/profile/store/{storeId}")
+    public ResponseEntity<StoreDTO> getSpecificStore(
+            @PathVariable Integer storeId, 
+            @RequestParam Integer ownerId) {
+        
+        if (ownerId == null || storeId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        // 檢查Store是否屬於該Owner
+        if (!storeService.isStoreOwnedByOwner(storeId, ownerId)) {
+            return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+        }
+ 
+        Optional<StoreBean> storeOptional = storeService.getStoreById(storeId);
+        if (storeOptional.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+
+        StoreDTO storeDTO = new StoreDTO(storeOptional.get());
+        return new ResponseEntity<>(storeDTO, HttpStatus.OK);
+    }
+
+    /**
+     * 獲取Owner的Store數量
+     */
+    @GetMapping("/profile/count")
+    public ResponseEntity<Map<String, Object>> getMyStoreCount(@RequestParam Integer ownerId) {
+        if (ownerId == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        long count = storeService.getStoreCountByOwnerId(ownerId);
+        Map<String, Object> result = Map.of(
+            "ownerId", ownerId,
+            "storeCount", count
+        );
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+
+
 }

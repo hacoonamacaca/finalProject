@@ -38,6 +38,9 @@ public class StoreDTO {
     private LocalDateTime createdTime;
     private LocalDateTime updatedTime;
     private Boolean isActive;
+    private String phone;
+    private String email;
+    private Boolean isEmailVerified;
 
     // 新增：表示當前用戶是否收藏了該餐廳
     private Boolean isFavorited; // 預設為 false，除非明確設置
@@ -48,6 +51,7 @@ public class StoreDTO {
     // 這個構造函數用於將 StoreBean 轉換為 StoreDTO
     public StoreDTO(StoreBean store) {
         this.id = store.getId();
+        this.ownerId = store.getOwner() != null ? store.getOwner().getId() : null;
         this.name = store.getName();
         this.photo = store.getPhoto();
         this.score = store.getScore();
@@ -56,6 +60,9 @@ public class StoreDTO {
         this.lng = store.getLng();
         this.lat = store.getLat();
         this.storeIntro = store.getStoreIntro();
+        this.photo = store.getPhoto();
+        this.score = store.getScore();
+        this.isOpen = store.getIsOpen();
         this.createdTime = store.getCreatedTime();
         this.updatedTime = store.getUpdatedTime();
         this.isActive = store.getIsActive();
@@ -66,6 +73,17 @@ public class StoreDTO {
             this.storeCoords = store.getStoreCoords().toText();
         } else {
             this.storeCoords = null;
+        }
+
+        // 這裡是關鍵：從 owner 取得 phone/email
+        if (store.getOwner() != null) {
+            this.phone = store.getOwner().getPhone();
+            this.email = store.getOwner().getEmail();
+            this.isEmailVerified = store.getOwner().getIsVerify();
+        } else {
+            this.phone = null;
+            this.email = null;
+            this.isEmailVerified = false;
         }
 
         // 這裡需要注意：當這些關聯是懶加載時，直接訪問它們可能會觸發懶加載異常
@@ -135,4 +153,10 @@ public class StoreDTO {
             this.score = comment.getScore();
         }
     }
+    // @com.fasterxml.jackson.annotation.JsonProperty("score") // 或直接用 @JsonProperty
+    // 如果有 import
+    // public String getScoreStr() {
+    // if (score == null) return null;
+    // return String.format("%.1f", score);
+    // }
 }

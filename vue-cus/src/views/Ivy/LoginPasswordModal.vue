@@ -1,15 +1,16 @@
 <template>
+    <!-- 有改過 -->
     <div class="modal-bg" v-if="show">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('back')">
+                    <button class="btn nav-btn" @click="goemit('back')">
                         <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                             <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
                     </button>
-                    <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
+                    <button type="button" class="btn-close custom-close" @click="goemit('close')"></button>
                 </div>
                 <div class="modal-body d-flex flex-column align-items-center pt-0">
                     <img src="https://cdn-icons-png.flaticon.com/512/3059/3059446.png" alt="lock"
@@ -41,8 +42,8 @@
                         </div>
                         <div class="mb-3 text-start">
                             <a href="#" style="color: #ffba20;font-weight:600;text-decoration: underline"
-                                @click.prevent="emit('forgot')">
-                                忘記密碼？
+                            @click.prevent="onForgotClick">
+                            忘記密碼？
                             </a>
                         </div>
                         <button type="submit" class="btn btn-main w-100 mt-2" :disabled="!password">
@@ -56,51 +57,102 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import axios from '@/plungins/axios.js'
-import { useUserStore } from '@/stores/user' 
+import { useUserStore } from '@/stores/user.js' 
+import Swal from 'sweetalert2'
 
 const props = defineProps({ show: Boolean, email: String })
-const emit = defineEmits(['close', 'back', 'login'])
-const password = ref('')
+const emit = defineEmits(['close', 'back', 'submit', 'forgot', 'login'])
 const showPassword = ref(false)
 const userStore = useUserStore();
+const password = ref('')
+
+
+
+const goemit = (e) => {
+    password.value = ''
+    if(e==='close'){
+    userStore.email = ''}
+    emit(e)
+}
+
+onMounted(() => {
+    password.value = ''
+})
+
+
 
 async function onSubmit() {
+    console.log('password',password.value)
+    console.log('email',userStore.email)
     if (!password.value) {
-        alert('請輸入密碼')
+        Swal.fire({
+            icon: 'warning', // 顯示警告圖示
+            title: '', // 標題
+            text: '請輸入密碼。', // 內容文字
+            confirmButtonText: '確定' // 確認按鈕的文字
+        });
         return
     }
     try {
         // 路徑請和後端對應，如：/api/users/login
         const res = await axios.post('/api/users/login', {
-            email: props.email,
+            email: userStore.email,
             password: password.value
         })
+        console.log(res)
         const data = res.data
+        console.log(data)
+        console.log(data.success===true)
         if (data.success) {
-            alert('登入成功！')
-            userStore.setFullName(data.userFullName);
-            userStore.setEmail(data.userEmail);
-            userStore.setUserId(data.userId); // <-- 新增這一行
-            userStore.setLogin(true); // 設定登入狀態為 true
+            Swal.fire({
+                icon: 'success', // 顯示成功圖示
+                title: '登入成功！', // 標題
+                text: '歡迎回來！', // 可以加上歡迎語句
+                showConfirmButton: false, // 不顯示確認按鈕
+                timer: 500, // 0.5 秒後自動關閉
+                timerProgressBar: true // 顯示進度條
+            });
+            // userStore.setLogin({
+            //     fullName: data.userFullName,
+            //     email: data.userEmail,
+            //     userId: data.userId,
+            //     token: data.token    // 看你的 API 有沒有這欄
+            // });
+            password.value = ''
             emit('login', { 
-                email: props.email,
+                userEmail: userStore.email,
                 userFullName: data.userFullName,
-                userEmail: data.userEmail,
                 userId: data.userId,
-                userPhone: data.userPhone // 如果有這欄位
-            })
-            // 你可以加 router.push(...) 或 emit('close') 關掉 modal
+                // userPhone: 後續補充
+                
+            });
+            // console.log('登入成功',data)
+        // emit('close') // 如需關閉 modal
         } else {
-            alert(data.message || '帳號或密碼錯誤')
+            Swal.fire({
+                icon: 'error', // 顯示錯誤圖示
+                title: '登入失敗', // 標題
+                text: data.message || '帳號或密碼錯誤', // 內容文字，優先顯示後端訊息，否則顯示預設訊息
+                confirmButtonText: '確定' // 確認按鈕的文字
+            });
             password.value = ''
         }
     } catch (e) {
-        alert('登入發生錯誤，請稍後再試')
+        Swal.fire({
+            icon: 'error', // 顯示錯誤圖示
+            title: '登入失敗', // 標題
+            text: '登入時發生錯誤，請稍後再試。', // 內容文字
+            confirmButtonText: '確定' // 確認按鈕文字
+        });
         console.error(e)
         password.value = ''
     }
+}
+
+function onForgotClick() {
+    emit('forgot')
 }
 </script>
 
@@ -109,7 +161,7 @@ async function onSubmit() {
 position: fixed;
 inset: 0;
 background: rgba(0, 0, 0, 0.08);
-z-index: 9999;
+z-index: 900;
 display: flex;
 align-items: center;
 justify-content: center;

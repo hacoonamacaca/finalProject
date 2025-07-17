@@ -1,4 +1,5 @@
 <template>
+    <!-- 有修過 -->
     <div class="modal-backdrop">
         <div class="modal-content">
             <button class="close-btn" @click="emitClose">×</button>
@@ -40,29 +41,35 @@
                         </svg>
                     </button>
                 </div>
+                <div v-if="password && password2 && password !== password2" class="text-danger small ms-1">
+                兩次輸入的密碼不一致
+            </div>
             </div>
             <div v-if="error" class="error mb-2" style="color:#e0126c">{{ error }}</div>
-            <button class="btn-main w-100 mt-2" @click="submit">送出</button>
+            <button class="btn-main w-100 mt-2" @click="submit" :disabled="loading">送出</button>
         </div>
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
+import axios from '@/plungins/axios.js'
 
 const emit = defineEmits(['close', 'submit'])
+const props = defineProps(['email', 'token'])
 
 const password = ref('')
 const password2 = ref('')
 const showPwd1 = ref(false)
 const showPwd2 = ref(false)
 const error = ref('')
+const loading = ref(false)
 
 function emitClose() {
     emit('close')
 }
 
-function submit() {
+async function submit() {
     error.value = ''
     if (!password.value || !password2.value) {
         error.value = '請填寫所有欄位'
@@ -76,8 +83,28 @@ function submit() {
         error.value = '兩次輸入的密碼不一致'
         return
     }
-    // 這裡應呼叫後端 API
-    emit('submit', password.value)
+    if (!props.email || !props.token) {
+        error.value = '驗證資訊不完整，請重新點擊重設連結'
+        return
+    }
+
+    loading.value = true
+    try {
+        // 用 URLSearchParams 對應 @RequestParam
+        const params = new URLSearchParams()
+        params.append('email', props.email)
+        params.append('token', props.token)
+        params.append('newPassword', password.value)
+
+        await axios.post('/api/reset-password', params)
+
+        // 成功：通知外層/跳訊息
+        emit('submit', password.value)
+    } catch (e) {
+        error.value = e.response?.data || '重設失敗，請稍後再試'
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 
@@ -86,7 +113,7 @@ function submit() {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.13);
-    z-index: 9999;
+    z-index: 900;
     display: flex;
     align-items: center;
     justify-content: center;

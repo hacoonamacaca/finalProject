@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.io.WKTWriter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -56,7 +57,9 @@ public class StoreService {
         List<StoreBean> stores = storeRepository.findAll();
         return convertToStoreDTOs(stores, userId);
     }
-
+    public Optional<StoreBean> getStoreById(Integer id) {
+        return storeRepository.findById(id);
+    }
     public StoreDTO getStoreById(Integer id, Integer userId) {
         Optional<StoreBean> storeOptional = storeRepository.findByIdWithComments(id); // 使用您的 findByIdWithComments 方法
         if (storeOptional.isEmpty()) {
@@ -122,23 +125,77 @@ public class StoreService {
         Optional<StoreBean> optionalStore = storeRepository.findById(id);
         if (optionalStore.isPresent()) {
             StoreBean existingStore = optionalStore.get();
-            existingStore.setName(storeDetails.getName());
-            existingStore.setAddress(storeDetails.getAddress());
-            existingStore.setStoreCoords(storeDetails.getStoreCoords());
-            existingStore.setLng(storeDetails.getLng());
-            existingStore.setLat(storeDetails.getLat());
-            existingStore.setStoreIntro(storeDetails.getStoreIntro());
-            existingStore.setPhoto(storeDetails.getPhoto());
-            existingStore.setIsOpen(storeDetails.getIsOpen());
-            existingStore.setScore(storeDetails.getScore());
+
+            // name
+            if (storeDetails.getName() != null)
+                existingStore.setName(storeDetails.getName());
+
+            // address
+            if (storeDetails.getAddress() != null)
+                existingStore.setAddress(storeDetails.getAddress());
+
+            // storeIntro
+            if (storeDetails.getStoreIntro() != null)
+                existingStore.setStoreIntro(storeDetails.getStoreIntro());
+
+            // photo
+            if (storeDetails.getPhoto() != null)
+                existingStore.setPhoto(storeDetails.getPhoto());
+
+            // isOpen
+            if (storeDetails.getIsOpen() != null)
+                existingStore.setIsOpen(storeDetails.getIsOpen());
+
+            // score
+            if (storeDetails.getScore() != null)
+                existingStore.setScore(roundTo1Decimal(storeDetails.getScore()));
+
+            // isActive
+            if (storeDetails.getIsActive() != null)
+                existingStore.setIsActive(storeDetails.getIsActive());
+
+            // lat/lon（僅在兩個都有值且有效範圍才覆蓋）
+            System.out.println("[updateStore] 進入方法，id=" + id);
+            System.out.println("[updateStore] storeDetails.getLat() = " + storeDetails.getLat());
+            System.out.println("[updateStore] storeDetails.getLon() = " + storeDetails.getLng());
+            if (storeDetails.getLat() != null && storeDetails.getLng() != null) {
+                double lat = storeDetails.getLat();
+                double lon = storeDetails.getLng();
+                System.out.println("[updateStore] 收到 lat=" + lat + ", lon=" + lon);
+                if(lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
+                    existingStore.setLat(lat);
+                    existingStore.setLng(lon);
+                    Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
+                    point.setSRID(4326);
+                    System.out.println("[updateStore] 建立 point: " + point);
+                    System.out.println("[updateStore] WKT: " + new WKTWriter().write(point));
+                    existingStore.setStoreCoords(point);
+                } else {
+                    System.out.println("[updateStore] 收到非法經緯度，lat/lon 不處理");
+                }
+            }
+            // 🚫 不要讓前端直接改 storeCoords（保護 DB 不會被塞壞掉）
+
+            // owner（如果有送就覆蓋 owner phone/email）
+            if (storeDetails.getOwner() != null) {
+                OwnerBean owner = existingStore.getOwner();
+                if (owner != null) {
+                    if (storeDetails.getOwner().getPhone() != null) {
+                        owner.setPhone(storeDetails.getOwner().getPhone());
+                    }
+                    if (storeDetails.getOwner().getEmail() != null) {
+                        owner.setEmail(storeDetails.getOwner().getEmail());
+                    }
+                    ownerRepository.save(owner);
+                }
+            }
             existingStore.setUpdatedTime(LocalDateTime.now());
-            existingStore.setIsActive(storeDetails.getIsActive());
-            // 處理關聯實體 (owner, categories, favoritedByUsers) 需要額外的邏輯
+
             return storeRepository.save(existingStore);
         }
         return null;
     }
-
+    
     public boolean deleteStore(Integer id) {
         if (storeRepository.existsById(id)) {
             storeRepository.deleteById(id);
@@ -147,11 +204,11 @@ public class StoreService {
         return false;
     }
 
-    public boolean updateAddress(
+      public boolean updateAddress(
             Integer storeId,
             String address,
             Double lat,
-            Double lng) {
+            Double lon) {
         StoreBean store = storeRepository.findById(storeId)
                 .orElse(null);
         if (store == null)
@@ -159,29 +216,82 @@ public class StoreService {
 
         store.setAddress(address);
         store.setLat(lat);
-        store.setLng(lng);
+        store.setLng(lon);
 
-        System.out.println("lat=" + lat + ", lng=" + lng);
+        System.out.println("lat=" + lat + ", lon=" + lon);
         try {
-            if (lat != null && lng != null) {
-                Point point = geometryFactory.createPoint(new Coordinate(lng, lat));
+            if (lat != null && lon != null) {
+                Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
                 point.setSRID(4326);
                 System.out.println("set storeCoords: " + point.toText() + " SRID=" + point.getSRID());
                 store.setStoreCoords(point);
             } else {
                 store.setStoreCoords(null);
             }
+         // 重要：需要保存變更！
+            storeRepository.save(store);
+            return true;
+            
         } catch (Exception e) {
             System.err.println("錯誤：" + e.getMessage());
             e.printStackTrace();
             // 可以選擇 return false; 讓外面知道失敗
             return false;
         }
-        return true;
+    }
+
+
+
+/**
+     * 獲取Owner的所有Store
+     */
+    public List<StoreBean> getStoresByOwnerId(Integer ownerId) {
+        return storeRepository.findByOwner_Id(ownerId);
+    }
+
+    /**
+     * 獲取Owner的主要Store（最新建立的）
+     */
+    public Optional<StoreBean> getMainStoreByOwnerId(Integer ownerId) {
+        List<StoreBean> stores = storeRepository.findByOwnerIdOrderByCreatedTimeDesc(ownerId);
+        return stores.isEmpty() ? Optional.empty() : Optional.of(stores.get(0));
+    }
+
+    /**
+     * 獲取Owner的第一個Store（最早建立的）
+     */
+    public Optional<StoreBean> getFirstStoreByOwnerId(Integer ownerId) {
+        List<StoreBean> stores = storeRepository.findByOwnerIdOrderByCreatedTimeAsc(ownerId);
+        return stores.isEmpty() ? Optional.empty() : Optional.of(stores.get(0));
+    }
+
+    /**
+     * 檢查Owner是否擁有指定的Store
+     */
+    public boolean isStoreOwnedByOwner(Integer storeId, Integer ownerId) {
+        return storeRepository.existsByIdAndOwnerId(storeId, ownerId);
+    }
+
+    /**
+     * 獲取Owner的Store數量，更安全的 getStoreCountByOwnerId 實作
+     */
+    public long getStoreCountByOwnerId(Integer ownerId) {
+    	// 避免載入所有資料再計算數量，改用直接查詢
+        return storeRepository.countByOwner_Id(ownerId);
+    }
+    
+    @Deprecated
+    public Optional<StoreBean> getStoreByOwnerId(Integer ownerId) {
+        return getMainStoreByOwnerId(ownerId); // 注意你的 repository 要有這個方法
+    }
+    
+    private Float roundTo1Decimal(Float value) {
+        if (value == null) return null;
+        return Math.round(value * 10f) / 10f;
     }
 
     // --- 以下是針對收藏功能的新增方法 ---
-
+    
     // 檢查用戶是否收藏了某餐廳
     public boolean isStoreFavoritedByUser(Integer userId, Integer storeId) {
         Optional<UserBean> userOpt = userRepository.findById(userId);

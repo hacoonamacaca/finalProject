@@ -36,7 +36,7 @@ public class FoodDTO {
 		foodDto.setPrice(foodBean.getPrice());
 		foodDto.setScore(foodBean.getScore());
 		foodDto.setImgResource(foodBean.getImgResource());
-		foodDto.setDescription(foodBean.getDescription());		
+		foodDto.setDescription(foodBean.getDescription());
 		return foodDto;
 	}
 

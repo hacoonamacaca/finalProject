@@ -3,7 +3,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('back')">
+                    <button class="btn nav-btn" @click="emit('back') ">
                         <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                             <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
@@ -66,7 +66,7 @@ async function sendVerifyEmail() {
 position: fixed;
 inset: 0;
 background: rgba(0, 0, 0, 0.08);
-z-index: 9999;
+z-index: 900;
 display: flex;
 align-items: center;
 justify-content: center;
