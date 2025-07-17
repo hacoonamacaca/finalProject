@@ -145,9 +145,9 @@ const removeImage = () => {
     delete form.value.imageFile;
     
     // 如果是編輯模式且原本有圖片，標記為刪除
-    if (props.item?.imageUrl) {
+    if (props.item?.imgResource) {  // ← 修正：使用 imgResource
         form.value.deleteExistingImage = true;
-        form.value.imageUrl = ''; // 清空 imageUrl
+        form.value.imageUrl = ''; // 清空前端的 imageUrl
     }
 };
 
