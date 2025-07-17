@@ -1,6 +1,7 @@
 <template>
     <div class="restaurant-banner goldenbowl-restaurant-theme">
-        <img :src="restaurant.image" :alt="restaurant.name + '店面圖片'" class="banner-image" />
+        <img :src="restaurant.photo || 'https://via.placeholder.com/280x160'" :alt="restaurant.name"
+            class="banner-image" />
     </div>
 </template>
 
