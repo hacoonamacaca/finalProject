@@ -41,7 +41,9 @@ public class StoreDTO {
     private String phone;
     private String email;
     private Boolean isEmailVerified;
-    private Boolean isFavorited;
+
+    // 新增：表示當前用戶是否收藏了該餐廳
+    private Boolean isFavorited; // 預設為 false，除非明確設置
 
     // 若你要給前端顯示空間點座標，可以自行決定怎麼包
     private String storeCoords; // 通常轉 WKT 字串或 GeoJSON 字串。要怎麼顯示決定於你的前端設計
@@ -51,6 +53,9 @@ public class StoreDTO {
         this.id = store.getId();
         this.ownerId = store.getOwner() != null ? store.getOwner().getId() : null;
         this.name = store.getName();
+        this.photo = store.getPhoto();
+        this.score = store.getScore();
+        this.isOpen = store.getIsOpen();
         this.address = store.getAddress();
         this.lng = store.getLng();
         this.lat = store.getLat();
@@ -61,6 +66,14 @@ public class StoreDTO {
         this.createdTime = store.getCreatedTime();
         this.updatedTime = store.getUpdatedTime();
         this.isActive = store.getIsActive();
+
+        // 處理 storeCoords (GEOGRAPHY Point 物件轉換為字串)
+        if (store.getStoreCoords() != null) {
+            // 使用 toText() 方法將 JTS Point 物件轉換為 WKT (Well-Known Text) 格式的字串
+            this.storeCoords = store.getStoreCoords().toText();
+        } else {
+            this.storeCoords = null;
+        }
 
         // 這裡是關鍵：從 owner 取得 phone/email
         if (store.getOwner() != null) {
@@ -140,11 +153,10 @@ public class StoreDTO {
             this.score = comment.getScore();
         }
     }
-
-    @com.fasterxml.jackson.annotation.JsonProperty("score") // 或直接用 @JsonProperty 如果有 import
-    public String getScoreStr() {
-        if (score == null)
-            return null;
-        return String.format("%.1f", score);
-    }
+    // @com.fasterxml.jackson.annotation.JsonProperty("score") // 或直接用 @JsonProperty
+    // 如果有 import
+    // public String getScoreStr() {
+    // if (score == null) return null;
+    // return String.format("%.1f", score);
+    // }
 }

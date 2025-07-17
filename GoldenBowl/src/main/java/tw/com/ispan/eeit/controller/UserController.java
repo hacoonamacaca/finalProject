@@ -28,39 +28,57 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    // @GetMapping
+    // public ResponseEntity<List<UserBean>> getAllUsers() {
+    //     List<UserBean> users = userService.getAllUsers();
+    //     return new ResponseEntity<>(users, HttpStatus.OK);
+    // }
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserBean> users = userService.getAllUsers();
         List<UserDTO> dtos = users.stream()
-                .map(UserService::toDTO)
-                .toList();
+                                  .map(UserService::toDTO)
+                                  .toList();
         return ResponseEntity.ok(dtos);
     }
+    
 
+    // @GetMapping("/{id}")
+    // public ResponseEntity<UserBean> getUserById(@PathVariable Integer id) {
+    //     Optional<UserBean> user = userService.getUserById(id);
+    //     return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+    //             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    // }
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
         Optional<UserBean> user = userService.getUserById(id);
         return user.map(u -> ResponseEntity.ok(UserService.toDTO(u)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                   .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/profile")
     public ResponseEntity<UserDTO> getProfileByEmail(@RequestParam String email) {
         Optional<UserBean> user = userService.getUserByEmail(email);
         return user.map(u -> ResponseEntity.ok(UserService.toDTO(u)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                   .orElseGet(() -> ResponseEntity.notFound().build());
     }
+    
+    // @PostMapping
+    // public ResponseEntity<UserBean> createUser(@RequestBody UserBean user) {
+    //     UserBean createdUser = userService.createUser(user);
+    //     return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    // }
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserDTO dto) {
-        if (dto.getEmail() == null || dto.getEmail().isBlank()) {
+        if(dto.getEmail() == null || dto.getEmail().isBlank()){
             return ResponseEntity.badRequest().body("Email必填");
         }
-
+        
         try {
             UserBean entity = UserService.toEntity(dto);
             entity.setIsVerify(false);
-            UserBean createdUser = userService.createUser(entity);
+            UserBean createdUser = userService.createUser(entity); 
             return ResponseEntity.status(HttpStatus.CREATED).body(UserService.toDTO(createdUser));
         } catch (IllegalStateException e) {
             // email 重複
@@ -73,7 +91,16 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{id}")
+    // @PutMapping("/{id}")
+    // public ResponseEntity<UserBean> updateUser(@PathVariable Integer id, @RequestBody UserBean userDetails) {
+    //     UserBean updatedUser = userService.updateUser(id, userDetails);
+    //     if (updatedUser != null) {
+    //         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    //     }
+    //     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // }
+
+     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @RequestBody UserDTO dto) {
         UserDTO updatedUser = userService.updateUser(id, dto);
         if (updatedUser != null) {
@@ -82,7 +109,15 @@ public class UserController {
         return ResponseEntity.notFound().build();
     }
 
-    @DeleteMapping("/{id}")
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<HttpStatus> deleteUser(@PathVariable Integer id) {
+    //     if (userService.deleteUser(id)) {
+    //         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    //     }
+    //     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // }
+
+      @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteUser(@PathVariable Integer id) {
         if (userService.deleteUser(id)) {
             return ResponseEntity.noContent().build();
@@ -90,24 +125,25 @@ public class UserController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/check-email-exists")
+    @PostMapping("/check-email-exists") // 這樣路徑才是 /api/check-email-exists
     public Map<String, Boolean> checkEmailExists(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         boolean exists = userService.checkEmailExists(email);
         return Map.of("exists", exists);
     }
 
-    @PostMapping("/login")
+ @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         String password = body.get("password");
         UserBean user = userService.findByEmailAndPassword(email, password);
         if (user != null && user.getIsVerify()) {
             return Map.of(
-                    "success", true,
-                    "userId", user.getId(),
-                    "userFullName", user.getName(),
-                    "userEmail", user.getEmail());
+                "success", true,
+                "userId", user.getId(),
+                "userFullName", user.getName(),
+                "userEmail", user.getEmail()
+            );
         } else if (user != null && !user.getIsVerify()) {
             return Map.of("success", false, "message", "請先完成 Email 驗證");
         } else {

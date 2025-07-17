@@ -20,10 +20,11 @@ import tw.com.ispan.eeit.service.OwnerService;
 @RestController
 @RequestMapping("/api/owner")
 public class OwnerController {
-    @Autowired
-    private OwnerService ownerService;
+	@Autowired
+	private OwnerService ownerService;
+	
 
-    // 查詢全部（Read All）
+// 查詢全部（Read All）
     @GetMapping
     public List<OwnerBean> findAll() {
         return ownerService.findAll();
@@ -33,8 +34,7 @@ public class OwnerController {
     @GetMapping("/{id}")
     public Map<String, Object> findById(@PathVariable Integer id) {
         OwnerBean bean = ownerService.findById(id);
-        if (bean == null)
-            return Map.of("success", false, "message", "找不到此帳號");
+        if (bean == null) return Map.of("success", false, "message", "找不到此帳號");
         OwnerDTO dto = ownerService.toDTO(bean);
         return Map.of("success", true, "owner", dto);
     }
@@ -72,16 +72,16 @@ public class OwnerController {
             System.out.println("login fail");
             return Map.of("success", false, "message", "帳號或密碼錯誤");
         }
-        System.out.println("login success: " + owner.getEmail());
+        // 把所需欄位全部回傳
         return Map.of(
-                "success", true,
-                "ownerId", owner.getId(),
-                "name", owner.getName(),
-                "email", owner.getEmail(),
-                "phone", owner.getPhone(),
-                "lastLogin", owner.getLastLogin());
+            "success", true,
+            "ownerId", owner.getId(),
+            "name", owner.getName(),
+            "email", owner.getEmail(),
+            "phone", owner.getPhone(),
+            "lastLogin", owner.getLastLogin()
+        );
     }
-
     // 修改（Update）
     @PutMapping("/{id}")
     public Map<String, Object> update(@PathVariable Integer id, @RequestBody Map<String, String> map) {
@@ -92,7 +92,9 @@ public class OwnerController {
         if (updated == null) {
             return Map.of("success", false, "message", "找不到此帳號");
         }
-        return Map.of("success", true, "owner", updated);
+        // 直接呼叫 service 的 DTO 方法
+        OwnerDTO dto = ownerService.toDTO(updated);
+        return Map.of("success", true, "owner", dto);
     }
 
     // 刪除（Delete）

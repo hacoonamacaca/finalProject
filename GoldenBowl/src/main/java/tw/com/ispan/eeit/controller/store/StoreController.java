@@ -1,5 +1,6 @@
 package tw.com.ispan.eeit.controller.store;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import tw.com.ispan.eeit.model.dto.store.StoreDTO;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
@@ -30,14 +33,11 @@ public class StoreController {
     @Autowired
     private StoreService storeService;
 
-    /**
-     * 獲取所有商店（支援搜尋）
-     */
     @GetMapping
     public ResponseEntity<List<StoreDTO>> getAllStores(
             @RequestParam(value = "userId", required = false) Integer userId, // 新增 userId 參數
             @RequestParam(value = "search", required = false) String search) {
-
+        
         List<StoreDTO> storeDTOs;
         if (search != null && !search.trim().isEmpty()) {
             // 調用帶有 userId 參數的 searchStores 方法
@@ -49,9 +49,6 @@ public class StoreController {
         return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
     }
 
-    /**
-     * 根據商店ID獲取單一商店
-     */
     @GetMapping("/{id}")
     public ResponseEntity<StoreDTO> getStoreById(
             @PathVariable Integer id,
@@ -63,9 +60,6 @@ public class StoreController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * 創建新商店
-     */
     @PostMapping
     public ResponseEntity<StoreDTO> createStore(@RequestBody StoreDTO storeDto) {
         // 將 StoreDTO 轉換回 StoreBean 以便 service 層處理
@@ -95,11 +89,10 @@ public class StoreController {
         StoreDTO createdStoreDTO = new StoreDTO(createdStoreBean);
         return new ResponseEntity<>(createdStoreDTO, HttpStatus.CREATED);
     }
-
     /**
      * 更新商店資訊
      */
-    @PutMapping("/{id}")
+   @PutMapping("/{id}")
     public ResponseEntity<StoreDTO> updateStore(@PathVariable Integer id, @RequestBody StoreDTO storeDetailsDto) {
         // 將 StoreDTO 轉換回 StoreBean 以便 service 層處理更新
         StoreBean storeToUpdate = new StoreBean();
@@ -111,7 +104,7 @@ public class StoreController {
         storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
         storeToUpdate.setLat(storeDetailsDto.getLat());
         storeToUpdate.setLng(storeDetailsDto.getLng());
-
+        
         OwnerBean owner = new OwnerBean();
         owner.setPhone(storeDetailsDto.getPhone());
         owner.setEmail(storeDetailsDto.getEmail());
@@ -130,9 +123,7 @@ public class StoreController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * 刪除商店
-     */
+
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteStore(@PathVariable Integer id) {
         if (storeService.deleteStore(id)) {
@@ -244,7 +235,7 @@ public class StoreController {
         List<StoreDTO> storeDTOs = stores.stream()
                 .map(StoreDTO::new)
                 .collect(Collectors.toList());
-
+        
         return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
     }
 
@@ -300,9 +291,9 @@ public class StoreController {
      */
     @GetMapping("/profile/store/{storeId}")
     public ResponseEntity<StoreDTO> getSpecificStore(
-            @PathVariable Integer storeId,
+            @PathVariable Integer storeId, 
             @RequestParam Integer ownerId) {
-
+        
         if (ownerId == null || storeId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -330,8 +321,9 @@ public class StoreController {
 
         long count = storeService.getStoreCountByOwnerId(ownerId);
         Map<String, Object> result = Map.of(
-                "ownerId", ownerId,
-                "storeCount", count);
+            "ownerId", ownerId,
+            "storeCount", count
+        );
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

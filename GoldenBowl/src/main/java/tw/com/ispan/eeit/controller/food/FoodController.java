@@ -48,13 +48,6 @@ public class FoodController {
         return ResponseEntity.ok(foods);
     }
 
-    // 增加有上架的食物--ted
-    @GetMapping("/active/store/{storeId}")
-    public ResponseEntity<List<FoodDTO>> findActiveFoodsByStoreId(@PathVariable Integer storeId) {
-        List<FoodDTO> foods = foodService.findActiveFoodsByStoreId(storeId);
-        return ResponseEntity.ok(foods);
-    }
-
     // --- Update ---
     @PutMapping("/{id}")
     public ResponseEntity<FoodDTO> updateFood(@PathVariable Integer id, @Valid @RequestBody FoodRequest request) {
@@ -67,5 +60,11 @@ public class FoodController {
     public ResponseEntity<Void> deleteFood(@PathVariable Integer id) {
         foodService.deleteFood(id);
         return ResponseEntity.noContent().build(); // 回傳 204 No Content
+    }
+ // 增加有上架的食物--ted
+    @GetMapping("/active/store/{storeId}")
+    public ResponseEntity<List<FoodDTO>> findActiveFoodsByStoreId(@PathVariable Integer storeId) {
+        List<FoodDTO> foods = foodService.findActiveFoodsByStoreId(storeId);
+        return ResponseEntity.ok(foods);
     }
 }

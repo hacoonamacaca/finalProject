@@ -646,8 +646,7 @@ public class ReservationService {
         if (store == null) {
             return new ArrayList<>();
         }
-        // 修改為查詢所有時段（包括關閉的），而不是只查詢啟用的
-        List<TimeSlot> timeSlots = timeSlotRepository.findByStoreAndDay(store, date);
+        List<TimeSlot> timeSlots = timeSlotRepository.findByStoreAndDayAndIsActive(store, date, true);
         return convertToTimeSlotSimpleDTO(timeSlots, storeId);
     }
 

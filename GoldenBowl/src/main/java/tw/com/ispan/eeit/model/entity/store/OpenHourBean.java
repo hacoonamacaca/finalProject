@@ -62,5 +62,4 @@ public class OpenHourBean {
 		// 將 DayOfWeek 轉換為數字（SUNDAY=0, MONDAY=1, ..., SATURDAY=6）
 		this.day = dayOfWeek.getValue() == 7 ? 0 : dayOfWeek.getValue();
 	}
-
 }

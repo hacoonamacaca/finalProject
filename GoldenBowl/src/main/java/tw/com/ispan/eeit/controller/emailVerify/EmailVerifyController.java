@@ -1,4 +1,4 @@
-// // package tw.com.ispan.eeit.controller.emailVerify;
+// package tw.com.ispan.eeit.controller.emailVerify;
 
 // import java.time.LocalDateTime;
 // import java.util.Optional;
@@ -8,6 +8,7 @@
 // import org.springframework.http.ResponseEntity;
 // import org.springframework.mail.SimpleMailMessage;
 // import org.springframework.mail.javamail.JavaMailSender;
+// import org.springframework.web.bind.annotation.CrossOrigin;
 // import org.springframework.web.bind.annotation.GetMapping;
 // import org.springframework.web.bind.annotation.PostMapping;
 // import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,12 +22,13 @@
 // import tw.com.ispan.eeit.repository.emailVerify.UserTokenRepository;
 // import tw.com.ispan.eeit.service.UserService;
 
-// // @RestController
-// // @RequestMapping("/api")
-// // public class EmailVerifyController {
+// @CrossOrigin(origins = "http://localhost:5173")
+// @RestController
+// @RequestMapping("/api")
+// public class EmailVerifyController {
 
-// // @Autowired
-// // private JavaMailSender mailSender;
+// @Autowired
+// private JavaMailSender mailSender;
 
 // @Autowired
 // private UserRepository userRepository;
@@ -100,8 +102,7 @@
 // // 3. 註冊 API
 // @PostMapping("/register")
 // public ResponseEntity<String> register(@RequestParam String email,
-// @RequestParam String password,
-// @RequestParam String name) {
+// @RequestParam String password, @RequestParam String name) {
 // System.out.println("register API called with " + email);
 
 // boolean verified =
@@ -193,7 +194,7 @@
 // return new RedirectView(frontendUrl);
 // }
 
-// // 重設密碼API
+// //重設密碼API
 // @PostMapping("/reset-password")
 // public ResponseEntity<String> resetPassword(
 // @RequestParam String email,

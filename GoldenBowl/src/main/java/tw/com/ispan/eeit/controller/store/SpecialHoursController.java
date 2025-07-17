@@ -203,6 +203,18 @@ public class SpecialHoursController {
     /**
      * 取消特殊設定
      */
+    @DeleteMapping("/{date}")
+    public ResponseEntity<String> cancelSpecialSetting(
+            @PathVariable Integer storeId,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        boolean success = specialHoursService.cancelSpecialSetting(storeId, date);
+        if (success) {
+            return ResponseEntity.ok("成功取消 " + date + " 的特殊設定");
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     /**
      * 檢查是否為特殊休假日

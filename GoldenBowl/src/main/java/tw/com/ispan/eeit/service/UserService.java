@@ -17,13 +17,13 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
-    // 查全部
+    
+    //查全部
     public List<UserBean> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // 查單一
+    //查單一
     public Optional<UserBean> getUserById(Integer id) {
         return userRepository.findById(id);
     }
@@ -41,10 +41,8 @@ public class UserService {
         // 設定創建日期和最後登入日期
         user.setSignupDate(LocalDateTime.now());
         user.setLastLogin(LocalDateTime.now());
-        if (user.getIsActive() == null)
-            user.setIsActive(true);
-        if (user.getIsVerify() == null)
-            user.setIsVerify(false);
+        if (user.getIsActive() == null) user.setIsActive(true);
+        if (user.getIsVerify() == null) user.setIsVerify(false);
         return userRepository.save(user);
     }
 
@@ -53,12 +51,9 @@ public class UserService {
         if (optionalUser.isPresent()) {
             UserBean existingUser = optionalUser.get();
             // 只允許下列欄位更新
-            if (dto.getName() != null)
-                existingUser.setName(dto.getName());
-            if (dto.getPhone() != null)
-                existingUser.setPhone(dto.getPhone());
-            if (dto.getIsActive() != null)
-                existingUser.setIsActive(dto.getIsActive());
+            if (dto.getName() != null) existingUser.setName(dto.getName());
+            if (dto.getPhone() != null) existingUser.setPhone(dto.getPhone());
+            if (dto.getIsActive() != null) existingUser.setIsActive(dto.getIsActive());
             // Email 只能走驗證信 API 流程，這裡不允許直接變更
             // isVerify 也只由驗證流程設定
             // lastLogin 只由登入時自動更新
@@ -67,7 +62,7 @@ public class UserService {
         }
         return null;
     }
-
+    
     public boolean deleteUser(Integer id) {
         if (userRepository.existsById(id)) {
             userRepository.deleteById(id);
@@ -75,46 +70,44 @@ public class UserService {
         }
         return false;
     }
-
-    // 查email是否存在
+    
+    //查email是否存在
     public boolean checkEmailExists(String email) {
-        // System.out.println("查詢用 email: [" + email + "]");
+    	//System.out.println("查詢用 email: [" + email + "]");
         return userRepository.existsByEmail(email.trim());
     }
-
+    
     // 登入
     public UserBean findByEmailAndPassword(String email, String password) {
         Optional<UserBean> optional = userRepository.findByEmail(email);
         if (optional.isPresent()) {
             UserBean user = optional.get();
             if (user.getPassword().equals(password)) {
-                user.setLastLogin(LocalDateTime.now());
-                userRepository.save(user);
+            	user.setLastLogin(LocalDateTime.now());
+            	userRepository.save(user);
                 return user;
             }
         }
         return null;
     }
-
-    public Optional<UserBean> getUserByEmail(String email) {
-        if (email == null)
-            return Optional.empty();
-        return userRepository.findByEmail(email.trim());
+    
+    public Optional<UserBean> getUserByEmail(String email){
+    	if(email == null) return Optional.empty();
+    	return userRepository.findByEmail(email.trim());
     }
-
+    
     @Transactional
     public void verifyEmail(String email) {
-        if (email == null)
-            return;
+        if(email == null) return;
         Optional<UserBean> opt = userRepository.findByEmail(email.trim());
-        if (opt.isPresent()) {
+        if(opt.isPresent()){
             UserBean user = opt.get();
             user.setIsVerify(true);
             userRepository.save(user);
         }
     }
-
-    // 補一個 Entity <-> DTO 的 Mapper 方法（通常建議放 Utility class）
+    
+ // 補一個 Entity <-> DTO 的 Mapper 方法（通常建議放 Utility class）
     public static UserDTO toDTO(UserBean user) {
         UserDTO dto = new UserDTO();
         dto.setId(user.getId());
@@ -128,7 +121,7 @@ public class UserService {
         dto.setHideUntil(user.getHideUntil());
         return dto;
     }
-
+    
     public static UserBean toEntity(UserDTO dto) {
         UserBean user = new UserBean();
         user.setId(dto.getId());

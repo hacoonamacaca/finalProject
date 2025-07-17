@@ -3,7 +3,6 @@ package tw.com.ispan.eeit.controller.order;
 import java.util.List;
 
 import org.json.JSONObject;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tw.com.ispan.eeit.model.dto.order.OrderDTO;
 import tw.com.ispan.eeit.model.entity.order.OrderBean;
-import tw.com.ispan.eeit.service.UserService;
 import tw.com.ispan.eeit.service.UserService;
 import tw.com.ispan.eeit.service.order.OrderService;
 
@@ -43,7 +41,6 @@ public class OrderController {
     // 創建新訂單
     @PostMapping
     // 修改參數為 OrderDTO
-
     public ResponseEntity<OrderBean> createOrder(@RequestBody OrderDTO orderDTO) {
         // 調用 Service 層，它會返回 Optional<OrderBean>
         return orderService.createOrder(orderDTO)

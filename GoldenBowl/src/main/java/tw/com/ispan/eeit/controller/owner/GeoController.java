@@ -22,18 +22,16 @@ public class GeoController {
     @GetMapping("/latlng")
     public Map<String, Object> getLatLng(@RequestParam String address) {
         try {
-            String url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q="
-                    + URLEncoder.encode(address, StandardCharsets.UTF_8);
+            String url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=" + URLEncoder.encode(address, StandardCharsets.UTF_8);
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url)) // ← 這裡要用 java.net.URI
-                    .header("User-Agent", "YourAppName/1.0 (your@email.com)") // 必須加
-                    .build();
+                .uri(URI.create(url)) // ← 這裡要用 java.net.URI
+                .header("User-Agent", "YourAppName/1.0 (your@email.com)") // 必須加
+                .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             JSONArray arr = new JSONArray(response.body());
-            System.out.println(arr);
             if (arr.length() > 0) {
                 JSONObject first = arr.getJSONObject(0);
                 return Map.of(
