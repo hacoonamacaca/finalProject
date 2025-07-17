@@ -19,12 +19,13 @@
         </h5>
 
         <!-- 使用按鈕 -->
+        <!-- 使用按鈕 -->
         <button
           class="btn btn-use"
           :disabled="promotion.min_spend > cartAmount || promotion.used"
           @click="$emit('use', promotion)"
         >
-          使用
+          {{ promotion.used ? '已使用' : '立即使用' }}
         </button>
       </div>
 

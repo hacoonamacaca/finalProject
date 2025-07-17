@@ -156,6 +156,7 @@ export const useCartStore = defineStore('cart', () => {
             content: restaurantCart.content,
             pickupTime: restaurantCart.pickup_time,
             user: restaurantCart.user,
+            promotionId: restaurantCart.promotionId,
 
         }
 

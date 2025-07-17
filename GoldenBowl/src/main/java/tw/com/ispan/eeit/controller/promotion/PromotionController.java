@@ -138,5 +138,11 @@ public class PromotionController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    
+ // 查某使用者用過的優惠券（根據訂單紀錄）
+    @GetMapping("/used")
+    public List<PromotionDTO> getUsedPromotions(@RequestParam Integer userId) {
+        return promotionService.findUsedPromotions(userId);
+    }
 
 }

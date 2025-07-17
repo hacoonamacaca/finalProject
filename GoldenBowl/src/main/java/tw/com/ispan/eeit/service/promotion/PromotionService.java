@@ -1,12 +1,12 @@
 package tw.com.ispan.eeit.service.promotion;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -263,6 +263,14 @@ public class PromotionService {
         promotionRepository.save(promotion);
     }
 
+    // 查某使用者用過的優惠券（根據訂單紀錄）
+    public List<PromotionDTO> findUsedPromotions(Integer userId) {
+        List<PromotionBean> usedPromos = promotionRepository.findUsedByUserId(userId);
+        return usedPromos.stream()
+                .map(this::toDTO) 
+                .collect(Collectors.toList());
+    }
+    
 
     // Entity 轉 DTO（包含分類 type 判斷）
     public PromotionDTO toDTO(PromotionBean p) {

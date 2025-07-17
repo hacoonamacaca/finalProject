@@ -45,7 +45,29 @@
           </button>
           <NotificationList :visible="isNotificationOpen" :notifications="notifications" @mark-as-read="markAsRead" />
         </div>
+        <!-- 通知下拉選單內容 -->
+        <ul v-if="visible" class="notification-list">
+            <li
+              v-for="item in notifications"
+              :key="item.id"
+              @click="$emit('mark-as-read', item)"
+            >
+              <div class="d-flex justify-content-between">
+                <span>{{ item.title }}</span>
+                <span v-if="!item.isRead" class="badge bg-danger">未讀</span>
+              </div>
 
+              <small class="text-muted">{{ formatDate(item.createdTime) }}</small>
+
+              <!-- 顯示活動內容（如果有） -->
+              <div
+                v-if="item.promotion?.description"
+                class="text-secondary mt-1 small"
+              >
+                {{ item.promotion.description }}
+              </div>
+            </li>
+          </ul>
         <div class="nav-item">
           <button class="btn position-relative" style="background: transparent; border: none;" @click="showCart"
             title="購物車">
@@ -88,6 +110,7 @@ import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
 import Swal from 'sweetalert2';
 import { useUserStore } from '@/stores/user.js'; 
 import axios from '@/plungins/axios.js';
+import { defineProps } from 'vue' //
 
 // 購物車 store
 const cartStore = useCartStore();
@@ -159,18 +182,33 @@ const handleConfirmCheckout = (restaruantId,orderData) => {
   //如果沒辦法取得userId.value暫時給值 4
   const body = {
     user :{
-    id: userId.value // 假設您的 Pinia store 中有 userId 屬性
-
-    }
+    id: 5 // 假設您的 Pinia store 中有 userId 屬性
+    // id: userId.value // 假設您的 Pinia store 中有 userId 屬性
+     // 假設您的 Pinia store 中有 promotionId 屬性
+    },
+    
   }
+
   // 將 body 的屬性複製到 existingObject (修改 existingObject)
   // Object.assign(target, source1, source2, ...);
   Object.assign( getRestaurantCart(restaruantId), orderData,body);
+  
   isCheckOrderVisible.value = false;
-
+  
+  
+  console.log('送出前的訂單內容',getRestaurantCart(restaruantId) );
+  
   const order =cartStore.checkoutSingleRestaurant(restaruantId)
+  console.log('送出的訂單內容', order);
+  
   // 寫上ajax
-  axios.post('/api/orders', order)
+axios.post('/api/orders', order).then((response) => {
+    // 請求成功的處理邏輯
+    console.log('訂單已成功送出', response.data);
+  }).catch((error) => {
+    // 請求失敗的處理邏輯
+    console.error('訂單送出失敗', error);
+  })
 
 
 
@@ -225,13 +263,38 @@ const isNotificationOpen = ref(false)
 const toggleNotification = () => isNotificationOpen.value = !isNotificationOpen.value
 
 const notifications = ref([
-  { id: 1, title: '🎁 全站85折限時優惠', date: '2025-06-30', is_read: false },
-  { id: 2, title: '🍔 餐點類優惠券即將到期', date: '2025-06-29', is_read: false },
-  { id: 3, title: '🎉 註冊送折扣券', date: '2025-06-28', is_read: true }
+  // { id: 1, title: '🎁 全站85折限時優惠', date: '2025-06-30', is_read: false },
+  // { id: 2, title: '🍔 餐點類優惠券即將到期', date: '2025-06-29', is_read: false },
+  // { id: 3, title: '🎉 註冊送折扣券', date: '2025-06-28', is_read: true }
 ])
 
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
 const markAsRead = (item) => { item.is_read = true }
+// 載入通知
+const loadNotifications = async () => {
+  if (!userId.value) return;
+  try {
+    const res = await axios.get(`/notifications/user/${userId.value}`);
+    notifications.value = res.data;
+  } catch (error) {
+    console.error('載入通知失敗', error);
+  }
+};
+onMounted(() => {
+  userId.value = userStore.userId; // 從 Pinia 抓 userId
+  loadNotifications(); // 一載入就撈通知
+});
+// 載入通知
+const props = defineProps({
+  visible: Boolean,
+  notifications: Array
+})
+
+const formatDate = (isoString) => {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  return date.toLocaleDateString('zh-TW') + ' ' + date.toLocaleTimeString('zh-TW')
+}
 
 // 搜尋地址 (使用 locationStore 的方法)
 const searchAddress = async () => {
@@ -573,5 +636,36 @@ const getLogin = () => {
     display: flex;
     align-items: center;
   }
+}
+
+/* 優惠通知 */
+.notification-list {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  width: 300px;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  list-style: none;
+}
+
+.notification-list li {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+.notification-list li:hover {
+  background: #f9f9f9;
+}
+
+.badge {
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 12px;
 }
 </style>

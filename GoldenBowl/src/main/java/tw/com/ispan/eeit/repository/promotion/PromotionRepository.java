@@ -47,5 +47,8 @@ public interface PromotionRepository extends JpaRepository<PromotionBean, Intege
     	);
 
 
+    @Query("SELECT DISTINCT o.promotion FROM OrderBean o WHERE o.user.id = :userId AND o.promotion IS NOT NULL")
+    List<PromotionBean> findUsedByUserId(@Param("userId") Integer userId);
+
 }
 

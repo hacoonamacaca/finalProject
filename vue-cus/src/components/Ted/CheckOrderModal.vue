@@ -50,7 +50,7 @@
                     ＋
                   </button> -->
                 <!-- </div> -->
-                <div class="fw-bold text-end" style="width: 80px;">NT$ {{ item.total }}</div>
+                <div class="fw-bold text-end" style="width: 80px;">NT$ {{ item.price * item.quantity }}</div>
                 <!-- <button class="btn btn-sm btn-outline-danger rounded-circle p-0"
                   style="width: 28px; height: 28px; font-size: 0.8rem;" @click="removeItem(item.id)">
                   <i class="bi bi-trash"></i>
@@ -67,7 +67,10 @@
             <!-- 優惠券選擇按鈕 -->
             <div class="d-flex justify-content-between align-items-center mt-3">
               <label class="fw-bold mb-0">優惠券</label>
-              <button class="btn btn-sm btn-outline-warning" @click="loadCoupons">
+              <button
+                class="btn btn-sm btn-outline-warning"
+                @click="openCouponModal"
+              >
                 選擇優惠券
               </button>
             </div>
@@ -85,6 +88,11 @@
               :cartAmount="subtotal"
               @selected="handleCouponSelected"
             />
+            
+            <!-- selected 是事件名稱 由CouponSelectorModal命名  -->
+            <!-- 處理selected 事件的函數是 handleCouponSelected -->
+            <!--handleCouponSelected 是由CheckOrderModal.vue命名 -->
+            <!-- ！！物件事件處理函數的口訣務必記住！！  -->
 
             <div class="d-flex justify-content-between align-items-center mt-3 py-3 border-bottom">
               <h5 class="mb-0">總付款金額</h5>
@@ -127,7 +135,7 @@ import Swal from 'sweetalert2';
 
 // 引入優惠券圖片
 import axios from '@/plungins/axios.js'
-import CouponSelectorModal from '@/components/Yifan/CouponSelectorModal.vue'
+import CouponSelectorModal from '@/components/Yifan/CouponSelectorModal.vue'//優惠券視窗
 
 import globalImg from '@/assets/vouchers/global.png'
 import restaurantImg from '@/assets/vouchers/restaurant.png'
@@ -162,6 +170,7 @@ const tagSpendMap = computed(() => {
 
 
 const loadCoupons = async () => {
+  document.querySelector('#app')?.removeAttribute('aria-hidden');
   console.log("🧩 props.orderItems:", props.orderItems);
   // ✅ 強制同步 props.orderItems → internalOrderItems（保險起見）
   internalOrderItems.value = JSON.parse(JSON.stringify(props.orderItems));
@@ -237,10 +246,18 @@ const loadCoupons = async () => {
 
 // ✅ 補上：用來接住從 modal 子元件選擇的優惠券
 const handleCouponSelected = (coupon) => {
+  // cpupon就是剛剛 emits('selected', promotion)傳過來的 promotion只是我們這邊改變名稱叫做coupon
   selectedCoupon.value = coupon;
   showCouponModal.value = false;
   console.log('🎟️ 已選擇優惠券：', coupon.title);
 };
+
+
+const openCouponModal = () => {
+  document.querySelector('#app')?.removeAttribute('aria-hidden');
+  loadCoupons();
+};
+
 
 
 // 定義發射的事件
@@ -392,17 +409,19 @@ const removeItem = (id) => {
 
 const emitAddToCart = () => {
   if (internalOrderItems.value.length > 0) {
-   const body={
+    const body={
 
       content:content.value,
       status:'Pending',
       create_time:new Date().toISOString().slice(0, 19) ,
       method:paymentMethod.value,
-      pickup_time:new Date().toISOString().slice(0, 11)+currentTime.value
+      pickup_time:new Date().toISOString().slice(0, 11)+currentTime.value,
       // 設定取餐時間
+      promotionId: selectedCoupon.value?.id || null //  有選優惠券就放ID，沒選就 null
     }
     //增加備註、訂單狀態、付款方式、取餐時間
     emits('add-to-cart',props.restId,body);
+    console.log('🎟️ emit 出去的資料：', body);
     // 送出事件清空函數
     internalOrderItems.value = [];
     bsModal.hide();
