@@ -43,31 +43,14 @@
               {{ unreadCount }}
             </span>
           </button>
-          <NotificationList :visible="isNotificationOpen" :notifications="notifications" @mark-as-read="markAsRead" />
+          <NotificationList
+            v-if="isNotificationOpen"
+            :notifications="notifications"
+            @mark-as-read="handleMarkAsRead"
+            @close-list="isNotificationOpen = false"
+            @mark-all-as-read="markAllNotificationsAsRead"
+          />
         </div>
-        <!-- 通知下拉選單內容 -->
-        <ul v-if="visible" class="notification-list">
-            <li
-              v-for="item in notifications"
-              :key="item.id"
-              @click="$emit('mark-as-read', item)"
-            >
-              <div class="d-flex justify-content-between">
-                <span>{{ item.title }}</span>
-                <span v-if="!item.isRead" class="badge bg-danger">未讀</span>
-              </div>
-
-              <small class="text-muted">{{ formatDate(item.createdTime) }}</small>
-
-              <!-- 顯示活動內容（如果有） -->
-              <div
-                v-if="item.promotion?.description"
-                class="text-secondary mt-1 small"
-              >
-                {{ item.promotion.description }}
-              </div>
-            </li>
-          </ul>
         <div class="nav-item">
           <button class="btn position-relative" style="background: transparent; border: none;" @click="showCart"
             title="購物車">
@@ -100,8 +83,8 @@
 import { ref, onMounted, watch, computed, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
-import NotificationList from '@/components/Yifan/NotificationList.vue';
-import CheckOrderModal from '@/components/Ted/CheckOrderModal.vue'; // 引入 CheckOrderModal ted
+import NotificationList from '@/components/Yifan/NotificationList.vue'; // 確保路徑正確
+import CheckOrderModal from '@/components/Ted/CheckOrderModal.vue';
 
 import CartModal from '@/components/KTlu/CartModal.vue';
 import { useCartStore } from '@/stores/cart';
@@ -110,7 +93,8 @@ import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
 import Swal from 'sweetalert2';
 import { useUserStore } from '@/stores/user.js'; 
 import axios from '@/plungins/axios.js';
-import { defineProps } from 'vue' //
+// 這裡不需要 defineProps，因為 Navigation.vue 不是子組件，它沒有接收 props。
+// 如果這個文件是子組件，並且需要接收 props，才需要 defineProps。
 
 // 購物車 store
 const cartStore = useCartStore();
@@ -205,6 +189,19 @@ const handleConfirmCheckout = (restaruantId,orderData) => {
 axios.post('/api/orders', order).then((response) => {
     // 請求成功的處理邏輯
     console.log('訂單已成功送出', response.data);
+    Swal.fire({
+      icon: 'success',
+      title: '訂單已送出！',
+      text: `您的訂單已成功送出。`,
+      confirmButtonText: '確定',
+      customClass: {
+        confirmButton: 'my-swal-confirm-button'
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        console.log(`用戶確認了訂單送出，餐廳ID為: ${restaruantId}`);
+      }
+    });
   }).catch((error) => {
     // 請求失敗的處理邏輯
     console.error('訂單送出失敗', error);
@@ -260,36 +257,71 @@ const toggleMenu = () => {
 
 // 優惠通知邏輯 (保持不變)
 const isNotificationOpen = ref(false)
-const toggleNotification = () => isNotificationOpen.value = !isNotificationOpen.value
+const toggleNotification = () => {
+  isNotificationOpen.value = !isNotificationOpen.value;
+  if (isNotificationOpen.value) {
+    loadNotifications(); // 當打開通知列表時，重新載入通知以獲取最新狀態
+  }
+}
 
-const notifications = ref([
-  // { id: 1, title: '🎁 全站85折限時優惠', date: '2025-06-30', is_read: false },
-  // { id: 2, title: '🍔 餐點類優惠券即將到期', date: '2025-06-29', is_read: false },
-  // { id: 3, title: '🎉 註冊送折扣券', date: '2025-06-28', is_read: true }
-])
+const notifications = ref([])
 
-const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length)
-const markAsRead = (item) => { item.is_read = true }
-// 載入通知
-const loadNotifications = async () => {
-  if (!userId.value) return;
-  try {
-    const res = await axios.get(`/notifications/user/${userId.value}`);
-    notifications.value = res.data;
-  } catch (error) {
-    console.error('載入通知失敗', error);
+// 計算未讀通知數量
+const unreadCount = computed(() => notifications.value.filter(n => !n.isRead).length) // 注意這裡的屬性名是 isRead，不是 is_read
+
+// 處理子組件發出的標記為已讀事件
+const handleMarkAsRead = async (notificationItem) => {
+  if (!notificationItem.isRead) {
+    try {
+      // 假設你的 API 端點是 /api/notifications/{id}/read
+      await axios.patch(`/api/notifications/${notificationItem.id}/read`);
+      // 成功後，更新前端的 notifications 陣列
+      const index = notifications.value.findIndex(n => n.id === notificationItem.id);
+      if (index !== -1) {
+        notifications.value[index].isRead = true;
+      }
+      // 因為 unreadCount 是 computed 屬性，它會自動更新
+    } catch (error) {
+      console.error('標記通知為已讀失敗', error);
+    }
   }
 };
-onMounted(() => {
-  userId.value = userStore.userId; // 從 Pinia 抓 userId
-  loadNotifications(); // 一載入就撈通知
-});
-// 載入通知
-const props = defineProps({
-  visible: Boolean,
-  notifications: Array
-})
 
+// 標記所有通知為已讀
+const markAllNotificationsAsRead = async () => {
+  try {
+    // 假設你的 API 端點是 /api/notifications/mark-all-as-read
+    await axios.post('/api/notifications/mark-all-as-read', { userId: userId.value }); // 傳遞用戶ID
+    // 成功後，更新前端的 notifications 陣列，將所有通知標記為已讀
+    notifications.value.forEach(n => { n.isRead = true; });
+    // unreadCount 會自動更新為 0
+  } catch (error) {
+    console.error('標記所有通知為已讀失敗', error);
+  }
+};
+
+// 載入通知
+const loadNotifications = async () => {
+  // 確保 userId 有值才發送請求
+  if (!userId.value) {
+    console.warn('UserId is not available for loading notifications.');
+    return;
+  }
+  try {
+    // 假設你的 API 端點是 /api/notifications/user/{userId}
+    const res = await axios.get(`/api/notifications/user/${userId.value}`);
+    // 假設後端返回的數據結構是 { id, title, createdTime, promotion, isRead }
+    notifications.value = res.data.map(n => ({
+      ...n,
+      isRead: n.isRead // 確保屬性名是 isRead
+    }));
+  } catch (error) {
+    console.error('載入通知失敗', error);
+    notifications.value = []; // 載入失敗時清空通知
+  }
+};
+
+// 格式化日期時間
 const formatDate = (isoString) => {
   if (!isoString) return ''
   const date = new Date(isoString)
@@ -322,9 +354,21 @@ const getCurrentLocationAndNavigate = async () => {
 
 // 點擊外部關閉下拉選單
 const handleClickOutside = (event) => {
-    if (!event.target.closest('.user-dropdown-container') && !event.target.closest('.notification-list')) {
+    // 檢查點擊是否在用戶下拉選單或通知列表的元素之外
+    const userDropdownContainer = document.querySelector('.user-dropdown-container');
+    const notificationButton = document.querySelector('.nav-item .btn'); // 通知鈴鐺按鈕
+    const notificationListElement = document.querySelector('.notification-list'); // 通知列表本身
+
+    const isClickInsideUserDropdown = userDropdownContainer && userDropdownContainer.contains(event.target);
+    const isClickInsideNotificationButton = notificationButton && notificationButton.contains(event.target);
+    const isClickInsideNotificationList = notificationListElement && notificationListElement.contains(event.target);
+
+    if (!isClickInsideUserDropdown) {
         showDropdown.value = false;
-        isNotificationOpen.value = false; // 同時關閉通知列表
+    }
+    // 只有當點擊不在通知按鈕或通知列表內部時才關閉通知列表
+    if (!isClickInsideNotificationButton && !isClickInsideNotificationList) {
+        isNotificationOpen.value = false;
     }
 };
 
@@ -357,6 +401,9 @@ watch(() => route.query.address, (newAddress) => {
 // 模擬登入函數 (保持不變)
 const getLogin = () => {
   isLoggedIn.value = true; // 模擬登入
+  // 模擬登入成功後，重新載入通知
+  userId.value = userStore.userId; // 確保獲取到用戶ID
+  loadNotifications();
 };
 </script>
 
@@ -638,30 +685,32 @@ const getLogin = () => {
   }
 }
 
-/* 優惠通知 */
-.notification-list {
-  background: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 10px;
-  width: 300px;
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  list-style: none;
-}
+/* 優惠通知列表的樣式，現在應該主要由 NotificationList.vue 內部管理 */
+/* 這裡保留作為 Navigation.vue 中可能需要的容器樣式 */
+/* 例如，如果 NotificationList 組件本身沒有定位，你可以將其定位在這裡 */
+/* .notification-list { */
+/* background: white; */
+/* border: 1px solid #ddd; */
+/* border-radius: 8px; */
+/* padding: 10px; */
+/* width: 300px; */
+/* position: absolute; */
+/* right: 0; */
+/* top: 100%; */
+/* z-index: 1000; */
+/* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); */
+/* list-style: none; */
+/* } */
 
-.notification-list li {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
+/* .notification-list li { */
+/* padding: 10px; */
+/* border-bottom: 1px solid #eee; */
+/* cursor: pointer; */
+/* } */
 
-.notification-list li:hover {
-  background: #f9f9f9;
-}
+/* .notification-list li:hover { */
+/* background: #f9f9f9; */
+/* } */
 
 .badge {
   font-size: 12px;
