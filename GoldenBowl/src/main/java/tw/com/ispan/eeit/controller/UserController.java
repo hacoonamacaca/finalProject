@@ -142,7 +142,8 @@ public class UserController {
                     "success", true,
                     "userId", user.getId(),
                     "userFullName", user.getName(),
-                    "userEmail", user.getEmail());
+                    "userEmail", user.getEmail(),
+                    "userPhone", user.getPhone());
         } else if (user != null && !user.getIsVerify()) {
             return Map.of("success", false, "message", "請先完成 Email 驗證");
         } else {

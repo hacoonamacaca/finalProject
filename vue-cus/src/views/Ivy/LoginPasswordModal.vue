@@ -103,7 +103,7 @@ async function onSubmit() {
         })
         console.log(res)
         const data = res.data
-        console.log(data)
+        console.log('data', data)
         console.log(data.success === true)
         if (data.success) {
             Swal.fire({
@@ -125,7 +125,7 @@ async function onSubmit() {
                 userEmail: userStore.email,
                 userFullName: data.userFullName,
                 userId: data.userId,
-                // userPhone: 後續補充
+                userPhone: data.userPhone
 
             });
             // console.log('登入成功',data)

@@ -1,5 +1,10 @@
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import {
+    defineStore
+} from 'pinia'
+import {
+    ref,
+    computed
+} from 'vue'
 
 export const useCartStore = defineStore('cart', () => {
     // 購物車結構：{ restaurantId: { restaurant, items } }
@@ -196,7 +201,7 @@ export const useCartStore = defineStore('cart', () => {
             store: restaurantCart.restaurant,
             // 餐廳資訊
             orderDetails: [...restaurantCart.items],
-            total: getRestaurantTotal(restaurantId),
+            total: restaurantCart.total ?? getRestaurantTotal(restaurantId),
             status: restaurantCart.status,
             createTime: restaurantCart.create_time,
             content: restaurantCart.content,
