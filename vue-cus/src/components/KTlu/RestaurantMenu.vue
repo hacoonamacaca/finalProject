@@ -90,6 +90,7 @@ const quickAddToCart = (item) => {
         food: {
             id: item.id,
             name: item.name,
+            imgResource : item.imgResource,
         },
         tags: item.tagNames
     }
@@ -534,7 +535,7 @@ onUnmounted(() => {
                                     <!-- 標籤 -->
                                 </div>
 
-                                <div class="item-image">{{ item.imgResource }}
+                                <div class="item-image">
                                     <img :src="item.imgResource" :alt="item.name" />
                                 </div>
                                 <div class="item-content">

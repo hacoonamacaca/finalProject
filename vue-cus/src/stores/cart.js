@@ -46,14 +46,14 @@ export const useCartStore = defineStore('cart', () => {
     const addToCart = (item, restaurant) => {
         // item 從restaurantMenu.vue傳送近來
         const restaurantId = restaurant.id
-
+        // console.log('addToCart', restaurant)
         // 如果該餐廳還沒有購物車，創建一個
         if (!cartByRestaurant.value[restaurantId]) {
             cartByRestaurant.value[restaurantId] = {
                 restaurant: {
                     id: restaurant.id,
                     name: restaurant.name,
-                    image: restaurant.image,
+                    image: restaurant.photo,
                     status: '',
                     content: '',
                 },
@@ -196,7 +196,7 @@ export const useCartStore = defineStore('cart', () => {
             store: restaurantCart.restaurant,
             // 餐廳資訊
             orderDetails: [...restaurantCart.items],
-            total: getRestaurantTotal(restaurantId),
+            total: restaurantCart.total ?? getRestaurantTotal(restaurantId),
             status: restaurantCart.status,
             createTime: restaurantCart.create_time,
             content: restaurantCart.content,

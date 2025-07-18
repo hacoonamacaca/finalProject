@@ -80,31 +80,7 @@ public class OrderBean {
 	@JsonIgnore
 	private StoreBean store;
 
-	@Override
-	public String toString() {
-		// 安全地獲取 ID，而不觸發懶加載
-		Integer userId = (user != null) ? user.getId() : null;
-		Integer storeId = (store != null) ? store.getId() : null;
-		Integer promotionId = (promotion != null) ? promotion.getId() : null;
-
-		// 檢查集合是否已初始化，以避免 LazyInitializationException
-		String orderDetailsInfo = (orderDetails != null && Hibernate.isInitialized(orderDetails))
-				? "orderDetails.size=" + orderDetails.size()
-				: "orderDetails=[Not Loaded]";
-
-		return "OrderBean ["
-				+ "id=" + id
-				+ ", userId=" + userId
-				+ ", storeId=" + storeId
-				+ ", promotionId=" + promotionId
-				+ ", total=" + total
-				+ ", status='" + status + "'"
-				+ ", createTime=" + createTime
-				+ ", content='" + content + "'"
-				+ ", pickupTime=" + pickupTime
-				+ ", " + orderDetailsInfo
-				+ ", "
-				+ "]";
-	}
+	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+	private PaymentBean payment;
 
 }

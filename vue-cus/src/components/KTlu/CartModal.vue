@@ -43,7 +43,7 @@
                         <div class="restaurant-items">
                             <div v-for="item in restaurantCart.items" :key="item.id" class="cart-item">
                                 <div class="item-image">
-                                    <img :src="item.image" :alt="item.name" />
+                                    <img :src="item.food.imgResource" :alt="item.name" />
                                 </div>
 
                                 <div class="item-details">

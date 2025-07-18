@@ -1,6 +1,6 @@
 <template>
     <div class="restaurant-banner goldenbowl-restaurant-theme">
-        <img :src="restaurant.image" :alt="restaurant.name + '店面圖片'" class="banner-image" />
+        <img :src="restaurant.photo" :alt="restaurant.name + '店面圖片'" class="banner-image" />
     </div>
 </template>
 
