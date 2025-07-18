@@ -4,6 +4,7 @@ import apiClient from '../../plungins/axios.js'; // 導入 apiClient
 // import ItemDetailModal from './ItemDetailModal.vue'
 import { useCartStore } from '@/stores/cart'
 import '@/assets/css/restaurant-theme.css'
+import { useImageUrl } from '../../composables/useImageUrl.js'
 
 const props = defineProps({
     restaurant: {
@@ -13,6 +14,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['checkout'])
+
+// 🔥 圖片路徑相關處理
+const { getImageUrl, defaultPhoto } = useImageUrl();
+
+// 🔥 圖片載入失敗時的處理
+const handleImageError = (event) => {
+    console.warn('圖片載入失敗，使用預設圖片:', event.target.src);
+    event.target.src = defaultPhoto;
+};
 
 // 購物車 store
 const cartStore = useCartStore()
@@ -533,8 +543,9 @@ onUnmounted(() => {
                                     <!-- 標籤 -->
                                 </div>
 
-                                <div class="item-image">{{ item.imgResource }}
-                                    <img :src="item.imgResource" :alt="item.name" />
+                                <div class="item-image">
+                                    <img :src="getImageUrl(item.imgResource) || getImageUrl(restaurant.image)"
+                                        :alt="item.name" @error="handleImageError" />
                                 </div>
                                 <div class="item-content">
                                     <div class="item-info">
@@ -922,7 +933,7 @@ onUnmounted(() => {
 }
 
 .add-to-cart-btn {
-    background: var(--restaurant-primary-color, #eeb64f);
+    background: var(--restaurant-primary-color, #ff6b35);
     color: white;
     padding: 10px;
     border-radius: 50%;
@@ -937,7 +948,7 @@ onUnmounted(() => {
 }
 
 .add-to-cart-btn:hover {
-    background: #795a07;
+    background: #e55a2b;
     transform: scale(1.1);
 }
 

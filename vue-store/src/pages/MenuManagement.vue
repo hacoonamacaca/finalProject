@@ -2,7 +2,7 @@
 import { ref, reactive, onMounted, onBeforeUnmount, watch, computed } from 'vue';
 import SlideOutPanel from '../components/common/SlideOutPanel.vue';
 import apiClient from '../plungins/axios.js';
-import { uploadImage } from '../plungins/firebase-storage.js' // 導入 firebase
+// import { uploadImage } from '../plungins/firebase-storage.js' // 導入 firebase
 import PageHeader from '../components/common/PageHeader.vue';
 // import CustomizationSpecs from '../components/menu/CustomizationSpecs.vue';  //預定捨棄功能
 import EditItemPanel from '../components/menu/EditItemPanel.vue';
@@ -11,6 +11,7 @@ import EditCategoryPanel from '../components/menu/EditCategoryPanel.vue';
 // import EditSpecModal from '../components/menu/EditSpecModal.vue';  //預定捨棄功能
 import MenuOverview from '../components/menu/MenuOverview.vue';
 import { useStore } from '../composables/useStore.js'; // 🔥 NEW: 導入 useStore
+import { uploadImageGeneric } from '../plungins/imageUpload.js'
 
 // 🔥 NEW: 使用共享的 store 狀態
 const { selectedStore, currentStoreName, isLoggedIn } = useStore()
@@ -141,6 +142,15 @@ const fetchMenuData = async (storeId) => {
 
         console.log(`🚀 [MenuManagement] 正在為店家 ID: ${storeId} 獲取菜單資料...`);
         
+        // 🔥 NEW: 先測試店家是否存在
+        console.log('📡 測試店家存在性...');
+        try {
+            const storeResponse = await apiClient.get(`/api/stores/profile?ownerId=1&storeId=${storeId}`);
+            console.log('✅ 店家資料:', storeResponse.data);
+        } catch (storeError) {
+            console.warn('⚠️ 無法驗證店家存在性:', storeError);
+        }
+        
         const [categoriesResponse, itemsResponse] = await Promise.all([
             apiClient.get(`/api/food-classes/store/${storeId}`),
             apiClient.get(`/api/foods/store/${storeId}`),
@@ -149,6 +159,14 @@ const fetchMenuData = async (storeId) => {
         console.log('✅ [MenuManagement] API 回應結果:');
         console.log('   分類回應:', categoriesResponse.data);
         console.log('   品項回應:', itemsResponse.data);
+        
+        // 🔥 NEW: 檢查回應狀態
+        console.log('📊 API 回應狀態:', {
+            categoriesStatus: categoriesResponse.status,
+            itemsStatus: itemsResponse.status,
+            categoriesLength: categoriesResponse.data.length,
+            itemsLength: itemsResponse.data.length
+        });
 
         categories.splice(0, categories.length, ...categoriesResponse.data);
         
@@ -186,8 +204,23 @@ const fetchMenuData = async (storeId) => {
         console.log(`   分類數量: ${categories.length}`);
         console.log(`   品項數量: ${items.length}`);
 
+        // 🔥 NEW: 如果沒有資料，提供更多資訊
+        if (categories.length === 0 && items.length === 0) {
+            console.warn(`⚠️ 店家 ${storeId} 沒有任何菜單資料`);
+            console.warn('💡 請檢查：');
+            console.warn('   1. 店家 ID 是否正確？');
+            console.warn('   2. 該店家是否有設定分類和品項？');
+            console.warn('   3. API 路徑是否正確？');
+        }
+
     } catch (e) {
         console.error(`❌ [MenuManagement] 獲取店家 ID:${storeId} 的資料失敗:`, e);
+        console.error('   錯誤詳情:', {
+            message: e.message,
+            status: e.response?.status,
+            statusText: e.response?.statusText,
+            data: e.response?.data
+        });
         error.value = `無法載入菜單資料：${e.response?.data?.message || e.message}`;
         categories.splice(0);
         items.splice(0);
@@ -204,25 +237,25 @@ const fetchMenuData = async (storeId) => {
 // 🔥 NEW: 監聽 selectedStore 變化
 watch(selectedStore, async (newStoreId, oldStoreId) => {
     console.log(`👀 [MenuManagement] selectedStore 變化: ${oldStoreId} → ${newStoreId}`)
-    if (newStoreId) {
+    if (newStoreId && newStoreId !== oldStoreId) {
         await fetchMenuData(newStoreId)
     }
 }, { immediate: true })
 
-// 🔥 NEW: 監聽全域 storeChanged 事件
-const handleStoreChanged = async (event) => {
-    const { newStoreId } = event.detail
-    console.log(`🔄 [MenuManagement] 收到店家切換事件: ${newStoreId}`)
-    if (newStoreId) {
-        await fetchMenuData(newStoreId)
-    }
-}
+// 🔥 移除重複的全域事件監聽 - 因為 watch 已經能監聽到變化了
+// const handleStoreChanged = async (event) => {
+//     const { newStoreId } = event.detail
+//     console.log(`🔄 [MenuManagement] 收到店家切換事件: ${newStoreId}`)
+//     if (newStoreId) {
+//         await fetchMenuData(newStoreId)
+//     }
+// }
 
 onMounted(async () => {
     console.log('🎬 [MenuManagement] 組件掛載')
     
-    // 監聽全域店家切換事件
-    window.addEventListener('storeChanged', handleStoreChanged)
+    // 🔥 移除全域事件監聽，因為 watch 已經能處理
+    // window.addEventListener('storeChanged', handleStoreChanged)
     
     // 如果已經有選中的店家，立即載入
     if (selectedStore.value) {
@@ -232,7 +265,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
     console.log('🧹 [MenuManagement] 組件卸載')
-    window.removeEventListener('storeChanged', handleStoreChanged)
+    // window.removeEventListener('storeChanged', handleStoreChanged)
 })
 
 
@@ -256,40 +289,47 @@ const closeItemPanel = () => {
 const handleSaveItem = async (itemData) => {
     isLoading.value = true;
     try {
-        let payload; // 先宣告一個 payload 變數
+        let payload = { ...itemData }; // 先宣告一個 payload 變數
 
         // 🔥 新增：處理圖片上傳
         if (itemData.imageFile) {
-            console.log('開始上傳圖片...');
+            console.log('開始上傳圖片到本地伺服器...');
             try {
-                const imageUrl = await uploadImage(itemData.imageFile);
-                console.log('圖片上傳成功，URL:', imageUrl);
-                itemData.imgResource = imageUrl; // 將圖片 URL 加入到 itemData
+                const relativePath = await uploadImageGeneric(itemData.imageFile);
+                console.log('圖片上傳成功，路徑:', relativePath);
+                
+                // 儲存相對路徑到 payload
+                itemData.imgResource = relativePath; // 例如："images/temp_1234567890.jpg"
+                console.log('設定 imgResource 到 itemData:', itemData.imgResource);
+                
             } catch (uploadError) {
                 console.error('圖片上傳失敗:', uploadError);
                 alert('圖片上傳失敗，請重試');
-                return; // 如果圖片上傳失敗，就不繼續執行
+                return;
             }
         }
+
+        // 🔥 重要：圖片上傳完成後，重新建立 payload
+        payload = { ...itemData };
 
         // 🔥 新增：處理圖片刪除
         if (itemData.deleteExistingImage) {
             console.log('使用者刪除了既有圖片');
-            itemData.imgResource = ''; // 清空圖片 URL
+            payload.imgResource = ''; // 清空圖片 URL
             // 注意：這裡可以選擇是否要從 Firebase 刪除舊圖片
             // 目前先不刪除，避免複雜化
         }
 
         // 判斷是新增還是編輯
         if (itemData.id) {
-            // 【編輯模式】
-            // 直接使用 itemData 作為 payload 的基礎
-            payload = { ...itemData };
-            
-            // 🔥 DEBUG: 加在這裡 - 編輯模式的狀態檢查
             console.log('=== 編輯模式 Debug ===');
-            console.log('原始 itemData.status:', itemData.status);
-            console.log('payload.status:', payload.status);
+            console.log('原始 itemData.imgResource:', itemData.imgResource);
+            console.log('payload.imgResource:', payload.imgResource);
+
+            // 🔥 新增：處理狀態轉換
+            console.log('轉換前 payload.status:', payload.status);
+            payload.isActive = payload.status === '供應中';
+            console.log('轉換後 payload.isActive:', payload.isActive);
 
             // 將 categoryId 轉換為後端需要的 foodClassIds 陣列
             if (payload.categoryId) {
@@ -299,15 +339,15 @@ const handleSaveItem = async (itemData) => {
             }
             delete payload.categoryId; // 移除掉後端不需要的 categoryId，保持 payload 乾淨
 
-            // 🔥 新增：處理狀態轉換
-            console.log('轉換前 payload.status:', payload.status);
-            payload.isActive = payload.status === '供應中';
-            console.log('轉換後 payload.isActive:', payload.isActive);
+            // 🔥 確認圖片路徑沒有被清理掉
+            console.log('清理前 payload.imgResource:', payload.imgResource);
 
-            // 🔥 新增：處理圖片欄位轉換
-            if (payload.imageUrl && !payload.imgResource) {
-                payload.imgResource = payload.imageUrl;
-            }
+            
+
+            // // 🔥 新增：處理圖片欄位轉換
+            // if (payload.imageUrl && !payload.imgResource) {
+            //     payload.imgResource = payload.imageUrl;
+            // }
 
             // 🔥 新增：清理不需要的欄位
             delete payload.categoryId;
@@ -316,6 +356,7 @@ const handleSaveItem = async (itemData) => {
             delete payload.imageUrl;  // ← 編輯模式也要清除
             delete payload.status;    // ← 新增：清除前端用的 status
 
+            console.log('清理後 payload.imgResource:', payload.imgResource);
             console.log("準備發送 PUT 請求的 payload:", payload);
             const response = await apiClient.put(`/api/foods/${itemData.id}`, payload);
 

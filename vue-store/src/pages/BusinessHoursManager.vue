@@ -5,7 +5,7 @@ import SpecialHoursEditor from '../components/hours/SpecialHoursEditor.vue';
 import axios from '@/plungins/axios.js';
 import Swal from 'sweetalert2';
 
-const storeId = ref(5) //店家id
+const storeId = ref(1) //店家id
 
 // 模態框/側邊欄的顯示狀態
 const isSidebarVisible = ref(false);

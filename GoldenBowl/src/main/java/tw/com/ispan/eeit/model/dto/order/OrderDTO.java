@@ -53,7 +53,6 @@ public class OrderDTO {
         private String photo;
         private Boolean isOpen;
         private Boolean isActive;
-        private String address;
 
         public StoreBean toStoreBean() {
             StoreBean storeBean = new StoreBean();
@@ -62,7 +61,6 @@ public class OrderDTO {
             storeBean.setPhoto(this.photo);
             storeBean.setIsOpen(this.isOpen);
             storeBean.setIsActive(this.isActive);
-            storeBean.setAddress(address);
             // ... 其他屬性
             return storeBean;
         }
@@ -103,9 +101,7 @@ public class OrderDTO {
             storeDto.setPhoto(orderBean.getStore().getPhoto());
             storeDto.setIsActive(orderBean.getStore().getIsActive());
             storeDto.setIsOpen(orderBean.getStore().getIsOpen());
-            storeDto.setAddress(orderBean.getStore().getAddress());
             orderDto.setStore(storeDto);
-            
         }
 
         // 複製 Comment 資訊

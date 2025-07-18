@@ -2,6 +2,7 @@ package tw.com.ispan.eeit.service.food;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -133,6 +134,51 @@ public class FoodService {
 
         FoodBean updatedFood = foodRepository.save(existingFood);
         return convertToDTO(updatedFood);
+    }
+    
+    /**
+     * 更新食物的圖片路徑
+     * @param foodId 食物 ID
+     * @param imagePath 圖片相對路徑
+     * @return 更新後的 FoodDTO
+     */
+    public FoodDTO updateImagePath(Integer foodId, String imagePath) {
+        try {
+            FoodBean food = foodRepository.findById(foodId)
+                    .orElseThrow(() -> new ResourceNotFoundException("找不到食物，ID: " + foodId));
+            
+            // 記錄舊的圖片路徑（如果需要刪除舊圖片）
+            String oldImagePath = food.getImgResource();
+            if (oldImagePath != null && !oldImagePath.equals(imagePath)) {
+                System.out.println("📝 食物 ID:" + foodId + " 圖片路徑變更: " + oldImagePath + " → " + imagePath);
+            }
+            
+            // 更新圖片路徑
+            food.setImgResource(imagePath);
+            food.setUpdateTime(LocalDateTime.now());
+            
+            // 儲存到資料庫
+            FoodBean updatedFood = foodRepository.save(food);
+            
+            System.out.println("✅ 已更新食物 ID:" + foodId + " 的圖片路徑為: " + imagePath);
+            
+            // 轉換為 DTO 回傳
+            return convertToDTO(updatedFood);
+            
+        } catch (Exception e) {
+            System.err.println("❌ 更新食物圖片路徑失敗: " + e.getMessage());
+            throw new RuntimeException("更新圖片路徑失敗: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 批量更新圖片路徑（如果需要）
+     * @param imageUpdates Map<foodId, imagePath>
+     */
+    public void updateMultipleImagePaths(Map<Integer, String> imageUpdates) {
+        for (Map.Entry<Integer, String> entry : imageUpdates.entrySet()) {
+            updateImagePath(entry.getKey(), entry.getValue());
+        }
     }
 
     // --- Delete ---

@@ -1,5 +1,6 @@
 package tw.com.ispan.eeit.controller.store;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,7 +17,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import tw.com.ispan.eeit.model.dto.store.StoreDTO;
 import tw.com.ispan.eeit.model.entity.OwnerBean;
@@ -30,9 +33,6 @@ public class StoreController {
     @Autowired
     private StoreService storeService;
 
-    /**
-     * 獲取所有商店（支援搜尋）
-     */
     @GetMapping
     public ResponseEntity<List<StoreDTO>> getAllStores(
             @RequestParam(value = "userId", required = false) Integer userId, // 新增 userId 參數
@@ -49,9 +49,6 @@ public class StoreController {
         return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
     }
 
-    /**
-     * 根據商店ID獲取單一商店
-     */
     @GetMapping("/{id}")
     public ResponseEntity<StoreDTO> getStoreById(
             @PathVariable Integer id,
@@ -63,9 +60,6 @@ public class StoreController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * 創建新商店
-     */
     @PostMapping
     public ResponseEntity<StoreDTO> createStore(@RequestBody StoreDTO storeDto) {
         // 將 StoreDTO 轉換回 StoreBean 以便 service 層處理
@@ -130,9 +124,6 @@ public class StoreController {
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * 刪除商店
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteStore(@PathVariable Integer id) {
         if (storeService.deleteStore(id)) {
@@ -191,17 +182,17 @@ public class StoreController {
         }
         String address = (String) map.get("address");
 
-        Double lat = null, lon = null;
+        Double lat = null, lng = null;
         try {
             if (map.get("lat") != null && !((String) map.get("lat")).isBlank())
                 lat = Double.parseDouble((String) map.get("lat"));
-            if (map.get("lon") != null && !((String) map.get("lon")).isBlank())
-                lon = Double.parseDouble((String) map.get("lon"));
+            if (map.get("lng") != null && !((String) map.get("lng")).isBlank())
+                lng = Double.parseDouble((String) map.get("lng"));
         } catch (Exception e) {
             return Map.of("success", false, "message", "經緯度格式錯誤");
         }
 
-        boolean ok = storeService.updateAddress(storeId, address, lat, lon);
+        boolean ok = storeService.updateAddress(storeId, address, lat, lng);
         return Map.of("success", ok);
     }
 

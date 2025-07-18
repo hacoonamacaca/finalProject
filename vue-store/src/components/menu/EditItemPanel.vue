@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watchEffect, computed } from 'vue';
+import { useImageUrl } from '../../composables/useImageUrl.js';
 
 const props = defineProps({
     item: {
@@ -12,6 +13,8 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['close', 'save', 'delete']);
+
+const { getImageUrl } = useImageUrl(); // 使用 useImageUrl 建立圖片 URL
 
 // 建立一個本地的響應式物件來處理表單資料
 // 這樣才不會直接修改到 prop，這是 Vue 的一個重要實踐
@@ -31,7 +34,7 @@ watchEffect(() => {
 
         // 🔥 修正：處理圖片顯示 - 使用後端的 imgResource 欄位
         if (props.item.imgResource) {
-            previewUrl.value = props.item.imgResource;
+            previewUrl.value = getImageUrl(props.item.imgResource);
             form.value.imageUrl = props.item.imgResource; // 統一使用 imageUrl 在前端
         } else {
             previewUrl.value = '';
@@ -145,9 +148,9 @@ const removeImage = () => {
     delete form.value.imageFile;
     
     // 如果是編輯模式且原本有圖片，標記為刪除
-    if (props.item?.imageUrl) {
+    if (props.item?.imgResource) {  // ← 修正：使用 imgResource
         form.value.deleteExistingImage = true;
-        form.value.imageUrl = ''; // 清空 imageUrl
+        form.value.imageUrl = ''; // 清空前端的 imageUrl
     }
 };
 

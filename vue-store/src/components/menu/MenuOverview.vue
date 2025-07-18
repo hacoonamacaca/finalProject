@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import defaultPhoto from '../../assets/default-photo.jpg';
+// import defaultPhoto from '../../assets/default-photo.jpg';
+import { useImageUrl } from '../../composables/useImageUrl.js';
 
 // 1. 定義 Props
 const props = defineProps({
@@ -243,6 +244,9 @@ onMounted(() => {
     }
 });
 
+// 17. 圖片載入邏輯
+const { getImageUrl } = useImageUrl();
+
 </script>
 
 <template>
@@ -315,8 +319,14 @@ onMounted(() => {
                         style="cursor: pointer;"
                     >
                         <div class="d-flex align-items-center">
-                            <!-- <span class="me-3">☰</span>-->  <!--不做食物拖曳排序了-->
-                            <img :src="item.imgResource || defaultPhoto" alt="" width="60" height="60" class="me-3 rounded item-image">
+                            <img 
+                                :src="getImageUrl(item.imgResource)" 
+                                :alt="item.name"
+                                width="60" 
+                                height="60" 
+                                class="me-3 rounded item-image"
+                                style="object-fit: cover;"
+                            >
                             <span>{{ item.name }}</span>
                         </div>
                         <div class="d-flex align-items-center">

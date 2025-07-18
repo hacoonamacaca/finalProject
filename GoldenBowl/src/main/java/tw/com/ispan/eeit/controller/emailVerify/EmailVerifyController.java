@@ -1,4 +1,4 @@
-// // package tw.com.ispan.eeit.controller.emailVerify;
+// package tw.com.ispan.eeit.controller.emailVerify;
 
 // import java.time.LocalDateTime;
 // import java.util.Optional;
@@ -22,12 +22,13 @@
 // import tw.com.ispan.eeit.repository.emailVerify.UserTokenRepository;
 // import tw.com.ispan.eeit.service.UserService;
 
+// @CrossOrigin(origins = "http://localhost:5173")
 // @RestController
 // @RequestMapping("/api")
 // public class EmailVerifyController {
 
 // @Autowired
-// private UserTokenRepository userTokenRepository;
+// private JavaMailSender mailSender;
 
 // @Autowired
 // private UserRepository userRepository;

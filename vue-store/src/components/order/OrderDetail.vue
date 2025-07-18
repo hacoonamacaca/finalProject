@@ -13,6 +13,8 @@ const props = defineProps({
 
 const emit = defineEmits(['cancel-order','close-Sidebar','confirm-order','complete-order']);
 
+
+
 // 新增的取消訂單方法
 const cancelOrder = () => {
   // 這裡可以添加確認對話框，例如使用自定義模態框，而不是 alert
@@ -50,6 +52,7 @@ const cancelOrder = () => {
 const confirmOrder = () => {
   props.order.status = '準備中';
   emit('confirm-order', props.order.id)
+ 
 };
 const completeOrder = () => {
   props.order.status = '已完成';
@@ -82,7 +85,6 @@ watch(() => props.order, (newOrder) => {
   <div v-if="order" class="h-100 d-flex flex-column p-4">
 
 
-
     <div class="flex-grow-1 overflow-auto pe-2">
       <div class="d-flex align-items-center mb-4">
         <div class="rounded-circle bg-warning text-white d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
@@ -112,7 +114,7 @@ watch(() => props.order, (newOrder) => {
       <!-- v-if="order.note" -->
       <div  class="mt-auto pt-3 border-top mb-3 p-3 bg-light rounded">
         <h6 class="mb-2 fw-bold">備註:</h6>
-        <p class="mb-0 text-muted small">麻煩多給我一副餐具{{ order.content }}</p>
+        <p class="mb-0 text-muted small">{{ order.content }}</p>
       </div>
 
     </div>
@@ -126,7 +128,7 @@ watch(() => props.order, (newOrder) => {
         <button v-if="order.status!='已取消' && order.status!='已完成' " class="btn btn-outline-danger w-100 py-3 rounded-pill fw-bold" @click="cancelOrder">取消訂單</button>
         <button v-if="order.status=='待確認'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="confirmOrder">確認訂單
         </button>
-        <button v-if="order.status=='準備中'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="completeOrder">完成訂單，代取餐
+        <button v-if="order.status=='準備中'" class="btn btn-outline-primary w-100 py-3 rounded-pill fw-bold" @click="completeOrder">完成訂單，等待取餐
         </button>
       </div>
     </div>
@@ -144,12 +146,6 @@ watch(() => props.order, (newOrder) => {
 
 .btn-close {
   font-size: 1.25rem;
-}
-.my-swal-popup {
-  z-index: 1060 !important;
-}
-.my-swal-backdrop {
-  z-index: 1055 !important;
 }
 .my-swal-popup {
   z-index: 1060 !important;

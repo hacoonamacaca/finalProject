@@ -19,17 +19,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/geo")
 public class GeoController {
 
-    @GetMapping("/latlon")
-    public Map<String, Object> getLatLon(@RequestParam String address) {
+    @GetMapping("/latlng")
+    public Map<String, Object> getLatLng(@RequestParam String address) {
         try {
-            String url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q="
-                    + URLEncoder.encode(address, StandardCharsets.UTF_8);
+            String url = "https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=" + URLEncoder.encode(address, StandardCharsets.UTF_8);
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(url)) // ← 這裡要用 java.net.URI
-                    .header("User-Agent", "YourAppName/1.0 (your@email.com)") // 必須加
-                    .build();
+                .uri(URI.create(url)) // ← 這裡要用 java.net.URI
+                .header("User-Agent", "YourAppName/1.0 (your@email.com)") // 必須加
+                .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
             JSONArray arr = new JSONArray(response.body());
@@ -38,7 +37,7 @@ public class GeoController {
                 return Map.of(
                         "success", true,
                         "lat", first.getString("lat"),
-                        "lon", first.getString("lon"));
+                        "lng", first.getString("lon"));
             } else {
                 return Map.of("success", false, "message", "查無結果");
             }

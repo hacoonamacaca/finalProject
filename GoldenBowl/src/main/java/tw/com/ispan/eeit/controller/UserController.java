@@ -125,7 +125,7 @@ public class UserController {
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping("/check-email-exists")
+    @PostMapping("/check-email-exists") // 這樣路徑才是 /api/check-email-exists
     public Map<String, Boolean> checkEmailExists(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         boolean exists = userService.checkEmailExists(email);

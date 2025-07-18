@@ -6,8 +6,7 @@ import tw.com.ispan.eeit.model.entity.store.StoreBean;
 public class StoreMapper {
 
     public static StoreDTO toDto(StoreBean bean) {
-        if (bean == null)
-            return null;
+        if (bean == null) return null;
         StoreDTO dto = new StoreDTO();
         dto.setId(bean.getId());
         dto.setName(bean.getName());
