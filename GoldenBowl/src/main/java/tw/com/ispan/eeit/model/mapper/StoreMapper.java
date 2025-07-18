@@ -13,7 +13,7 @@ public class StoreMapper {
         dto.setName(bean.getName());
         dto.setAddress(bean.getAddress());
         dto.setLat(bean.getLat());
-        dto.setLon(bean.getLon());
+        dto.setLng(bean.getLng());
         dto.setStoreIntro(bean.getStoreIntro());
         dto.setPhoto(bean.getPhoto());
         dto.setIsOpen(bean.getIsOpen());

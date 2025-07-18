@@ -110,7 +110,7 @@ public class StoreController {
         storeToUpdate.setAddress(storeDetailsDto.getAddress());
         storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
         storeToUpdate.setLat(storeDetailsDto.getLat());
-        storeToUpdate.setLon(storeDetailsDto.getLon());
+        storeToUpdate.setLng(storeDetailsDto.getLng());
 
         OwnerBean owner = new OwnerBean();
         owner.setPhone(storeDetailsDto.getPhone());

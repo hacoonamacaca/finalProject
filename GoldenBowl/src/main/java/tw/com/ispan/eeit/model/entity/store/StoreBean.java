@@ -67,7 +67,7 @@ public class StoreBean {
     private Point storeCoords;
 
     @Column(name = "lng")
-    private Double lon;
+    private Double lng;
 
     private Double lat;
 
