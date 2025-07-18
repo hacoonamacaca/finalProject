@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
 public class DatetimeConvert {
 
@@ -163,4 +164,13 @@ public class DatetimeConvert {
 				return null;
 			}
 		}
+	
+
+	// 格式： 2025/07/16（三） 14:00
+	public static String toString(LocalDateTime time, String pattern, Locale locale) {
+		if (time == null)
+			return "";
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern, locale);
+		return time.format(formatter);
+	}
 }
