@@ -382,10 +382,10 @@ onMounted(() => {
                                 </td>
                                 <td>
                                     <div class="btn-group btn-group-sm">
-                                        <button class="btn btn-outline-primary"
+                                        <!-- <button class="btn btn-outline-primary"
                                             @click="viewReservationDetail(reservation)" title="查看詳情">
                                             <i class="fas fa-eye"></i>
-                                        </button>
+                                        </button> -->
                                         <button v-if="reservation.status === 'PENDING'" class="btn btn-outline-success"
                                             @click="updateReservationStatus(reservation.id, 'CONFIRMED')" title="確認訂位">
                                             <i class="fas fa-check"></i>
@@ -397,10 +397,10 @@ onMounted(() => {
                                             @click="updateReservationStatus(reservation.id, 'CANCELLED')" title="取消訂位">
                                             <i class="fas fa-times"></i>
                                         </button>
-                                        <button class="btn btn-outline-danger"
+                                        <!-- <button class="btn btn-outline-danger"
                                             @click="deleteReservation(reservation.id)" title="刪除訂位">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
+                                            <i class="fas fa-trash"></i> -->
+                                        <!-- </button> -->
                                     </div>
                                 </td>
                             </tr>
@@ -485,9 +485,11 @@ onMounted(() => {
                         class="btn btn-warning" @click="updateReservationStatus(selectedReservation.id, 'CANCELLED')">
                         <i class="fas fa-times me-1"></i> 取消訂位
                     </button>
-                    <button class="btn btn-danger" @click="deleteReservation(selectedReservation.id)">
+                    <!-- <button class="btn btn-danger" @click="deleteReservation(selectedReservation.id)">
                         <i class="fas fa-trash me-1"></i> 刪除訂位
-                    </button>
+                    </button> -->
+
+
                 </div>
             </div>
         </SlideOutPanel>
