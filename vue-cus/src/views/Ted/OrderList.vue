@@ -92,7 +92,7 @@ function findUncompleteOrder(id) {
 
 // 重新訂購功能
 const reorder = (order) => {
-  console.log('重新訂購按鈕被點擊',order.orderDetails);
+  console.log('重新訂購按鈕被點擊OrderList',order);
     if (order && order.orderDetails && order.orderDetails.length > 0) {
       Swal.fire(
         '已加入購物車！', // 標題

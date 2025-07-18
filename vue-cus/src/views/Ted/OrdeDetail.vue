@@ -17,7 +17,7 @@ const cartStore = useCartStore();
 
 // 重新訂購按鈕點擊事件
 const handleReorderClick = () => { // 將名稱從 reorder 改為 handleReorderClick，避免與 store 的 reorder 混淆
-  console.log('重新訂購按鈕被點擊');
+  console.log('重新訂購按鈕被點擊',order.value);
     if (order.value && order.value.orderDetails && order.value.orderDetails.length > 0) {
          // 呼叫購物車 Store 的 reorder 函式，並傳入當前訂單數據
         Swal.fire(

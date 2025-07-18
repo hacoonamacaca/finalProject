@@ -379,12 +379,6 @@ const tagIds = computed(() => {
 });
 
 
-// 原本總金額的寫法
-// const totalPayment = computed(() => {
-//   return subtotal.value;
-// });
-
-// 改成有使用優惠券，計算後總金額的寫法
 
 
 const totalPayment = computed(() => {
@@ -462,15 +456,7 @@ const closeModal = () => {
   bsModal.hide();
 };
 
-// const scrollToTop = () => { // <-- 移除此函數，因為 orderSummaryCard 不再存在
-//   if (orderSummaryCard.value) {
-//     orderSummaryCard.value.scrollIntoView({ behavior: 'smooth' });
-//   }
-// };
 
-// defineExpose({
-//   scrollToTop // <-- 移除 expose
-// });
 </script>
 
 <style scoped>
