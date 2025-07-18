@@ -20,7 +20,7 @@ const cartStore = useCartStore();
 const formatDateTime = (dateTimeString) => {
     if (!dateTimeString) return '';
     const date = new Date(dateTimeString);
-    return date.toLocaleString(); // 根據用戶本地設置格式化日期時間
+    return date.toLocaleString().slice(0,17); // 根據用戶本地設置格式化日期時間
 };
 
 
@@ -149,6 +149,9 @@ const goToOrderDetail = (orderId) => {
         <p class="mb-2 text-muted small">
           取餐時間: {{ formatDateTime(order.pickupTime) }}
         </p>
+        <p class="mb-2 text-muted small">
+          取餐地點: {{ order.store.address }}
+        </p>
 
         <div class="mb-3">
           <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
@@ -192,6 +195,9 @@ const goToOrderDetail = (orderId) => {
         </div>
         <p class="mb-2 text-muted small">
           訂購時間: {{ formatDateTime(order.createTime) }}
+        </p>
+        <p class="mb-2 text-muted small">
+          取餐地點: {{ order.store.address }}
         </p>
 
         <div class="mb-3">

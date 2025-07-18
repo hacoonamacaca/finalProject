@@ -100,8 +100,8 @@
             </div>
 
             <p class="text-muted text-center mt-4 small">
-              您將在以下訂單選擇二、六月 24 日, 預約 12:30 取餐的外帶訂單。
-              <br>取餐地址為...
+              您將在以下訂單選擇 {{currentTime}} 取餐。
+              <br>
             </p>
             <div class="mb-3">
               <label for="exampleFormControlTextarea1" class="form-label" >備註</label>
@@ -355,7 +355,7 @@ function adjustTime(minutes) {
   currentTime.value = time.toTimeString().slice(0, 5);
 }
 
-const internalOrderItems = ref(JSON.parse(JSON.stringify(props.orderItems)));
+
 
 watch(() => props.orderItems, (newItems) => {
   internalOrderItems.value = JSON.parse(JSON.stringify(newItems));
@@ -435,7 +435,7 @@ const emitAddToCart = () => {
       status:'Pending',
       create_time:createTime ,
       method:paymentMethod.value,
-      pickup_time:createTime.slice(0, 11)+currentTime.value
+      pickup_time:createTime.slice(0, 11)+currentTime.value,
       // 設定取餐時間
       promotionId: selectedCoupon.value?.id || null //  有選優惠券就放ID，沒選就 null
     }
