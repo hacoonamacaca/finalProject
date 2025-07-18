@@ -4,8 +4,12 @@ import GeneralHoursEditor from '../components/hours/GeneralHoursEditor.vue';
 import SpecialHoursEditor from '../components/hours/SpecialHoursEditor.vue';
 import axios from '@/plungins/axios.js';
 import Swal from 'sweetalert2';
+import { useUserStore } from '@/stores/user.js'
 
-const storeId = ref(1) //店家id
+const userStore = useUserStore();
+
+const storeId = userStore.ownerId; //店家id
+// const storeId = ref(7); //店家id
 
 // 模態框/側邊欄的顯示狀態
 const isSidebarVisible = ref(false);
@@ -20,22 +24,22 @@ const generalHours = ref([]);//一般營業時間
 
 //預設陣列
 const defaultDayData = [
-  { storeId: storeId.value, dayOfWeek: 'SUNDAY', dayName: '星期日', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  { storeId: storeId.value, dayOfWeek: 'MONDAY', dayName: '星期一', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  { storeId: storeId.value, dayOfWeek: 'TUESDAY', dayName: '星期二', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  { storeId: storeId.value, dayOfWeek: 'WEDNESDAY', dayName: '星期三', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  { storeId: storeId.value, dayOfWeek: 'THURSDAY', dayName: '星期四', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  { storeId: storeId.value, dayOfWeek: 'FRIDAY', dayName: '星期五', openTimeStr: null, closeTimeStr: null, isOpen: false },
-  { storeId: storeId.value, dayOfWeek: 'SATURDAY', dayName: '星期六', openTimeStr: null, closeTimeStr: null, isOpen: false }, // 週末可以給不同預設值
+  { storeId: storeId, dayOfWeek: 'SUNDAY', dayName: '星期日', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  { storeId: storeId, dayOfWeek: 'MONDAY', dayName: '星期一', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  { storeId: storeId, dayOfWeek: 'TUESDAY', dayName: '星期二', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  { storeId: storeId, dayOfWeek: 'WEDNESDAY', dayName: '星期三', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  { storeId: storeId, dayOfWeek: 'THURSDAY', dayName: '星期四', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  { storeId: storeId, dayOfWeek: 'FRIDAY', dayName: '星期五', openTimeStr: null, closeTimeStr: null, isOpen: false },
+  { storeId: storeId, dayOfWeek: 'SATURDAY', dayName: '星期六', openTimeStr: null, closeTimeStr: null, isOpen: false }, // 週末可以給不同預設值
 ];
 
 const findOpenHours = (id) => {
   axios.get(`/api/stores/${id}/hours`).then((res) => {
     generalHours.value = res.data
-    // console.log(generalHours.value)
+    // //console.log(generalHours.value)
 
   }).catch((error) => {
-    console.log(error);
+    //console.log(error);
   })
 
 }
@@ -43,11 +47,11 @@ const findSpecialHours = (id) => {
   axios.get(`/api/stores/${id}/special/all`)
     .then((res) => {
       specialHoursRecords.value = res.data
-      console.log('特殊營業時間', res)
+      //console.log('特殊營業時間',res)
 
 
     }).catch((error) => {
-      console.log(error);
+      //console.log(error);
     })
 }
 
@@ -59,17 +63,17 @@ const specialHoursRecords = ref([]);
 // 開啟一般營業時間編輯器
 const openGeneralEditor = (day) => {
   if (generalHours.value.length == 0) {
-    axios.put(`/api/stores/${storeId.value}/hours/saveAll`, defaultDayData)
+    axios.put(`/api/stores/${storeId}/hours/saveAll`, defaultDayData)
       .then((res) => {
-        // console.log(res.data) 
+        // //console.log(res.data) 
         showToast('建立一般營業時間！', 'success');
-        findOpenHours(storeId.value)
+        findOpenHours(storeId)
       }).catch((error) => {
-        console.log(error);
+        //console.log(error);
       })
 
   }
-  // console.log("陣列長度",generalHours.value.length)
+  // //console.log("陣列長度",generalHours.value.length)
 
   sidebarType.value = 'general';
   // editingDay.value = day; // 傳遞正在編輯的日期
@@ -113,13 +117,13 @@ const hideNotification = () => {
 // 處理一般營業時間的保存
 const handleSaveGeneralHours = (updatedHours) => {
   // generalHours.value = { ...generalHours.value, ...updatedHours };
-  axios.put(`/api/stores/${storeId.value}/hours/saveAll`, updatedHours)
+  axios.put(`/api/stores/${storeId}/hours/saveAll`, updatedHours)
     .then((res) => {
-      // console.log(res.data) 
+      // //console.log(res.data) 
       showToast('一般營業時間已更新！', 'success');
-      findOpenHours(storeId.value)
+      findOpenHours(storeId)
     }).catch((error) => {
-      console.log(error);
+      //console.log(error);
     })
 
   closeSidebar();
@@ -129,17 +133,17 @@ const handleSaveGeneralHours = (updatedHours) => {
 // 處理特殊營業時間的保存
 const handleSaveSpecialHours = (newRecord) => {
   // specialHoursRecords.value.push(newRecord); // 簡單添加，實際應用中可能需要更複雜的邏輯
-  axios.put(`/api/stores/${storeId.value}/special/saveAll`, newRecord)
+  axios.put(`/api/stores/${storeId}/special/saveAll`, newRecord)
     .then((res) => {
-      // console.log(res.data) 
-      findSpecialHours(storeId.value)
+      // //console.log(res.data) 
+      findSpecialHours(storeId)
       showToast('特殊營業時間已新增！', 'success'); // 顯示成功提示
       closeSidebar();
     }).catch((error) => {
-      console.log(error);
+      //console.log(error);
     })
 
-  console.log('接收到newRecord', newRecord)
+  //console.log('接收到newRecord', newRecord)
 
 
 
@@ -161,10 +165,10 @@ const deleteSpecialHours = (index) => {
   }).then((result) => {
     // 檢查用戶是否點擊了「確認」按鈕
     if (result.isConfirmed) {
-      axios.delete(`/api/stores/${storeId.value}/special/${index}`) // 確保這裡使用 idToDelete
+      axios.delete(`/api/stores/${storeId}/special/${index}`) // 確保這裡使用 idToDelete
         .then((res) => {
           // 成功刪除後，重新載入特殊營業時間列表
-          findSpecialHours(storeId.value);
+          findSpecialHours(storeId);
           // 顯示 SweetAlert2 成功提示
           Swal.fire({
             icon: 'success',
@@ -177,7 +181,7 @@ const deleteSpecialHours = (index) => {
           // showToast('特殊營業時間已刪除！', 'danger'); 
         })
         .catch((error) => {
-          console.error("刪除特殊營業時間失敗:", error);
+          //console.error("刪除特殊營業時間失敗:", error);
 
           // 根據錯誤類型設置提示訊息
           let errorMessage = '刪除失敗，請稍後再試。';
@@ -204,8 +208,9 @@ const deleteSpecialHours = (index) => {
 
 
 onMounted(() => {
-  findOpenHours(storeId.value)
-  findSpecialHours(storeId.value)
+
+  findOpenHours(storeId)
+  findSpecialHours(storeId)
 })
 </script>
 
