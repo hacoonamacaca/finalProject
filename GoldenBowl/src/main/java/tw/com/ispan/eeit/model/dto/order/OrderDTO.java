@@ -23,6 +23,7 @@ public class OrderDTO {
     private String content;
     private String pickupTime;
     // 外部連結的部分
+    private String method;
 
     private OrderUserDto User; // 一個存在在OrderDTO內的 UserDto
     private OrderStoreDto store;// 一個存在在OrderDTO內的StoreDTO
@@ -80,8 +81,14 @@ public class OrderDTO {
         orderDto.setContent(orderBean.getContent());
         orderDto.setPickupTime(
                 DatetimeConvert.toString(orderBean.getPickupTime(), "yyyy/MM/dd HH:mm:ss"));
-        // DatetimeConvert.toString(orderBean.getPickupTime(),"M月d日 EEEE HH時mm分"));
-
+        //處理Payment
+        if(orderBean.getPayment()!=null) {
+            if(orderBean.getPayment().getMethod()=="cash"){
+                orderDto.setMethod("現金");}
+            else{
+                orderDto.setMethod("信用卡");}
+            
+        }
         // 複製 User 資訊
         // 檢查關聯是否已初始化且不為 null，避免 LazyInitializationException
         if (orderBean.getUser() != null &&

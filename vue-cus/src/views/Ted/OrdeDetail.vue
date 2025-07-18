@@ -79,7 +79,7 @@ const findOrderById = (id) => {
 onMounted(() => {
   // 在組件掛載後執行的邏輯
   // console.log('取得id',props.restaurantId   )
-  console.log('取得id2',route.params.id   )
+  // console.log('取得id2',route.params.id   )
   findOrderById(route.params.id)
 })
 
@@ -100,8 +100,8 @@ onMounted(() => {
               <h5 class="card-title fw-bold"  v-if="order.status !== 'completed' && order.status !== 'canceled'">最新訂購</h5>
               <h5 class="card-title fw-bold"  v-else>訂單記錄</h5>
               <p class="text-muted small">
-                
-                <a href="#" class="text-decoration-none" style="color: #e20261;">歷史訂單</a> &gt; <a href="#" class="text-decoration-none" style="color: #e20261;">訂單詳情</a>
+                <router-link :to="`/OrderList`">
+                <span  class="text-decoration-none" style="color: #e20261;">歷史訂單</span></router-link> &gt; <span href="#" class="text-decoration-none" style="color: #e20261;">訂單詳情</span>
               </p>
 
               <div class="d-flex align-items-center mb-3">
@@ -157,7 +157,7 @@ onMounted(() => {
             <div class="card-body">
               <h5 class="card-title fw-bold">付款方式</h5>
               <div class="d-flex justify-content-between mb-2">
-                <span>信用卡</span>
+                <span>{{order.method}}</span>
                 <!-- <span>NT$ {{ order.payment.creditCard.toFixed(0) }}</span> -->
               </div>
              

@@ -92,7 +92,7 @@ function findUncompleteOrder(id) {
 
 // 重新訂購功能
 const reorder = (order) => {
-  console.log('重新訂購按鈕被點擊',order);
+  console.log('重新訂購按鈕被點擊',order.orderDetails);
     if (order && order.orderDetails && order.orderDetails.length > 0) {
       Swal.fire(
         '已加入購物車！', // 標題
@@ -161,7 +161,7 @@ const goToOrderDetail = (orderId) => {
         </div>
 
         <div class="d-flex justify-content-end align-items-center mt-3">
-
+          訂單狀態：{{ order.status }}
         </div>
       </div>
     </div>
@@ -207,14 +207,16 @@ const goToOrderDetail = (orderId) => {
           </p>
         </div>
 
-        <div class="d-flex justify-content-end align-items-center mt-3">
+        <div class="d-flex justify-content-between  align-items-center mt-3">
+          <div v-if="order.status!='已取消'">
+          <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
+          </div>
+           <div v-else style="width: 100px;">
+            {{ order.status }}
+          </div>
           <button  class="btn btn-outline-danger btn-sm rounded-pill px-3" @click.stop="reorder(order)">
             選擇想要重新訂購的項目
           </button>
-        </div>
-
-        <div >
-          <RatingModal :order="order" @ratingUpdated="handleRatingUpdated" />
         </div>
       </div>
     </div>
