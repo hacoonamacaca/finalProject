@@ -83,7 +83,7 @@ export const useCartStore = defineStore('cart', () => {
 
     // 生成商品唯一鍵，包含規格信息
     const generateItemKey = (item) => {
-        const baseKey = `${item.id}`
+        const baseKey = `${item.food.id}`
 
         return `${baseKey}`
     }
@@ -96,7 +96,7 @@ export const useCartStore = defineStore('cart', () => {
             return
         }
 
-        const itemIndex = cartByRestaurant.value[restaurantId].items.findIndex(item => item.id === itemId)
+        const itemIndex = cartByRestaurant.value[restaurantId].items.findIndex(item => item.food.id === itemId)
         if (itemIndex > -1) {
             cartByRestaurant.value[restaurantId].items[itemIndex].quantity = newQuantity
         }
@@ -105,7 +105,7 @@ export const useCartStore = defineStore('cart', () => {
     const removeItem = (itemId, restaurantId) => {
         if (!cartByRestaurant.value[restaurantId]) return
 
-        cartByRestaurant.value[restaurantId].items = cartByRestaurant.value[restaurantId].items.filter(item => item.id !== itemId)
+        cartByRestaurant.value[restaurantId].items = cartByRestaurant.value[restaurantId].items.filter(item => item.food.id !== itemId)
 
         // 如果該餐廳沒有商品了，移除該餐廳的購物車
         if (cartByRestaurant.value[restaurantId].items.length === 0) {

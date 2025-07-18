@@ -23,7 +23,7 @@
     </button>
     <div class="nav-links" :class="{ active: isMenuOpen }">
       <div class="auth-section">
-        <a href="#" @click="getLogin" v-if="!isLoggedIn">登入</a>
+        <a href="#" @click="openRegisterModal" v-if="!isLoggedIn">登入</a>
         <UserDropdown v-if="isLoggedIn" />
       </div>
       <div class="nav-items">
@@ -73,6 +73,8 @@
       <button class="search-btn" @click="locationStore.address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
     </div>
   </section>
+
+  <AuthModals ref="authModalsRef" /> 
 </template>
 
 <script setup>
@@ -81,7 +83,7 @@ import { useRoute, useRouter } from 'vue-router';
 import UserDropdown from '@/components/Jimmy/UserDropdown.vue';
 import NotificationList from '@/components/Yifan/NotificationList.vue';
 import CheckOrderModal from '@/components/Ted/CheckOrderModal.vue'; // 引入 CheckOrderModal ted
-
+import AuthModals from '@/components/Ivy/AuthModals.vue'//登入的modal
 import CartModal from '@/components/KTlu/CartModal.vue';
 import { useCartStore } from '@/stores/cart';
 import { useLocationStore } from '@/stores/location'; // <-- 導入新的 location store
@@ -90,27 +92,28 @@ import Swal from 'sweetalert2';
 import { useUserStore } from '@/stores/user.js'; 
 import axios from '@/plungins/axios.js';
 
-// 購物車 store
-const cartStore = useCartStore();
 // 位置 store
 const locationStore = useLocationStore(); // <-- 實例化 location store
 const restaurantDisplayStore = useRestaurantDisplayStore();
+//登入用的▼
+const userStore = useUserStore(); // 實例化 userStore
+const authModalsRef = ref(null); // 引用 AuthModals
+const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
+const isLoggedIn = computed(()=> userStore.isLogin);
+// const isLoggedIn = ref(true); // 根據實際登入狀態設定
 
-const isLoggedIn = ref(true); // 根據實際登入狀態設定
 const isMenuOpen = ref(false);
 const showPopout = ref(false);
 const route = useRoute();
 const router = useRouter();
 
+// 購物車 store
+const cartStore = useCartStore();
 // 購物車相關的計算屬性和方法 (保持不變)
 const cartCount = computed(() => cartStore.cartCount);
 const cartByRestaurant = computed(() => cartStore.cartByRestaurant);
 const totalAmount = computed(() => cartStore.totalAmount);
 const isCartVisible = computed(() => cartStore.isCartVisible);
-
-const userStore = useUserStore(); // 實例化 userStore
-const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
-
 
 
 const showDropdown = ref(false);
@@ -296,9 +299,12 @@ watch(() => route.query.address, (newAddress) => {
 
 
 // 模擬登入函數 (保持不變)
-const getLogin = () => {
-  isLoggedIn.value = true; // 模擬登入
-};
+const openRegisterModal = () => {
+  showDropdown.value = false // 關閉下拉選單
+  if (authModalsRef.value) {
+    authModalsRef.value.step = 'register' // 直接修改 AuthModals 內部的 step
+  }
+}
 </script>
 
 <style scoped>

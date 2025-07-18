@@ -1,8 +1,176 @@
-<!-- Ted負責範圍，典籍餐點後跳出選擇資訊，暫時取消 -->
+<template>
+    <div v-if="show" class="modal-overlay goldenbowl-restaurant-theme" @click="closeModal">
+        <div class="modal-content" @click.stop>
+            <div class="modal-header">
+                <h4 class="modal-title">商品詳情</h4>
+                <button class="close-btn" @click="closeModal">×</button>
+            </div>
+
+            <div class="modal-body">
+                <div class="item-image">
+                    <img :src="item.imgResource" :alt="item.name" />
+
+                </div>
+
+                <div class="item-details">
+                    <h3 class="item-name">{{ item.name }}</h3>
+                    <p class="item-description">{{ item.description }}</p>
+
+                    <div class="price-section">
+                        <span v-if="item.originalPrice && item.originalPrice !== item.discountPrice"
+                            class="original-price">NT${{ item.originalPrice }}</span>
+                        <span class="current-price">NT${{ item.discountPrice || item.price }}</span>
+                    </div>
+
+                    <!-- 冰量選項 -->
+                    <div v-if="hasIceOptions" class="option-group ice-options">
+                        <div class="option-header">
+                            <h6 class="option-title">冰量</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="iceOption in iceOptions" :key="iceOption.value" class="option-item">
+                                <input type="radio" :name="'iceLevel'" :value="iceOption.value"
+                                    v-model="selectedIceLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ iceOption.name }}</span>
+                                    <span v-if="iceOption.badge" class="option-badge">{{ iceOption.badge }}</span>
+                                </span>
+                                <span class="option-price">NT${{ iceOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 甜度選項 -->
+                    <div v-if="hasSweetnessOptions" class="option-group sweetness-options">
+                        <div class="option-header">
+                            <h6 class="option-title">甜度</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="sweetnessOption in sweetnessOptions" :key="sweetnessOption.value"
+                                class="option-item">
+                                <input type="radio" :name="'sweetnessLevel'" :value="sweetnessOption.value"
+                                    v-model="selectedSweetnessLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ sweetnessOption.name }}</span>
+                                    <span v-if="sweetnessOption.badge" class="option-badge">{{ sweetnessOption.badge
+                                    }}</span>
+                                </span>
+                                <span class="option-price">NT${{ sweetnessOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 尺寸選項 -->
+                    <div v-if="hasSizeOptions" class="option-group size-options">
+                        <div class="option-header">
+                            <h6 class="option-title">尺寸</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="sizeOption in sizeOptions" :key="sizeOption.value" class="option-item">
+                                <input type="radio" :name="'sizeLevel'" :value="sizeOption.value"
+                                    v-model="selectedSizeLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ sizeOption.name }}</span>
+                                    <span v-if="sizeOption.badge" class="option-badge">{{ sizeOption.badge }}</span>
+                                </span>
+                                <span class="option-price">NT${{ sizeOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 溫度選項 -->
+                    <div v-if="hasTemperatureOptions" class="option-group temperature-options">
+                        <div class="option-header">
+                            <h6 class="option-title">溫度</h6>
+                            <span class="option-required">必選</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="tempOption in temperatureOptions" :key="tempOption.value" class="option-item">
+                                <input type="radio" :name="'temperatureLevel'" :value="tempOption.value"
+                                    v-model="selectedTemperatureLevel" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ tempOption.name }}</span>
+                                    <span v-if="tempOption.badge" class="option-badge">{{ tempOption.badge }}</span>
+                                </span>
+                                <span class="option-price">NT${{ tempOption.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 配料選項 -->
+                    <div v-if="hasToppingOptions" class="option-group topping-options">
+                        <div class="option-header">
+                            <h6 class="option-title">{{ toppingTitle }}</h6>
+                            <span class="option-limit">最多可選 {{ maxToppings }} 個</span>
+                        </div>
+                        <div class="option-items">
+                            <label v-for="topping in toppingOptions" :key="topping.value" class="option-item">
+                                <input type="checkbox" :value="topping.value" v-model="selectedToppings"
+                                    :disabled="!canSelectMoreToppings && !selectedToppings.includes(topping.value)" />
+                                <span class="option-label">
+                                    <span class="option-name">{{ topping.name }}</span>
+                                </span>
+                                <span class="option-price">+NT${{ topping.price }}</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 其他商品选项 -->
+                    <div v-if="item.options && item.options.length > 0" class="item-options">
+                        <h5>其他選項</h5>
+                        <div v-for="option in item.options" :key="option.id" class="option-group">
+                            <label class="option-label">{{ option.name }}</label>
+                            <div class="option-items">
+                                <label v-for="optionItem in option.items" :key="optionItem.id" class="option-item">
+                                    <input v-if="option.type === 'radio'" type="radio" :name="option.id"
+                                        :value="optionItem.id" v-model="selectedOptions[option.id]" />
+                                    <input v-else type="checkbox" :value="optionItem.id"
+                                        v-model="selectedOptions[option.id]" />
+                                    <span>{{ optionItem.name }}</span>
+                                    <span v-if="optionItem.price > 0" class="option-price">
+                                        +NT${{ optionItem.price }}
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 数量选择 -->
+                    <div class="quantity-section">
+                        <label class="quantity-label">數量</label>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" @click="decreaseQuantity" :disabled="quantity <= 1">-</button>
+                            <span class="quantity-display">{{ quantity }}</span>
+                            <button class="quantity-btn" @click="increaseQuantity">+</button>
+                        </div>
+                    </div>
+
+                    <!-- 备注 -->
+                    <div class="notes-section">
+                        <label class="notes-label">備註</label>
+                        <textarea v-model="notes" placeholder="特殊要求或備註..." class="notes-input" rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="total-price">
+                    總計：NT${{ totalPrice }}
+                </div>
+                <button class="add-to-cart-btn" @click="addToCart">
+                    加入購物車 ({{ quantity }})
+                </button>
+            </div>
+        </div>
+    </div>
+</template>
+
 <script setup>
 import { ref, computed, watch } from 'vue'
 import '@/assets/css/restaurant-theme.css'
-
 
 
 const props = defineProps({
@@ -268,178 +436,6 @@ watch(() => props.show, (newVal) => {
     }
 })
 </script>
-
-
-<template>
-    <div v-if="show" class="modal-overlay goldenbowl-restaurant-theme" @click="closeModal">
-        <div class="modal-content" @click.stop>
-            <div class="modal-header">
-                <h4 class="modal-title">商品詳情</h4>
-                <button class="close-btn" @click="closeModal">×</button>
-            </div>
-
-            <div class="modal-body">
-                <div class="item-image">
-                    <img :src="item.image" :alt="item.name" />
-                </div>
-
-                <div class="item-details">
-                    <h3 class="item-name">{{ item.name }}</h3>
-                    <p class="item-description">{{ item.description }}</p>
-
-                    <div class="price-section">
-                        <span v-if="item.originalPrice && item.originalPrice !== item.discountPrice"
-                            class="original-price">NT${{ item.originalPrice }}</span>
-                        <span class="current-price">NT${{ item.discountPrice || item.price }}</span>
-                    </div>
-
-                    <!-- 冰量選項 -->
-                    <div v-if="hasIceOptions" class="option-group ice-options">
-                        <div class="option-header">
-                            <h6 class="option-title">冰量</h6>
-                            <span class="option-required">必選</span>
-                        </div>
-                        <div class="option-items">
-                            <label v-for="iceOption in iceOptions" :key="iceOption.value" class="option-item">
-                                <input type="radio" :name="'iceLevel'" :value="iceOption.value"
-                                    v-model="selectedIceLevel" />
-                                <span class="option-label">
-                                    <span class="option-name">{{ iceOption.name }}</span>
-                                    <span v-if="iceOption.badge" class="option-badge">{{ iceOption.badge }}</span>
-                                </span>
-                                <span class="option-price">NT${{ iceOption.price }}</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- 甜度選項 -->
-                    <div v-if="hasSweetnessOptions" class="option-group sweetness-options">
-                        <div class="option-header">
-                            <h6 class="option-title">甜度</h6>
-                            <span class="option-required">必選</span>
-                        </div>
-                        <div class="option-items">
-                            <label v-for="sweetnessOption in sweetnessOptions" :key="sweetnessOption.value"
-                                class="option-item">
-                                <input type="radio" :name="'sweetnessLevel'" :value="sweetnessOption.value"
-                                    v-model="selectedSweetnessLevel" />
-                                <span class="option-label">
-                                    <span class="option-name">{{ sweetnessOption.name }}</span>
-                                    <span v-if="sweetnessOption.badge" class="option-badge">{{ sweetnessOption.badge
-                                        }}</span>
-                                </span>
-                                <span class="option-price">NT${{ sweetnessOption.price }}</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- 尺寸選項 -->
-                    <div v-if="hasSizeOptions" class="option-group size-options">
-                        <div class="option-header">
-                            <h6 class="option-title">尺寸</h6>
-                            <span class="option-required">必選</span>
-                        </div>
-                        <div class="option-items">
-                            <label v-for="sizeOption in sizeOptions" :key="sizeOption.value" class="option-item">
-                                <input type="radio" :name="'sizeLevel'" :value="sizeOption.value"
-                                    v-model="selectedSizeLevel" />
-                                <span class="option-label">
-                                    <span class="option-name">{{ sizeOption.name }}</span>
-                                    <span v-if="sizeOption.badge" class="option-badge">{{ sizeOption.badge }}</span>
-                                </span>
-                                <span class="option-price">NT${{ sizeOption.price }}</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- 溫度選項 -->
-                    <div v-if="hasTemperatureOptions" class="option-group temperature-options">
-                        <div class="option-header">
-                            <h6 class="option-title">溫度</h6>
-                            <span class="option-required">必選</span>
-                        </div>
-                        <div class="option-items">
-                            <label v-for="tempOption in temperatureOptions" :key="tempOption.value" class="option-item">
-                                <input type="radio" :name="'temperatureLevel'" :value="tempOption.value"
-                                    v-model="selectedTemperatureLevel" />
-                                <span class="option-label">
-                                    <span class="option-name">{{ tempOption.name }}</span>
-                                    <span v-if="tempOption.badge" class="option-badge">{{ tempOption.badge }}</span>
-                                </span>
-                                <span class="option-price">NT${{ tempOption.price }}</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- 配料選項 -->
-                    <div v-if="hasToppingOptions" class="option-group topping-options">
-                        <div class="option-header">
-                            <h6 class="option-title">{{ toppingTitle }}</h6>
-                            <span class="option-limit">最多可選 {{ maxToppings }} 個</span>
-                        </div>
-                        <div class="option-items">
-                            <label v-for="topping in toppingOptions" :key="topping.value" class="option-item">
-                                <input type="checkbox" :value="topping.value" v-model="selectedToppings"
-                                    :disabled="!canSelectMoreToppings && !selectedToppings.includes(topping.value)" />
-                                <span class="option-label">
-                                    <span class="option-name">{{ topping.name }}</span>
-                                </span>
-                                <span class="option-price">+NT${{ topping.price }}</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- 其他商品选项 -->
-                    <div v-if="item.options && item.options.length > 0" class="item-options">
-                        <h5>其他選項</h5>
-                        <div v-for="option in item.options" :key="option.id" class="option-group">
-                            <label class="option-label">{{ option.name }}</label>
-                            <div class="option-items">
-                                <label v-for="optionItem in option.items" :key="optionItem.id" class="option-item">
-                                    <input v-if="option.type === 'radio'" type="radio" :name="option.id"
-                                        :value="optionItem.id" v-model="selectedOptions[option.id]" />
-                                    <input v-else type="checkbox" :value="optionItem.id"
-                                        v-model="selectedOptions[option.id]" />
-                                    <span>{{ optionItem.name }}</span>
-                                    <span v-if="optionItem.price > 0" class="option-price">
-                                        +NT${{ optionItem.price }}
-                                    </span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 数量选择 -->
-                    <div class="quantity-section">
-                        <label class="quantity-label">數量</label>
-                        <div class="quantity-controls">
-                            <button class="quantity-btn" @click="decreaseQuantity" :disabled="quantity <= 1">-</button>
-                            <span class="quantity-display">{{ quantity }}</span>
-                            <button class="quantity-btn" @click="increaseQuantity">+</button>
-                        </div>
-                    </div>
-
-                    <!-- 备注 -->
-                    <div class="notes-section">
-                        <label class="notes-label">備註</label>
-                        <textarea v-model="notes" placeholder="特殊要求或備註..." class="notes-input" rows="3"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <div class="total-price">
-                    總計：NT${{ totalPrice }}
-                </div>
-                <button class="add-to-cart-btn" @click="addToCart">
-                    加入購物車 ({{ quantity }})
-                </button>
-            </div>
-        </div>
-    </div>
-</template>
-
-
 
 
 <template>

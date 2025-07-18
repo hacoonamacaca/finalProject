@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div @click.stop>
         <button class="btn btn-warning btn-sm rounded-pill px-3" @click.stop="openModal">
             <i class="bi bi-star-fill me-1"></i> 評分
         </button>
@@ -15,7 +15,7 @@
 
                     <div class="modal-body p-4">
                         <div class="d-flex align-items-center mb-4">
-                            <img :src="order.store?.photo || 'https://via.placeholder.com/60'" alt="店家圖片"
+                            <img :src="order.store?.photo" alt="店家圖片"
                                 class="me-3 rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
                             <div>
                                 <h6 class="mb-0">{{ order.store?.name || '未知店家' }}</h6>
@@ -40,7 +40,7 @@
                             <div v-if="order.orderDetails && order.orderDetails.length > 0">
                                 <div v-for="detail in order.orderDetails" :key="detail.id"
                                     class="d-flex align-items-center mb-3 p-2 border rounded">
-                                    <img :src="detail.food?.imgResource || 'https://via.placeholder.com/50'" alt="食物圖片"
+                                    <img :src="detail.food?.imgResource " alt="食物圖片"
                                         class="me-3 rounded" style="width: 50px; height: 50px; object-fit: cover;">
                                     <div class="flex-grow-1">
                                         <p class="mb-0 fw-medium">{{ detail.food?.name || '未知食物' }} <span

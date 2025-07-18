@@ -1,12 +1,8 @@
-import {
-    createApp
-} from 'vue'
+import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router/router.js'
 
-import {
-    createPinia
-} from 'pinia'
+import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';

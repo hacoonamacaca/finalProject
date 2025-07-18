@@ -2,8 +2,8 @@
   <div class="user-dropdown-container">
     <a href="#" class="user-link" @click.prevent="toggleDropdown">
       <i class="bi bi-person-circle me-1"></i>
-      <span v-if="!userFullName">使用者*</span>
-      <span v-else>{{ userFullName }}</span>
+      <span v-if="!cUser">使用者*</span>
+      <span v-else>{{ cUser }}</span>
     </a>
     <div class="dropdown-menu" v-if="showDropdown">
       <ul class="list-unstyled mb-0">
@@ -55,7 +55,7 @@ const userFullName = ref('');
 const userEmail = ref('');
 
 const userStore = useUserStore();
-const cUser = computed(() => userStore.FullName);
+const cUser = computed(() => userStore.fullName);
 
 const toggleDropdown = () => {
   showDropdown.value = !showDropdown.value;
@@ -69,7 +69,7 @@ const navigateTo = (path) => {
 
 // 登出邏輯
 const logout = () => {
-  localStorage.removeItem('token');
+  userStore.logout();
   showDropdown.value = false;
   router.push('/search');
 };
@@ -83,8 +83,7 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
-  userFullName.value = localStorage.getItem('userFullName') || ''
-  userEmail.value = localStorage.getItem('userEmail') || ''
+
 });
 
 onUnmounted(() => {
