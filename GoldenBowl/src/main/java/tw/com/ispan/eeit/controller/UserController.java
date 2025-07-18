@@ -28,6 +28,11 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    // @GetMapping
+    // public ResponseEntity<List<UserBean>> getAllUsers() {
+    // List<UserBean> users = userService.getAllUsers();
+    // return new ResponseEntity<>(users, HttpStatus.OK);
+    // }
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserBean> users = userService.getAllUsers();
@@ -37,6 +42,12 @@ public class UserController {
         return ResponseEntity.ok(dtos);
     }
 
+    // @GetMapping("/{id}")
+    // public ResponseEntity<UserBean> getUserById(@PathVariable Integer id) {
+    // Optional<UserBean> user = userService.getUserById(id);
+    // return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+    // .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    // }
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
         Optional<UserBean> user = userService.getUserById(id);
@@ -50,6 +61,12 @@ public class UserController {
         return user.map(u -> ResponseEntity.ok(UserService.toDTO(u)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    // @PostMapping
+    // public ResponseEntity<UserBean> createUser(@RequestBody UserBean user) {
+    // UserBean createdUser = userService.createUser(user);
+    // return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
+    // }
 
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody UserDTO dto) {
@@ -73,6 +90,16 @@ public class UserController {
         }
     }
 
+    // @PutMapping("/{id}")
+    // public ResponseEntity<UserBean> updateUser(@PathVariable Integer id,
+    // @RequestBody UserBean userDetails) {
+    // UserBean updatedUser = userService.updateUser(id, userDetails);
+    // if (updatedUser != null) {
+    // return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    // }
+    // return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // }
+
     @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @RequestBody UserDTO dto) {
         UserDTO updatedUser = userService.updateUser(id, dto);
@@ -81,6 +108,14 @@ public class UserController {
         }
         return ResponseEntity.notFound().build();
     }
+
+    // @DeleteMapping("/{id}")
+    // public ResponseEntity<HttpStatus> deleteUser(@PathVariable Integer id) {
+    // if (userService.deleteUser(id)) {
+    // return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    // }
+    // return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteUser(@PathVariable Integer id) {
@@ -107,8 +142,7 @@ public class UserController {
                     "success", true,
                     "userId", user.getId(),
                     "userFullName", user.getName(),
-                    "userEmail", user.getEmail(),
-                    "userPhone", user.getPhone());
+                    "userEmail", user.getEmail());
         } else if (user != null && !user.getIsVerify()) {
             return Map.of("success", false, "message", "請先完成 Email 驗證");
         } else {

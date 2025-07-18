@@ -26,7 +26,7 @@ public class OrderDetailDTO {
 	private LikedFoodDTO likeFood;
 	// 外部資料的Food
 	private OrderDetailFoodDTO food; // OrderDetailDTO內的包含食物資料
-
+	private String photoUrl;
 	// private Boolean likeFood; //LikeFood表單中的選項
 
 	private List<SpecDTO> specs;
@@ -35,12 +35,13 @@ public class OrderDetailDTO {
 	public static class OrderDetailFoodDTO {
 		private Integer id;
 		private String name;
-
+		private String image;
 		// 從DTO轉換成Bean
 		public FoodBean toFoodBean() {
 			FoodBean foodBean = new FoodBean();
 			foodBean.setId(this.id);
 			foodBean.setName(this.name);
+			foodBean.setImgResource(image);
 			// ... 其他 FoodBean 屬性
 			return foodBean;
 		}
@@ -60,8 +61,8 @@ public class OrderDetailDTO {
 			OrderDetailDTO.OrderDetailFoodDTO foodDTO = new OrderDetailDTO.OrderDetailFoodDTO();
 			foodDTO.setId(orderDetailBean.getFood().getId());
 			foodDTO.setName(orderDetailBean.getFood().getName());
+			foodDTO.setImage(orderDetailBean.getFood().getImgResource());
 			orderDetail.setFood(foodDTO);
-			System.out.println("fromEntity"+orderDetail.getFood().toString());
 		}
 
 		//
@@ -95,7 +96,6 @@ public class OrderDetailDTO {
 		// 轉換 Food (如果存在)
 		if (this.food != null) {
 			orderDetailBean.setFood(this.food.toFoodBean());
-			
 		}
 
 		// 轉換 Specs 列表 (如果存在)

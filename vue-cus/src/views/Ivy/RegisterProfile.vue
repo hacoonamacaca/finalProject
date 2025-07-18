@@ -1,4 +1,5 @@
 <template>
+    <!-- 有修改 -->
     <div class="profile-bg">
         <div class="profile-card">
             <img src="https://cdn-icons-png.flaticon.com/512/2815/2815428.png" alt="icon" class="profile-img mb-2" />
@@ -99,30 +100,37 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
 
 const route = useRoute()
 const router = useRouter()
+const userStore = useUserStore()
 
-// 從 query 拿到 email
-const email = ref(route.query.email || localStorage.getItem('userEmail') || '')
+// 表單直接綁定 Pinia（可多頁同步！）
+const email = computed({
+    get: () => userStore.email || route.query.email || localStorage.getItem('userEmail') || '',
+    set: v => userStore.setEmail(v)
+})
+const fullName = computed({
+    get: () => userStore.fullName,
+    set: v => userStore.setFullName(v)
+})
+const password = computed({
+    get: () => userStore.password || '', // 一定是字串
+    set: v => userStore.setPassword(v)
+})
 
-// 表單欄位
-const fullName = ref('')
-const password = ref('')
 const showPassword = ref(false)
-
 const message = ref('')
-const messageType = ref('Info')
+const registering = ref(false)
 
-// 密碼規則檢查
-const hasLen = computed(() => password.value.length >= 8)
-const hasLower = computed(() => /[a-z]/.test(password.value))
-const hasNumber = computed(() => /\d/.test(password.value))
-
-// 密碼強度
+// 密碼檢查
+const hasLen = computed(() => (password.value || '').length >= 8)
+const hasLower = computed(() => /[a-z]/.test(password.value || ''))
+const hasNumber = computed(() => /\d/.test(password.value || ''))
 const strength = computed(() => {
     const passed = [hasLen.value, hasLower.value, hasNumber.value].filter(v => v).length
     if (passed === 3) return { label: '高', color: '#fbc02d', percent: 1 }
@@ -130,8 +138,6 @@ const strength = computed(() => {
     if (passed === 1) return { label: '弱', color: '#e57373', percent: 0.4 }
     return { label: '', color: '#eee', percent: 0 }
 })
-
-// 送出按鈕啟用條件
 const canSubmit = computed(() =>
     fullName.value.trim() !== '' && hasLen.value && hasLower.value && hasNumber.value
 )
@@ -140,20 +146,37 @@ function togglePassword() {
     showPassword.value = !showPassword.value
 }
 
+onMounted(() => {
+    // 初始化 email
+    if (!email.value) {
+        alert('請先輸入 email')
+        router.push('/register-email')
+    }
+})
+
 async function onSubmit() {
-    if(!canSubmit.value) return
+    if(!canSubmit.value || registering.value) return
+    registering.value = true
+    message.value = ''
     try {
-        const res = await axios.post('/api/users', {
-            name: fullName.value.trim(), // 和後端 UserDTO 欄位一致
+        const data = {
+            name: fullName.value.trim(),
             email: email.value,
             password: password.value
-        })
+        }
+        await axios.post('/api/users', data)
+
+        // 註冊成功，同步 localStorage
         localStorage.setItem('userFullName', fullName.value.trim())
         localStorage.setItem('userEmail', email.value)
+        userStore.setFullName(fullName.value.trim())
+        userStore.setEmail(email.value)
+        userStore.setPassword('') // 密碼不留
         router.push('/search')
     } catch (e) {
         message.value = e.response?.data?.message || '註冊失敗，請稍後再試'
-        messageType.value = 'error'
+    } finally {
+        registering.value = false
     }
 }
 </script>

@@ -24,6 +24,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import HomeLogin from '@/components/Jimmy/HomeLogin.vue';
+import Swal from 'sweetalert2';
 
 const isLoggedIn = ref(false);
 
@@ -120,7 +121,12 @@ const getCoordinates = async () => {
 // 獲取當前位置
 const getCurrentLocation = async () => {
   if (!navigator.geolocation) {
-    alert('您的瀏覽器不支援定位功能');
+    Swal.fire({
+      icon: 'info',
+      title: '提示',
+      text: '您的瀏覽器不支援定位功能。',
+      confirmButtonText: '確定'
+    });
     return false;
   }
 
@@ -140,12 +146,22 @@ const getCurrentLocation = async () => {
       address.value = formatTaiwanAddress(data.address);
       return true; // 表示成功
     } else {
-      alert('無法解析地址，請稍後再試');
+      Swal.fire({
+        icon: 'error',
+        title: '定位失敗',
+        text: '無法解析地址，請稍後再試。',
+        confirmButtonText: '確定'
+      });
       return false;
     }
   } catch (error) {
     console.error('定位失敗:', error);
-    alert('無法獲取位置，請檢查權限或稍後再試');
+    Swal.fire({
+      icon: 'error',
+      title: '定位失敗',
+      text: '無法獲取位置，請檢查權限或稍後再試。',
+      confirmButtonText: '確定'
+    });
     return false;
   }
 };

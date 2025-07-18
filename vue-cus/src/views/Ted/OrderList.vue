@@ -4,19 +4,23 @@ import { ref, onMounted } from 'vue';
 import axios from '@/plungins/axios.js';
 import RatingModal from '@/components/Ted/ReviewModal.vue';
 import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
+import { useCartStore } from '@/stores/cart'; // 引入 Pinia 購物車 Store
 import { useRouter } from 'vue-router';
+import Swal from 'sweetalert2';
 
-const orders = ref([])
-const id = ref(1)
+const historyOrders = ref([]);
+const orders = ref([]);
 const userStore = useUserStore(); // 實例化 userStore
 const router = useRouter();
 const userId = ref(null); // 用於存儲從 Pinia 獲取的用戶 ID
+// 獲取購物車 Store 實例
+const cartStore = useCartStore();
 
 // 格式化日期時間顯示
 const formatDateTime = (dateTimeString) => {
-    if (!dateTimeString) return '';
-    const date = new Date(dateTimeString);
-    return date.toLocaleString(); // 根據用戶本地設置格式化日期時間
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  return date.toLocaleString().slice(0, 17); // 根據用戶本地設置格式化日期時間
 };
 
 
@@ -27,22 +31,21 @@ const formatDateTime = (dateTimeString) => {
  */
 async function fetchOrders(id) {
   try {
-    const response = await axios.get(`/api/orders/user/${id}`);
-    // 對於每個訂單，如果沒有 comment 屬性或 likedFood 屬性，則補上預設值，
-    // 確保 ReviewModal 可以安全訪問這些屬性
-    orders.value = response.data.map(order => {
-      // 確保 comment 屬性存在，即使為空也設為 null
+
+    const response = await axios.get(`/api/orders/user/history/${id}`);
+    historyOrders.value = response.data.map(order => {
       order.comment = order.comment || null;
       if (order.orderDetails) {
         order.orderDetails = order.orderDetails.map(detail => {
-          // 確保 likedFood 屬性存在，即使為空也設為 null
           detail.likedFood = detail.likedFood || null;
+          // 確保 detail.food 存在，如果不存在則給一個預設的空物件
+          detail.food = detail.food || { name: '未知餐點' }; // 或者你希望的預設值
           return detail;
         });
       }
       return order;
     });
-    console.log("訂單數據加載成功:", orders.value);
+    console.log("訂單數據加載成功:", historyOrders.value);
   } catch (error) {
     console.error("加載訂單失敗:", error);
   }
@@ -58,30 +61,24 @@ const handleRatingUpdated = () => {
 
 onMounted(() => {
   // 獲取用戶 ID 從 Pinia
-  console.log(userId.value)
-
-  // 初始化訂單評分狀態
-  // 從 Pinia 獲取用戶 ID
   userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
   if (userId.value) {
-    findorder(userId.value)
+    // 改為呼叫 fetchOrders，它包含了對 comment 和 likedFood 的預設值處理
+    fetchOrders(userId.value);
+    findUncompleteOrder(userId.value);
 
-    // orders.value.push(findOrder(userId.value));
   } else {
     console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
     // 您可以導向登入頁面或顯示提示
   }
-})
-
-function findorder(id) {
-  axios.get(`/api/orders/user/${id}`)
-  axios.get(`/api/orders/user/${id}`)
+});
+function findUncompleteOrder(id) {
+  axios.get(`/api/orders/user/uncomplete/${id}`)
     .then(function (response) {
-
-      console.log("訂單數據:", response.data);
-      console.log("訂單數據:", response.data);
+      orders.value = response.data;
+      console.log("未完成訂單數據:res", response.data);
       orders.value = response.data
-      console.log(orders.value)
+      console.log('未完成訂單資訊', orders.value)
       // response.data.forEach(element => {
       //   console.log(element)
       //   orders.value.push(element);
@@ -89,14 +86,30 @@ function findorder(id) {
       // console.log(`ordersValue:${orders.value}`)
     }).catch(function (error) {
       console.error("加載訂單失敗:", error);
-
     })
 
 }
 
 // 重新訂購功能
 const reorder = (order) => {
-  alert(`重新訂購：${order.store}`); // 修正 alert 內容
+  console.log('重新訂購按鈕被點擊', order);
+  if (order && order.orderDetails && order.orderDetails.length > 0) {
+    Swal.fire(
+      '已加入購物車！', // 標題
+      `${order.store.name} 的訂單已加入您的購物車。`, // 內文
+      'success' // 圖標：success, error, warning, info, question
+    ).then(() => {
+
+      cartStore.reorder(order); // 呼叫購物車 Store 的 reorder 函式，並傳入當前訂單數據
+    }); // 給用戶一個提示
+  } else {
+    Swal.fire({
+      icon: 'warning', // 使用警告圖標
+      title: '無法重新訂購',
+      text: '該訂單沒有有效的店家或商品信息，無法加入購物車。',
+      confirmButtonText: '確定'
+    });
+  }
 };
 
 //頁面跳轉 點擊訂單詳情後跳轉
@@ -109,8 +122,9 @@ const goToOrderDetail = (orderId) => {
 <template>
   <div class="order-history-container">
     <h4 class="mb-4 text-center">
-      <strong>歷史訂單</strong>
+      <strong>正在處理的訂單</strong>
     </h4>
+    <div v-if="orders.length === 0" class="text-center">目前沒有歷史訂單</div>
     <div v-for="order in orders" :key="order.id"
       class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm" @click="goToOrderDetail(order.id)">
       <img :src="order.store.photo" alt="店家圖片" class="me-3 rounded-circle border border-light"
@@ -125,7 +139,49 @@ const goToOrderDetail = (orderId) => {
           </h4>
         </div>
         <p class="mb-2 text-muted small">
+          取餐時間: {{ formatDateTime(order.pickupTime) }}
+        </p>
+        <p class="mb-2 text-muted small">
+          取餐地點: {{ order.store.address }}
+        </p>
+
+        <div class="mb-3">
+          <p v-for="detail in order.orderDetails" :key="detail.id" class="mb-1 fw-medium">
+            <span class="text-dark">{{ detail.food.name }} x {{ detail.quantity }}</span>
+            <!-- <span v-if="food.spec" class="text-secondary small"> ({{  }})</span> -->
+          </p>
+        </div>
+
+        <div class="d-flex justify-content-end align-items-center mt-3">
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="order-history-container">
+    <h4 class="mb-4 text-center">
+      <strong>歷史訂單</strong>
+    </h4>
+    <div v-if="historyOrders.length === 0" class="text-center">目前沒有歷史訂單</div>
+    <div v-for="order in historyOrders" :key="order.id"
+      class="order-item-card d-flex align-items-start p-3 mb-3 rounded-lg shadow-sm" @click="goToOrderDetail(order.id)">
+      <img :src="order.store.photo" alt="店家圖片" class="me-3 rounded-circle border border-light"
+        style="width: 70px; height: 70px; object-fit: cover;">
+      <div class="flex-grow-1">
+        <div class="d-flex w-100 justify-content-between align-items-center mb-2">
+          <h5 class="mb-0 text-primary">
+            {{ order.store.name }}<!--店家名稱-->
+          </h5>
+          <h4 class="mb-0 text-danger fw-bold">
+            ${{ order.total }}<!--訂單總價-->
+          </h4>
+        </div>
+        <p class="mb-2 text-muted small">
           訂購時間: {{ formatDateTime(order.createTime) }}
+        </p>
+        <p class="mb-2 text-muted small">
+          取餐地點: {{ order.store.address }}
         </p>
 
         <div class="mb-3">
@@ -148,7 +204,6 @@ const goToOrderDetail = (orderId) => {
     </div>
   </div>
 </template>
-
 
 
 <style scoped>

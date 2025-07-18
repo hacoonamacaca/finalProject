@@ -22,13 +22,13 @@
   </div>
 
   <footer class="footer">
-    <p>© 2025 外送平台. 版權所有。</p>
+    <p>© 2025 金碗平台. 版權所有。</p>
     <p>
       <a href="#">關於我們</a>
       <a href="#">聯繫我們</a>
       <a href="#">隱私政策</a>
       <a href="#">服務條款</a>
-      您的使用者 ID: {{ userStore.userId }}
+      <!-- 您的使用者 ID: {{ userStore.userId }} -->
     </p>
   </footer>
 </template>
@@ -52,7 +52,7 @@ const restaurantDisplayStore = useRestaurantDisplayStore();
 
 
 const API_URL = import.meta.env.VITE_API_URL;
-const SEARCH_RADIUS_KM = 5.0; // 定義熱門餐廳的搜索半徑為 5 公里
+const SEARCH_RADIUS_KM = 3.0; // 定義熱門餐廳的搜索半徑為 3 公里
 
 // Haversine 公式計算距離 (單位: 公里)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {

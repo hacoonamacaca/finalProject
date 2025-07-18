@@ -58,6 +58,10 @@ public class StoreService {
         return convertToStoreDTOs(stores, userId);
     }
 
+    public Optional<StoreBean> getStoreById(Integer id) {
+        return storeRepository.findById(id);
+    }
+
     public StoreDTO getStoreById(Integer id, Integer userId) {
         Optional<StoreBean> storeOptional = storeRepository.findByIdWithComments(id); // 使用您的 findByIdWithComments 方法
         if (storeOptional.isEmpty()) {
@@ -88,9 +92,6 @@ public class StoreService {
         }
         if (store.getIsActive() == null) {
             store.setIsActive(true);
-        }
-        if (store.getScore() != null) {
-            store.setScore(roundTo1Decimal(store.getScore()));
         }
         return storeRepository.save(store);
     }
@@ -158,14 +159,14 @@ public class StoreService {
             // lat/lon（僅在兩個都有值且有效範圍才覆蓋）
             System.out.println("[updateStore] 進入方法，id=" + id);
             System.out.println("[updateStore] storeDetails.getLat() = " + storeDetails.getLat());
-            System.out.println("[updateStore] storeDetails.getLon() = " + storeDetails.getLon());
-            if (storeDetails.getLat() != null && storeDetails.getLon() != null) {
+            System.out.println("[updateStore] storeDetails.getLon() = " + storeDetails.getLng());
+            if (storeDetails.getLat() != null && storeDetails.getLng() != null) {
                 double lat = storeDetails.getLat();
-                double lon = storeDetails.getLon();
+                double lon = storeDetails.getLng();
                 System.out.println("[updateStore] 收到 lat=" + lat + ", lon=" + lon);
                 if (lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180) {
                     existingStore.setLat(lat);
-                    existingStore.setLon(lon);
+                    existingStore.setLng(lon);
                     Point point = geometryFactory.createPoint(new Coordinate(lon, lat));
                     point.setSRID(4326);
                     System.out.println("[updateStore] 建立 point: " + point);
@@ -217,7 +218,7 @@ public class StoreService {
 
         store.setAddress(address);
         store.setLat(lat);
-        store.setLon(lon);
+        store.setLng(lon);
 
         System.out.println("lat=" + lat + ", lon=" + lon);
         try {
