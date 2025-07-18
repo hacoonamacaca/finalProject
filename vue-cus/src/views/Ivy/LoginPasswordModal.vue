@@ -103,8 +103,7 @@ async function onSubmit() {
         })
         console.log(res)
         const data = res.data
-        console.log('data', data)
-        console.log(data.success === true)
+        console.log('!!!!!!!!!!!!!!!!!!!!!!', data)
         if (data.success) {
             Swal.fire({
                 icon: 'success', // 顯示成功圖示

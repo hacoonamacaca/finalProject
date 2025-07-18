@@ -129,16 +129,16 @@ const uploadImages = async () => {
     uploadedImagePaths.value = [];
     
     try {
-        console.log('開始批量上傳', files.value.length, '張圖片...');
+        //console.log('開始批量上傳', files.value.length, '張圖片...');
         
         const uploadPromises = files.value.map(async (file, index) => {
             try {
-                console.log(`上傳第 ${index + 1} 張圖片:`, file.name);
+                //console.log(`上傳第 ${index + 1} 張圖片:`, file.name);
                 const imagePath = await uploadImageGeneric(file);
-                console.log(`第 ${index + 1} 張圖片上傳成功:`, imagePath);
+                //console.log(`第 ${index + 1} 張圖片上傳成功:`, imagePath);
                 return imagePath;
             } catch (error) {
-                console.error(`第 ${index + 1} 張圖片上傳失敗:`, error);
+                //console.error(`第 ${index + 1} 張圖片上傳失敗:`, error);
                 throw error;
             }
         });
@@ -146,12 +146,12 @@ const uploadImages = async () => {
         const results = await Promise.all(uploadPromises);
         uploadedImagePaths.value = results;
         
-        console.log('✅ 所有圖片上傳完成:', results);
+        //console.log('✅ 所有圖片上傳完成:', results);
         return results;
         
     } catch (error) {
         uploadError.value = `圖片上傳失敗: ${error.message}`;
-        console.error('❌ 圖片上傳過程出錯:', error);
+        //console.error('❌ 圖片上傳過程出錯:', error);
         throw error;
     } finally {
         isUploading.value = false;
@@ -171,7 +171,7 @@ const selectedFiles = Array.from(event.target.files);
         name: file.name
     }));
     
-    console.log('選擇了', selectedFiles.length, '張圖片');
+    //console.log('選擇了', selectedFiles.length, '張圖片');
 };
 
 // 當 Modal 顯示且有 registerData 時，初始化資料
@@ -223,9 +223,9 @@ async function onSubmit() {
         if (files.value && files.value.length > 0) {
             try {
                 photoUrls = await uploadImages();  // ← 改用新的上傳函數
-                console.log('圖片上傳成功，路徑:', photoUrls)
+                //console.log('圖片上傳成功，路徑:', photoUrls)
             } catch (uploadError) {
-                console.error('圖片上傳失敗:', uploadError)
+                //console.error('圖片上傳失敗:', uploadError)
                 error.value = '圖片上傳失敗，請重試'
                 return
             }
@@ -304,6 +304,11 @@ function onSaveDraft() {
     box-shadow: 0 2px 24px 4px rgba(0, 0, 0, 0.10);
     border: none;
     padding: 1.5rem;
+
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .nav-btn {

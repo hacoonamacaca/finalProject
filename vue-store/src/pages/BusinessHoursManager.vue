@@ -37,6 +37,7 @@ const findOpenHours = (id) => {
   axios.get(`/api/stores/${id}/hours`).then((res) => {
     generalHours.value = res.data
     // //console.log(generalHours.value)
+    // //console.log(generalHours.value)
 
   }).catch((error) => {
     //console.log(error);
@@ -73,6 +74,7 @@ const openGeneralEditor = (day) => {
       })
 
   }
+  // //console.log("陣列長度",generalHours.value.length)
   // //console.log("陣列長度",generalHours.value.length)
 
   sidebarType.value = 'general';

@@ -138,13 +138,6 @@ public class DatetimeConvert {
 		}
 	}
 
-	public static String toString(LocalDateTime time, String pattern, Locale locale) {
-		if (time == null)
-			return "";
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern, locale);
-		return time.format(formatter);
-	}
-
 	/**
 	 * 將字串解析為 LocalTime
 	 * 
@@ -172,5 +165,13 @@ public class DatetimeConvert {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	// 格式： 2025/07/16（三） 14:00
+	public static String toString(LocalDateTime time, String pattern, Locale locale) {
+		if (time == null)
+			return "";
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern, locale);
+		return time.format(formatter);
 	}
 }
