@@ -5,6 +5,7 @@ import java.time.LocalTime;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import tw.com.ispan.eeit.model.entity.store.OpenHourBean;
 
 @Data
 @NoArgsConstructor
@@ -64,5 +65,17 @@ public class OpenHourDTO {
             default:
                 return dayOfWeek.toString();
         }
+    }
+    public static OpenHourDTO fromEntity(OpenHourBean openHour) {
+        if (openHour == null) {
+            return null;
+        }
+        OpenHourDTO dto = new OpenHourDTO();
+        dto.setId(openHour.getId());
+        dto.setStoreId(openHour.getStore().getId());
+        dto.setDayOfWeek(openHour.getDayOfWeek());
+        dto.setOpenTime(openHour.getOpenTime());
+        dto.setCloseTime(openHour.getCloseTime());
+        return dto;
     }
 }

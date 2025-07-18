@@ -167,6 +167,13 @@ onMounted(() => {
 
         <!-- 右側內容區 -->
         <div class="col-lg-4">
+          <div  class="card shadow-sm mb-4 rounded-lg">
+              <div class="card-body">
+                <h5 class="card-title fw-bold">訂單備註</h5>
+                <p class="mb-0">{{ order.content||'無' }}</p>
+              </div>
+          </div>
+        
           <div class="card shadow-sm mb-4 rounded-lg">
             <div class="card-body">
               <h5 class="card-title fw-bold">再次訂購</h5>

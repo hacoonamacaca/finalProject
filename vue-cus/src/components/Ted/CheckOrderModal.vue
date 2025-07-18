@@ -12,7 +12,7 @@
             <div class="alert alert-info d-flex align-items-center gap-2 mb-4" role="alert">
               <i class="bi bi-clock"></i>
               <div>
-                本店今日營業時間：<strong>今日營業時間為...</strong>
+                本店今日營業時間：<strong>{{ todayOpenTime }} - {{ todayCloseTime }}</strong>
               </div>
             </div>
             <div class="mb-4">
@@ -20,7 +20,7 @@
               <div class="input-group ">
                 <button class="btn btn-outline-secondary " type="button" @click="adjustTime(-5)">－</button>
 
-                <input type="time" class="form-control text-center" v-model="currentTime" />
+                <input type="time" class="form-control text-center" v-model="currentTime"  @change="handleTimeInputChange"/>
 
                 <button class="btn btn-outline-secondary" type="button" @click="adjustTime(5)">＋</button>
               </div>
@@ -129,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted,nextTick  } from 'vue';
 import { Modal } from 'bootstrap';
 import Swal from 'sweetalert2';
 
@@ -141,6 +141,7 @@ import globalImg from '@/assets/vouchers/global.png'
 import restaurantImg from '@/assets/vouchers/restaurant.png'
 import foodImg from '@/assets/vouchers/food.png'
 import memberImg from '@/assets/vouchers/member.png'
+
 
 const showCouponModal = ref(false)
 const selectedCoupon = ref(null)
@@ -268,10 +269,7 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  isVisible: {
-    type: Boolean,
-    default: false
-  },
+
   restId: {
       type: Number,
       required: true
@@ -294,6 +292,7 @@ let bsModal = null;
 const checkOrderModal = ref(null);
 
 const currentTime = ref(getNowTime());
+
 // 設定時間
 const paymentMethod = ref('cash');
 // 設定付款方式
@@ -301,41 +300,94 @@ const content = ref('');
 // 設定備註
 
 onMounted(() => {
- 
-  if (checkOrderModal.value) {
-    bsModal = new Modal(checkOrderModal.value);
-    // 初始化元素
-    // 監聽 Bootstrap 的隱藏事件
-    
-    checkOrderModal.value.addEventListener('hidden.bs.modal', () => {
-      emits('close'); // 模態框完全隱藏後才通知父組件
-      resetModalState();
-      // 這裡可以進行任何模態框內部數據的重置
-      // 例如：
-      console.log('關閉')
-    });
-    // 監聽 Bootstrap 的顯示事件（用於額外的調試或邏輯）
-    checkOrderModal.value.addEventListener('shown.bs.modal', () => {
-      console.log('Modal shown and focus handled by Bootstrap');
-    });
-  }
+  console.log('--- onMounted 進入點 (CheckOrderModal) ---');
+
+  // ✨ 關鍵修改：將所有依賴 DOM 元素的操作放入 nextTick
+  nextTick(() => {
+    console.log('--- nextTick 內部執行，DOM 已更新 (CheckOrderModal) ---');
+    if (checkOrderModal.value) {
+      bsModal = new Modal(checkOrderModal.value); // 實例化 Bootstrap Modal
+      console.log('--- Bootstrap Modal 實例化成功 (CheckOrderModal) ---');
+
+      // 監聽模態框完全隱藏的事件
+      checkOrderModal.value.addEventListener('hidden.bs.modal', () => {
+        console.log('--- HIDDEN EVENT (CheckOrderModal) --- 模態框關閉'); // 模態框關閉時顯示
+        emits('close'); // 通知父組件模態框已關閉
+        resetModalState(); // 重置模態框內部狀態
+      });
+
+      // 如果需要，也可以監聽模態框完全顯示的事件
+      checkOrderModal.value.addEventListener('shown.bs.modal', () => {
+        console.log('--- SHOWN EVENT (CheckOrderModal) --- 模態框顯示');
+        // 在這裡可以執行模態框顯示後才需要執行的邏輯，例如載入數據
+      });
+
+      // ✨ 在 onMounted 且 DOM 準備就緒後立即顯示模態框
+      //    因為父組件已經透過 v-if 控制了掛載，所以這裡可以確保它顯示
+      bsModal.show(); // 顯示模態框
+
+    } else {
+      console.log('--- nextTick 內部：checkOrderModal.value 是 null 或 undefined (CheckOrderModal) ---');
+    }
+  });
+
+  // 非同步操作（如 findOpenHour）可以獨立於 nextTick，但確保其結果會更新響應式變數
+  findOpenHour(props.restId);
 });
 
+
+//---新增時間------------------------------------------
+const todayOpenTime = ref('');
+const todayCloseTime = ref('');
+const shwoOpenTime = ref('');
+const showCloseTime = ref('');
+// todayOpenHourText.value = findOpenHour(props.restId);
+const findOpenHour=(id)=>{
+  axios.get(`/api/stores/${id}/hours/todayOpenHour`).then((response) => {
+    const openHour = response.data;
+    
+    console.log('營業時間',openHour);
+    todayOpenTime.value = openHour.openTime.slice(0,5);
+    todayCloseTime.value = openHour.closeTime.slice(0,5);
+    currentTime.value = validateAndClampTime(getNowTime());
+  }).catch((error) => {
+    console.error(error);
+  });
+}
+function parseTime(timeString) {
+  const [hour, minute] = timeString.split(':').map(Number);
+  const now = new Date(); // 使用當前日期，只關注時間部分
+  now.setHours(hour, minute, 0, 0); // 設置小時、分鐘、秒、毫秒
+  return now;
+}
+function formatTimeToAmPm(time24h) {
+  if (!time24h) return '';
+  const [hour, minute] = time24h.split(':').map(Number);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 || 12; // 處理 0 點和 12 點
+  return ` ${ampm} ${displayHour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+}
+shwoOpenTime.value=formatTimeToAmPm(todayOpenTime.value);
+showCloseTime.value=formatTimeToAmPm(todayCloseTime.value);
+//--------------------------------------------------------------
+
+onUnmounted(() => {
+  if (bsModal) {
+    bsModal.dispose(); // 銷毀 Bootstrap Modal 實例
+    // 移除事件監聽器以防止記憶體洩漏
+    if (checkOrderModal.value) {
+      checkOrderModal.value.removeEventListener('hidden.bs.modal', () => { /* no-op */ });
+      checkOrderModal.value.removeEventListener('shown.bs.modal', () => { /* no-op */ });
+    }
+    bsModal = null;
+  }
+});
 
 const resetModalState = () => {
   content.value = '';
   
 }
 
-watch(() => props.isVisible, (newVal) => {
-  if (bsModal) {
-    if (newVal) {
-      bsModal.show();
-    } else {
-      bsModal.hide();
-    }
-  }
-});
 
 
 // 訂單內容相關的響應式數據和方法
@@ -347,12 +399,83 @@ function getNowTime() {
   return now.toTimeString().slice(0, 5);
 }
 
+// function adjustTime(minutes) {
+//   const [hour, minute] = currentTime.value.split(':').map(Number);
+//   const time = new Date();
+//   time.setHours(hour);
+//   time.setMinutes(minute + minutes);
+//   currentTime.value = time.toTimeString().slice(0, 5);
+// }
 function adjustTime(minutes) {
-  const [hour, minute] = currentTime.value.split(':').map(Number);
-  const time = new Date();
-  time.setHours(hour);
-  time.setMinutes(minute + minutes);
-  currentTime.value = time.toTimeString().slice(0, 5);
+  const [currentHour, currentMinute] = currentTime.value.split(':').map(Number);
+  const proposedTimeDate = new Date();
+  proposedTimeDate.setHours(currentHour);
+  proposedTimeDate.setMinutes(currentMinute + minutes);
+  proposedTimeDate.setSeconds(0);
+  proposedTimeDate.setMilliseconds(0);
+
+  const originalTime = currentTime.value; // 記錄調整前時間
+
+  // ✨ 呼叫核心驗證函數
+  const clampedTime = validateAndClampTime(proposedTimeDate.toTimeString().slice(0, 5));
+  currentTime.value = clampedTime; // 更新 currentTime
+}
+
+
+// ✨ 新增一個核心函數來驗證並限制時間範圍
+function validateAndClampTime(timeToValidate) {
+  // 檢查營業時間是否已載入
+  if (!todayOpenTime.value || !todayCloseTime.value) {
+    Swal.fire({
+      icon: 'warning',
+      title: '營業時間未載入',
+      text: '請等待營業時間載入或重新整理頁面。',
+      confirmButtonText: '確定',
+    });
+    return getNowTime(); // 返回當前時間作為 fallback
+  }
+
+  const inputTime = parseTime(timeToValidate);
+  const openLimit = parseTime(todayOpenTime.value);
+  const closeLimit = parseTime(todayCloseTime.value);
+
+  let finalTimeDate = inputTime;
+
+  if (inputTime < openLimit) {
+    Swal.fire({
+      icon: 'info',
+      title: '時間已自動調整',
+      text: `您選擇的時間已自動調整為營業時間範圍內的 ${currentTime.value}。`,
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+    finalTimeDate = openLimit;
+  } else if (inputTime > closeLimit) {
+    Swal.fire({
+      icon: 'info',
+      title: '時間已自動調整',
+      text: `您選擇的時間已自動調整為營業時間範圍內的 ${currentTime.value}。`,
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+    finalTimeDate = closeLimit;
+  }
+
+  return finalTimeDate.toTimeString().slice(0, 5); // 返回修正後的 HH:mm 字串
+}
+
+function handleTimeInputChange() {
+  const originalTime = currentTime.value; // 記錄調整前時間 (v-model 已更新)
+
+  // ✨ 呼叫核心驗證函數
+  const clampedTime = validateAndClampTime(originalTime); // 這裡傳入 v-model 已經更新的值
+   currentTime.value = clampedTime; // 更新 currentTime
 }
 
 

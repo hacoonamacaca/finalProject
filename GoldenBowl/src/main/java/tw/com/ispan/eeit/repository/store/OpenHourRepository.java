@@ -27,7 +27,7 @@ public interface OpenHourRepository extends JpaRepository<OpenHourBean, Integer>
         /**
          * 根據餐廳ID和星期查詢營業時間
          */
-        List<OpenHourBean> findByStoreIdAndDay(Integer storeId, Integer day);
+        Optional<OpenHourBean> findByStoreIdAndDay(Integer storeId, Integer day);
 
         /**
          * 根據餐廳和星期查詢營業時間
@@ -42,6 +42,11 @@ public interface OpenHourRepository extends JpaRepository<OpenHourBean, Integer>
                 Integer dayInt = day.getValue() == 7 ? 0 : day.getValue();
                 return findByStoreAndDay(store, dayInt);
         }
+        
+        
+        
+        @Query("SELECT oh FROM OpenHourBean oh WHERE oh.store.id = :storeId AND oh.day = :day")
+        Optional<OpenHourBean> findByStoreIdAndDay2(@Param("storeId") Integer storeId, @Param("day") DayOfWeek day);
 
         /**
          * 根據餐廳ID和星期查詢營業時間（使用 DayOfWeek 枚舉）
