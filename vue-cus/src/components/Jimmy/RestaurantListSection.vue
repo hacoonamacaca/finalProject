@@ -2,8 +2,13 @@
   <section class="restaurant-list">
     <div class="restaurant-card" v-for="restaurant in restaurants" :key="restaurant.id">
       <div class="image-container">
-        <img :src="restaurant.photo || 'https://via.placeholder.com/280x160'" :alt="restaurant.name"
-          @click="navigateToRestaurant(restaurant.id)" style="cursor: pointer;" />
+        <img 
+          :src="getMainImage(restaurant)" 
+          :alt="restaurant.name"
+          @click="navigateToRestaurant(restaurant.id)" 
+          @error="handleImageError"
+          style="cursor: pointer;" 
+        />
         <i class="favorite-icon bi"
           :class="{ 'bi-heart-fill': restaurant.isFavorited, 'bi-heart': !restaurant.isFavorited }"
           @click.stop="toggleFavorite(restaurant)">
@@ -50,10 +55,14 @@ import Comment from '@/components/Jimmy/Comment.vue';
 import { useUserStore } from '@/stores/user';
 import axios from '@/plungins/axios.js';
 import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
+import { useImageUrl } from '../../composables/useImageUrl.js'
 
 const userStore = useUserStore();
 const currentUserId = computed(() => userStore.userId); // 獲取當前用戶ID
 const restaurantDisplayStore = useRestaurantDisplayStore();
+
+// 🔥 新增：使用圖片處理邏輯
+const { getImageUrl, defaultPhoto } = useImageUrl();
 
 const props = defineProps({
   restaurants: { // 這個 props 現在接收的是 Home.vue 經過所有篩選和模式選擇後的結果
@@ -80,6 +89,42 @@ const openComment = (storeId) => {
   console.log("User:" + userStore.userId);
   selectedStoreId.value = storeId;
   showComment.value = true;
+};
+
+// 🔥 新增：處理餐廳圖片的函數
+const getRestaurantImages = (restaurant) => {
+  // 如果沒有 photo 資料，回傳預設圖片陣列
+  if (!restaurant.photo) {
+    return [defaultPhoto];
+  }
+  
+  // 如果 photo 是字串且包含分號（多張圖片）
+  if (typeof restaurant.photo === 'string' && restaurant.photo.includes(';')) {
+    return restaurant.photo.split(';')
+      .filter(path => path.trim()) // 過濾空字串
+      .map(path => getImageUrl(path.trim()));
+  }
+  
+  // 如果是單張圖片
+  return [getImageUrl(restaurant.photo)];
+};
+
+// 🔥 新增：取得主要顯示圖片（第一張）
+const getMainImage = (restaurant) => {
+  const images = getRestaurantImages(restaurant);
+  return images[0];
+};
+
+// 🔥 新增：取得所有圖片數量
+const getImageCount = (restaurant) => {
+  const images = getRestaurantImages(restaurant);
+  return images.length;
+};
+
+// 🔥 新增：圖片載入錯誤處理
+const handleImageError = (event) => {
+  console.warn('餐廳圖片載入失敗，使用預設圖片:', event.target.src);
+  event.target.src = defaultPhoto;
 };
 
 // --- 收藏功能相關方法 ---

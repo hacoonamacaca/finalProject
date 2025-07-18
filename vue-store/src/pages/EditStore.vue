@@ -31,8 +31,9 @@
             </div>
             <!-- 餐廳照片 -->
             <div class="mb-3 text-center">
-                <label class="form-label w-100 text-start">餐廳照片</label>
-                <input type="file" multiple class="form-control" @change="onFileChange" />
+                <label class="form-label">餐廳照片</label>
+                <input type="file" class="form-control" multiple @change="onFileChange" accept="image/*" />
+                            <div class="form-text">可選擇多張照片</div>
             </div>
             <!-- 手機號碼 -->
             <div class="mb-3 text-center">
@@ -70,21 +71,70 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user.js'
 import { useStore } from '@/composables/useStore.js' // 🔥 NEW: 僅為了店家切換
 import axios from '@/plungins/axios.js'
-import { uploadImage } from '@/plungins/firebase-storage.js'
+// import { uploadImage } from '@/plungins/firebase-storage.js'
+import { uploadImageGeneric } from '../plungins/imageUpload.js';
+import { useImageUrl } from '../composables/useImageUrl.js';
 
 const router = useRouter()
 const userStore = useUserStore()
 
-// 🔥 NEW: 加入 stores 來同步更新下拉選單
+// 🔥 圖片上傳邏輯
+const { getImageUrl, defaultPhoto } = useImageUrl();
+
+// 🔥 加入 stores 來同步更新下拉選單
 const { selectedStore, stores } = useStore()
 
-const photoFile = ref(null) // 上傳圖片
+// 🔥 新增：圖片上傳相關變數（原本缺少的）
+const files = ref([]);
+const previewUrls = ref([]);
+const uploadedImagePaths = ref([]);
+const isUploading = ref(false);
+const uploadError = ref('');
+const photoFile = ref(null); // 原本的單檔變數保留
 
-// 🔥 NEW: 最小化加入載入和儲存狀態
+// 🔥 修正：圖片批量上傳函數
+const uploadImages = async () => {
+    if (!files.value || files.value.length === 0) return [];
+    
+    isUploading.value = true;
+    uploadError.value = '';
+    uploadedImagePaths.value = [];
+    
+    try {
+        console.log('開始批量上傳', files.value.length, '張圖片...');
+        
+        const uploadPromises = files.value.map(async (file, index) => {
+            try {
+                console.log(`上傳第 ${index + 1} 張圖片:`, file.name);
+                const imagePath = await uploadImageGeneric(file);
+                console.log(`第 ${index + 1} 張圖片上傳成功:`, imagePath);
+                return imagePath;
+            } catch (error) {
+                console.error(`第 ${index + 1} 張圖片上傳失敗:`, error);
+                throw error;
+            }
+        });
+        
+        const results = await Promise.all(uploadPromises);
+        uploadedImagePaths.value = results;
+        
+        console.log('✅ 所有圖片上傳完成:', results);
+        return results;
+        
+    } catch (error) {
+        uploadError.value = `圖片上傳失敗: ${error.message}`;
+        console.error('❌ 圖片上傳過程出錯:', error);
+        throw error;
+    } finally {
+        isUploading.value = false;
+    }
+};
+
+//  最小化加入載入和儲存狀態
 const isLoading = ref(false)
 const isSaving = ref(false)
 
-// 🔥 原始設計 - 保持不變
+
 const localProfile = reactive({
     name: '',
     address: '',
@@ -96,7 +146,7 @@ const localProfile = reactive({
     lng: null,
 })
 
-// 🔥 NEW: 擴展 fetchStoreProfile 來支援特定店家 ID
+// 擴展 fetchStoreProfile 來支援特定店家 ID
 const fetchStoreProfile = async (storeId = null) => {
     try {
         isLoading.value = true
@@ -120,7 +170,7 @@ const fetchStoreProfile = async (storeId = null) => {
     }
 }
 
-// 🔥 原始設計 - 完全保持不變
+
 onMounted(async () => {
     // 🔥 修正：優先載入當前選中的店家，而不是預設店家
     const targetStoreId = selectedStore.value
@@ -134,7 +184,7 @@ onMounted(async () => {
     console.log('[onMounted] userStore.storeProfile:', JSON.stringify(userStore.storeProfile, null, 2))
 })
 
-// 🔥 NEW: 最小化加入店家切換監聽 - 使用組員相同的邏輯模式
+//  最小化加入店家切換監聽 - 使用組員相同的邏輯模式
 watch(selectedStore, async (newStoreId, oldStoreId) => {
     if (newStoreId && newStoreId !== oldStoreId) {
         console.log(`🔄 [EditStore] 店家切換: ${oldStoreId} → ${newStoreId}`)
@@ -142,7 +192,7 @@ watch(selectedStore, async (newStoreId, oldStoreId) => {
     }
 }, { immediate: false })
 
-// 🔥 原始設計 - 完全保持不變，這個設計真的很優雅！
+// 🔥 原始設計不變，這個設計真的很優雅！
 watchEffect(() => {
     const p = userStore.storeProfile
     if (p) {
@@ -173,12 +223,35 @@ const isEmailVerified = computed(() =>
 )
 
 // 🔥 原始設計 - 完全保持不變
-function onFileChange(e) {
-    photoFile.value = e.target.files[0] || null
-    console.log('[onFileChange] photoFile:', photoFile.value)
+function onFileChange(event) {
+    const selectedFiles = Array.from(event.target.files);
+    files.value = selectedFiles;
+    uploadError.value = '';
+    
+    // 生成預覽 URL
+    previewUrls.value = selectedFiles.map(file => ({
+        file: file,
+        url: URL.createObjectURL(file),
+        name: file.name
+    }));
+    
+    console.log('選擇了', selectedFiles.length, '張圖片');
+    
+    // 🔥 保持向下相容：如果只有一張圖片，也設定到 photoFile
+    photoFile.value = selectedFiles.length > 0 ? selectedFiles[0] : null;
 }
 
-// 🔥 原始設計 - 僅加入 isSaving 狀態指示
+// 🔥 新增：移除圖片函數
+const removeImage = (index) => {
+    URL.revokeObjectURL(previewUrls.value[index].url);
+    files.value.splice(index, 1);
+    previewUrls.value.splice(index, 1);
+    
+    // 更新 photoFile
+    photoFile.value = files.value.length > 0 ? files.value[0] : null;
+};
+
+// 🔥 修正：儲存函數
 async function handleSave() {
     if (!localProfile.name || !localProfile.address) {
         alert("餐廳名稱/地址必填")
@@ -186,14 +259,21 @@ async function handleSave() {
     }
 
     try {
-        isSaving.value = true // 🔥 NEW: 加入儲存狀態
+        isSaving.value = true // 加入儲存狀態
 
         let photoUrl = userStore.storeProfile.photo || ""; // 預設維持舊照
 
-        // 有新照片才傳
-        if (photoFile.value) {
-            photoUrl = await uploadImage(photoFile.value, "stores")
-            console.log('[handleSave] uploadImage result photoUrl:', photoUrl)
+        // 🔥 修正：處理多圖片上傳
+        if (files.value && files.value.length > 0) {
+            try {
+                const photoUrls = await uploadImages();
+                photoUrl = photoUrls.join(';'); // 多張圖片用分號分隔
+                console.log('[handleSave] 多圖片上傳結果:', photoUrl);
+            } catch (uploadError) {
+                console.error('圖片上傳失敗:', uploadError);
+                alert('圖片上傳失敗，請重試');
+                return;
+            }
         }
 
         const storeId = userStore.storeProfile.id
@@ -208,7 +288,7 @@ async function handleSave() {
             storeIntro: localProfile.intro,
             phone: localProfile.phone,
             email: localProfile.email,
-            photo: photoUrl, // 存網址
+            photo: photoUrl, // 存網址（可能是多張用分號分隔）
             lat: localProfile.lat,
             lng: localProfile.lng,
         }
@@ -220,7 +300,7 @@ async function handleSave() {
         if (resp.data) {
             alert('儲存成功！')
             
-            // 🔥 修正：正確對應欄位名稱，避免 intro/storeIntro 混亂
+            // 正確對應欄位名稱，避免 intro/storeIntro 混亂
             const updatedStoreProfile = {
                 ...userStore.storeProfile,
                 name: localProfile.name,
@@ -234,14 +314,18 @@ async function handleSave() {
             }
             userStore.setStoreProfile(updatedStoreProfile)
             
-            // 🔥 NEW: 同步更新下拉選單中的店家名稱
+            //  同步更新下拉選單中的店家名稱
             const currentStore = stores.value.find(store => store.id === storeId)
             if (currentStore && currentStore.name !== localProfile.name) {
                 currentStore.name = localProfile.name
                 console.log('✅ [EditStore] 已同步更新下拉選單中的店家名稱')
             }
             
+            // 清理
             photoFile.value = null
+            files.value = []
+            previewUrls.value.forEach(preview => URL.revokeObjectURL(preview.url))
+            previewUrls.value = []
         } else {
             alert('儲存失敗：' + (resp.data.message || ''))
         }
@@ -249,7 +333,7 @@ async function handleSave() {
         console.error('[handleSave] error:', err)
         alert('發生錯誤：' + (err?.message || err))
     } finally {
-        isSaving.value = false // 🔥 NEW: 重設儲存狀態
+        isSaving.value = false //  重設儲存狀態
     }
 }
 

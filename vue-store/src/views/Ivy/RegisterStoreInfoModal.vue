@@ -94,7 +94,9 @@
 import { ref, onMounted, watch } from 'vue'
 import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
-import { uploadFilesToFirebase } from '@/utils/uploadToFirebase.js'
+// import { uploadFilesToFirebase } from '@/utils/uploadToFirebase.js'
+import { uploadImageGeneric } from '../../plungins/imageUpload.js';
+import { useImageUrl } from '../../composables/useImageUrl.js';
 
 const props = defineProps({ 
     show: Boolean,
@@ -103,20 +105,74 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'submit', 'back'])
 
+const { getImageUrl, defaultPhoto } = useImageUrl();
+
 const userStore = useUserStore()
 const storeName = ref('')
 const storeCategory = ref('')
 const phone = ref('')
 const storeIntro = ref('')
 const files = ref(null)
+const previewUrls = ref([]);
+const uploadedImagePaths = ref([]); // 儲存上傳成功的圖片路徑
+const isUploading = ref(false);
+const uploadError = ref('');
 const categories = ref([])
 const error = ref('')
 const loading = ref(false)
 
+const uploadImages = async () => {
+    if (!files.value || files.value.length === 0) return [];
+    
+    isUploading.value = true;
+    uploadError.value = '';
+    uploadedImagePaths.value = [];
+    
+    try {
+        console.log('開始批量上傳', files.value.length, '張圖片...');
+        
+        const uploadPromises = files.value.map(async (file, index) => {
+            try {
+                console.log(`上傳第 ${index + 1} 張圖片:`, file.name);
+                const imagePath = await uploadImageGeneric(file);
+                console.log(`第 ${index + 1} 張圖片上傳成功:`, imagePath);
+                return imagePath;
+            } catch (error) {
+                console.error(`第 ${index + 1} 張圖片上傳失敗:`, error);
+                throw error;
+            }
+        });
+        
+        const results = await Promise.all(uploadPromises);
+        uploadedImagePaths.value = results;
+        
+        console.log('✅ 所有圖片上傳完成:', results);
+        return results;
+        
+    } catch (error) {
+        uploadError.value = `圖片上傳失敗: ${error.message}`;
+        console.error('❌ 圖片上傳過程出錯:', error);
+        throw error;
+    } finally {
+        isUploading.value = false;
+    }
+};
+
 // 處理多檔案選擇
-function onFileChange(e) {
-    files.value = Array.from(e.target.files)
-}
+function onFileChange(event) {
+const selectedFiles = Array.from(event.target.files);
+    files.value = selectedFiles;
+    uploadError.value = '';
+    
+    // 生成預覽 URL
+    previewUrls.value = selectedFiles.map(file => ({
+        file: file,
+        url: URL.createObjectURL(file),
+        name: file.name
+    }));
+    
+    console.log('選擇了', selectedFiles.length, '張圖片');
+};
 
 // 當 Modal 顯示且有 registerData 時，初始化資料
 watch(() => [props.show, props.registerData], ([show, registerData]) => {
@@ -162,12 +218,12 @@ async function onSubmit() {
     error.value = ''
 
     try {
-        // 1. 先上傳所有圖片到 Firebase（如果有的話）
+        // 🔥 修改：使用新的本地上傳邏輯
         let photoUrls = []
         if (files.value && files.value.length > 0) {
             try {
-                photoUrls = await uploadFilesToFirebase(files.value)
-                console.log('圖片上傳成功，URLs:', photoUrls)
+                photoUrls = await uploadImages();  // ← 改用新的上傳函數
+                console.log('圖片上傳成功，路徑:', photoUrls)
             } catch (uploadError) {
                 console.error('圖片上傳失敗:', uploadError)
                 error.value = '圖片上傳失敗，請重試'

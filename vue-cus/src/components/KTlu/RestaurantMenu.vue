@@ -5,6 +5,7 @@ import apiClient from '../../plungins/axios.js'; // 導入 apiClient
 // import ItemDetailModal from './ItemDetailModal.vue'
 import { useCartStore } from '@/stores/cart'
 import '@/assets/css/restaurant-theme.css'
+import { useImageUrl } from '../../composables/useImageUrl.js'
 
 const props = defineProps({
     restaurant: {
@@ -14,6 +15,15 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['checkout'])
+
+// 🔥 圖片路徑相關處理
+const { getImageUrl, defaultPhoto } = useImageUrl();
+
+// 🔥 圖片載入失敗時的處理
+const handleImageError = (event) => {
+    console.warn('圖片載入失敗，使用預設圖片:', event.target.src);
+    event.target.src = defaultPhoto;
+};
 
 // 購物車 store
 const cartStore = useCartStore()
@@ -82,7 +92,6 @@ const getCategoryItems = (categoryName) => {
 const quickAddToCart = (item) => {
     const cartItem = {
         
-						
         price: item.discountPrice || item.price,
         image: item.image,
         quantity: 1,
@@ -102,6 +111,7 @@ const quickAddToCart = (item) => {
 
 const handleAddToCart = (itemToAdd) => {
     cartStore.addToCart(itemToAdd, props.restaurant)
+ 
     // 使用購物車開啟
     // if (showItemDetail.value) {
     //     closeItemDetail()
@@ -530,12 +540,16 @@ onUnmounted(() => {
                                 
                                 <!-- 餐點內容 -->
                                 <div class="item-tags" v-if="item.tagNames && item.tagNames.length > 0">
-                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag }}</span>
+                                    <span v-for="tag in item.tagNames" :key="tag" class="item-tag">{{ tag.name }}</span>
                                     <!-- 標籤 -->
                                 </div>
 
                                 <div class="item-image">
-                                    <img :src="item.imageResource || restaurant.image" :alt="item.name" />
+                                    <img 
+                                        :src="getImageUrl(item.imgResource) || getImageUrl(restaurant.image)" 
+                                        :alt="item.name" 
+                                        @error="handleImageError"
+                                    />
                                 </div>
                                 <div class="item-content">
                                     <div class="item-info">
