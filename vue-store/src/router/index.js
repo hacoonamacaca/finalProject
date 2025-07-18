@@ -87,8 +87,8 @@ function setTempLoginData(ownerNum = 1) {
         localStorage.removeItem('storeId')
         localStorage.removeItem('storeProfile')
 
-        console.log(`✅ 已設定臨時登入資料 - ${data.ownerFullName} (owner ID: ${data.ownerId})`)
-        console.log('🔄 請重新整理頁面來載入該 owner 的店家資料')
+        //console.log(`✅ 已設定臨時登入資料 - ${data.ownerFullName} (owner ID: ${data.ownerId})`)
+        //console.log('🔄 請重新整理頁面來載入該 owner 的店家資料')
     }
 }
 
@@ -99,10 +99,10 @@ function clearLoginData() {
     localStorage.removeItem('storeEmail')
     localStorage.removeItem('storeId')
     localStorage.removeItem('storeProfile')
-    console.log('🗑️ 已清除登入資料')
+    //console.log('🗑️ 已清除登入資料')
 }
 
-// 把這些函數掛到 window 上，方便在 console 中測試
+// 把這些函數掛到 window 上，方便在 //console 中測試
 window.setTempLogin = setTempLoginData
 window.clearLogin = clearLoginData
 
@@ -227,30 +227,30 @@ router.beforeEach((to, from, next) => {
         const ownerStatus = checkOwnerLogin()
 
         if (!ownerStatus.isLoggedIn) {
-            console.log('⚠️ 未登入狀態')
-            console.log('💡 請在 console 中執行以下指令來測試登入：')
-            console.log('   setTempLogin(1)  // 李俊傑 - 李俊傑的餐廳')
-            console.log('   setTempLogin(2)  // 吳雅雯 - 雅雯美食館')
-            console.log('   setTempLogin(3)  // 張偉倫 - 偉倫小廚 (未驗證email)')
-            console.log('   setTempLogin(4)  // 陳麗華 - 麗華風味餐廳')
-            console.log('   setTempLogin(5)  // 林志明 - 志明經典餐廳')
-            console.log('   clearLogin()     // 清除登入資料')
+            //console.log('⚠️ 未登入狀態')
+            //console.log('💡 請在 //console 中執行以下指令來測試登入：')
+            //console.log('   setTempLogin(1)  // 李俊傑 - 李俊傑的餐廳')
+            //console.log('   setTempLogin(2)  // 吳雅雯 - 雅雯美食館')
+            //console.log('   setTempLogin(3)  // 張偉倫 - 偉倫小廚 (未驗證email)')
+            //console.log('   setTempLogin(4)  // 陳麗華 - 麗華風味餐廳')
+            //console.log('   setTempLogin(5)  // 林志明 - 志明經典餐廳')
+            //console.log('   clearLogin()     // 清除登入資料')
 
             // 🔥 正式環境：未登入時跳轉到註冊頁
             next('/register')
             return
 
             // 🔥 測試環境：註解掉上面的 next('/register')，取消註解下面的程式碼，可暫時阻止進入，但不跳轉
-            // alert('請先設定登入資料！請查看 console 說明。')
+            // alert('請先設定登入資料！請查看 //console 說明。')
             // return
         }
 
         // 登入成功，顯示登入狀態
-        console.log('✅ 業者登入狀態:', ownerStatus)
+        //console.log('✅ 業者登入狀態:', ownerStatus)
 
         // 顯示餐廳資料
         const storeData = getStoreData()
-        console.log('🏪 餐廳資料:', storeData)
+        //console.log('🏪 餐廳資料:', storeData)
     }
 
     next()

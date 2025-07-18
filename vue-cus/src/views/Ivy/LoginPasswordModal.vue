@@ -78,11 +78,13 @@ async function onSubmit() {
             password: password.value
         })
         const data = res.data
+        console.log('!!!!!!!!!!!!!!!!!!!!!!',data)
         if (data.success) {
             alert('登入成功！')
             userStore.setFullName(data.userFullName);
             userStore.setEmail(data.userEmail);
             userStore.setUserId(data.userId); // <-- 新增這一行
+            alert(data.userId)
             userStore.setLogin(true); // 設定登入狀態為 true
             emit('login', { 
                 email: props.email,
@@ -98,7 +100,7 @@ async function onSubmit() {
         }
     } catch (e) {
         alert('登入發生錯誤，請稍後再試')
-        console.error(e)
+        //console.error(e)
         password.value = ''
     }
 }

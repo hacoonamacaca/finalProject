@@ -2,7 +2,9 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import logoUrl from '../assets/logo.png'
 import { useStore } from '@/composables/useStore.js' // 🔥 NEW: 導入 useStore
+import { useRouter } from 'vue-router'
 
+const router = useRouter();
 // 🔥 NEW: 使用 store composable
 const { 
     currentUser, 
@@ -42,10 +44,12 @@ const logout = () => {
     
     // 重設本地狀態
     showDropdown.value = false
-    
+    router.push('/home') // 跳轉到首頁
+    console.log('用戶已登出，跳轉到首頁')
     // 跳轉回 vue-cus 登入頁面
-    const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
-    window.location.href = `${vueCustomerUrl}/store`
+    // const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
+    // window.location.href = `${vueCustomerUrl}/store`
+
 }
 
 // 🔥 NEW: 處理店家切換

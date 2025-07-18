@@ -227,6 +227,11 @@ function onSubmit() {
     box-shadow: 0 2px 24px 4px rgba(0, 0, 0, 0.10);
     border: none;
     padding: 1.5rem;
+
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .nav-btn {
