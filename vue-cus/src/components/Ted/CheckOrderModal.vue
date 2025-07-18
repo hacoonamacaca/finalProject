@@ -330,6 +330,7 @@ const resetModalState = () => {
 watch(() => props.isVisible, (newVal) => {
   if (bsModal) {
     if (newVal) {
+      selectedCoupon.value = null; // 每次開啟時清空上次選的券
       bsModal.show();
     } else {
       bsModal.hide();
@@ -413,11 +414,13 @@ const emitAddToCart = () => {
 
       content:content.value,
       status:'Pending',
-      create_time:new Date().toISOString().slice(0, 19) ,
+      create_time:getTaiwanISOTime(),
+      // new Date().toISOString().slice(0, 19) ,
       method:paymentMethod.value,
       pickup_time:new Date().toISOString().slice(0, 11)+currentTime.value,
       // 設定取餐時間
-      promotionId: selectedCoupon.value?.id || null //  有選優惠券就放ID，沒選就 null
+      promotionId: selectedCoupon.value?.id || null ,//  有選優惠券就放ID，沒選就 null
+      total: totalPayment.value // 傳折扣後總金額
     }
     //增加備註、訂單狀態、付款方式、取餐時間
     emits('add-to-cart',props.restId,body);
@@ -438,6 +441,12 @@ const emitAddToCart = () => {
   }
 };
 
+// 取得台灣時間
+function getTaiwanISOTime() {
+  const offsetMs = 8 * 60 * 60 * 1000;
+  const taiwanTime = new Date(Date.now() + offsetMs);
+  return taiwanTime.toISOString().slice(0, 19);
+}
 const closeModal = () => {
   bsModal.hide();
 };

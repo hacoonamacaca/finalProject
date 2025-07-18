@@ -20,9 +20,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws")
-                .setAllowedOriginPatterns("http://localhost:5173") // 建議明確指定前端來源
+//                .setAllowedOriginPatterns("http://localhost:5173") // 建議明確指定前端來源
                 // 或者在開發時為了方便，暫時使用 "*"：
-                // .setAllowedOriginPatterns("*")
+                 .setAllowedOriginPatterns("*")
                 .withSockJS(); // 啟用 SockJS 支援
                 
     }

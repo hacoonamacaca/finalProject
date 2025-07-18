@@ -17,10 +17,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import tw.com.ispan.eeit.model.dto.promotion.PromotionCreateDTO;
 import tw.com.ispan.eeit.model.dto.promotion.PromotionDTO;
 import tw.com.ispan.eeit.model.dto.promotion.PromotionUpdateDTO;
+import tw.com.ispan.eeit.model.entity.UserBean;
 import tw.com.ispan.eeit.model.entity.food.TagBean;
 import tw.com.ispan.eeit.model.entity.plan.PlanBean;
+import tw.com.ispan.eeit.model.entity.promotion.NotificationBean;
 import tw.com.ispan.eeit.model.entity.promotion.PromotionBean;
 import tw.com.ispan.eeit.model.entity.store.StoreBean;
+import tw.com.ispan.eeit.repository.UserRepository;
 import tw.com.ispan.eeit.repository.food.TagRepository;
 import tw.com.ispan.eeit.repository.plan.PlanRepository;
 import tw.com.ispan.eeit.repository.promotion.PromotionRepository;
@@ -41,6 +44,16 @@ public class PromotionService {
 
 	@Autowired
 	private PlanRepository planRepository;
+	
+	@Autowired
+	private UserRepository userRepository;
+	
+	@Autowired
+	private NotificationService notificationService;
+
+	@Autowired
+	private tw.com.ispan.eeit.controller.webSocket.PromotionNotificationController promotionNotificationController;
+
     
     // 查詢全部優惠券（後台管理）
     public List<PromotionBean> findAll() {
@@ -97,8 +110,23 @@ public class PromotionService {
             PlanBean plan = planRepository.findById(dto.getPlanId()).orElse(null);
             bean.setPlan(plan);
         }
+     // ✅ 儲存優惠券
+        PromotionBean saved = promotionRepository.save(bean);
 
-        return promotionRepository.save(bean);
+        // ✅ 發送通知給所有使用者
+        List<UserBean> users = userRepository.findAll();
+        for (UserBean user : users) {
+            NotificationBean noti = new NotificationBean();
+            noti.setUser(user);
+            noti.setPromotion(saved);
+            notificationService.create(noti); 
+        }
+     // ✅ 加這段 WebSocket 推播
+        for (UserBean user : users) {
+            promotionNotificationController.notifyNewPromotion(user.getId(), saved.getTitle());
+        }
+
+        return saved;
     }
 
 

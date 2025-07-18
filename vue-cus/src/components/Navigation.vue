@@ -35,22 +35,38 @@
         </a>
 
         <div class="nav-item" style="position: relative;">
-          <button class="btn position-relative" style="background: transparent; border: none;"
-            @click.stop="toggleNotification" title="優惠通知">
-            <i class="bi bi-bell-fill text-white"></i>
-            <span v-if="unreadCount > 0"
-              class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
-              {{ unreadCount }}
-            </span>
-          </button>
+        <!-- 小鈴鐺按鈕 -->
+        <button class="btn position-relative" style="background: transparent; border: none;"
+          @click.stop="toggleNotification" title="優惠通知">
+          <i class="bi bi-bell-fill text-white"></i>
+          <span v-if="unreadCount > 0"
+            class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+            {{ unreadCount }}
+          </span>
+        </button>
+
+        <!-- ✅ 優惠通知彈窗 -->
+        <div
+          v-if="isNotificationOpen"
+          class="notification-dropdown"
+          style="position: absolute; top: 100%; right: 0; z-index: 1050;"
+        >
           <NotificationList
-            v-if="isNotificationOpen"
             :notifications="notifications"
             @mark-as-read="handleMarkAsRead"
             @close-list="isNotificationOpen = false"
             @mark-all-as-read="markAllNotificationsAsRead"
           />
         </div>
+
+        <!-- ✅ 透明遮罩：點擊外部就會關閉彈窗 -->
+        <div
+          v-if="isNotificationOpen"
+          class="notification-overlay"
+          @click="isNotificationOpen = false"
+        ></div>
+      </div>
+
         <div class="nav-item">
           <button class="btn position-relative" style="background: transparent; border: none;" @click="showCart"
             title="購物車">
@@ -273,8 +289,8 @@ const unreadCount = computed(() => notifications.value.filter(n => !n.isRead).le
 const handleMarkAsRead = async (notificationItem) => {
   if (!notificationItem.isRead) {
     try {
-      // 假設你的 API 端點是 /api/notifications/{id}/read
-      await axios.patch(`/api/notifications/${notificationItem.id}/read`);
+      // 假設你的 API 端點是 /notifications/{id}/read
+      await axios.patch(`/notifications/${notificationItem.id}/read`);
       // 成功後，更新前端的 notifications 陣列
       const index = notifications.value.findIndex(n => n.id === notificationItem.id);
       if (index !== -1) {
@@ -290,8 +306,8 @@ const handleMarkAsRead = async (notificationItem) => {
 // 標記所有通知為已讀
 const markAllNotificationsAsRead = async () => {
   try {
-    // 假設你的 API 端點是 /api/notifications/mark-all-as-read
-    await axios.post('/api/notifications/mark-all-as-read', { userId: userId.value }); // 傳遞用戶ID
+    // 假設你的 API 端點是 /notifications/mark-all-as-read
+    await axios.post('/notifications/mark-all-as-read', { userId: userId.value }); // 傳遞用戶ID
     // 成功後，更新前端的 notifications 陣列，將所有通知標記為已讀
     notifications.value.forEach(n => { n.isRead = true; });
     // unreadCount 會自動更新為 0
@@ -308,8 +324,10 @@ const loadNotifications = async () => {
     return;
   }
   try {
-    // 假設你的 API 端點是 /api/notifications/user/{userId}
-    const res = await axios.get(`/api/notifications/user/${userId.value}`);
+    console.log(`取得通知 API：/notifications/user/${userId.value}`);
+    // 假設你的 API 端點是 /notifications/user/{userId}
+    const res = await axios.get(`/notifications/user/${userId.value}`);
+    console.log('後端通知資料', res.data);
     // 假設後端返回的數據結構是 { id, title, createdTime, promotion, isRead }
     notifications.value = res.data.map(n => ({
       ...n,
@@ -320,6 +338,17 @@ const loadNotifications = async () => {
     notifications.value = []; // 載入失敗時清空通知
   }
 };
+
+onMounted(() => {
+  if (userId.value) {
+    loadNotifications()
+  }
+})
+watch(userId, (newVal) => {
+  if (newVal) {
+    loadNotifications()
+  }
+})
 
 // 格式化日期時間
 const formatDate = (isoString) => {
@@ -367,9 +396,7 @@ const handleClickOutside = (event) => {
         showDropdown.value = false;
     }
     // 只有當點擊不在通知按鈕或通知列表內部時才關閉通知列表
-    if (!isClickInsideNotificationButton && !isClickInsideNotificationList) {
-        isNotificationOpen.value = false;
-    }
+    if (!isClickInsideNotificationButton && !isClickInsideNotificationList);
 };
 
 // --- Lifecycle Hooks ---
@@ -685,32 +712,15 @@ const getLogin = () => {
   }
 }
 
-/* 優惠通知列表的樣式，現在應該主要由 NotificationList.vue 內部管理 */
-/* 這裡保留作為 Navigation.vue 中可能需要的容器樣式 */
-/* 例如，如果 NotificationList 組件本身沒有定位，你可以將其定位在這裡 */
-/* .notification-list { */
-/* background: white; */
-/* border: 1px solid #ddd; */
-/* border-radius: 8px; */
-/* padding: 10px; */
-/* width: 300px; */
-/* position: absolute; */
-/* right: 0; */
-/* top: 100%; */
-/* z-index: 1000; */
-/* box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); */
-/* list-style: none; */
-/* } */
-
-/* .notification-list li { */
-/* padding: 10px; */
-/* border-bottom: 1px solid #eee; */
-/* cursor: pointer; */
-/* } */
-
-/* .notification-list li:hover { */
-/* background: #f9f9f9; */
-/* } */
+.notification-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1000; /* 要低於彈窗（1050） */
+  background: transparent;
+}
 
 .badge {
   font-size: 12px;
