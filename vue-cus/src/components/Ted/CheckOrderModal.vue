@@ -585,11 +585,11 @@ const closeModal = () => {
 <style scoped>
 /* 確保 Bootstrap Modal 的 z-index 高於 Navigation.vue 的 3000 */
 .modal {
-  z-index: 4000;
+  z-index: 1060;
 }
 
 .modal-backdrop {
-  z-index: 3999 !important; /* 或其他你想要的值 */
+  z-index: 999 !important; /* 或其他你想要的值 */
 }
 
 /* 移除所有關於 .order-summary-card 的樣式 */

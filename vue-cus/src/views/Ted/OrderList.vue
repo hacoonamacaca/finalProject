@@ -7,7 +7,8 @@ import { useUserStore } from '@/stores/user.js'; // 引入 Pinia userStore
 import { useCartStore } from '@/stores/cart'; // 引入 Pinia 購物車 Store
 import { useRouter } from 'vue-router';
 import Swal from 'sweetalert2';
-
+//// ✨ [新增] 匯入 WebSocket 相關的 Composables
+import { useOrderNotifier } from '@/composables/useOrderNotifier.js';
 const historyOrders = ref([]);
 const orders = ref([]);
 const userStore = useUserStore(); // 實例化 userStore
@@ -25,9 +26,69 @@ const formatDateTime = (dateTimeString) => {
 
 
 
+
+
+// ✨ [新增] 定義一個新的函式來獲取所有相關訂單 (歷史 + 未完成)
+// 這樣 WebSocket 收到更新時，可以統一調用這個函式來刷新所有訂單視圖
+async function fetchAllOrders(id) {
+    try {
+        // 獲取歷史訂單
+        const historyResponse = await axios.get(`/api/orders/user/history/${id}`);
+        historyOrders.value = historyResponse.data
+        console.log("歷史訂單數據加載成功:", historyOrders.value);
+
+        // 獲取未完成訂單
+        const uncompleteResponse = await axios.get(`/api/orders/user/uncomplete/${id}`);
+        orders.value = uncompleteResponse.data; // 更新正在處理的訂單
+        console.log("未完成訂單數據加載成功:", orders.value);
+
+    } catch (error) {
+        console.error("加載訂單失敗:", error);
+    }
+}
+
+
+onMounted(() => {
+  // 直接從 userStore 獲取 userId，並確保它是 number 或 string
+  const idFromStore = userStore.userId; 
+
+  // 將獲取到的值賦給 userId 這個 ref
+  // 這樣確保 userId.value 在此處被正確設定
+  userId.value = idFromStore; 
+
+  if (userId.value) { // 這裡直接使用 userId.value 更直觀
+    console.log("用戶 ID:", userId.value);
+    
+    // 將 userId.value 傳遞給 fetchAllOrders
+    // fetchAllOrders 函數內部應該接收並使用這個數字或字串
+    fetchAllOrders(userId.value); 
+
+  } else {
+    console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
+    // 您可以導向登入頁面或顯示提示
+  }
+});
+
+
+// ✨ [新增] 使用 Composables，它會自動處理 WebSocket 連線和訂閱
+// 這裡我們需要監聽用戶自己的訂單更新，所以需要用戶 ID
+// useOrderNotifier 應該提供一個可以傳入 userId 的版本
+// 如果 useOrderNotifier 只能傳 storeId，那麼您需要調整 useOrderNotifier 讓它能訂閱用戶的訂單
+// 或者，如果您的後端 WebSocket 是針對廣播所有訂單，則無需傳入特定 ID
+// 假設 useOrderNotifier 可以處理用戶訂單通知，且 storeId 仍相關 (或改為 userId)
+// 如果 useOrderNotifier 只能接收 storeId，您需要評估它的適用性，可能要另外寫一個針對用戶的 notifier
+// 這裡假設 useOrderNotifier 可以監聽針對特定用戶的訂單更新
+const { isConnected } = useOrderNotifier('user', userId, fetchAllOrders);  // ✨ [WebSocket 相關] 初始化 WebSocket
+
+
+
+
+
+
 /**
  * 從後端獲取用戶訂單列表
- * @param {number} id - 用戶 ID
+ * @param {number} id - 用戶 ID.
+ * 舊版
  */
  async function fetchOrders(id) {
    try {
@@ -59,36 +120,26 @@ const handleRatingUpdated = () => {
     }
 };
 
-onMounted(() => {
-  // 獲取用戶 ID 從 Pinia
-  userId.value = userStore.userId; // 假設您的 Pinia store 中有 userId 屬性
-  if (userId.value) {
-    // 改為呼叫 fetchOrders，它包含了對 comment 和 likedFood 的預設值處理
-    fetchOrders(userId.value);
-    findUncompleteOrder(userId.value);
 
-  } else {
-    console.warn("用戶 ID 未定義，無法加載訂單。請確保用戶已登入。");
-    // 您可以導向登入頁面或顯示提示
-  }
-});
-function findUncompleteOrder(id) {
-  axios.get(`/api/orders/user/uncomplete/${id}`)
-    .then(function (response) {
-      orders.value = response.data;
-      console.log("未完成訂單數據:res", response.data);
-      orders.value = response.data
-      console.log('未完成訂單資訊',orders.value)
-      // response.data.forEach(element => {
-      //   console.log(element)
-      //   orders.value.push(element);
-      // });
-      // console.log(`ordersValue:${orders.value}`)
-  }).catch(function (error) {
-    console.error("加載訂單失敗:", error);
-  })
 
-}
+
+// function findUncompleteOrder(id) {
+//   axios.get(`/api/orders/user/uncomplete/${id}`)
+//     .then(function (response) {
+//       orders.value = response.data;
+//       console.log("未完成訂單數據:res", response.data);
+//       orders.value = response.data
+//       console.log('未完成訂單資訊',orders.value)
+//       // response.data.forEach(element => {
+//       //   console.log(element)
+//       //   orders.value.push(element);
+//       // });
+//       // console.log(`ordersValue:${orders.value}`)
+//   }).catch(function (error) {
+//     console.error("加載訂單失敗:", error);
+//   })
+
+// }
 
 // 重新訂購功能
 const reorder = (order) => {
