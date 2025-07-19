@@ -17,13 +17,13 @@ import tw.com.ispan.eeit.repository.order.PaymentRepository;
 @RequiredArgsConstructor
 public class PaymentService {
 
-	 @Autowired
-	 private PaymentRepository paymentRepository;
+    @Autowired
+    private PaymentRepository paymentRepository;
 
-	  @Autowired
-	  private OrderRepository orderRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
-    // «Ø¥ß¥I´Ú°O¿ı
+    // å»ºç«‹ä»˜æ¬¾è¨˜éŒ„
     public PaymentBean createPaymentRecord(Integer orderId, Integer amount, String description) {
         PaymentBean payment = new PaymentBean();
         OrderBean order = new OrderBean();
@@ -35,40 +35,39 @@ public class PaymentService {
         payment.setTransactionId(generateTradeNo(orderId));
         Date now = new java.util.Date();
         payment.setPaidTime(now);
-        // §A¤]¥i¥H§â description ¦s¤J³ÆµùÄæ¦ì
+        // é€™è£¡å¯ä»¥å°‡ description å­˜å…¥è³‡æ–™åº«
 
         return paymentRepository.save(payment);
     }
 
-    // ³B²zºñ¬É¦^¶Ç¨Ã§ó·s DB
+    // è™•ç†ç¶ ç•Œå›èª¿ä¸¦æ›´æ–° DB
     public void processEcpayCallback(String merchantTradeNo, Map<String, String> callbackData) {
-    	PaymentBean payment = paymentRepository.findByTransactionId(merchantTradeNo);
-
+        PaymentBean payment = paymentRepository.findByTransactionId(merchantTradeNo);
 
         if (payment != null) {
             payment.setIsPaid(true);
-            payment.setTransactionId(callbackData.get("TradeNo")); // ¼g¤Jª÷¬y¦^¶Ç¥æ©ö½s¸¹
+            payment.setTransactionId(callbackData.get("TradeNo")); // æ›´æ–°ç¶ ç•Œå›èª¿çš„äº¤æ˜“è™Ÿ
 
-            // ª½±µ§ì¦øªA¾¹·í¤U®É¶¡
+            // æ›´æ–°ä»˜æ¬¾æ™‚é–“
             Date now = new java.util.Date();
-            System.out.println("¼g¤J paidTime: " + now);
+            System.out.println("æ›´æ–° paidTime: " + now);
             payment.setPaidTime(now);
             paymentRepository.save(payment);
-            
-            // ¥i¥[¤J rtnMsg¡BpaymentType µ¥Äæ¦ì¡A­Y PaymentBean ¦³ÂX¥R
+
+            // å¯åŠ å…¥ rtnMsgã€paymentType ç­‰æ¬„ä½ï¼Œå¦‚ PaymentBean æœ‰æ–°å¢
             paymentRepository.save(payment);
         } else {
-            System.err.println("§ä¤£¨ì¹ïÀ³ªº¥I´Ú°O¿ı¡AMerchantTradeNo: " + merchantTradeNo);
-            // ³o¸Ì¥i¥H¥[¤J¿ù»~³B²z¡A¨Ò¦p°O¿ı¤é»x©Îµo°eÄµ³ø
+            System.err.println("æ‰¾ä¸åˆ°å°æ‡‰çš„ä»˜æ¬¾è¨˜éŒ„ï¼ŒMerchantTradeNo: " + merchantTradeNo);
+            // é€™è£¡å¯ä»¥åŠ å…¥éŒ¯èª¤è™•ç†ï¼Œä¾‹å¦‚è¨˜éŒ„æ—¥èªŒæˆ–ç™¼é€é€šçŸ¥
         }
     }
 
-    // «Ø¥ß°ß¤@¥æ©ö½s¸¹
+    // å»ºç«‹å”¯ä¸€çš„äº¤æ˜“è™Ÿ
     private String generateTradeNo(Integer orderId) {
         return "ORDER" + orderId + "_" + System.currentTimeMillis();
     }
 
-    // ®É¶¡Âà´«¤u¨ã
+    // æ—¥æœŸè§£æå·¥å…·
     private Date parseDate(String dateStr) {
         try {
             return new SimpleDateFormat("yyyy/MM/dd HH:mm:ss").parse(dateStr);

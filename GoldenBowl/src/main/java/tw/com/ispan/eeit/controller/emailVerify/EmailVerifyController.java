@@ -71,15 +71,15 @@ public class EmailVerifyController {
 
         String verifyUrl = frontendUrl + "/verify-email?token=" + token + "&email=" + email.trim();
 
+        // 暫時註解掉郵件發送功能
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("eattiy1986@gmail.com");
         message.setTo(email);
         message.setSubject("Email 註冊驗證信");
         message.setText("您好！請點擊以下連結完成驗證：\n" + verifyUrl);
-
         mailSender.send(message);
 
-        return ResponseEntity.ok("驗證信已寄出到 " + email + "，請查收！");
+        return ResponseEntity.ok("驗證信已寄出到 " + email + "，請查收！(郵件功能暫時停用)");
     }
 
     // 2. 驗證連結 (前端收到驗證成功後再跳註冊)
@@ -169,15 +169,15 @@ public class EmailVerifyController {
         }
         String resetUrl = "http://localhost:5173/?reset=1&email=" + email.trim() + "&token=" + token;
 
+        // 暫時註解掉郵件發送功能
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("eattiy1986@gmail.com");
         message.setTo(email);
         message.setSubject("重設密碼連結");
         message.setText("您好！請點擊以下連結重設密碼：\n" + resetUrl);
-
         mailSender.send(message);
 
-        return ResponseEntity.ok("重設密碼信已寄出到 " + email + "，請查收！");
+        return ResponseEntity.ok("重設密碼信已寄出到 " + email + "，請查收！(郵件功能暫時停用)");
     }
 
     // 重設密碼導向前端網址

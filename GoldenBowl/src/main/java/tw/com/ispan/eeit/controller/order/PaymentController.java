@@ -30,56 +30,55 @@ import tw.com.ispan.eeit.util.CheckMacValueUtil;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final ECPayController ecpayController; // ©I¥s§A¦Û«Øªº ECPay ªí³æÅŞ¿è
+    private final ECPayController ecpayController; // æ³¨å…¥ ECPay æ§åˆ¶å™¨
 
     @Autowired
     private PaymentRepository paymentRepository;
-    
-    // «Ø¥ß¥I´Ú¬ö¿ı¨Ã¨ú±oºñ¬É HTML ªí³æ
+
+    // å»ºç«‹ä»˜æ¬¾è¡¨å–®çš„ HTML å…§å®¹
     @PostMapping("/create")
     public ResponseEntity<String> createPayment(@RequestBody Map<String, Object> payload) {
-    	System.out.println("Payload received: " + payload);
-//    	±qºô­¶ºİ¨ú±oPAYLOAD
-    	try {
-            // ¸ÑªR°Ñ¼Æ
+        System.out.println("Payload received: " + payload);
+        // å¾è«‹æ±‚ä¸­ç²å– PAYLOAD
+        try {
+            // è§£æåƒæ•¸
             Integer orderId = Integer.parseInt(payload.get("orderId").toString());
-            String description = payload.get("description") != null 
-            	    ? payload.get("description").toString() 
-            	    : "µL³Æµù";
+            String description = payload.get("description") != null
+                    ? payload.get("description").toString()
+                    : "ç„¡æè¿°";
             Integer amount = Integer.parseInt(payload.get("amount").toString());
-            
-            String foodNameList = payload.get("foodNameList").toString();            
-        
-            
-//            System.out.println(foodItem) ;        // ??³o¸Ì¦L¥X§A³Ì«á¨Ï¥Îªº´y­z¤º®e
-//            System.out.println("¨Ï¥Îªº description¡G " + description);
-            
-            // «Ø¥ß¥I´Ú¬ö¿ı
-            PaymentBean payment = paymentService.createPaymentRecord(orderId, amount,description);
 
-            // ²Õ¥Xºñ¬Éªí³æ¡Aª½±µ³z¹L ECPayController ªºÅŞ¿è³B²z
+            String foodNameList = payload.get("foodNameList").toString();
+
+            // System.out.println(foodItem) ; // é€™è£¡æœ‰å•é¡Œï¼Œå¾Œé¢éœ€è¦è™•ç†
+            // System.out.println("æœ€çµ‚ descriptionï¼š " + description);
+
+            // å»ºç«‹ä»˜æ¬¾è¨˜éŒ„
+            PaymentBean payment = paymentService.createPaymentRecord(orderId, amount, description);
+
+            // æº–å‚™ ECPay çš„ payloadï¼Œé€é ECPayController è™•ç†
             Map<String, Object> ecpayPayload = Map.of(
-                "amount", payment.getTotal(),
-                "description", "­q³æ #" + payment	.getOrder().getId(),
-                "ItemName", foodNameList,
-                "merchantTradeNo", payment.getTransactionId()
-            );
+                    "amount", payment.getTotal(),
+                    "description", "è¨‚å–® #" + payment.getOrder().getId(),
+                    "ItemName", foodNameList,
+                    "merchantTradeNo", payment.getTransactionId());
             String form = ecpayController.createOrder(ecpayPayload);
-//          ±Nplayload­«·s³B²z«á°e¨ì ecpayController.createOrder 
+            // å°‡ payload å‚³éçµ¦ ecpayController.createOrder
 
             return ResponseEntity.ok().contentType(MediaType.TEXT_HTML).body(form);
 
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("¥I´Ú«Ø¥ß¥¢±Ñ¡G" + e.getMessage());
+            return ResponseEntity.badRequest().body("ä»˜æ¬¾å»ºç«‹å¤±æ•—ï¼š" + e.getMessage());
         }
     }
 
-    // ºñ¬É callback¡]ReturnURL ¦^¶Ç³qª¾¡^
+    // è™•ç† callbackï¼ˆReturnURL å›å‚³ï¼‰
     @PostMapping("/notify")
     public ResponseEntity<String> handleCallback(@RequestParam Map<String, String> payload) {
         try {
             boolean verified = CheckMacValueUtil.verify(payload, "5294y06JbISpM5x9", "v77hoKGq4kWxNNIS");
-            if (!verified) return ResponseEntity.ok("0|Fail");
+            if (!verified)
+                return ResponseEntity.ok("0|Fail");
 
             String merchantTradeNo = payload.get("MerchantTradeNo");
             paymentService.processEcpayCallback(merchantTradeNo, payload);
@@ -87,7 +86,7 @@ public class PaymentController {
             return ResponseEntity.ok("1|OK");
 
         } catch (Exception e) {
-        	e.printStackTrace();
+            e.printStackTrace();
             return ResponseEntity.ok("0|Exception");
         }
     }

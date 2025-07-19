@@ -9,29 +9,29 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
-@Configuration  // 暫時註解掉以避免郵件配置錯誤
+@Configuration
 @PropertySource("classpath:emailToken.properties")
 public class UserMailConfig {
 
-	@Value("${spring.mail.host}")
+	@Value("${spring.mail.host:smtp.gmail.com}")
 	private String host;
 
-	@Value("${spring.mail.port}")
+	@Value("${spring.mail.port:587}")
 	private int port;
 
-	@Value("${spring.mail.username}")
+	@Value("${spring.mail.username:eattiy1986@gmail.com}")
 	private String username;
 
-	@Value("${spring.mail.password}")
+	@Value("${MAIL_PASSWORD:}")
 	private String password;
 
-	@Value("${spring.mail.properties.mail.smtp.auth}")
+	@Value("${spring.mail.properties.mail.smtp.auth:true}")
 	private boolean auth;
 
-	@Value("${spring.mail.properties.mail.smtp.starttls.enable}")
+	@Value("${spring.mail.properties.mail.smtp.starttls.enable:true}")
 	private boolean starttlsEnable;
 
-	@Value("${spring.mail.default-encoding}")
+	@Value("${spring.mail.default-encoding:UTF-8}")
 	private String encoding;
 
 	@Bean
