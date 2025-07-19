@@ -23,10 +23,11 @@
 
 
     <!-- 已讀 -->
-    <div class="text-center mt-2">
+    <div class="text-center" style="padding: 10px 0; font-weight: normal;background-color: white;">
       <a
         href="#"
-        class="text-decoration-none text-dark small"
+        class="text-decoration-none small"
+        style="color: #f9a825;"
         @click.prevent="emit('mark-all-as-read')"
       >
         全部標示為已讀
@@ -66,10 +67,9 @@ const sortedNotifications = computed(() => {
   top: 92%;
   right: calc(50% - 160px);
   width: 320px;
-  background-color: white;
   border: 1px solid #ddd;
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 5px;
+  
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   z-index: 1000;
 }
@@ -77,8 +77,13 @@ const sortedNotifications = computed(() => {
 .panel-header {
   font-weight: bold;
   font-size: 16px;
-  color: #f9a825; /* 黃色標題 */
+  color: white; /* 標題 */
   margin-bottom: 12px;
+  background-color: #a06d50;
+  padding: 10px 14px;
+  margin-bottom: 0px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
 }
 
 .notification-ul {
@@ -86,6 +91,9 @@ const sortedNotifications = computed(() => {
   list-style: none;
   max-height: 300px;
   overflow-y: auto;
+  margin-top: 0;
+  background-color: white;
+  
 }
 
 .notification-ul li {
@@ -93,6 +101,7 @@ const sortedNotifications = computed(() => {
   border-bottom: 1px solid #eee;
   cursor: pointer;
   background-color: white; /* 已讀預設為白底 */
+  padding: 12px;
 }
 
 .notification-ul li.unread {
@@ -112,8 +121,4 @@ const sortedNotifications = computed(() => {
   font-size: 12px;
 }
 
-/*  內容文字為黑色 */
-.text-center a:hover {
-  color: #f9a825;
-}
 </style>

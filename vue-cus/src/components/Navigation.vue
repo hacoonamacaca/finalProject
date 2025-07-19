@@ -39,6 +39,7 @@
         <button class="btn position-relative" style="background: transparent; border: none;"
           @click.stop="toggleNotification" title="優惠通知">
           <i class="bi bi-bell-fill text-white"></i>
+          <!-- 🔴 紅色徽章 -->
           <span v-if="unreadCount > 0"
             class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
             {{ unreadCount }}
@@ -67,11 +68,17 @@
         ></div>
       </div>
 
-        <div class="nav-item">
+        <div class="nav-item" style="position: relative;">
           <button class="btn position-relative" style="background: transparent; border: none;" @click="showCart"
             title="購物車">
             <i class="bi bi-cart4 text-white"></i>
-            </button>
+            <!-- 🛒 紅色徽章 -->
+            <span
+              v-if="cartCount > 0"
+              class="badge bg-danger text-white position-absolute top-0 start-100 translate-middle rounded-pill">
+              {{ cartCount }}
+            </span>
+          </button>
         </div>
       </div>
     </div>
