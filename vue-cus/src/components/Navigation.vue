@@ -63,13 +63,15 @@
     @update-quantity="updateQuantity" @remove-item="removeItem" @checkout-restaurant="handleCheckoutRestaurant"
     @clear-restaurant="clearRestaurant" />
   <!-- 預備結帳畫面  ted-->
-  <CheckOrderModal :isVisible="isCheckOrderVisible" :orderItems="currentCheckoutItems" :restId="Number(restId)"
+  <CheckOrderModal v-if="isCheckOrderVisible"  :orderItems="currentCheckoutItems" :restId="Number(restId)" 
     @add-to-cart="handleConfirmCheckout" @close="hideCheckOrderModal" />
 
   <section class="popout" v-if="showPopout">
     <div class="popout-content">
       <button class="close-btn" @click="showPopout = false">✕</button>
       <input type="text" placeholder="輸入您的地址" @focus="locationStore.setAddress('')" v-model="locationStore.address" />
+      <button class="search-btn"
+        @click="locationStore.address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
       <button class="search-btn"
         @click="locationStore.address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
     </div>
@@ -157,12 +159,31 @@ const handleCheckoutRestaurant = (restaurantId) => {
     });
   }
 };
+
+
+
 const handleConfirmCheckout = (restaruantId, orderData) => {
   // 結帳送出訂單
-  if (!userId.value) {
-    // 開啟登入畫面
-    console.log('開啟登入畫面')
-
+if (!isLoggedIn.value) { // 使用 isLoggedIn Computed 屬性判斷登入狀態
+    Swal.fire({
+      icon: 'warning',
+      title: '您尚未登入',
+      text: '是否要登入以完成訂單？',
+      showCancelButton: true,
+      confirmButtonText: '登入',
+      cancelButtonText: '取消',
+      customClass: {
+        confirmButton: 'my-swal-confirm-button',
+        cancelButton: 'my-swal-cancel-button' // 可以為取消按鈕添加自定義 CSS 類別
+      }
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // 如果用戶點擊「登入」，則開啟登入畫面
+        openRegisterModal(); // 呼叫已有的開啟登入模態框的函式
+      }
+      // 如果用戶點擊「取消」或關閉彈窗，則不執行後續結帳邏輯
+    });
+    return; // 未登入且未選擇登入，終止結帳流程
   }
 
   //如果沒辦法取得userId.value暫時給值 4
@@ -184,12 +205,92 @@ const handleConfirmCheckout = (restaruantId, orderData) => {
   axios.post('/api/orders', order).then((response) => {
     // 請求成功的處理邏輯
     console.log('訂單已成功送出', response.data);
+    const newOrder = response.data;
+    //新增刷卡付款 
+    if (orderData.method === 'credit') {
+      // 👇 直接呼叫後端綠界 API（假設你後端是在 8080 port）
+      console.log(JSON.stringify({
+        orderId: newOrder.id,
+        description: newOrder.content,
+        amount: newOrder.total
+      }));
+      
+      const foodList = order.orderDetails
+      const foodNameList =foodList.map(foodList => 
+      `${foodList.food.name} ${foodList.quantity} x ${foodList.price}元`).join('#');
+      
+     
+     
+      // -----------------------------------------
+      // ------------------------------
+      fetch('http://localhost:8080/api/payment/create', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    orderId: newOrder.id,
+    description: newOrder.content,
+    amount: newOrder.total,
+    foodNameList:foodNameList,
+    createTime: newOrder.createTime,
+  })
+})
+.then(res => res.text())
+.then(data => {
+  console.log('取得的', data);
+
+
+  const isEcpayForm = (
+    typeof data === 'string' &&
+    data.trim().startsWith('<form') &&
+    data.includes('payment-stage.ecpay.com.tw')
+  );
+
+  if (isEcpayForm) {
+    // ➜ 只在這裡 submit
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = data;
+    document.body.appendChild(wrapper);
+    const form = wrapper.querySelector('form');
+    if (form) {
+      form.setAttribute('target', '_blank');
+      form.submit();
+    }
+    // internalOrderItems.value = [];
+    // bsModal.hide();
+  } else {
+    // 不是綠界表單就只彈 Swal，return 阻止往下執行
+    Swal.fire({
+      icon: 'error',
+      title: '付款失敗',
+      text: typeof data === 'string' ? data : ((data && data.message) || '未知錯誤，請聯繫客服')
+    });
+    return; // <<==== 這裡很重要！加這行！
+  }
+
+
+})
+.catch(err => {
+  // ➜ fetch 自己的錯誤（斷線、連不到後端）
+  console.log('金流錯誤:', err);
+  Swal.fire({
+    icon: 'error',
+    title: '付款流程異常',
+    text: '無法連線金流服務，請稍後再試'
+  });
+});
+
+
+
+
+      // -----------------------------------------------------------------------
+    }
+
   }).catch((error) => {
     // 請求失敗的處理邏輯
-    console.error('訂單送出失敗', error);
+    console.error('訂單送出失敗:', error);
   })
 
-  console.log('ajax使用', order)
+  console.log('ajax使用',order)
   Swal.fire({
     icon: 'success', // 成功圖示
     title: '訂單已送出！', // 標題
@@ -206,6 +307,7 @@ const handleConfirmCheckout = (restaruantId, orderData) => {
       // router.push('/orders');
     }
   });
+
 };
 
 

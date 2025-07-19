@@ -345,4 +345,11 @@ export const useUserStore = defineStore('user', () => {
         initializeFromStorage,
         logoutAll
     }
-})
+}, {
+    // ✨ 新增這個配置物件來啟用持久化
+    persist: {
+        storage: localStorage, // 指定使用 sessionStorage
+        // 或者使用 localStorage: storage: localStorage,
+        // key: 'my-cart-data', // 可選：自訂儲存到 sessionStorage/localStorage 的鍵名，預設是 store 的 id ('cart')
+    }
+});

@@ -14,6 +14,19 @@ const selectedStore = ref(null)
 const isLoading = ref(false)
 const error = ref(null)
 
+// 🔥 NEW: 清除全域狀態的方法
+const clearAllStoreState = () => {
+    console.log('🧹 [useStore] 清除全域狀態')
+    currentUser.value = null
+    stores.value = []
+    selectedStore.value = null
+    error.value = null
+    console.log('✅ [useStore] 全域狀態已清除')
+}
+
+// 🔥 NEW: 將清除方法暴露到全域，讓登出時可以調用
+window.clearStoreCache = clearAllStoreState
+
 // 載入用戶資料和店家列表
 const loadUserData = async () => {
     const ownerId = localStorage.getItem('ownerId')
@@ -73,9 +86,8 @@ const loadUserData = async () => {
         }
     } else {
         console.warn('⚠️ [useStore] 找不到 ownerId')
-        currentUser.value = null
-        stores.value = []
-        selectedStore.value = null
+        // 🔥 修正：當沒有 ownerId 時，清除狀態
+        clearAllStoreState()
     }
 }
 
@@ -143,8 +155,7 @@ export function useStore() {
     onMounted(async () => {
         console.log('🎬 [useStore] 組件掛載')
 
-        // 確保店家 ID 同步
-        ensureCurrentStore()
+
 
         // 如果還沒有載入過，就載入
         if (!currentUser.value && !isLoading.value) {
@@ -174,31 +185,11 @@ export function useStore() {
         }
     }
 
-    // 獲取當前店家的完整資料
-    const getCurrentStoreData = async () => {
-        if (!selectedStore.value) {
-            console.warn('⚠️ [useStore] 沒有選中的店家')
-            return null
-        }
-
-        try {
-            console.log(`🔍 [useStore] 正在獲取店家 ${selectedStore.value} 的詳細資料...`)
-            const response = await apiClient.get(`/api/stores/${selectedStore.value}/profile`)
-            console.log('✅ [useStore] 成功獲取店家詳細資料:', response.data)
-            return response.data
-        } catch (error) {
-            console.error('❌ [useStore] 獲取店家詳細資料失敗:', error)
-            return null
-        }
-    }
-
-    // 確保店家 ID 與當前 ID 相同
-    const ensureCurrentStore = () => {
-        const savedStoreId = localStorage.getItem('storeId')
-        if (savedStoreId && selectedStore.value !== parseInt(savedStoreId)) {
-            console.log(`🔄 [useStore] 同步店家 ID：從 ${selectedStore.value} 到 ${savedStoreId}`)
-            selectedStore.value = parseInt(savedStoreId)
-        }
+    // 🔥 NEW: 強制刷新（清除後重新載入）
+    const forceRefresh = async () => {
+        console.log('🔄 [useStore] 強制刷新資料')
+        clearAllStoreState()
+        await refreshData()
     }
 
     return {
@@ -216,8 +207,11 @@ export function useStore() {
         // 方法
         switchStore,
         refreshData,
-        getCurrentStoreData,
-        ensureCurrentStore,
+
+
         loadUserData: () => loadUserData()
     }
 }
+
+// 🔥 NEW: 導出清除方法，供外部使用
+export { clearAllStoreState }

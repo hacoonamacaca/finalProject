@@ -91,10 +91,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plungins/axios.js'
 import { useUserStore } from '@/stores/user.js'
+import { clearAllStoreState } from '@/composables/useStore.js' // 🔥 NEW: 清除 store 的資料
 
 import StoreLoginModal from '@/components/Ivy/StoreLoginModal.vue'
 import LoginEmailModal from '@/views/Ivy/LoginEmailModal.vue'
@@ -333,24 +334,64 @@ async function handleLoginEmail(email) {
 async function handlePasswordLogin({ email, password }) {
     isLoading.value = true
     passwordErrorMsg.value = ''
+
     try {
         const res = await axios.post('/api/owner/login', { email, password })
+
         if (res.data.success) {
+            console.log('🔐 登入成功，開始設定新用戶資料')
+
+            // 🔥 1. 完全清除舊的資料（重要！）
+            console.log('🧹 清除舊用戶資料...')
+            
+            // 清除 useStore 全域狀態
+            clearAllStoreState()
+            
+            // 清除 Pinia 狀態
+            userStore.logoutAll()
+            
+            // 🔥 2. 等待兩個 tick 確保清除完成
+            await nextTick()
+            await nextTick()
+            
+            // 🔥 3. 設定新的用戶資料到 localStorage（先設定 localStorage）
+            console.log('📝 設定新用戶資料...')
             localStorage.setItem('ownerId', res.data.ownerId)
             localStorage.setItem('storeFullName', res.data.name)
             localStorage.setItem('storeEmail', res.data.email)
             localStorage.setItem('storePhone', res.data.phone)
             
+            // 🔥 4. 然後同步到 Pinia
             userStore.setOwnerId(res.data.ownerId)
             userStore.setOwnerFullName(res.data.name)
             userStore.setOwnerEmail(res.data.email)
             
+            // 🔥 5. 強制重新同步所有狀態
+            userStore.syncFromStorage()
+
+            // 🔥 6. 觸發 useStore 重新載入資料
+            setTimeout(() => {
+                window.dispatchEvent(new CustomEvent('userLoggedIn', {
+                    detail: { ownerId: res.data.ownerId }
+                }))
+            }, 100)
+            
+            // 🔥 7. 延遲載入店家資料，確保用戶資料已完全設定
+            setTimeout(async () => {
+                console.log('🏪 開始載入店家資料...')
+                if (userStore.fetchStoreProfile) {
+                    await userStore.fetchStoreProfile()
+                }
+                console.log('✅ 新用戶資料設定完成')
+            }, 300)
+
             resetFlow()
             router.push('/store/menu')
         } else {
             passwordErrorMsg.value = res.data.message || '帳號或密碼錯誤'
         }
     } catch (e) {
+        console.error('登入錯誤:', e)
         passwordErrorMsg.value = '伺服器錯誤，請稍後再試'
     } finally {
         isLoading.value = false

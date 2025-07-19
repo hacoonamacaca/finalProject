@@ -65,3 +65,7 @@ spring:
       enabled: true
       max-file-size: 20MB
       max-request-size: 20MB
+
+app:
+  frontend:
+    url: http://localhost:5173
