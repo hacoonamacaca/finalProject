@@ -155,8 +155,7 @@ export function useStore() {
     onMounted(async () => {
         console.log('🎬 [useStore] 組件掛載')
 
-        // 確保店家 ID 同步
-        ensureCurrentStore()
+
 
         // 如果還沒有載入過，就載入
         if (!currentUser.value && !isLoading.value) {
@@ -208,8 +207,8 @@ export function useStore() {
         // 方法
         switchStore,
         refreshData,
-        getCurrentStoreData,
-        ensureCurrentStore,
+
+
         loadUserData: () => loadUserData()
     }
 }
