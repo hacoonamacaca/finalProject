@@ -36,6 +36,7 @@ public class OrderDetailDTO {
 		private Integer id;
 		private String name;
 		private String image;
+
 		// 從DTO轉換成Bean
 		public FoodBean toFoodBean() {
 			FoodBean foodBean = new FoodBean();

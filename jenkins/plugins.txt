@@ -1,0 +1,10 @@
+git
+docker-plugin
+workflow-aggregator
+blueocean
+maven-plugin
+nodejs
+ssh-credentials
+credentials
+github
+github-branch-source 

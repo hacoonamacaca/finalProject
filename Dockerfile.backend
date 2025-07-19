@@ -5,15 +5,15 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 # 複製 Maven 設定檔
-COPY GoldenBowl/pom.xml .
-COPY GoldenBowl/mvnw .
-COPY GoldenBowl/mvnw.cmd .
+COPY pom.xml .
+COPY mvnw .
+COPY mvnw.cmd .
 
 # 複製 Maven wrapper
-COPY GoldenBowl/.mvn ./.mvn
+COPY .mvn ./.mvn
 
 # 複製原始碼
-COPY GoldenBowl/src ./src
+COPY src ./src
 
 # 設定環境變數
 ENV JAVA_OPTS="-Xmx512m -Xms256m"

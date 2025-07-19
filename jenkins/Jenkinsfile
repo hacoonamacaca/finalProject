@@ -1,0 +1,99 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_IMAGE_BACKEND = 'goldenbowl-backend'
+        DOCKER_IMAGE_FRONTEND_CUS = 'goldenbowl-frontend-cus'
+        DOCKER_IMAGE_FRONTEND_STORE = 'goldenbowl-frontend-store'
+        DOCKER_IMAGE_FRONTEND_ADMIN = 'goldenbowl-frontend-admin'
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Build Backend') {
+            steps {
+                dir('GoldenBowl') {
+                    sh 'mvn clean package -DskipTests'
+                }
+            }
+        }
+        
+        stage('Build Frontend - Customer') {
+            steps {
+                dir('vue-cus') {
+                    sh 'npm ci'
+                    sh 'npm run build'
+                }
+            }
+        }
+        
+        stage('Build Frontend - Store') {
+            steps {
+                dir('vue-store') {
+                    sh 'npm ci'
+                    sh 'npm run build'
+                }
+            }
+        }
+        
+        stage('Build Frontend - Admin') {
+            steps {
+                dir('vue-admin') {
+                    sh 'npm ci'
+                    sh 'npm run build'
+                }
+            }
+        }
+        
+        stage('Build Docker Images') {
+            steps {
+                script {
+                    // 建立後端映像
+                    docker.build("${DOCKER_IMAGE_BACKEND}:${DOCKER_TAG}", './GoldenBowl')
+                    
+                    // 建立前端映像
+                    docker.build("${DOCKER_IMAGE_FRONTEND_CUS}:${DOCKER_TAG}", './vue-cus')
+                    docker.build("${DOCKER_IMAGE_FRONTEND_STORE}:${DOCKER_TAG}", './vue-store')
+                    docker.build("${DOCKER_IMAGE_FRONTEND_ADMIN}:${DOCKER_TAG}", './vue-admin')
+                }
+            }
+        }
+        
+        stage('Deploy') {
+            steps {
+                script {
+                    // 停止舊容器
+                    sh 'docker-compose down || true'
+                    
+                    // 啟動新容器
+                    sh 'docker-compose up -d'
+                    
+                    // 等待服務啟動
+                    sleep 30
+                    
+                    // 健康檢查
+                    sh 'curl -f http://localhost:8080/api/health || exit 1'
+                }
+            }
+        }
+    }
+    
+    post {
+        always {
+            // 清理工作空間
+            cleanWs()
+        }
+        success {
+            echo '部署成功！'
+        }
+        failure {
+            echo '部署失敗！'
+        }
+    }
+} 

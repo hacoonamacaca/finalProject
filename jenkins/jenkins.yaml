@@ -1,0 +1,46 @@
+jenkins:
+  systemMessage: "GoldenBowl CI/CD Jenkins Server"
+  numExecutors: 2
+  scmCheckoutRetryCount: 3
+  mode: NORMAL
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "admin123"
+
+  authorizationStrategy:
+    globalMatrix:
+      permissions:
+        - "Overall/Administer:admin"
+        - "Overall/Read:authenticated"
+        - "Job/Build:authenticated"
+        - "Job/Read:authenticated"
+
+  globalNodeProperties:
+    - envVarsEnvVarList:
+        - envVar:
+            key: "DOCKER_HOST"
+            value: "unix:///var/run/docker.sock"
+        - envVar:
+            key: "JAVA_HOME"
+            value: "/usr/lib/jvm/java-17-openjdk-amd64"
+        - envVar:
+            key: "MAVEN_HOME"
+            value: "/usr/share/maven"
+
+tool:
+  git:
+    installations:
+      - name: "Default"
+        home: "git"
+  maven:
+    installations:
+      - name: "Maven"
+        home: "/usr/share/maven"
+  nodejs:
+    installations:
+      - name: "NodeJS"
+        home: "/usr/bin/node"

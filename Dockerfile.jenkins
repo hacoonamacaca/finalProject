@@ -1,0 +1,36 @@
+FROM jenkins/jenkins:lts-jdk17
+
+# 切換到 root 用戶安裝套件
+USER root
+
+# 安裝必要的套件
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    docker.io \
+    docker-compose \
+    openjdk-17-jdk \
+    maven \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# 將 jenkins 用戶加入 docker 群組
+RUN usermod -aG docker jenkins
+
+# 建立工作目錄
+RUN mkdir -p /var/jenkins_home/workspace/goldenbowl
+
+# 複製 Jenkins 設定檔案
+COPY jenkins/plugins.txt /usr/share/jenkins/ref/plugins.txt
+COPY jenkins/jenkins.yaml /usr/share/jenkins/ref/jenkins.yaml
+
+# 安裝 Jenkins 插件
+RUN jenkins-plugin-cli -f /usr/share/jenkins/ref/plugins.txt
+
+# 切換回 jenkins 用戶
+USER jenkins
+
+# 暴露端口
+EXPOSE 8080 50000 

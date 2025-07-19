@@ -1,0 +1,116 @@
+version: "3.8"
+
+services:
+  # SQL Server 資料庫
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - goldenbowl-network
+
+  # Spring Boot 後端
+  backend:
+    build:
+      context: ./GoldenBowl
+      dockerfile: ../Dockerfile.backend
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=GoldenBowl;encrypt=true;trustServerCertificate=true
+      - SPRING_DATASOURCE_USERNAME=sa
+      - SPRING_DATASOURCE_PASSWORD=YourStrong@Passw0rd
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    networks:
+      - goldenbowl-network
+    restart: unless-stopped
+
+  # 客戶端前端 (vue-cus)
+  frontend-cus:
+    build:
+      context: ./vue-cus
+      dockerfile: ../Dockerfile.frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - goldenbowl-network
+    restart: unless-stopped
+
+  # 商家端前端 (vue-store)
+  frontend-store:
+    build:
+      context: ./vue-store
+      dockerfile: ../Dockerfile.frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+    networks:
+      - goldenbowl-network
+    restart: unless-stopped
+
+  # 管理端前端 (vue-admin)
+  frontend-admin:
+    build:
+      context: ./vue-admin
+      dockerfile: ../Dockerfile.frontend
+    ports:
+      - "3002:80"
+    depends_on:
+      - backend
+    networks:
+      - goldenbowl-network
+    restart: unless-stopped
+
+  # Nginx 反向代理 (支援 SSL)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-ssl.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - frontend-cus
+      - frontend-store
+      - frontend-admin
+      - backend
+    networks:
+      - goldenbowl-network
+    restart: unless-stopped
+
+  # Jenkins CI/CD
+  jenkins:
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    ports:
+      - "8081:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JENKINS_OPTS=--httpPort=8080
+    networks:
+      - goldenbowl-network
+    restart: unless-stopped
+
+volumes:
+  sqlserver_data:
+  jenkins_home:
+
+networks:
+  goldenbowl-network:
+    driver: bridge
