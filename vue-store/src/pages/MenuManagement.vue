@@ -19,92 +19,52 @@ const { selectedStore, currentStoreName, isLoggedIn } = useStore()
 // --- 響應式狀態 (State) ---
 
 // =================================================================
-// 1. 組件核心狀態 (Component Core State)
+// 1. 組件核心狀與登入/登出監聽
 // =================================================================
 
 // 當前活動的 Tab
 const activeTab = ref('overview'); // 'overview', 'categories' 或 'specs'
 
-// 模擬的商店資料
-// const stores = ref([
-//     { id: 1, name: '美味小館' },
-//     { id: 6, name: '香辣火鍋' },
-// ]);
-// 預設選中第一個店家的 ID
-// const selectedStore = ref(stores.value[0]?.id || null); 
-
-// 🔥 NEW: 從 localStorage 取得登入用戶資料
-// const currentUser = ref(null)
-// const stores = ref([])
-// const selectedStore = ref(null)
-
-// 載入用戶資料和店家列表的函數
-// const loadUserData = async () => {
-//     const ownerId = localStorage.getItem('ownerId')
-//     const ownerFullName = localStorage.getItem('storeFullName')
-//     const ownerEmail = localStorage.getItem('storeEmail')
+// 🔥 添加全域事件監聽，確保登入/登出時正確更新
+onMounted(async () => {
+    console.log('🎬 [MenuManagement] 組件掛載')
     
-//     if (ownerId) {
-//         currentUser.value = {
-//             ownerId,
-//             ownerFullName,
-//             ownerEmail
-//         }
-        
-//         console.log('✅ 載入用戶資料:', currentUser.value)
-
-//         // 🔥 NEW: 向後端請求該 owner 的所有 store 資料
-//         try {
-//             console.log(`🚀 正在為 owner ID: ${ownerId} 獲取店家列表...`)
-            
-//             // 🔥 修正 API 路徑：使用正確的 endpoint
-//             const storesResponse = await apiClient.get('/api/stores/profile/all', {
-//                 params: { ownerId: ownerId }
-//             })
-//             console.log('✅ 成功獲取店家列表:', storesResponse.data)
-            
-//             // 更新 stores 陣列
-//             stores.value = storesResponse.data.map(store => ({
-//                 id: store.id,
-//                 name: store.name || store.storeName || `店家${store.id}`
-//             }))
-            
-//             // 🔥 NEW: 智慧選擇預設店家
-//             if (stores.value.length > 0) {
-//                 // 優先選擇 localStorage 中記錄的 storeId
-//                 const savedStoreId = localStorage.getItem('storeId')
-//                 const savedStore = stores.value.find(store => String(store.id) === String(savedStoreId))
-                
-//                 if (savedStore) {
-//                     selectedStore.value = savedStore.id
-//                     console.log('📌 使用 localStorage 中的店家:', savedStore)
-//                 } else {
-//                     // 如果沒有或找不到，就選第一個
-//                     selectedStore.value = stores.value[0].id
-//                     console.log('📌 選擇第一個店家:', stores.value[0])
-//                 }
-//             }
-            
-//             console.log('🏪 最終店家狀態:', {
-//                 stores: stores.value,
-//                 selectedStore: selectedStore.value
-//             })
-            
-//         } catch (error) {
-//             console.error('❌ 獲取店家列表失敗:', error)
-//             error.value = `無法載入店家資料：${error.response?.data?.message || error.message}`
-//             // 發生錯誤時清空資料
-//             stores.value = []
-//             selectedStore.value = null
-//         }
-//     } else {
-//         console.warn('⚠️ 找不到 ownerId')
-//         // 清空資料
-//         currentUser.value = null
-//         stores.value = []
-//         selectedStore.value = null
-//     }
-// }
+    // 監聽用戶登入事件
+    const handleUserLoggedIn = async (event) => {
+        console.log('👤 [MenuManagement] 收到用戶登入事件:', event.detail)
+        // 延遲一點讓 useStore 先更新
+        setTimeout(async () => {
+            if (selectedStore.value) {
+                console.log('🔄 [MenuManagement] 重新載入菜單資料')
+                await fetchMenuData(selectedStore.value)
+            }
+        }, 500)
+    }
+    
+    // 監聽用戶登出事件
+    const handleUserLoggedOut = () => {
+        console.log('👤 [MenuManagement] 收到用戶登出事件')
+        // 清除菜單資料
+        categories.splice(0)
+        items.splice(0)
+    }
+    
+    // 註冊事件監聽器
+    window.addEventListener('userLoggedIn', handleUserLoggedIn)
+    window.addEventListener('userLoggedOut', handleUserLoggedOut)
+    
+    // 如果已經有選中的店家，立即載入
+    if (selectedStore.value) {
+        await fetchMenuData(selectedStore.value)
+    }
+    
+    // 🔥 在 onBeforeUnmount 中移除事件監聽器
+    onBeforeUnmount(() => {
+        console.log('🧹 [MenuManagement] 組件卸載')
+        window.removeEventListener('userLoggedIn', handleUserLoggedIn)
+        window.removeEventListener('userLoggedOut', handleUserLoggedOut)
+    })
+})
 
 
 // =================================================================
@@ -237,27 +197,24 @@ const fetchMenuData = async (storeId) => {
 // 🔥 NEW: 監聽 selectedStore 變化
 watch(selectedStore, async (newStoreId, oldStoreId) => {
     console.log(`👀 [MenuManagement] selectedStore 變化: ${oldStoreId} → ${newStoreId}`)
-    if (newStoreId && newStoreId !== oldStoreId) {
-        await fetchMenuData(newStoreId)
-    }
-}, { immediate: true })
 
-// 🔥 移除重複的全域事件監聽 - 因為 watch 已經能監聽到變化了
-// const handleStoreChanged = async (event) => {
-//     const { newStoreId } = event.detail
-//     console.log(`🔄 [MenuManagement] 收到店家切換事件: ${newStoreId}`)
-//     if (newStoreId) {
-//         await fetchMenuData(newStoreId)
-//     }
-// }
+    // 🔥 添加更詳細的除錯資訊
+    const currentOwnerId = localStorage.getItem('ownerId')
+    console.log(`🔍 [MenuManagement] 當前 ownerId: ${currentOwnerId}`)
+    
+    if (newStoreId && newStoreId !== oldStoreId) {
+        console.log(`🚀 [MenuManagement] 準備載入店家 ${newStoreId} 的資料`)
+        await fetchMenuData(newStoreId)
+    }else if (!newStoreId) {
+        console.log('🧹 [MenuManagement] selectedStore 為空，清除菜單資料')
+        categories.splice(0)
+        items.splice(0)
+        }
+}, { immediate: true })
 
 onMounted(async () => {
     console.log('🎬 [MenuManagement] 組件掛載')
     
-    // 🔥 移除全域事件監聽，因為 watch 已經能處理
-    // window.addEventListener('storeChanged', handleStoreChanged)
-    
-    // 如果已經有選中的店家，立即載入
     if (selectedStore.value) {
         await fetchMenuData(selectedStore.value)
     }
@@ -535,7 +492,7 @@ const handleUpdateCategoryOrder = (updatedCategories) => {
 };
 
 // =================================================================
-// 6. 規格管理相關 (Specification Management) (可能來不及做)
+// 6. 規格管理相關 (Specification Management) (來不及做)
 // =================================================================
 
 // 控制編輯規格 Modal 的開關

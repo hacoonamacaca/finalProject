@@ -37,7 +37,7 @@ public class StoreController {
     public ResponseEntity<List<StoreDTO>> getAllStores(
             @RequestParam(value = "userId", required = false) Integer userId, // 新增 userId 參數
             @RequestParam(value = "search", required = false) String search) {
-        
+
         List<StoreDTO> storeDTOs;
         if (search != null && !search.trim().isEmpty()) {
             // 調用帶有 userId 參數的 searchStores 方法
@@ -89,10 +89,11 @@ public class StoreController {
         StoreDTO createdStoreDTO = new StoreDTO(createdStoreBean);
         return new ResponseEntity<>(createdStoreDTO, HttpStatus.CREATED);
     }
+
     /**
      * 更新商店資訊
      */
-   @PutMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<StoreDTO> updateStore(@PathVariable Integer id, @RequestBody StoreDTO storeDetailsDto) {
         // 將 StoreDTO 轉換回 StoreBean 以便 service 層處理更新
         StoreBean storeToUpdate = new StoreBean();
@@ -104,7 +105,7 @@ public class StoreController {
         storeToUpdate.setStoreIntro(storeDetailsDto.getStoreIntro());
         storeToUpdate.setLat(storeDetailsDto.getLat());
         storeToUpdate.setLng(storeDetailsDto.getLng());
-        
+
         OwnerBean owner = new OwnerBean();
         owner.setPhone(storeDetailsDto.getPhone());
         owner.setEmail(storeDetailsDto.getEmail());
@@ -122,7 +123,6 @@ public class StoreController {
         }
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
 
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteStore(@PathVariable Integer id) {
@@ -235,7 +235,7 @@ public class StoreController {
         List<StoreDTO> storeDTOs = stores.stream()
                 .map(StoreDTO::new)
                 .collect(Collectors.toList());
-        
+
         return new ResponseEntity<>(storeDTOs, HttpStatus.OK);
     }
 
@@ -291,9 +291,9 @@ public class StoreController {
      */
     @GetMapping("/profile/store/{storeId}")
     public ResponseEntity<StoreDTO> getSpecificStore(
-            @PathVariable Integer storeId, 
+            @PathVariable Integer storeId,
             @RequestParam Integer ownerId) {
-        
+
         if (ownerId == null || storeId == null) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
@@ -321,9 +321,8 @@ public class StoreController {
 
         long count = storeService.getStoreCountByOwnerId(ownerId);
         Map<String, Object> result = Map.of(
-            "ownerId", ownerId,
-            "storeCount", count
-        );
+                "ownerId", ownerId,
+                "storeCount", count);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }

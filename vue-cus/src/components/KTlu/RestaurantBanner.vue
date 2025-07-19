@@ -4,58 +4,34 @@
         <div class="carousel-container" v-if="bannerImages.length > 1">
             <!-- 圖片輪播 -->
             <div class="carousel-wrapper">
-                <img 
-                    v-for="(image, index) in bannerImages" 
-                    :key="index"
-                    :src="image" 
-                    :alt="restaurant.name + '店面圖片'" 
-                    class="banner-image carousel-image"
-                    :class="{ active: index === currentImageIndex }"
-                    @error="handleImageError"
-                />
+                <img v-for="(image, index) in bannerImages" :key="index" :src="image" :alt="restaurant.name + '店面圖片'"
+                    class="banner-image carousel-image" :class="{ active: index === currentImageIndex }"
+                    @error="handleImageError" />
             </div>
-            
+
             <!-- 🔥 左右切換按鈕 -->
-            <button 
-                class="carousel-btn carousel-btn-prev" 
-                @click="previousImage"
-                v-if="bannerImages.length > 1"
-            >
+            <button class="carousel-btn carousel-btn-prev" @click="previousImage" v-if="bannerImages.length > 1">
                 ‹
             </button>
-            <button 
-                class="carousel-btn carousel-btn-next" 
-                @click="nextImage"
-                v-if="bannerImages.length > 1"
-            >
+            <button class="carousel-btn carousel-btn-next" @click="nextImage" v-if="bannerImages.length > 1">
                 ›
             </button>
-            
+
             <!-- 🔥 圓點指示器 -->
             <div class="carousel-dots" v-if="bannerImages.length > 1">
-                <span 
-                    v-for="(image, index) in bannerImages" 
-                    :key="index"
-                    class="carousel-dot"
-                    :class="{ active: index === currentImageIndex }"
-                    @click="goToImage(index)"
-                ></span>
+                <span v-for="(image, index) in bannerImages" :key="index" class="carousel-dot"
+                    :class="{ active: index === currentImageIndex }" @click="goToImage(index)"></span>
             </div>
-            
+
             <!-- 🔥 圖片數量顯示 -->
             <div class="image-counter" v-if="bannerImages.length > 1">
                 {{ currentImageIndex + 1 }} / {{ bannerImages.length }}
             </div>
         </div>
-        
+
         <!-- 🔥 單張圖片顯示 -->
-        <img 
-            v-else
-            :src="bannerImages[0] || defaultPhoto" 
-            :alt="restaurant.name + '店面圖片'" 
-            class="banner-image" 
-            @error="handleImageError"
-        />
+        <img v-else :src="bannerImages[0] || defaultPhoto" :alt="restaurant.name + '店面圖片'" class="banner-image"
+            @error="handleImageError" />
     </div>
 </template>
 
@@ -83,14 +59,14 @@ const bannerImages = computed(() => {
     if (!props.restaurant.photo) {
         return [defaultPhoto];
     }
-    
+
     // 如果有多張圖片（分號分隔）
     if (typeof props.restaurant.photo === 'string' && props.restaurant.photo.includes(';')) {
         return props.restaurant.photo.split(';')
             .filter(path => path.trim())
             .map(path => getImageUrl(path.trim()));
     }
-    
+
     // 單張圖片
     return [getImageUrl(props.restaurant.photo)];
 });
@@ -101,8 +77,8 @@ const nextImage = () => {
 };
 
 const previousImage = () => {
-    currentImageIndex.value = currentImageIndex.value === 0 
-        ? bannerImages.value.length - 1 
+    currentImageIndex.value = currentImageIndex.value === 0
+        ? bannerImages.value.length - 1
         : currentImageIndex.value - 1;
 };
 

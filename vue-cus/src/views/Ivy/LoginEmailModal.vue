@@ -1,15 +1,16 @@
 <template>
+    <!-- 有改過 -->
     <div class="modal-bg" v-if="show">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('register')">
+                    <button class="btn nav-btn" @click="goemit('back')">
                         <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
                             <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
                     </button>
-                    <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
+                    <button type="button" class="btn-close custom-close" @click="goemit('close')"></button>
                 </div>
                 <div class="modal-body d-flex flex-column align-items-center pt-0">
                     <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
@@ -31,29 +32,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-const props = defineProps({show: Boolean})
-const emit = defineEmits(['submit', 'register', 'close'])
-const email = ref('')
+import { computed } from 'vue'
+import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
+import Swal from 'sweetalert2'
+
+const props = defineProps({ show: Boolean })
+const emit = defineEmits(['submit', 'close', 'back'])
+
+const userStore = useUserStore()
+// email 欄位直接和 Pinia 同步
+const email = computed({
+    get: () => userStore.email,
+    set: v => userStore.setEmail(v)
+})
+
+const goemit = (e) => {
+    userStore.setEmail('')
+    emit(e)
+}
 
 async function onSubmit() {
     if (!email.value) {
-        alert('請輸入 email')
+        Swal.fire({
+            icon: 'warning', // 顯示警告圖示
+            title: '請注意！', // 標題
+            text: '請輸入 email', // 內容文字
+            confirmButtonText: '確定' // 確認按鈕的文字
+        });
         return
     }
     try {
-        // axios 寫法：第二個參數就是 body 物件
         const res = await axios.post('/api/users/check-email-exists', { email: email.value })
-        // 回傳的就是 json 物件，不用再 .json()
         if (res.data.exists) {
-            emit('submit', email.value)
+            emit('submit', email.value) // 將 email 傳到父元件
         } else {
-            alert('此 email 尚未註冊，請先註冊')
-            // emit('register')
+            Swal.fire({
+                icon: 'error', // 因為是「尚未註冊」，帶有錯誤或需要注意的性質，所以用 error 或 warning 都可以
+                title: '帳戶不存在', // 或 '註冊提醒', '帳戶不存在'
+                text: '此 Email 尚未註冊，請先註冊。',
+                confirmButtonText: '前往註冊' // 提供明確的下一步操作
+            });
+            
+            // emit('register') // 如果要跳註冊可以放開
         }
     } catch (e) {
-        alert('檢查 email 時發生錯誤')
+         Swal.fire({
+            icon: 'error',
+            title: '操作失敗',
+            text: '檢查 Email 時發生錯誤，請稍後再試。',
+            confirmButtonText: '確定'
+        });
         console.error(e)
     }
 }
@@ -64,7 +93,7 @@ async function onSubmit() {
 position: fixed;
 inset: 0;
 background: rgba(0, 0, 0, 0.08);
-z-index: 9999;
+z-index: 900;
 display: flex;
 align-items: center;
 justify-content: center;

@@ -204,7 +204,7 @@ public class FoodService {
         dto.setIsActive(foodBean.getIsActive());
         dto.setStock(foodBean.getStock());
         dto.setImgResource(foodBean.getImgResource());
-
+        dto.setTagNames(foodBean.getTags());
         if (foodBean.getStore() != null) {
             dto.setStoreId(foodBean.getStore().getId());
             dto.setStoreName(foodBean.getStore().getName());
@@ -216,10 +216,8 @@ public class FoodService {
             dto.setCategoryName(primaryClassification.getFoodClass().getName());
             dto.setCategoryId(primaryClassification.getFoodClass().getId());
         }
-        if (foodBean.getTags() != null && !foodBean.getClassifications().isEmpty()) {
-            dto.setTagNames(foodBean.getTags().stream()
-                    .map(tagBean -> tagBean.getName()) // 假設您的 TagBean 有 getName() 方法
-                    .collect(Collectors.toList()));
+        if (foodBean.getTags() != null && !foodBean.getTags().isEmpty()) {
+            dto.setTagNames(foodBean.getTags());
         }
 
         return dto;

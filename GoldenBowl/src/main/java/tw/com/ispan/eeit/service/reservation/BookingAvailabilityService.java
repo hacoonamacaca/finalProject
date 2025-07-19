@@ -154,7 +154,7 @@ public class BookingAvailabilityService {
         LocalDate start = LocalDate.now();
         LocalDate end = start.plusDays(daysAhead);
 
-     // 獲取週期性公休日（沒有營業時間的日期）
+        // 獲取週期性公休日（沒有營業時間的日期）
         List<OpenHourBean> allOpenHours = openHourRepository.findByStoreId(storeId);
         Set<Integer> weeklyClosedDays = allOpenHours.stream()
                 .filter(oh -> oh.getOpenTime() == null || oh.getCloseTime() == null)

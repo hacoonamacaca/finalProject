@@ -2,13 +2,8 @@
   <section class="restaurant-list">
     <div class="restaurant-card" v-for="restaurant in restaurants" :key="restaurant.id">
       <div class="image-container">
-        <img 
-          :src="getMainImage(restaurant)" 
-          :alt="restaurant.name"
-          @click="navigateToRestaurant(restaurant.id)" 
-          @error="handleImageError"
-          style="cursor: pointer;" 
-        />
+        <img :src="getMainImage(restaurant)" :alt="restaurant.name" @click="navigateToRestaurant(restaurant.id)"
+          @error="handleImageError" style="cursor: pointer;" />
         <i class="favorite-icon bi"
           :class="{ 'bi-heart-fill': restaurant.isFavorited, 'bi-heart': !restaurant.isFavorited }"
           @click.stop="toggleFavorite(restaurant)">
@@ -17,7 +12,8 @@
       <div class="info">
         <h3>{{ restaurant.name }}</h3>
         <p>
-          {{ restaurant.categoryNames && restaurant.categoryNames.length > 0 ? restaurant.categoryNames.join(' / ') : '無類別' }}
+          {{ restaurant.categoryNames && restaurant.categoryNames.length > 0 ? restaurant.categoryNames.join(' / ') :
+          '無類別' }}
           •
           {{ restaurant.isOpen ? '營業中' : '休息中' }}
         </p>
@@ -25,7 +21,8 @@
             {{ restaurant.score }}★
           </span>
         </p>
-        <div class="comment-distance-group"> <span class="comment-trigger-text" @click="openComment(restaurant.id)" style="cursor: pointer;">
+        <div class="comment-distance-group"> <span class="comment-trigger-text" @click="openComment(restaurant.id)"
+            style="cursor: pointer;">
             ({{ restaurant.comments ? restaurant.comments.length : 0 }} 則評論)
           </span>
           <span v-if="restaurant.distance" class="distance-text">
@@ -35,17 +32,13 @@
       </div>
     </div>
     <div v-if="restaurants.length === 0" class="no-restaurants-message">
-        <p v-if="!restaurantDisplayStore.showAllRestaurants && currentUserId">您目前沒有收藏任何餐廳。</p>
-        <p v-else-if="!restaurantDisplayStore.showAllRestaurants && !currentUserId">請先登入以查看收藏餐廳。</p>
-        <p v-else>目前沒有符合條件的餐廳。</p>
+      <p v-if="!restaurantDisplayStore.showAllRestaurants && currentUserId">您目前沒有收藏任何餐廳。</p>
+      <p v-else-if="!restaurantDisplayStore.showAllRestaurants && !currentUserId">請先登入以查看收藏餐廳。</p>
+      <p v-else>目前沒有符合條件的餐廳。</p>
     </div>
   </section>
 
-  <Comment
-    v-if="showComment"
-    :storeId="selectedStoreId"
-    @close="showComment = false"
-  />
+  <Comment v-if="showComment" :storeId="selectedStoreId" @close="showComment = false" />
 </template>
 
 <script setup>
@@ -56,6 +49,7 @@ import { useUserStore } from '@/stores/user';
 import axios from '@/plungins/axios.js';
 import { useRestaurantDisplayStore } from '@/stores/restaurantDisplay';
 import { useImageUrl } from '../../composables/useImageUrl.js'
+import swal from 'sweetalert2';
 
 const userStore = useUserStore();
 const currentUserId = computed(() => userStore.userId); // 獲取當前用戶ID
@@ -73,7 +67,7 @@ const props = defineProps({
 });
 
 // 移除 'fetch-restaurants' 事件，因為現在 Home.vue 會監聽 Pinia store 來觸發數據更新
-const emit = defineEmits(['update:favoriteStatus']); 
+const emit = defineEmits(['update:favoriteStatus']);
 const router = useRouter();
 
 // 控制評論模態框顯示的狀態
@@ -97,14 +91,14 @@ const getRestaurantImages = (restaurant) => {
   if (!restaurant.photo) {
     return [defaultPhoto];
   }
-  
+
   // 如果 photo 是字串且包含分號（多張圖片）
   if (typeof restaurant.photo === 'string' && restaurant.photo.includes(';')) {
     return restaurant.photo.split(';')
       .filter(path => path.trim()) // 過濾空字串
       .map(path => getImageUrl(path.trim()));
   }
-  
+
   // 如果是單張圖片
   return [getImageUrl(restaurant.photo)];
 };
@@ -130,7 +124,12 @@ const handleImageError = (event) => {
 // --- 收藏功能相關方法 ---
 const toggleFavorite = async (restaurant) => {
   if (!currentUserId.value) {
-    alert('請先登入才能收藏餐廳！');
+    swal.fire({
+      icon: 'info',
+      title: '請先登入',
+      text: '您需要登入才能收藏餐廳！',
+      confirmButtonText: '確定'
+    });
     return;
   }
 
@@ -152,7 +151,12 @@ const toggleFavorite = async (restaurant) => {
         // alert('已取消收藏！'); // 通常在樂觀更新後不再需要彈出提示
       } else {
         restaurant.isFavorited = originalIsFavorited; // 如果失敗，回滾狀態
-        alert('取消收藏失敗！');
+        swal.fire({
+          icon: 'error',
+          title: '取消收藏失敗！',
+          text: '請稍後再試。',
+          confirmButtonText: '確定'
+        });
         return; // 終止函數執行
       }
     } else {
@@ -161,7 +165,12 @@ const toggleFavorite = async (restaurant) => {
         // alert('已成功收藏！'); // 通常在樂觀更新後不再需要彈出提示
       } else {
         restaurant.isFavorited = originalIsFavorited; // 如果失敗，回滾狀態
-        alert('收藏失敗！');
+        swal.fire({
+          icon: 'error',
+          title: '收藏失敗！',
+          text: '請稍後再試。',
+          confirmButtonText: '確定'
+        });
         return; // 終止函數執行
       }
     }
@@ -177,7 +186,12 @@ const toggleFavorite = async (restaurant) => {
 
   } catch (error) {
     console.error('收藏/取消收藏操作出錯:', error);
-    alert('收藏/取消收藏操作發生錯誤！');
+    swal.fire({
+      icon: 'error',
+      title: '操作發生錯誤！',
+      text: '收藏/取消收藏時發生網路或伺服器錯誤，請稍後再試。',
+      confirmButtonText: '確定'
+    });
     restaurant.isFavorited = originalIsFavorited; // 網路錯誤時回滾
     console.log(`RestaurantListSection.vue: 網路錯誤，isFavorited 回滾為: ${restaurant.isFavorited}`);
   }
@@ -258,22 +272,30 @@ const toggleFavorite = async (restaurant) => {
 
 /* 評分單獨的行，不需要特別的 flex 樣式，它本身就是塊級元素 */
 .score-group {
-  margin-bottom: 5px; /* 讓評分和下方評論/距離組之間有間距 */
+  margin-bottom: 5px;
+  /* 讓評分和下方評論/距離組之間有間距 */
 }
 
 /* 新增的評分、評論和距離的父容器樣式 */
 .score-comment-distance-group {
-  display: flex; /* 使用 Flexbox 讓內部元素水平排列 */
-  align-items: center; /* 垂直居中對齊 */
-  gap: 5px; /* 為內部元素之間添加間距 */
-  flex-wrap: wrap; /* 允許在空間不足時換行，以防萬一 */
+  display: flex;
+  /* 使用 Flexbox 讓內部元素水平排列 */
+  align-items: center;
+  /* 垂直居中對齊 */
+  gap: 5px;
+  /* 為內部元素之間添加間距 */
+  flex-wrap: wrap;
+  /* 允許在空間不足時換行，以防萬一 */
 }
 
 /* 公里數文字樣式 */
 .distance-text {
-  font-size: 13px; /* 保持你想要的字體大小 */
-  color: #666; /* 保持顏色 */
-  white-space: nowrap; /* 防止距離數字換行 */
+  font-size: 13px;
+  /* 保持你想要的字體大小 */
+  color: #666;
+  /* 保持顏色 */
+  white-space: nowrap;
+  /* 防止距離數字換行 */
 }
 
 /* 新增的評論觸發文字樣式 */

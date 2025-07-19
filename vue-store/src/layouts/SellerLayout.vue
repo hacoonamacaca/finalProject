@@ -2,7 +2,11 @@
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import logoUrl from '../assets/logo.png'
 import { useStore } from '@/composables/useStore.js' // 🔥 NEW: 導入 useStore
+import { useUserStore } from '@/stores/user.js' // 🔥 NEW: 導入 userStore
 import { useRouter } from 'vue-router'
+import { clearAllStoreState } from '@/composables/useStore.js' // 🔥 NEW: 導入清除方法
+
+const userStore = useUserStore() // 🔥 NEW: 獲取 userStore 實例
 
 const router = useRouter();
 // 🔥 NEW: 使用 store composable
@@ -35,21 +39,74 @@ const handleClickOutside = (event) => {
 }
 
 const logout = () => {
-    // 清除本地儲存的用戶資料
-    localStorage.removeItem('ownerId')
-    localStorage.removeItem('storeFullName')
-    localStorage.removeItem('storeEmail')
-    localStorage.removeItem('storeId')
-    localStorage.removeItem('storeProfile')
+    console.log('🚪 開始執行登出流程...')
     
-    // 重設本地狀態
+    try {
+        // 🔥 1. 清除 useStore 的全域狀態（最重要！）
+        console.log('🧹 清除 useStore 全域狀態...')
+        clearAllStoreState()
+        
+        // 🔥 2. 清除 Pinia store 狀態
+        if (userStore.logoutAll && typeof userStore.logoutAll === 'function') {
+            console.log('🔄 使用 userStore.logoutAll() 清除狀態')
+            userStore.logoutAll()
+        } else {
+            console.log('🔄 手動清除 userStore 狀態')
+            
+            // 手動清除各項狀態
+            if (userStore.ownerLogout && typeof userStore.ownerLogout === 'function') {
+                userStore.ownerLogout()
+            }
+            
+            // 清除其他狀態
+            if (userStore.setStoreProfile && typeof userStore.setStoreProfile === 'function') {
+                userStore.setStoreProfile({})
+            }
+            
+            if (userStore.setStoreId && typeof userStore.setStoreId === 'function') {
+                userStore.setStoreId('')
+            }
+        }
+        
+        // 🔥 3. 手動清除 localStorage（三重保險）
+        const localStorageKeys = [
+            'ownerId', 'storeFullName', 'storeEmail', 'storeId', 'storeProfile',
+            'userFullName', 'userId', 'userEmail', 'token',
+            'storeName', 'address', 'storePhone'
+        ]
+        
+        localStorageKeys.forEach(key => {
+            localStorage.removeItem(key)
+        })
+        
+        console.log('🗑️ 已清除所有相關 localStorage 項目')
+        
+        // 🔥 4. 觸發全域重新載入事件
+        window.dispatchEvent(new CustomEvent('userLoggedOut'))
+        
+    } catch (error) {
+        console.error('❌ 登出過程中發生錯誤:', error)
+        
+        // 🔥 如果出錯，強制清除所有可能的 localStorage 項目
+        Object.keys(localStorage).forEach(key => {
+            if (key.includes('store') || key.includes('owner') || key.includes('user')) {
+                localStorage.removeItem(key)
+            }
+        })
+        
+        // 強制清除 useStore 狀態
+        clearAllStoreState()
+    }
+    
+    // 🔥 5. 重設本地 UI 狀態
     showDropdown.value = false
-    router.push('/home') // 跳轉到首頁
-    console.log('用戶已登出，跳轉到首頁')
-    // 跳轉回 vue-cus 登入頁面
-    // const vueCustomerUrl = import.meta.env.VITE_VUE_CUS_URL || 'http://localhost:5173'
-    // window.location.href = `${vueCustomerUrl}/store`
-
+    
+    // 🔥 6. 跳轉到首頁（稍微延遲確保清除完成）
+    setTimeout(() => {
+        console.log('🏠 跳轉到首頁')
+        router.push('/home')
+        console.log('✅ 登出流程完成')
+    }, 100)
 }
 
 // 🔥 NEW: 處理店家切換
@@ -190,11 +247,11 @@ onBeforeUnmount(() => {
                                 </router-link>
                             </li>
 
-                            <li class="nav-item">
+                            <!-- <li class="nav-item">
                                 <router-link to="#" class="nav-link" active-class="active-link">
                                     <i class="fas fa-comments fa-fw me-2"></i> 評論回覆
                                 </router-link>
-                            </li>
+                            </li> -->
                         </ul>
                     </div>
                 </div>

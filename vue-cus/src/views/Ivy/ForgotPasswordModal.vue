@@ -1,4 +1,5 @@
 <template>
+    <!-- 有改過 -->
     <div class="modal-bg" v-if="show">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
@@ -18,10 +19,17 @@
                     <form class="w-100" @submit.prevent="onSubmit">
                         <div class="mb-3 text-start w-100">
                             <label class="form-label label-strong">電子郵件</label>
-                            <input type="email" v-model="email" class="form-control custom-input" required
-                                placeholder="eattiy@msn.com">
+                            <input
+                                type="email"
+                                v-model="email"
+                                class="form-control custom-input"
+                                required
+                                placeholder="eattiy@msn.com"
+                            />
                         </div>
-                        <button type="submit" class="btn btn-main w-100 mb-1">重設密碼</button>
+                        <button type="submit" class="btn btn-main w-100 mb-1" :disabled="loading">
+                            {{ loading ? '寄送中...' : '重設密碼' }}
+                        </button>
                     </form>
                     <button class="btn-link mt-2" @click="emit('back')">回到登入頁</button>
                 </div>
@@ -31,25 +39,58 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, ref } from 'vue'
+import { useUserStore } from '@/stores/user.js'
+import axios from '@/plungins/axios.js'
 
-const props = defineProps({ show: Boolean, email: String })
-
+const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'back', 'submit'])
 
-const email = ref('')
+const userStore = useUserStore()
+const loading = ref(false)
 
-// 關鍵：只要 show/email 變動時自動同步
-watch(
-    () => [props.show, props.email],
-    ([show, newEmail]) => {
-        if (show) email.value = newEmail || ''
-    },
-    { immediate: true }
-)
+const email = computed({
+    get: () => userStore.email,
+    set: v => userStore.setEmail(v)
+})
 
-function onSubmit() {
-    emit('submit', email.value)
+async function onSubmit() {
+    if (!email.value) {
+        Swal.fire({
+            icon: 'warning', // 顯示一個黃色的警告圖示
+            title: '請注意', // 彈出視窗的標題
+            text: '請輸入您的 Email 地址。', // 提示的具體內容
+            confirmButtonText: '確定' // 確認按鈕的文字
+        });
+        return
+    }
+    loading.value = true
+    try {
+        // 必須用 URLSearchParams，對應 @RequestParam
+        const params = new URLSearchParams()
+        params.append('email', email.value.trim())
+
+        await axios.post('/api/send-reset-password', params)
+        Swal.fire({
+            icon: 'success', // 顯示成功圖示（綠色勾勾）
+            title: '重設密碼連結已寄出！', // 標題
+            html: `我們已將重設密碼的連結寄送到 <b>${email.value}</b>。<br>請前往您的信箱查收，並點擊連結以完成密碼重設。`, // 內容支援 HTML
+            confirmButtonText: '確定' // 確認按鈕文字
+        });
+        emit('submit', email.value)
+        // 這裡也可以 emit('close') 或跳出"已寄出"的 modal
+    } catch (e) {
+        const errorMessage = e.response?.data?.message || '寄送失敗，請稍後再試';
+        Swal.fire({
+            icon: 'error', // 顯示錯誤圖示
+            title: '操作失敗', // 標題
+            text: errorMessage, // 內容文字，優先顯示後端訊息，否則顯示預設訊息
+            confirmButtonText: '確定' // 確認按鈕文字
+        });
+        
+    } finally {
+        loading.value = false
+    }
 }
 </script>
 
@@ -58,7 +99,7 @@ function onSubmit() {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.08);
-    z-index: 9999;
+    z-index: 900;
     display: flex;
     align-items: center;
     justify-content: center;

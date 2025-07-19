@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed ,onMounted } from 'vue'
 import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
@@ -192,7 +192,9 @@ const formatOptions = (optionValue) => {
     }
     return optionValue
 }
-
+onMounted(() => {
+    console.log('cartByRestaurant', props.cartByRestaurant)
+})
 
 
 </script>

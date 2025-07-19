@@ -58,6 +58,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { useLocationStore } from '@/stores/location';
+import { DateTime } from 'luxon'; // 引入 luxon
 
 const locationStore = useLocationStore();
 
@@ -72,20 +73,29 @@ const emit = defineEmits(['update:modelValue', 'search-keyword']);
 
 const temperature = computed(() => locationStore.temperature);
 
+// 根據當地時區判斷是否為早上
 const isMorning = computed(() => {
-  const hour = new Date().getHours();
+  if (!locationStore.timeZone) return false; // 如果沒有時區資訊，則不顯示
+  const now = DateTime.now().setZone(locationStore.timeZone);
+  const hour = now.hour;
   // 早餐時間設定為早上 5 點到 10 點前
   return hour >= 5 && hour < 10;
 });
 
+// 根據當地時區判斷是否為早午餐時段
 const isBrunch = computed(() => {
-  const hour = new Date().getHours();
+  if (!locationStore.timeZone) return false;
+  const now = DateTime.now().setZone(locationStore.timeZone);
+  const hour = now.hour;
   // 早午餐時間設定為早上 10 點到下午 2 點前 (14 點)
   return hour >= 10 && hour < 14;
 });
 
+// 根據當地時區判斷是否為宵夜時段
 const isSupper = computed(() => {
-  const hour = new Date().getHours();
+  if (!locationStore.timeZone) return false;
+  const now = DateTime.now().setZone(locationStore.timeZone);
+  const hour = now.hour;
   // 宵夜時間設定為晚上 10 點到凌晨 4 點前
   return hour >= 22 || hour < 4;
 });

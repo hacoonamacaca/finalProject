@@ -30,30 +30,30 @@ public class UserController {
 
     // @GetMapping
     // public ResponseEntity<List<UserBean>> getAllUsers() {
-    //     List<UserBean> users = userService.getAllUsers();
-    //     return new ResponseEntity<>(users, HttpStatus.OK);
+    // List<UserBean> users = userService.getAllUsers();
+    // return new ResponseEntity<>(users, HttpStatus.OK);
     // }
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         List<UserBean> users = userService.getAllUsers();
         List<UserDTO> dtos = users.stream()
-                                  .map(UserService::toDTO)
-                                  .toList();
+                .map(UserService::toDTO)
+                .toList();
         return ResponseEntity.ok(dtos);
     }
     
 
     // @GetMapping("/{id}")
     // public ResponseEntity<UserBean> getUserById(@PathVariable Integer id) {
-    //     Optional<UserBean> user = userService.getUserById(id);
-    //     return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
-    //             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    // Optional<UserBean> user = userService.getUserById(id);
+    // return user.map(value -> new ResponseEntity<>(value, HttpStatus.OK))
+    // .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     // }
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
         Optional<UserBean> user = userService.getUserById(id);
         return user.map(u -> ResponseEntity.ok(UserService.toDTO(u)))
-                   .orElseGet(() -> ResponseEntity.notFound().build());
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @GetMapping("/profile")
@@ -92,15 +92,16 @@ public class UserController {
     }
 
     // @PutMapping("/{id}")
-    // public ResponseEntity<UserBean> updateUser(@PathVariable Integer id, @RequestBody UserBean userDetails) {
-    //     UserBean updatedUser = userService.updateUser(id, userDetails);
-    //     if (updatedUser != null) {
-    //         return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-    //     }
-    //     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // public ResponseEntity<UserBean> updateUser(@PathVariable Integer id,
+    // @RequestBody UserBean userDetails) {
+    // UserBean updatedUser = userService.updateUser(id, userDetails);
+    // if (updatedUser != null) {
+    // return new ResponseEntity<>(updatedUser, HttpStatus.OK);
+    // }
+    // return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     // }
 
-     @PutMapping("/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @RequestBody UserDTO dto) {
         UserDTO updatedUser = userService.updateUser(id, dto);
         if (updatedUser != null) {
@@ -111,13 +112,13 @@ public class UserController {
 
     // @DeleteMapping("/{id}")
     // public ResponseEntity<HttpStatus> deleteUser(@PathVariable Integer id) {
-    //     if (userService.deleteUser(id)) {
-    //         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    //     }
-    //     return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    // if (userService.deleteUser(id)) {
+    // return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    // }
+    // return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     // }
 
-      @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteUser(@PathVariable Integer id) {
         if (userService.deleteUser(id)) {
             return ResponseEntity.noContent().build();
@@ -132,7 +133,7 @@ public class UserController {
         return Map.of("exists", exists);
     }
 
- @PostMapping("/login")
+    @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> body) {
         String email = body.get("email");
         String password = body.get("password");

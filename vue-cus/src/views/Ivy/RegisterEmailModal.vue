@@ -1,12 +1,17 @@
 <template>
+    <!-- 有修過 -->
     <div class="modal-bg" v-if="show">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0 justify-content-between">
-                    <button class="btn nav-btn" @click="emit('back')">
-                        <!-- SVG 略 -->
+                    <button class="btn nav-btn" @click="goemit('back')">
+                        <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
+                            <path d="M15 6l-6 6 6 6" stroke="#222" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
                     </button>
-                    <button type="button" class="btn-close custom-close" @click="emit('close')"></button>
+                    
+                    <button type="button" class="btn-close custom-close" @click="goemit('close')"></button>
                 </div>
                 <div class="modal-body d-flex flex-column align-items-center pt-0">
                     <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="mail"
@@ -19,7 +24,10 @@
                             <input type="email" v-model="email" class="form-control custom-input" required
                                 placeholder="請輸入 email">
                         </div>
-                        <button type="submit" class="btn btn-main w-100">繼續</button>
+                        <button type="submit" class="btn btn-main w-100" :disabled="loading">
+                            <span v-if="loading">請稍候...</span>
+                            <span v-else>繼續</span>
+                        </button>
                     </form>
                 </div>
             </div>
@@ -28,29 +36,58 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
+import { useUserStore } from '@/stores/user.js'
 import axios from '@/plungins/axios.js'
+import Swal from 'sweetalert2'
 
 const props = defineProps({ show: Boolean })
 const emit = defineEmits(['close', 'submit', 'back'])
-const email = ref('eattiy1986@gmail.com') // 測試用預設
+
+const userStore = useUserStore()
 const loading = ref(false)
+// 用 pinia 狀態的 email
+const email = computed({
+    get: () => userStore.email,
+    set: v => userStore.setEmail(v)
+})
+
+const  goemit = (e) => {
+    userStore.email=''
+    emit(e)
+}
 
 async function submitEmail() {
     if (!email.value) {
-        alert('請輸入 email')
+        Swal.fire({
+            icon: 'warning', // 顯示警告圖示（黃色三角形）
+            title: '請注意', // 彈出框的標題
+            text: '請輸入您的 Email 地址。', // 提示的具體內容
+            confirmButtonText: '確定' // 確認按鈕的文字
+        });
         return
     }
     loading.value = true
     try {
-    const res = await axios.post('/api/users/check-email-exists', { email: email.value })
-    if (!res.data.verified) {
+        const res = await axios.post('/api/users/check-email-exists', { email: email.value })
+        if (!res.data.exists) {
+            // 記得 pinia 狀態已同步，不用再 set localStorage
             emit('submit', email.value)
         } else {
-            alert('此 email 已註冊，請用其他 email')
+            Swal.fire({
+                icon: 'warning', // 顯示警告圖示
+                title: 'Email 已被使用', // 標題
+                text: '此 Email 地址已被註冊，請使用其他 Email 進行註冊。', // 內容文字
+                confirmButtonText: '確定' // 確認按鈕文字
+            });
         }
     } catch (err) {
-        alert('伺服器錯誤或網路異常，請稍後再試')
+        Swal.fire({
+            icon: 'error', // 顯示錯誤圖示
+            title: '連線異常', // 標題
+            text: '伺服器錯誤或網路異常，請檢查您的網路連線或稍後再試。', // 內容文字
+            confirmButtonText: '確定' // 確認按鈕文字
+        });
     } finally {
         loading.value = false
     }
@@ -62,7 +99,7 @@ async function submitEmail() {
 position: fixed;
 inset: 0;
 background: rgba(0, 0, 0, 0.08);
-z-index: 9999;
+z-index: 900;
 display: flex;
 align-items: center;
 justify-content: center;

@@ -1,6 +1,6 @@
 <template>
-    <div class="modal-bg" v-if="show">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-bg" v-if="show" @click="emit('close')">
+        <div class="modal-dialog modal-dialog-centered" @click.stop>
             <div class="modal-content p-4">
                 <div class="modal-header border-0 pb-0">
                     <button type="button" class="btn-close custom-close" @click="emit('close')"></button>

@@ -277,6 +277,40 @@ public class OrderService {
         } else {
             System.err.println("警告:更新訂單後，無法獲取有效的商店ID或訂單ID，未發送WebSocket通知。");
         }
+        
+
+        // 檢查日誌 1: 確認是否進入通知發送邏輯 (給店家)
+        if (existingOrderBean.getStore() != null && existingOrderBean.getStore().getId() != null
+                && existingOrderBean.getId() != null) {
+            System.out.println("準備發送 WebSocket 通知給店家 StoreID: " + existingOrderBean.getStore().getId() + ", OrderID: "
+                    + existingOrderBean.getId());
+            orderNotificationController.notifyOrderStatusUpdate(
+                    existingOrderBean.getStore().getId(),
+                    existingOrderBean.getId().toString(),
+                    existingOrderBean.getStatus());
+            System.out.println("店家 WebSocket 通知已嘗試發送。");
+        } else {
+            System.err.println("警告:更新訂單後，無法獲取有效的商店ID或訂單ID，未發送店家WebSocket通知。");
+        }
+
+        // ✨ [新增邏輯] 發送 WebSocket 通知給用戶
+        // 確保 OrderBean 中包含用戶資訊 (UserBean)，並且用戶 ID 可用
+        if (existingOrderBean.getUser() != null && existingOrderBean.getUser().getId() != null
+                && existingOrderBean.getId() != null) {
+            System.out.println("準備發送 WebSocket 通知給用戶 UserID: " + existingOrderBean.getUser().getId() + ", OrderID: "
+                    + existingOrderBean.getId());
+            orderNotificationController.notifyUserOrderStatusUpdate(
+                    existingOrderBean.getUser().getId(), // 取得用戶 ID
+                    existingOrderBean.getId().toString(),
+                    existingOrderBean.getStatus());
+            System.out.println("用戶 WebSocket 通知已嘗試發送。");
+        } else {
+            System.err.println("警告:更新訂單後，無法獲取有效的用戶ID或訂單ID，未發送用戶WebSocket通知。");
+        }
+        
+        
+        
+        
         // 保存更新後的 OrderBean
         return Optional.of(orderRepository.save(existingOrderBean));
     }
@@ -345,8 +379,8 @@ public class OrderService {
         }
         return null;
     }
-    
-    //yifan新增
+
+    // yifan新增
     // 查詢某個使用者使用某張優惠券的次數（僅統計已完成訂單）
     public int countUserPromotionUsage(Integer userId, Integer promotionId) {
         if (userId != null && promotionId != null) {
@@ -362,34 +396,31 @@ public class OrderService {
         }
         return 0;
     }
-    
+
     public OrderDTO createOrderFromRequest(OrderRequestDTO dto) {
-    	System.out.println("已選 promotionId: " + dto.getPromotionId());
-    	System.out.println("已選 storeId: " + dto.getStoreId());
-    	
-    	OrderBean order = new OrderBean();
+        System.out.println("已選 promotionId: " + dto.getPromotionId());
+        System.out.println("已選 storeId: " + dto.getStoreId());
+
+        OrderBean order = new OrderBean();
 
         // 從資料庫查詢 user、store、promotion 實體
         UserBean user = new UserBean();
         user.setId(dto.getUserId());
         order.setUser(user);
 
-        //苡帆改掉
-//        StoreBean store = storeRepository.findById(dto.getStoreId())
-//            .orElseThrow(() -> new RuntimeException("找不到店家"));
-//        order.setStore(store);
+        // 苡帆改掉
+        // StoreBean store = storeRepository.findById(dto.getStoreId())
+        // .orElseThrow(() -> new RuntimeException("找不到店家"));
+        // order.setStore(store);
 
-        //改成這個：
+        // 改成這個：
         StoreBean store = storeRepository.getReferenceById(dto.getStoreId());
         order.setStore(store);
-        
-        if (dto.getPromotionId() != null) {
-//          PromotionBean promo = new PromotionBean();
-//        	promo.setId(dto.getPromotionId());
-            PromotionBean promo = promotionRepository.getReferenceById(dto.getPromotionId());
-            order.setPromotion(promo);
-            System.out.println("設定進 order 的 promotionId 是：" + order.getPromotion().getId());
 
+        if (dto.getPromotionId() != null) {
+            PromotionBean promo = new PromotionBean();
+            promo.setId(dto.getPromotionId());
+            order.setPromotion(promo);
         }
 
         order.setTotal(dto.getTotal());
@@ -399,6 +430,5 @@ public class OrderService {
         OrderBean savedOrder = orderRepository.save(order);
         return OrderDTO.fromEntity(savedOrder); // 回傳給前端
     }
-
 
 }

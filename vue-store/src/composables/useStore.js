@@ -9,6 +9,19 @@ const selectedStore = ref(null)
 const isLoading = ref(false)
 const error = ref(null)
 
+// 🔥 NEW: 清除全域狀態的方法
+const clearAllStoreState = () => {
+    console.log('🧹 [useStore] 清除全域狀態')
+    currentUser.value = null
+    stores.value = []
+    selectedStore.value = null
+    error.value = null
+    console.log('✅ [useStore] 全域狀態已清除')
+}
+
+// 🔥 NEW: 將清除方法暴露到全域，讓登出時可以調用
+window.clearStoreCache = clearAllStoreState
+
 // 載入用戶資料和店家列表
 const loadUserData = async () => {
     const ownerId = localStorage.getItem('ownerId')
@@ -66,9 +79,8 @@ const loadUserData = async () => {
         }
     } else {
         console.warn('⚠️ [useStore] 找不到 ownerId')
-        currentUser.value = null
-        stores.value = []
-        selectedStore.value = null
+        // 🔥 修正：當沒有 ownerId 時，清除狀態
+        clearAllStoreState()
     }
 }
 
@@ -138,6 +150,13 @@ export function useStore() {
         }
     }
 
+    // 🔥 NEW: 強制刷新（清除後重新載入）
+    const forceRefresh = async () => {
+        console.log('🔄 [useStore] 強制刷新資料')
+        clearAllStoreState()
+        await refreshData()
+    }
+
     return {
         // 狀態
         currentUser: computed(() => currentUser.value),
@@ -156,3 +175,6 @@ export function useStore() {
         loadUserData: () => loadUserData()
     }
 }
+
+// 🔥 NEW: 導出清除方法，供外部使用
+export { clearAllStoreState }

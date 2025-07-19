@@ -7,6 +7,7 @@ import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import tw.com.ispan.eeit.model.entity.food.FoodBean;
+import tw.com.ispan.eeit.model.entity.food.TagBean;
 
 @Data
 @NoArgsConstructor
@@ -19,7 +20,7 @@ public class FoodDTO {
 	private String description;
 	private String storeName;
 	private Integer storeId;
-	private List<String> tagNames;
+	private List<TagBean> tagNames;
 
 	// 新增food資料需要的映射 by kinan
 	private Boolean isActive;
