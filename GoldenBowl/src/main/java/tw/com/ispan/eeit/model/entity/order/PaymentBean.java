@@ -2,6 +2,8 @@ package tw.com.ispan.eeit.model.entity.order;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -20,7 +22,7 @@ public class PaymentBean {
 	@Id
 	@Column(name = "id")
 	private Integer id;
-	
+
 	@Column(name = "method", columnDefinition = "nvarchar(50)")
 	private String method;
 	@Column(name = "transaction_id", columnDefinition = "varchar(100)")
@@ -31,9 +33,10 @@ public class PaymentBean {
 	private Boolean isPaid;
 	@Column(name = "paid_time")
 	private Date paidTime;
-	
+
 	@OneToOne
 	@JoinColumn(name = "order_id")
+	@JsonBackReference
 	private OrderBean order;
 
 }

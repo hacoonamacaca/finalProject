@@ -90,7 +90,7 @@ const quickAddToCart = (item) => {
         food: {
             id: item.id,
             name: item.name,
-            imgResource : item.imgResource,
+            imgResource: item.imgResource,//讓購物車增加圖片
         },
         tags: item.tagNames
     }

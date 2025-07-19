@@ -3,8 +3,6 @@ package tw.com.ispan.eeit.model.entity.order;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.hibernate.Hibernate;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -81,6 +79,7 @@ public class OrderBean {
 	private StoreBean store;
 
 	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+	@JsonManagedReference
 	private PaymentBean payment;
 
 }

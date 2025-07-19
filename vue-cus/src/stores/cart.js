@@ -46,7 +46,7 @@ export const useCartStore = defineStore('cart', () => {
     const addToCart = (item, restaurant) => {
         // item 從restaurantMenu.vue傳送近來
         const restaurantId = restaurant.id
-        // console.log('addToCart', restaurant)
+        console.log('addToCart', restaurant)
         // 如果該餐廳還沒有購物車，創建一個
         if (!cartByRestaurant.value[restaurantId]) {
             cartByRestaurant.value[restaurantId] = {
@@ -142,6 +142,7 @@ export const useCartStore = defineStore('cart', () => {
 
     // --- ✨ 新增：再訂購函式 ✨ ---
     const reorder = (oldOrder) => {
+
         if (!oldOrder || !oldOrder.store || !oldOrder.orderDetails || oldOrder.orderDetails.length === 0) {
             console.warn('無效的舊訂單數據，無法再訂購。', oldOrder);
             return;
@@ -152,9 +153,11 @@ export const useCartStore = defineStore('cart', () => {
             id: oldOrder.store.id,
             name: oldOrder.store.name,
             // 由於您的 oldOrder.store.photo 是圖片路徑，addToCart 期望 'image'
-            image: oldOrder.store.photo,
+            photo: oldOrder.store.photo,
             // 根據您的 addToCart 函數定義，可能需要添加其他 restaurant 屬性，
             // 或確保 addToCart 能夠處理這些額外的屬性
+            status: '',
+            content: '',
         };
 
         // 遍歷舊訂單的每個商品，並添加到購物車
@@ -167,7 +170,7 @@ export const useCartStore = defineStore('cart', () => {
                 food: {
                     id: orderItem.food.id,
                     name: orderItem.food.name,
-                    image: orderItem.food.image // 這裡使用的是 item.food.image
+                    imgResource: orderItem.food.image // 這裡使用的是 item.food.image
                 },
                 id: orderItem.food.id, // 用 food.id 作為購物車內商品的唯一ID
                 quantity: orderItem.quantity,
@@ -180,7 +183,8 @@ export const useCartStore = defineStore('cart', () => {
             // 呼叫現有的 addToCart 函式
             addToCart(itemToAddToCart, restaurantToAddToCart);
         });
-
+        console.log('舊訂單數據1:', cartByRestaurant.value[oldOrder.id]);
+        console.log('舊訂單數據1:', oldOrder.store.photo);
         console.log('舊訂單已加入購物車:', oldOrder.id);
         showCart(); // 確保再訂購後購物車彈窗顯示
     };

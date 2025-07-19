@@ -352,4 +352,41 @@ public class OpenHourService {
 
 		return completeOpenHours;
 	}
+	
+	
+	/**
+     * 獲取店家今日營業時間 07-19
+     * @param storeId 店家ID
+     * @return 今日營業時間DTO (可能為空，如果今日不營業)
+     */ 
+    public Optional<OpenHourDTO> getStoreTodayOpenHour(Integer storeId) {
+        // 獲取今天的星期
+        DayOfWeek today = LocalDate.now().getDayOfWeek(); // 取得當前日期對應的星期幾
+        
+        System.out.println(today);
+        Integer dayName = switch (today) {
+        case MONDAY -> 1;
+        case TUESDAY -> 2;
+        case WEDNESDAY -> 3;
+        case THURSDAY -> 4;
+        case FRIDAY -> 5;
+        case SATURDAY -> 6;
+        case SUNDAY -> 0;
+        // 預防未來 DayOfWeek 增加新的枚舉值，通常要有一個 default 處理
+        default -> 0; // 如果沒有匹配，返回英文名稱
+    };
+    System.out.println(dayName);
+        // 使用 JPA Repository 查詢今天對應的營業時間 
+    	Optional<OpenHourBean> todayOpenHours = openHourRepo.findByStoreIdAndDay(storeId, dayName);
+
+        if (todayOpenHours.isEmpty()) {
+            return Optional.empty(); // 今天沒有設定營業時間
+        } 
+
+        // 假設一天只有一組營業時間，取第一個。
+        // 如果您的業務邏輯允許一天有多個營業時段，這裡可能需要返回 List<OpenHourDTO> 或進行更複雜的處理。
+        return Optional.of(OpenHourDTO.fromEntity(todayOpenHours.get()));
+    }
+    
+    
 }

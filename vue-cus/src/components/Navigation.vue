@@ -63,7 +63,7 @@
     @update-quantity="updateQuantity" @remove-item="removeItem" @checkout-restaurant="handleCheckoutRestaurant"
     @clear-restaurant="clearRestaurant" />
     <!-- 預備結帳畫面  ted--> 
-  <CheckOrderModal :isVisible="isCheckOrderVisible" :orderItems="currentCheckoutItems" :restId="Number(restId)" 
+  <CheckOrderModal v-if="isCheckOrderVisible"  :orderItems="currentCheckoutItems" :restId="Number(restId)" 
     @add-to-cart="handleConfirmCheckout" @close="hideCheckOrderModal" />
 
   <section class="popout" v-if="showPopout">

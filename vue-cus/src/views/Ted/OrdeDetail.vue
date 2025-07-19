@@ -17,7 +17,7 @@ const cartStore = useCartStore();
 
 // 重新訂購按鈕點擊事件
 const handleReorderClick = () => { // 將名稱從 reorder 改為 handleReorderClick，避免與 store 的 reorder 混淆
-  console.log('重新訂購按鈕被點擊');
+  console.log('重新訂購按鈕被點擊',order.value);
     if (order.value && order.value.orderDetails && order.value.orderDetails.length > 0) {
          // 呼叫購物車 Store 的 reorder 函式，並傳入當前訂單數據
         Swal.fire(
@@ -79,7 +79,7 @@ const findOrderById = (id) => {
 onMounted(() => {
   // 在組件掛載後執行的邏輯
   // console.log('取得id',props.restaurantId   )
-  console.log('取得id2',route.params.id   )
+  // console.log('取得id2',route.params.id   )
   findOrderById(route.params.id)
 })
 
@@ -100,8 +100,8 @@ onMounted(() => {
               <h5 class="card-title fw-bold"  v-if="order.status !== 'completed' && order.status !== 'canceled'">最新訂購</h5>
               <h5 class="card-title fw-bold"  v-else>訂單記錄</h5>
               <p class="text-muted small">
-                
-                <a href="#" class="text-decoration-none" style="color: #e20261;">歷史訂單</a> &gt; <a href="#" class="text-decoration-none" style="color: #e20261;">訂單詳情</a>
+                <router-link :to="`/OrderList`">
+                <span  class="text-decoration-none" style="color: #e20261;">歷史訂單</span></router-link> &gt; <span href="#" class="text-decoration-none" style="color: #e20261;">訂單詳情</span>
               </p>
 
               <div class="d-flex align-items-center mb-3">
@@ -157,7 +157,7 @@ onMounted(() => {
             <div class="card-body">
               <h5 class="card-title fw-bold">付款方式</h5>
               <div class="d-flex justify-content-between mb-2">
-                <span>信用卡</span>
+                <span>{{order.method}}</span>
                 <!-- <span>NT$ {{ order.payment.creditCard.toFixed(0) }}</span> -->
               </div>
              
@@ -167,6 +167,13 @@ onMounted(() => {
 
         <!-- 右側內容區 -->
         <div class="col-lg-4">
+          <div  class="card shadow-sm mb-4 rounded-lg">
+              <div class="card-body">
+                <h5 class="card-title fw-bold">訂單備註</h5>
+                <p class="mb-0">{{ order.content||'無' }}</p>
+              </div>
+          </div>
+        
           <div class="card shadow-sm mb-4 rounded-lg">
             <div class="card-body">
               <h5 class="card-title fw-bold">再次訂購</h5>

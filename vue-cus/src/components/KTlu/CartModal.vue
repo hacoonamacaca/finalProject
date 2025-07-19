@@ -47,7 +47,7 @@
                                 </div>
 
                                 <div class="item-details">
-                                    <h5 class="item-name">{{ item.food.name }}</h5>
+                                    <h5 class="item-name">{{ item.food.name }} {{ item.imgResource }}</h5>
                                     <div class="item-price">NT${{ item.price }}</div>
                                 </div>
 
@@ -113,7 +113,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed ,onMounted } from 'vue'
 import '@/assets/css/restaurant-theme.css'
 
 const props = defineProps({
@@ -193,7 +193,9 @@ const formatOptions = (optionValue) => {
     return optionValue
 }
 
-
+onMounted(() => {
+    console.log('cartByRestaurant', props.cartByRestaurant)
+})
 
 </script>
 
