@@ -277,7 +277,6 @@ public class OrderService {
         } else {
             System.err.println("警告:更新訂單後，無法獲取有效的商店ID或訂單ID，未發送WebSocket通知。");
         }
-        
 
         // 檢查日誌 1: 確認是否進入通知發送邏輯 (給店家)
         if (existingOrderBean.getStore() != null && existingOrderBean.getStore().getId() != null
@@ -307,10 +306,7 @@ public class OrderService {
         } else {
             System.err.println("警告:更新訂單後，無法獲取有效的用戶ID或訂單ID，未發送用戶WebSocket通知。");
         }
-        
-        
-        
-        
+
         // 保存更新後的 OrderBean
         return Optional.of(orderRepository.save(existingOrderBean));
     }

@@ -1,46 +1,31 @@
 <template>
   <div class="filters">
     <div class="recommendation-buttons">
-      <button
-        v-if="isMorning"
-        @click="toggleSearchKeyword('早餐')"
-        :class="{ 'filter-button': true, 'active': activeKeywords.includes('早餐') }"
-      >
+      <button v-if="isMorning" @click="toggleSearchKeyword('早餐')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('早餐') }">
         早餐推薦
       </button>
-      <button
-        v-else-if="isBrunch"
-        @click="toggleSearchKeyword('早午餐')"
-        :class="{ 'filter-button': true, 'active': activeKeywords.includes('早午餐') }"
-      >
+      <button v-else-if="isBrunch" @click="toggleSearchKeyword('早午餐')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('早午餐') }">
         早午餐推薦
       </button>
-      <button
-        v-else-if="isSupper"
-        @click="toggleSearchKeyword('宵夜')"
-        :class="{ 'filter-button': true, 'active': activeKeywords.includes('宵夜') }"
-      >
+      <button v-else-if="isSupper" @click="toggleSearchKeyword('宵夜')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('宵夜') }">
         宵夜推薦
       </button>
 
-      <button
-        v-if="isCold"
-        @click="toggleSearchKeyword('熱')"
-        :class="{ 'filter-button': true, 'active': activeKeywords.includes('熱') }"
-      >
-        天寒地凍？來點熱飲吧！
+      <button v-if="isCold" @click="toggleSearchKeyword('熱')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('熱') }">
+        {{ locationStore.temperature }}°C 天寒地凍？來點熱飲吧！
       </button>
-      <button
-        v-else-if="isHot"
-        @click="toggleSearchKeyword('冰')"
-        :class="{ 'filter-button': true, 'active': activeKeywords.includes('冰') }"
-      >
-        日頭炎炎？來點冰品吧！
+      <button v-else-if="isHot" @click="toggleSearchKeyword('冰')"
+        :class="{ 'filter-button': true, 'active': activeKeywords.includes('冰') }">
+        {{ locationStore.temperature }}°C 日頭炎炎？來點冰品吧！
       </button>
 
-      <button v-for="item in randomKeywords" :key="item.searchKeyword" @click="toggleSearchKeyword(item.searchKeyword)" 
+      <button v-for="item in randomKeywords" :key="item.searchKeyword" @click="toggleSearchKeyword(item.searchKeyword)"
         :class="{ 'filter-button': true, 'active': activeKeywords.includes(item.searchKeyword) }">
-        {{ item.displayText }} 
+        {{ item.displayText }}
       </button>
     </div>
 
@@ -132,6 +117,8 @@ const allRecommendationKeywords = [
   { displayText: '毛小孩好去處', searchKeyword: '寵物友善' },
   { displayText: '小孩放電好所在', searchKeyword: '公園附近' },
   { displayText: '熱鬧看比賽!', searchKeyword: '觀看直播' },
+  { displayText: '小孩放電好所在', searchKeyword: '公園附近' },
+  { displayText: '熱鬧看比賽!', searchKeyword: '觀看直播' },
   { displayText: '初一十五要吃菜', searchKeyword: '素食' },
   { displayText: '精神不濟?', searchKeyword: '咖啡' },
   { displayText: '想吃點特別的', searchKeyword: '異國料理' },
@@ -140,8 +127,10 @@ const allRecommendationKeywords = [
   { displayText: '痛風也要吃', searchKeyword: '海鮮' },
   { displayText: '朋友家人聚餐', searchKeyword: '聚餐' },
   { displayText: '巷口銅板美食', searchKeyword: '小吃' },
+  { displayText: '巷口銅板美食', searchKeyword: '小吃' },
   { displayText: '輕食無負擔', searchKeyword: '健康' },
   { displayText: '趕時間也能吃', searchKeyword: '快速' },
+  { displayText: '氣氛超好拍美照', searchKeyword: '好拍照' },
   { displayText: '氣氛超好拍美照', searchKeyword: '好拍照' },
   { displayText: '天啊 已經三點了', searchKeyword: '甜點飲品' },
   { displayText: '下雨天不想出門', searchKeyword: '外送' }
@@ -194,24 +183,32 @@ watch(() => locationStore.coordinates, (newCoords) => {
 
 .filter-button {
   padding: 8px 15px;
-  background-color: white; /* 預設白色背景 */
-  color: #333; /* 預設深色文字 */
-  border: 1px solid #ccc; /* 預設淺灰色邊框 */
+  background-color: white;
+  /* 預設白色背景 */
+  color: #333;
+  /* 預設深色文字 */
+  border: 1px solid #ccc;
+  /* 預設淺灰色邊框 */
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  transition: all 0.2s ease; /* 過渡效果 */
+  transition: all 0.2s ease;
+  /* 過渡效果 */
 }
 
 .filter-button:hover {
-  background-color: #f0f0f0; /* 懸停時輕微變灰 */
+  background-color: #f0f0f0;
+  /* 懸停時輕微變灰 */
 }
 
 /* 點擊後的樣式 */
 .filter-button.active {
-  background-color: #ffba20; /* 點擊後變黃色 */
-  color: white; /* 黃色背景搭配白色文字 */
-  border-color: #ffba20; /* 邊框也變黃色 */
+  background-color: #ffba20;
+  /* 點擊後變黃色 */
+  color: white;
+  /* 黃色背景搭配白色文字 */
+  border-color: #ffba20;
+  /* 邊框也變黃色 */
 }
 
 .sort-options {

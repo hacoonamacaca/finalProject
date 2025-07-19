@@ -72,6 +72,8 @@
       <input type="text" placeholder="輸入您的地址" @focus="locationStore.setAddress('')" v-model="locationStore.address" />
       <button class="search-btn"
         @click="locationStore.address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
+      <button class="search-btn"
+        @click="locationStore.address.trim() ? searchAddress() : getCurrentLocationAndNavigate()">搜尋</button>
     </div>
   </section>
 
@@ -196,7 +198,9 @@ if (!isLoggedIn.value) { // 使用 isLoggedIn Computed 屬性判斷登入狀態
   Object.assign(getRestaurantCart(restaruantId), orderData, body);
   isCheckOrderVisible.value = false;
 
-  const order =cartStore.checkoutSingleRestaurant(restaruantId)
+  const order = cartStore.checkoutSingleRestaurant(restaruantId)
+
+
   // 寫上ajax
   axios.post('/api/orders', order).then((response) => {
     // 請求成功的處理邏輯
@@ -311,7 +315,7 @@ if (!isLoggedIn.value) { // 使用 isLoggedIn Computed 屬性判斷登入狀態
 const hideCheckOrderModal = () => {
   isCheckOrderVisible.value = false;
   currentCheckoutItems.value = []; // 清空數據
-  restId.value ={};
+  restId.value = {};
 };
 
 

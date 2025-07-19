@@ -27,19 +27,19 @@ import tw.com.ispan.eeit.service.UserService;
 @RestController
 @RequestMapping("/api")
 public class EmailVerifyController {
-	@Value("${app.frontend.url}")
-	private String frontendUrl;
-	//http://localhost:5173/
-	
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+    // http://localhost:5173/
+
     @Autowired
     private JavaMailSender mailSender;
 
     @Autowired
     private UserRepository userRepository;
-    
+
     @Autowired
     private UserTokenRepository userTokenRepository;
-    
+
     @Autowired
     private UserService userService;
 
@@ -69,7 +69,7 @@ public class EmailVerifyController {
             userTokenRepository.save(userToken);
         }
 
-        String verifyUrl = frontendUrl+"/verify-email?token=" + token + "&email=" + email.trim();
+        String verifyUrl = frontendUrl + "/verify-email?token=" + token + "&email=" + email.trim();
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("eattiy1986@gmail.com");
@@ -81,7 +81,7 @@ public class EmailVerifyController {
 
         return ResponseEntity.ok("驗證信已寄出到 " + email + "，請查收！");
     }
-    
+
     // 2. 驗證連結 (前端收到驗證成功後再跳註冊)
     @GetMapping("/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam String token, @RequestParam String email) {
@@ -90,10 +90,10 @@ public class EmailVerifyController {
             UserTokenBean userToken = tokenOpt.get();
             userToken.setUsed(true);
             userTokenRepository.save(userToken);
-            
+
             // 同時把 user.isVerify 設為 true
             userService.verifyEmail(email.trim());
-            
+
             return ResponseEntity.ok("驗證成功！");
         }
         return ResponseEntity.badRequest().body("驗證失敗，請檢查連結或重新發送驗證信！");
@@ -101,7 +101,8 @@ public class EmailVerifyController {
 
     // 3. 註冊 API
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestParam String email, @RequestParam String password, @RequestParam String name) {
+    public ResponseEntity<String> register(@RequestParam String email, @RequestParam String password,
+            @RequestParam String name) {
         System.out.println("register API called with " + email);
 
         boolean verified = userTokenRepository.findTopByEmailAndUsedTrueOrderByIdDesc(email.trim()).isPresent();
@@ -125,7 +126,7 @@ public class EmailVerifyController {
         newUser.setIsVerify(true);
         newUser.setSignupDate(LocalDateTime.now());
         newUser.setLastLogin(LocalDateTime.now());
-        newUser.setIsActive(true); 
+        newUser.setIsActive(true);
 
         System.out.println("save start!");
         userRepository.save(newUser);
@@ -141,7 +142,7 @@ public class EmailVerifyController {
         boolean verified = userTokenRepository.findTopByEmailAndUsedTrueOrderByIdDesc(email.trim()).isPresent();
         return ResponseEntity.ok(verified);
     }
-    
+
     // 5. 寄送重設密碼信
     @PostMapping("/send-reset-password")
     public ResponseEntity<String> sendResetPassword(@RequestParam String email) {
@@ -178,15 +179,15 @@ public class EmailVerifyController {
 
         return ResponseEntity.ok("重設密碼信已寄出到 " + email + "，請查收！");
     }
-    
+
     // 重設密碼導向前端網址
     @GetMapping("/reset-password")
     public RedirectView redirectResetPassword(@RequestParam String token, @RequestParam String email) {
         String frontendUrl = "http://localhost:5173/?reset=1&token=" + token + "&email=" + email;
         return new RedirectView(frontendUrl);
     }
-    
-    //重設密碼API
+
+    // 重設密碼API
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(
             @RequestParam String email,

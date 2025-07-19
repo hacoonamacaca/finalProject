@@ -14,7 +14,7 @@ import OrderManagement from '../pages/OrderManager.vue';
 import BusinessHoursManager from '../pages/BusinessHoursManager.vue';
 import ReservationManagement from '../pages/ReservationManagement.vue';
 import TimeSettingTest from '../views/TimeSettingTest.vue';
-
+import TimeSlotManagementPage from '../pages/TimeSlotManagementPage.vue';
 
 // 檢查業者登入狀態的函數
 function checkOwnerLogin() {
@@ -106,8 +106,7 @@ function clearLoginData() {
 window.setTempLogin = setTempLoginData
 window.clearLogin = clearLoginData
 
-const routes = [
-    {
+const routes = [{
         // 根目錄重導向邏輯：已登入→管理後台，未登入→首頁
         path: '/',
         redirect: () => {
@@ -118,22 +117,24 @@ const routes = [
 
     // 🔥 首頁路由 - StoreHome.vue (歡迎光臨頁面)
     {
-        path: '/home',              // 建議改為 /home 比較貼切
+        path: '/home', // 建議改為 /home 比較貼切
         name: 'StoreHome',
-        component: StoreHome,       // 🔥 使用已 import 的組件
-        meta: { requiresOwnerAuth: false }
+        component: StoreHome, // 🔥 使用已 import 的組件
+        meta: {
+            requiresOwnerAuth: false
+        }
     },
 
     // 🔥 (備用)保留 /login 作為別名，指向同一個組件
     {
         path: '/login',
-        redirect: '/home'           // 重導向到首頁
+        redirect: '/home' // 重導向到首頁
     },
 
     // 🔥 NEW: 註冊流程相關路由 (無需登入權限)
     {
         path: '/register',
-        redirect: '/home'  // 直接重導向到首頁
+        redirect: '/home' // 直接重導向到首頁
     },
 
     // 🔥 管理後台路由 (需要登入權限)
@@ -141,15 +142,18 @@ const routes = [
         path: '/store',
         component: SellerLayout, // 所有 / 開頭的路由都先經過這個佈局組件
         redirect: '/store/menu', // 預設進入菜單管理
-        meta: { requiresOwnerAuth: true },  // 需要業者登入權限
+        meta: {
+            requiresOwnerAuth: true
+        }, // 需要業者登入權限
         // 使用 children 來定義嵌套路由
-        children: [
-            {
+        children: [{
                 path: 'menu', // 注意：這裡沒有 /，代表是 /menu
                 name: 'MenuManagement',
 
                 component: MenuManagement,
-                meta: { requiresOwnerAuth: true }
+                meta: {
+                    requiresOwnerAuth: true
+                }
             },
 
             // 未來您可以繼續在這裡新增路由
@@ -158,43 +162,63 @@ const routes = [
                 path: 'edit-owner', // 代表是 /store/edit-owner
                 name: 'EditStoreUser',
                 component: EditStoreUser,
-                meta: { requiresOwnerAuth: true }
+                meta: {
+                    requiresOwnerAuth: true
+                }
             },
-
             {
                 path: 'edit-store', // 代表是 /store/edit-store
                 name: 'EditStore',
                 component: EditStore,
-                meta: { requiresOwnerAuth: true }
+                meta: {
+                    requiresOwnerAuth: true
+                }
             },
-
             {
                 path: 'orders', // 代表是 /store/orders
                 name: 'OrderManager',
                 component: OrderManagement,
-                meta: { requiresOwnerAuth: true }
+                meta: {
+                    requiresOwnerAuth: true
+                }
             },
 
             {
                 path: 'hours', // 代表是 /store/hours
                 name: 'BusinessHoursManager',
                 component: BusinessHoursManager,
-                meta: { requiresOwnerAuth: true }
+                meta: {
+                    requiresOwnerAuth: true
+                }
             },
 
             {
                 path: 'reservations', // 代表是 /store/reservations
                 name: 'ReservationManagement',
                 component: ReservationManagement,
-                meta: { requiresOwnerAuth: true }
+                meta: {
+                    requiresOwnerAuth: true
+                }
             },
 
             {
                 path: 'time-setting-test', // 代表是 /store/time-setting-test
                 name: 'TimeSettingTest',
                 component: TimeSettingTest,
-                meta: { requiresOwnerAuth: true }
+                meta: {
+                    requiresOwnerAuth: true
+                }
             },
+
+            {
+                path: 'timeslots', // 代表是 /store/timeslots
+                name: 'TimeSlotManagement',
+                component: TimeSlotManagementPage,
+                meta: {
+                    requiresOwnerAuth: true
+                }
+            }
+
         ]
     },
 

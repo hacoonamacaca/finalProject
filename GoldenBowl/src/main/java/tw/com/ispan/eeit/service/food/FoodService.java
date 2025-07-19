@@ -49,9 +49,6 @@ public class FoodService {
         newFood.setStock(request.getStock());
         newFood.setImgResource(request.getImgResource());
 
-        // 🔥 新增：設定供應狀態
-        newFood.setIsActive(request.getIsActive() != null ? request.getIsActive() : true);
-
         // 【核心修正：使用新的中間表 Entity】
         newFood.getClassifications().clear(); // 清理（對新增來說是多餘的，但好習慣）
         for (FoodClassBean foodClass : foodClasses) {

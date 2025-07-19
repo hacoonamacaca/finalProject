@@ -20,11 +20,10 @@ import tw.com.ispan.eeit.service.OwnerService;
 @RestController
 @RequestMapping("/api/owner")
 public class OwnerController {
-	@Autowired
-	private OwnerService ownerService;
-	
+    @Autowired
+    private OwnerService ownerService;
 
-// 查詢全部（Read All）
+    // 查詢全部（Read All）
     @GetMapping
     public List<OwnerBean> findAll() {
         return ownerService.findAll();
@@ -34,13 +33,13 @@ public class OwnerController {
     @GetMapping("/{id}")
     public Map<String, Object> findById(@PathVariable Integer id) {
         OwnerBean bean = ownerService.findById(id);
-        if (bean == null) return Map.of("success", false, "message", "找不到此帳號");
+        if (bean == null)
+            return Map.of("success", false, "message", "找不到此帳號");
         OwnerDTO dto = ownerService.toDTO(bean);
         return Map.of("success", true, "owner", dto);
     }
 
-
-	@PostMapping("/check-email")
+    @PostMapping("/check-email")
     public Map<String, Object> checkEmail(@RequestBody Map<String, String> map) {
         String email = map.get("email");
         boolean exists = ownerService.checkEmailExists(email);
@@ -59,7 +58,7 @@ public class OwnerController {
         }
         return Map.of("success", true, "ownerId", owner.getId());
     }
-    
+
     @PostMapping("/login")
     public Map<String, Object> login(@RequestBody Map<String, String> map) {
         String email = map.get("email");
@@ -70,14 +69,14 @@ public class OwnerController {
         }
         // 把所需欄位全部回傳
         return Map.of(
-            "success", true,
-            "ownerId", owner.getId(),
-            "name", owner.getName(),
-            "email", owner.getEmail(),
-            "phone", owner.getPhone(),
-            "lastLogin", owner.getLastLogin()
-        );
+                "success", true,
+                "ownerId", owner.getId(),
+                "name", owner.getName(),
+                "email", owner.getEmail(),
+                "phone", owner.getPhone(),
+                "lastLogin", owner.getLastLogin());
     }
+
     // 修改（Update）
     @PutMapping("/{id}")
     public Map<String, Object> update(@PathVariable Integer id, @RequestBody Map<String, String> map) {

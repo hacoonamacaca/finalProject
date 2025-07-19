@@ -1,5 +1,10 @@
 // composables/useStore.js
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import {
+    ref,
+    computed,
+    onMounted,
+    onBeforeUnmount
+} from 'vue'
 import apiClient from '@/plungins/axios.js'
 
 // 🔥 全域狀態：所有使用 useStore 的組件都會共享這些狀態
@@ -41,7 +46,9 @@ const loadUserData = async () => {
             console.log(`🚀 [useStore] 正在為 owner ID: ${ownerId} 獲取店家列表...`)
 
             const storesResponse = await apiClient.get('/api/stores/profile/all', {
-                params: { ownerId: ownerId }
+                params: {
+                    ownerId: ownerId
+                }
             })
             console.log('✅ [useStore] 成功獲取店家列表:', storesResponse.data)
 
@@ -90,6 +97,15 @@ const switchStore = async (newStoreId) => {
 
     if (newStoreId && newStoreId !== oldStoreId) {
         console.log(`🔄 [useStore] 切換店家：從 ${oldStoreId} 到 ${newStoreId}`)
+
+        // 驗證新店家是否在用戶的店家列表中
+        const targetStore = stores.value.find(store => store.id === newStoreId)
+        if (!targetStore) {
+            console.error('❌ [useStore] 無效的店家 ID:', newStoreId)
+            return false
+        }
+
+        // 更新選中的店家
         selectedStore.value = newStoreId
 
         // 更新 localStorage
@@ -98,9 +114,26 @@ const switchStore = async (newStoreId) => {
 
         // 觸發重新載入事件（讓各頁面監聽）
         window.dispatchEvent(new CustomEvent('storeChanged', {
-            detail: { newStoreId, oldStoreId }
+            detail: {
+                newStoreId,
+                oldStoreId,
+                storeName: targetStore.name
+            }
         }))
+
+        // 自動重新載入當前店家的資料
+        try {
+            console.log('🔄 [useStore] 正在重新載入店家資料...')
+            await loadUserData()
+            console.log('✅ [useStore] 店家資料重新載入完成')
+        } catch (error) {
+            console.error('❌ [useStore] 重新載入店家資料失敗:', error)
+        }
+
+        return true
     }
+
+    return false
 }
 
 // 監聽 localStorage 變化（跨分頁同步）
@@ -121,6 +154,9 @@ export function useStore() {
     // 生命週期處理
     onMounted(async () => {
         console.log('🎬 [useStore] 組件掛載')
+
+        // 確保店家 ID 同步
+        ensureCurrentStore()
 
         // 如果還沒有載入過，就載入
         if (!currentUser.value && !isLoading.value) {
@@ -172,6 +208,8 @@ export function useStore() {
         // 方法
         switchStore,
         refreshData,
+        getCurrentStoreData,
+        ensureCurrentStore,
         loadUserData: () => loadUserData()
     }
 }

@@ -133,11 +133,6 @@ public class BookingAvailabilityService {
             metadata.put("maxDate", maxSlotDate != null ? maxSlotDate.toString() : LocalDate.now().toString());
 
             // 2. 獲取禁用日期列表
-            List<String> disabledDates = getClosedDates(storeId, 30)
-                    .stream()
-                    .map(LocalDate::toString)
-                    .collect(java.util.stream.Collectors.toList());
-            metadata.put("disabledDates", disabledDates);
 
             return metadata;
         } catch (Exception e) {

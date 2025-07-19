@@ -1,0 +1,29 @@
+# Spring Boot 後端 Dockerfile
+FROM openjdk:21-jdk-slim
+
+# 設定工作目錄
+WORKDIR /app
+
+# 複製 Maven 設定檔
+COPY GoldenBowl/pom.xml .
+COPY GoldenBowl/mvnw .
+COPY GoldenBowl/mvnw.cmd .
+
+# 複製 Maven wrapper
+COPY GoldenBowl/.mvn ./.mvn
+
+# 複製原始碼
+COPY GoldenBowl/src ./src
+
+# 設定環境變數
+ENV JAVA_OPTS="-Xmx512m -Xms256m"
+
+# 安裝 Maven 並建置專案
+RUN apt-get update && apt-get install -y maven
+RUN mvn clean package -DskipTests
+
+# 暴露端口
+EXPOSE 8080
+
+# 啟動應用
+CMD ["java", "-jar", "target/GoldenBowl.war"] 
